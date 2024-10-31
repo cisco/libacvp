@@ -100,31 +100,31 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     if (EVP_PKEY_get_bn_param(pkey, "rsa-factor1", &p) == 1) {
         tc->p_len = BN_bn2bin(p, tc->p);
     } else {
-        printf("Error retreiving p from pkey in RSA keygen\n");
+        printf("Error retrieving p from pkey in RSA keygen\n");
         goto err;
     }
     if (EVP_PKEY_get_bn_param(pkey, "rsa-factor2", &q) == 1) {
         tc->q_len = BN_bn2bin(q, tc->q);
     } else {
-        printf("Error retreiving q from pkey in RSA keygen\n");
+        printf("Error retrieving q from pkey in RSA keygen\n");
         goto err;
     }
     if (EVP_PKEY_get_bn_param(pkey, "n", &n) == 1) {
         tc->n_len = BN_bn2bin(n, tc->n);
     } else {
-        printf("Error retreiving n from pkey in RSA keygen\n");
+        printf("Error retrieving n from pkey in RSA keygen\n");
         goto err;
     }
     if (EVP_PKEY_get_bn_param(pkey, "d", &d) == 1) {
         tc->d_len = BN_bn2bin(d, tc->d);
     } else {
-        printf("Error retreiving d from pkey in RSA keygen\n");
+        printf("Error retrieving d from pkey in RSA keygen\n");
         goto err;
     }
     if (EVP_PKEY_get_bn_param(pkey, "e", &e) == 1) {
         tc->e_len = BN_bn2bin(e, tc->e);
     } else {
-        printf("Error retreiving e from pkey in RSA keygen\n");
+        printf("Error retrieving e from pkey in RSA keygen\n");
         goto err;
     }
 

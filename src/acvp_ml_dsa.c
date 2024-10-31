@@ -33,7 +33,7 @@ static ACVP_RESULT acvp_ml_dsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         return ACVP_INTERNAL_ERR;
     }
 
-    tmp = calloc(ACVP_ML_DSA_TMP_BYTE_MAX + 1, sizeof(char));
+    tmp = calloc(ACVP_ML_DSA_MSG_STR_MAX + 1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Error allocating memory to output ML-DSA test case");
         rv = ACVP_MALLOC_FAIL;
@@ -42,16 +42,16 @@ static ACVP_RESULT acvp_ml_dsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
 
     switch (mode) {
     case ACVP_SUB_ML_DSA_KEYGEN:
-        memzero_s(tmp, ACVP_ML_DSA_TMP_BYTE_MAX);
-        rv = acvp_bin_to_hexstr(stc->pub_key, stc->pub_key_len, tmp, ACVP_ML_DSA_TMP_BYTE_MAX);
+        memzero_s(tmp, ACVP_ML_DSA_MSG_STR_MAX);
+        rv = acvp_bin_to_hexstr(stc->pub_key, stc->pub_key_len, tmp, ACVP_ML_DSA_MSG_STR_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (pk)");
             goto end;
         }
         json_object_set_string(tc_rsp, "pk", tmp);
 
-        memzero_s(tmp, ACVP_ML_DSA_TMP_BYTE_MAX);
-        rv = acvp_bin_to_hexstr(stc->secret_key, stc->secret_key_len, tmp, ACVP_ML_DSA_TMP_BYTE_MAX);
+        memzero_s(tmp, ACVP_ML_DSA_MSG_STR_MAX);
+        rv = acvp_bin_to_hexstr(stc->secret_key, stc->secret_key_len, tmp, ACVP_ML_DSA_MSG_STR_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (sk)");
             goto end;
@@ -60,7 +60,7 @@ static ACVP_RESULT acvp_ml_dsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         break;
     case ACVP_SUB_ML_DSA_SIGGEN:
         /* This also needs pk in the test group response for GDT, handled elsewhere */
-        rv = acvp_bin_to_hexstr(stc->sig, stc->sig_len, tmp, ACVP_ML_DSA_TMP_BYTE_MAX);
+        rv = acvp_bin_to_hexstr(stc->sig, stc->sig_len, tmp, ACVP_ML_DSA_MSG_STR_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (signature)");
             goto end;
@@ -123,24 +123,24 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
     stc->param_set = param_set;
     stc->is_deterministic = is_deterministic;
 
-    stc->pub_key = calloc(ACVP_ML_DSA_TMP_BYTE_MAX, sizeof(unsigned char));
+    stc->pub_key = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
     if (!stc->pub_key) {
         goto err;
     }
     if (cipher == ACVP_ML_DSA_SIGVER) {
-        rv = acvp_hexstr_to_bin(pub_key, stc->pub_key, ACVP_ML_DSA_TMP_BYTE_MAX, &(stc->pub_key_len));
+        rv = acvp_hexstr_to_bin(pub_key, stc->pub_key, ACVP_ML_DSA_MSG_BYTE_MAX, &(stc->pub_key_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (pk)");
             return rv;
         }
     }
 
-    stc->secret_key = calloc(ACVP_ML_DSA_TMP_BYTE_MAX, sizeof(unsigned char));
+    stc->secret_key = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
     if (!stc->secret_key) {
         goto err;
     }
     if (cipher == ACVP_ML_DSA_SIGGEN && secret_key) {
-        rv = acvp_hexstr_to_bin(secret_key, stc->secret_key, ACVP_ML_DSA_TMP_BYTE_MAX, &(stc->secret_key_len));
+        rv = acvp_hexstr_to_bin(secret_key, stc->secret_key, ACVP_ML_DSA_MSG_BYTE_MAX, &(stc->secret_key_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (sk)");
             return rv;
@@ -148,11 +148,11 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
     }
 
     if (cipher == ACVP_ML_DSA_SIGGEN && rnd) {
-        stc->rnd = calloc(ACVP_ML_DSA_TMP_BYTE_MAX, sizeof(unsigned char));
+        stc->rnd = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
         if (!stc->rnd) {
             goto err;
         }
-        rv = acvp_hexstr_to_bin(rnd, stc->rnd, ACVP_ML_DSA_TMP_BYTE_MAX, &(stc->rnd_len));
+        rv = acvp_hexstr_to_bin(rnd, stc->rnd, ACVP_ML_DSA_MSG_BYTE_MAX, &(stc->rnd_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (rnd)");
             return rv;
@@ -160,11 +160,11 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
     }
 
     if (cipher == ACVP_ML_DSA_KEYGEN) {
-        stc->seed = calloc(ACVP_ML_DSA_TMP_BYTE_MAX, sizeof(unsigned char));
+        stc->seed = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
         if (!stc->seed) {
             goto err;
         }
-        rv = acvp_hexstr_to_bin(seed, stc->seed, ACVP_ML_DSA_TMP_BYTE_MAX, &(stc->seed_len));
+        rv = acvp_hexstr_to_bin(seed, stc->seed, ACVP_ML_DSA_MSG_BYTE_MAX, &(stc->seed_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (seed)");
             return rv;
@@ -172,11 +172,11 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
     }
 
     if (cipher == ACVP_ML_DSA_SIGGEN || cipher == ACVP_ML_DSA_SIGVER) {
-        stc->msg = calloc(ACVP_ML_DSA_TMP_BYTE_MAX, sizeof(unsigned char));
+        stc->msg = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
         if (!stc->msg) {
             goto err;
         }
-        rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_ML_DSA_TMP_BYTE_MAX, &(stc->msg_len));
+        rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_ML_DSA_MSG_BYTE_MAX, &(stc->msg_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (msg)");
             return rv;
@@ -184,12 +184,12 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
     }
 
     if (cipher == ACVP_ML_DSA_SIGGEN || cipher == ACVP_ML_DSA_SIGVER) {
-        stc->sig = calloc(ACVP_ML_DSA_TMP_BYTE_MAX, sizeof(unsigned char));
+        stc->sig = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
         if (!stc->sig) {
             goto err;
         }
         if (cipher == ACVP_ML_DSA_SIGVER) {
-            rv = acvp_hexstr_to_bin(sig, stc->sig, ACVP_ML_DSA_TMP_BYTE_MAX, &(stc->sig_len));
+            rv = acvp_hexstr_to_bin(sig, stc->sig, ACVP_ML_DSA_MSG_BYTE_MAX, &(stc->sig_len));
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (sig)");
                 return rv;
@@ -483,8 +483,8 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             /* For siggen, we need a public key for the test group object, grab from first TC for group */
             if (alg_id == ACVP_ML_DSA_SIGGEN && type == ACVP_ML_DSA_TESTTYPE_GDT && !j) {
-                char *tmp = calloc(ACVP_ML_DSA_TMP_BYTE_MAX + 1, sizeof(char));
-                rv = acvp_bin_to_hexstr(stc.pub_key, stc.pub_key_len, tmp, ACVP_ML_DSA_TMP_BYTE_MAX);
+                char *tmp = calloc(ACVP_ML_DSA_MSG_BYTE_MAX + 1, sizeof(char));
+                rv = acvp_bin_to_hexstr(stc.pub_key, stc.pub_key_len, tmp, ACVP_ML_DSA_MSG_BYTE_MAX);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (pub_key)");
                     free(tmp);
@@ -492,7 +492,7 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
                 json_object_set_string(r_gobj, "pk", (const char *)tmp);
-                memzero_s(tmp, ACVP_ML_DSA_TMP_BYTE_MAX);
+                memzero_s(tmp, ACVP_ML_DSA_MSG_BYTE_MAX);
                 free(tmp);
             }
             rv = acvp_ml_dsa_output_tc(ctx, alg_id, &stc, r_tobj);

@@ -245,10 +245,10 @@ int main(int argc, char **argv) {
             goto end;
         }
     } else {
-        /* Call the regsitration code for the given IUT */
+        /* Call the registration code for the given IUT */
         rv = iut_register_capabilities(ctx, &cfg);
         if (rv != ACVP_SUCCESS) {
-            printf("Failure occured while registering capabilities for given implementation\n");
+            printf("Failure occurred while registering capabilities for given implementation\n");
             goto end;
         }
     }
@@ -267,14 +267,14 @@ int main(int argc, char **argv) {
         char *reg = NULL;
         reg = acvp_get_current_registration(ctx, NULL);
         if (!reg) {
-            printf("Error occured while getting current registration.\n");
+            printf("Error occurred while getting current registration.\n");
             goto end;
         }
         if (cfg.save_to) {
             if (save_string_to_file((const char *)reg, (const char *)&cfg.save_file)) {
-                printf("Error occured while saving registration to file. Exiting...\n");
+                printf("Error occurred while saving registration to file. Exiting...\n");
             } else {
-                printf("Succesfully saved registration to given file. Exiting...\n");
+                printf("Successfully saved registration to given file. Exiting...\n");
             }
         } else {
             printf("%s\n", reg);

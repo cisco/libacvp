@@ -27,7 +27,7 @@
 #define TLS12_SEED_BUF_MAX (TLS12_BUF_MAX + TLS_EXT_MASTER_SECRET_CONST_SIZE)
 
 
-/* For simplicty, define as non-const; the OSSL_PARAM functions don't use const */
+/* For simplicity, define as non-const; the OSSL_PARAM functions don't use const */
 static char ssh_kdf_a[] = "A";
 static char ssh_kdf_b[] = "B";
 static char ssh_kdf_c[] = "C";

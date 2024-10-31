@@ -362,7 +362,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
         sig_iter = sig; /* d2i functions alter pointer */
         sig_obj = d2i_DSA_SIG(NULL, (const unsigned char **)&sig_iter, (long)sig_len);
         if (!sig_obj) {
-            printf("Error creating signature object neeed to retrieve output in ECDSA siggen\n");
+            printf("Error creating signature object needed to retrieve output in ECDSA siggen\n");
             goto err;
         }
         DSA_SIG_get0(sig_obj, &tmp_r, &tmp_s);

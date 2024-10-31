@@ -5030,11 +5030,15 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
                                                   JSON_Object *cap_obj,
                                                   ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
+    JSON_Value *temp_val = NULL;
+    JSON_Object *temp_obj = NULL;
     ACVP_RESULT result;
     const char *revision = NULL, *mode = NULL, *tmp_str = NULL;
     ACVP_ML_DSA_CAP *ml_dsa_cap = NULL;
     ACVP_SUB_ML_DSA alg = 0;
     ACVP_PARAM_LIST *sets = NULL;
+    ACVP_SL_LIST *lengths = NULL;
+
     if (!cap_entry) {
         goto err;
     }
@@ -5109,6 +5113,20 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
             break;
         default:
             goto err;
+        }
+
+        json_object_set_value(cap_obj, "messageLength", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "messageLength");
+        temp_val = json_value_init_object();
+        temp_obj = json_value_get_object(temp_val);
+        json_object_set_number(temp_obj, "min", ml_dsa_cap->msg_len.min);
+        json_object_set_number(temp_obj, "max", ml_dsa_cap->msg_len.max);
+        json_object_set_number(temp_obj, "increment", ml_dsa_cap->msg_len.increment);
+        json_array_append_value(temp_arr, temp_val);
+        lengths = ml_dsa_cap->msg_len.values;
+        while (lengths) {
+            json_array_append_number(temp_arr, lengths->length);
+            lengths = lengths->next;
         }
     }
 

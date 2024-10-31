@@ -55,7 +55,7 @@ extern "C"
  *        the logging for the level below it.
  *        Error level logging will only create output in case of failures.
  *        Warning level logging will create output for situations where the user may want to intervene,
- *        but are not neccessarily issues and running will continue.
+ *        but are not necessarily issues and running will continue.
  *        Status level logging is the default and will include high-level information about the progress
  *        of the test session and status of processing.
  *        Info level logging contains more info about network activity, metadata processing, and login.
@@ -106,18 +106,18 @@ typedef enum acvp_result {
                                   either be because parameters are not valid or because the library
                                   does not support something at the time */
     ACVP_CLEANUP_FAIL,       /**< Failure when cleaning up (e.g. freeing memory) after operations */
-    ACVP_KAT_DOWNLOAD_RETRY, /**< Does not neccessarily indicate an error, but that data requested
+    ACVP_KAT_DOWNLOAD_RETRY, /**< Does not necessarily indicate an error, but that data requested
                                   from server is not yet ready to be accessed */
     ACVP_INVALID_ARG,        /**< A provided argument or parameter is not valid for the given operation */
     ACVP_MISSING_ARG,        /**< A required argument or parameter is not provided/null/0 */
     ACVP_CRYPTO_MODULE_FAIL, /**< A non-zero return code was provided by the application callback 
-                                  for test case processin; this should indicate that the application
+                                  for test case processing; this should indicate that the application
                                   failed to process the test case*/
     ACVP_NO_CAP,             /**< A registered capability object for the given algorithm does not exist. This
                                   usually means an operation is being requested for an algorithm that is not yet
                                   registered */
     ACVP_MALFORMED_JSON,     /**< The given JSON is not properly formatted/readable JSON */
-    ACVP_JSON_ERR,           /**< Error occured attempting to parse JSON into data stuctures */
+    ACVP_JSON_ERR,           /**< Error occurred attempting to parse JSON into data stuctures */
     ACVP_TC_MISSING_DATA,    /**< Data is missing from test case JSON */
     ACVP_TC_INVALID_DATA,    /**< Test case JSON is formatted properly, but the data is bad, does not
                                   match the registration, or does not match the spec */
@@ -125,12 +125,12 @@ typedef enum acvp_result {
                                   server responses, files, etc */
     ACVP_CONVERT_DATA_ERR,   /**< Error converting data between hexidecimal and binary (either direction) */
     ACVP_DUP_CIPHER,         /**< The client is attempting to register an algorithm that has already been registered */
-    ACVP_TOTP_FAIL,          /**< A failure occured attempting to generate a TOTP */
+    ACVP_TOTP_FAIL,          /**< A failure occurred attempting to generate a TOTP */
     ACVP_CTX_NOT_EMPTY,      /**< Occurs specifically when an attempt is made to initialize a CTX that is already initialized */
     ACVP_JWT_MISSING,        /**< A JSON web token is missing from a file or from memory but was expected */
     ACVP_JWT_EXPIRED,        /**< The provided JWT was not accepted by the server because it is expired */
     ACVP_JWT_INVALID,        /**< A provided JSON web token is invalid due to its size, encoding, or contents */
-    ACVP_INTERNAL_ERR,       /**< An unexpected error occuring internally to libacvp */
+    ACVP_INTERNAL_ERR,       /**< An unexpected error occurring internally to libacvp */
     ACVP_RESULT_MAX
 } ACVP_RESULT;
 
@@ -464,7 +464,7 @@ typedef enum acvp_alg_type_ml_kem {
 
 /**
  * @enum ACVP_PREREQ_ALG
- * @brief This enum lists the prerequisities that are available
+ * @brief This enum lists the prerequisites that are available
  *        to the library during registration. Whereas an ACVP_CIPHER may
  *        specify a certain mode or key size, the prereqs are more
  *        generic.
@@ -502,7 +502,7 @@ typedef enum acvp_conformance_t {
  * @brief this enum lists revisions that may be claimed for ciphers alternative to the default ones
  *        used by libacvp. This may grow over time. Because one revision may apply to multiple
  *        algorithms, this list is universal and the library determines which ones revisions are
- *        allowed for which algorihms.
+ *        allowed for which algorithms.
  */
 typedef enum acvp_revision_t {
     ACVP_REVISION_DEFAULT = 0,
@@ -545,7 +545,7 @@ typedef enum acvp_test_disposition {
 } ACVP_TEST_DISPOSITION;
 
 /**
- * The following enumerators are used to track the capabiltiies that the application
+ * The following enumerators are used to track the capabilities that the application
  * registers with the library and are used in data fields for some test cases.
  */
 
@@ -666,7 +666,7 @@ typedef enum acvp_sym_cipher_ivgen_mode {
 
 /**
  * @enum ACVP_SYM_CIPH_DIR
- * @brief These are the algorithm direction suppported by libacvp. These are used in conjunction
+ * @brief These are the algorithm direction supported by libacvp. These are used in conjunction
  *        with ACVP_SYM_CIPH when registering the crypto module capabilities with libacvp.
  */
 typedef enum acvp_sym_cipher_direction {
@@ -1005,7 +1005,7 @@ typedef enum acvp_rsa_prim_keyformat {
  *        This data is passed between libacvp and the crypto module. libacvp will parse the test
  *        case parameters from the JSON encoded test vector, fill in this structure, and pass the
  *        struct to the crypto module via the handler that was registered with libacvp. The crypto
- *        module will then need to perform the crypto operation and fill in the remaining tems in
+ *        module will then need to perform the crypto operation and fill in the remaining items in
  *        the struct for the given test case. The struct is then passed back to libacvp, where it
  *        is then used to build the JSON encoded vector response.
 
@@ -1275,11 +1275,11 @@ typedef struct acvp_hash_tc_t {
     ACVP_HASH_TESTTYPE test_type; /**< KAT, MCT, VOT, or LDT */
     ACVP_HASH_EXPANSION_METHOD exp_method;  /**< LDT Expansion Technique  */
     unsigned char *msg; /**< Message input */
-    unsigned char *m1; /**< Mesage input #1
+    unsigned char *m1; /**< Message input #1
                             Provided when \ref ACVP_HASH_TC.test_type is MCT */
-    unsigned char *m2; /**< Mesage input #2
+    unsigned char *m2; /**< Message input #2
                             Provided when \ref ACVP_HASH_TC.test_type is MCT */
-    unsigned char *m3; /**< Mesage input #3
+    unsigned char *m3; /**< Message input #3
                             Provided when \ref ACVP_HASH_TC.test_type is MCT */
     unsigned int msg_len; /**< Length (in bytes) of...
                                \ref ACVP_HASH_TC.msg , \ref ACVP_HASH_TC.m1 ,
@@ -2624,7 +2624,8 @@ typedef struct acvp_lms_tc_t {
 /** @enum ACVP_ML_DSA_PARAM */
 typedef enum acvp_ml_dsa_param {
     ACVP_ML_DSA_PARAM_PARAMETER_SET = 1,
-    ACVP_ML_DSA_PARAM_DETERMINISTIC_MODE
+    ACVP_ML_DSA_PARAM_DETERMINISTIC_MODE,
+    ACVP_ML_DSA_PARAM_MSG_LENGTH
 } ACVP_ML_DSA_PARAM;
 
 /**
@@ -3044,10 +3045,10 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
 
 /**
  * @brief acvp_enable_drbg_length_cap() allows an application to register a DRBG capability
- *        length-based paramter.
+ *        length-based parameter.
  *
  *        This function should be used to register a length-based parameter for a DRBG capability.
- *        An example would be entropy, nonce, perso where a minimum, step, and maximum can be
+ *        An example would be entropy, nonce, perso - where a minimum, step, and maximum can be
  *        specified.
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
@@ -3057,7 +3058,7 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
  *        defined for different capabilities; e.g. different lengths can be supported with and
  *        without derivation function support. Groups must be used in a linear fashion (group 0
  *        must be defined before you can define group 1, group 1 before group 2, etc)
- * @param param ACVP_DRBG_PARM enum value specifying paramter. An example would be
+ * @param param ACVP_DRBG_PARM enum value specifying parameter. An example would be
  *        ACVP_DRBG_ENTROPY_LEN
  * @param min minimum value
  * @param step increment value
@@ -4513,7 +4514,7 @@ ACVP_RESULT acvp_cap_ml_dsa_enable(ACVP_CTX *ctx,
  * @brief acvp_cap_ml_dsa_set_parm() allows an application to specify operational
  *        parameters to be used for a given ML-DSA alg during a test session with the ACVP
  *        server. This function should be called to enable crypto capabilities for ML-DSA
- *        capabilities that will be tested by the ACVP server. This includes KEYGEN and KEYVER.
+ *        capabilities that will be tested by the ACVP server.
  *
  *        This function may be called multiple times to specify more than one crypto parameter
  *        value for the ML-DSA algorithm. The ACVP_CIPHER value passed to this function should
@@ -4532,17 +4533,34 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
                                   ACVP_CIPHER cipher,
                                   ACVP_ML_DSA_PARAM param, int value);
 
+
 /**
- * @brief acvp_enable_prereq_cap() allows an application to specify a prerequisite for a cipher
- *        capability that was previously registered.
+ * @brief acvp_cap_ml_dsa_set_domain() allows an application to specify operational
+ *        parameters to be used for a given ML-DSA alg during a test session with the ACVP
+ *        server. This function should be called to enable crypto capabilities for ML-DSA
+ *        capabilities that will be tested by the ACVP server.
+ *
+ *        This function may be called multiple times to specify more than one crypto parameter
+ *        value for the ML-DSA algorithm. The ACVP_CIPHER value passed to this function should
+ *        already have been setup by invoking acvp_cap_ml_dsa_enable().
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
- * @param cipher ACVP_CIPHER enum value identifying the crypto capability that has a prerequisite
- * @param pre_req_cap ACVP_PREREQ_ALG enum identifying the prerequisite
- * @param value value for specified prerequisite
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param param ACVP_ML_DSA_PARAM enum value identifying the algorithm parameter that is being
+ *        specified.
+ * @param min Minumum supported value for the corresponding parameter
+ * @param max Maximum supported value for the corresponding parameter
+ * @param increment Increment value supported
  *
  * @return ACVP_RESULT
  */
+ACVP_RESULT acvp_cap_ml_dsa_set_domain(ACVP_CTX *ctx,
+                                       ACVP_CIPHER cipher,
+                                       ACVP_ML_DSA_PARAM param,
+                                       int min,
+                                       int max,
+                                       int increment);
+
 
 /**
  * @brief acvp_cap_ml_kem_enable() should be used to enable ML-KEM capabilities. Specific modes and
@@ -4625,7 +4643,7 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
                                      ACVP_LOG_LVL level);
 
 /**
- * @brief acvp_free_test_session() releases the memory associated withan ACVP_CTX. This function
+ * @brief acvp_free_test_session() releases the memory associated with an ACVP_CTX. This function
  *        will free an ACVP_CTX. Failure to invoke this function will result in a memory leak in
  *        the application layer. This function should be invoked after a test session has completed
  *        and a reference to the context is no longer needed.
@@ -4851,7 +4869,7 @@ ACVP_RESULT acvp_set_registration_file(ACVP_CTX *ctx, const char *json_filename)
 /**
  * @brief acvp_get_current_registration returns a string form of the currently registered set of capabilities. If a test
  * session has already begun it will use the session's submitted registration. If it has not yet begun, only the capabilities
- * registered thus far will be returrned.
+ * registered thus far will be returned.
  *
  * @param ctx The ctx to retrieve registration from
  * @param len An optional pointer to an integer for saving the length of the returned string
@@ -4947,7 +4965,7 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param request_filename File containing the session info created by libacvp
- * @param save_filename OPTIONAL arugment indicated a file the server response can be saved to.
+ * @param save_filename OPTIONAL argument indicated a file the server response can be saved to.
  *        Leave NULL if not applicable
  *
  * @return ACVP_RESULT
@@ -5020,7 +5038,7 @@ const char *acvp_version(void);
 /**
  * @brief acvp_protocol_version() fetch the protocol version string
  *
- * @return (char *) protocol version, formated like: 0.5
+ * @return (char *) protocol version, formatted like: 0.5
  */
 const char *acvp_protocol_version(void);
 

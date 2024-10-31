@@ -590,7 +590,7 @@
                                                                         actual IV is a subset (up to 16 bytes).
                                                                         512 bits, 64 bytes */
 #define ACVP_KDF135_SSH_STR_OUT_MAX (ACVP_KDF135_SSH_IKEY_MAX * 2) /**< 128 characters */
-#define ACVP_KDF135_SSH_STR_IN_MAX 4096                            /**< 4096 characters, needs to accomodate large shared_secret (K) */
+#define ACVP_KDF135_SSH_STR_IN_MAX 4096                            /**< 4096 characters, needs to accommodate large shared_secret (K) */
 
 /**
  * Accepted length ranges for KDF135_SRTP.
@@ -922,13 +922,13 @@
 #define ACVP_KDA_Z_STR_MAX (ACVP_KDA_Z_BIT_MAX >> 2)
 #define ACVP_KDA_Z_BYTE_MAX (ACVP_KDA_Z_BIT_MAX >> 3)
 
-#define ACVP_LMS_TMP_MAX 65336 //arbitrary
+#define ACVP_LMS_TMP_MAX 65536 //arbitrary
 
-#define ACVP_ML_DSA_TMP_BIT_MAX 65336 //arbitrary
-#define ACVP_ML_DSA_TMP_STR_MAX (ACVP_ML_DSA_TMP_BIT_MAX >> 2)
-#define ACVP_ML_DSA_TMP_BYTE_MAX (ACVP_ML_DSA_TMP_BIT_MAX >> 3)
+#define ACVP_ML_DSA_MSG_BIT_MAX 65536
+#define ACVP_ML_DSA_MSG_STR_MAX (ACVP_ML_DSA_MSG_BIT_MAX >> 2)
+#define ACVP_ML_DSA_MSG_BYTE_MAX (ACVP_ML_DSA_MSG_BIT_MAX >> 3)
 
-#define ACVP_ML_KEM_TMP_BIT_MAX 65336 //arbitrary
+#define ACVP_ML_KEM_TMP_BIT_MAX 65536 //arbitrary
 #define ACVP_ML_KEM_TMP_STR_MAX (ACVP_ML_KEM_TMP_BIT_MAX >> 2)
 #define ACVP_ML_KEM_TMP_BYTE_MAX (ACVP_ML_KEM_TMP_BIT_MAX >> 3)
 
@@ -1655,6 +1655,7 @@ typedef struct acvp_ml_dsa_capability_t {
     ACVP_CIPHER cipher;
     ACVP_PARAM_LIST *param_sets;
     ACVP_ML_DSA_DETERMINISTIC_MODE deterministic; /* For siggen only */
+    ACVP_JSON_DOMAIN_OBJ msg_len;
 } ACVP_ML_DSA_CAP;
 
 typedef struct acvp_ml_kem_capability_t {
@@ -1883,7 +1884,7 @@ struct acvp_ctx_t {
 
     char *json_filename;    /* filename of registration JSON */
     int use_json;           /* flag to indicate a JSON file is being used for registration */
-    int is_sample;          /* flag to idicate that we are requesting sample vector responses */
+    int is_sample;          /* flag to indicate that we are requesting sample vector responses */
     char *vector_req_file;  /* filename to use to store vector request JSON */
     int vector_req;         /* flag to indicate we are storing vector request JSON in a file */
     int vector_rsp;         /* flag to indicate we are storing vector responses JSON in a file */

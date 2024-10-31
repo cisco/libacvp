@@ -185,7 +185,7 @@ static const unsigned char sanity_hash[] = { 0x13, 0x80, 0x22, 0xF7, 0xF3, 0xC6,
                                              0xF0, 0xAA, 0x04, 0x2A };
 
 /*
- * This performs a quick digest to make sure the FIPS provider is running properly. Othewise, we
+ * This performs a quick digest to make sure the FIPS provider is running properly. Otherwise, we
  * will get a vague error trying to perform some unrelated operation later on. The return code is
  *  the biggest indicator, but we might as well check for correctness too.
  */

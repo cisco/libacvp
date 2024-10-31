@@ -277,7 +277,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         /* Finally, extract R and S from signature */
         sig_obj = d2i_ECDSA_SIG(NULL, (const unsigned char **)&sig_iter, (long)sig_len);
         if (!sig_obj) {
-            printf("Error creating signature object neeed to retrieve output in ECDSA siggen\n");
+            printf("Error creating signature object needed to retrieve output in ECDSA siggen\n");
             goto err;
         }
         out_r = ECDSA_SIG_get0_r(sig_obj);

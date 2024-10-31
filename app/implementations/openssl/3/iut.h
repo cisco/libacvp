@@ -82,7 +82,7 @@ void app_rsa_cleanup(void);
 void app_ecdsa_cleanup(void);
 void app_eddsa_cleanup(void);
 
-/* Registration APIs for differenet OpenSSL providers */
+/* Registration APIs for different OpenSSL providers */
 ACVP_RESULT register_capabilities_fp_30X(ACVP_CTX *ctx, APP_CONFIG *cfg);
 ACVP_RESULT register_capabilities_fp_312(ACVP_CTX *ctx, APP_CONFIG *cfg);
 ACVP_RESULT register_capabilities_non_fips(ACVP_CTX *ctx, APP_CONFIG *cfg);
