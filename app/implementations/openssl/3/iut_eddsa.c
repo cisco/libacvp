@@ -69,7 +69,7 @@ int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
         return 1;
     }
 
-    /* Key operations and signature operations for OpenSSL EDDSA use different string identifers */
+    /* Key operations and signature operations for OpenSSL EDDSA use different string identifiers */
     instance = get_ed_instance_param(tc->curve, tc->use_prehash, tc->context ? 1 : 0);
     if (!instance) {
         printf("Error getting instance param for EDDSA\n");

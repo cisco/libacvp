@@ -306,7 +306,7 @@ or disabling certain features at build time, so please make sure libacvp and acv
 built and run with the same versions of each library.
 
 `Can I redownload vector sets from a previously created session?`
-Yes. running acvp_app with the --resume_session AND --vector_req options will redownload
+Yes. running acvp_app with the --resume_session AND --vector_req options will re-download
 those vector sets to the given file without processing or uploading anything. See the app
 help section for more details about these commands.
 

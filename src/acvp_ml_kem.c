@@ -33,7 +33,7 @@ static ACVP_RESULT acvp_ml_kem_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         return ACVP_INTERNAL_ERR;
     }
 
-    tmp = calloc(ACVP_ML_KEM_TMP_BYTE_MAX + 1, sizeof(char));
+    tmp = calloc(ACVP_ML_KEM_TMP_STR_MAX + 1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Error allocating memory to output ML-KEM test case");
         rv = ACVP_MALLOC_FAIL;
@@ -42,16 +42,16 @@ static ACVP_RESULT acvp_ml_kem_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
 
     switch (mode) {
     case ACVP_SUB_ML_KEM_KEYGEN:
-        memzero_s(tmp, ACVP_ML_KEM_TMP_BYTE_MAX);
-        rv = acvp_bin_to_hexstr(stc->ek, stc->ek_len, tmp, ACVP_ML_KEM_TMP_BYTE_MAX);
+        memzero_s(tmp, ACVP_ML_KEM_TMP_STR_MAX);
+        rv = acvp_bin_to_hexstr(stc->ek, stc->ek_len, tmp, ACVP_ML_KEM_TMP_STR_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (ek)");
             goto end;
         }
         json_object_set_string(tc_rsp, "ek", tmp);
 
-        memzero_s(tmp, ACVP_ML_KEM_TMP_BYTE_MAX);
-        rv = acvp_bin_to_hexstr(stc->dk, stc->dk_len, tmp, ACVP_ML_KEM_TMP_BYTE_MAX);
+        memzero_s(tmp, ACVP_ML_KEM_TMP_STR_MAX);
+        rv = acvp_bin_to_hexstr(stc->dk, stc->dk_len, tmp, ACVP_ML_KEM_TMP_STR_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (dk)");
             goto end;
@@ -60,16 +60,16 @@ static ACVP_RESULT acvp_ml_kem_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         break;
     case ACVP_SUB_ML_KEM_XCAP:
         if (stc->type == ACVP_ML_KEM_TESTTYPE_AFT) {
-            memzero_s(tmp, ACVP_ML_KEM_TMP_BYTE_MAX);
-            rv = acvp_bin_to_hexstr(stc->c, stc->c_len, tmp, ACVP_ML_KEM_TMP_BYTE_MAX);
+            memzero_s(tmp, ACVP_ML_KEM_TMP_STR_MAX);
+            rv = acvp_bin_to_hexstr(stc->c, stc->c_len, tmp, ACVP_ML_KEM_TMP_STR_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (c)");
                 goto end;
             }
             json_object_set_string(tc_rsp, "c", tmp);
         }
-        memzero_s(tmp, ACVP_ML_KEM_TMP_BYTE_MAX);
-        rv = acvp_bin_to_hexstr(stc->k, stc->k_len, tmp, ACVP_ML_KEM_TMP_BYTE_MAX);
+        memzero_s(tmp, ACVP_ML_KEM_TMP_STR_MAX);
+        rv = acvp_bin_to_hexstr(stc->k, stc->k_len, tmp, ACVP_ML_KEM_TMP_STR_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (k)");
             goto end;

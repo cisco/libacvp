@@ -10146,8 +10146,71 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
         }
         ml_dsa_cap->deterministic = value;
         return ACVP_SUCCESS;
+    case ACVP_ML_DSA_PARAM_MSG_LENGTH:
+        if (value < 8 || value > ACVP_ML_DSA_MSG_BIT_MAX || value % 8 != 0) {
+            ACVP_LOG_ERR("Invalid length for ML-DSA message length (Min: 8, Max: %d)\n", ACVP_ML_DSA_MSG_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+        acvp_append_sl_list(&ml_dsa_cap->msg_len.values, value);
+        break;
     default:
         ACVP_LOG_ERR("Invalid parameter provided for ML-DSA");
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_ml_dsa_set_domain(ACVP_CTX *ctx,
+                                  ACVP_CIPHER cipher,
+                                  ACVP_ML_DSA_PARAM param,
+                                  int min,
+                                  int max,
+                                  int increment) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_ML_DSA_CAP *ml_dsa_cap;
+    ACVP_SUB_ML_DSA alg;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+    alg = acvp_get_ml_dsa_alg(cipher);
+
+    switch (alg) {
+    case ACVP_SUB_ML_DSA_SIGGEN:
+        ml_dsa_cap = cap->cap.ml_dsa_siggen_cap;
+        break;
+    case ACVP_SUB_ML_DSA_KEYGEN:
+    case ACVP_SUB_ML_DSA_SIGVER:
+    default:
+        ACVP_LOG_ERR("Invalid cipher provided for setting ML-DSA domain (Domain only supports siggen)");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (validate_domain_range(min, max, increment) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Invalid domain values provided for ML-DSA\n");
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (param) {
+    case ACVP_ML_DSA_PARAM_MSG_LENGTH:
+        if (min < 8 || max > ACVP_ML_DSA_MSG_BIT_MAX || increment % 8 != 0) {
+            ACVP_LOG_ERR("Invalid domain provided for ML-DSA message length (Min: 8, Max: %d, Increment: 8)\n", ACVP_ML_DSA_MSG_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+        ml_dsa_cap->msg_len.min = min;
+        ml_dsa_cap->msg_len.max = max;
+        ml_dsa_cap->msg_len.increment = increment;
+        break;
+    case ACVP_ML_DSA_PARAM_PARAMETER_SET:
+    case ACVP_ML_DSA_PARAM_DETERMINISTIC_MODE:
+    default:
+        ACVP_LOG_ERR("Invalid parameter provided for ML-DSA domain");
         return ACVP_INVALID_ARG;
     }
 

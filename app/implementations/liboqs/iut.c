@@ -73,7 +73,9 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_87);
         CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, ACVP_ML_DSA_PARAM_DETERMINISTIC_MODE, ACVP_ML_DSA_DETERMINISTIC_BOTH);
+        rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, ACVP_ML_DSA_PARAM_DETERMINISTIC_MODE, ACVP_ML_DSA_DETERMINISTIC_NO);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_cap_ml_dsa_set_domain(ctx, ACVP_ML_DSA_SIGGEN, ACVP_ML_DSA_PARAM_MSG_LENGTH, 8, 65536, 8);
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_SIGVER, &app_ml_dsa_handler);
         CHECK_ENABLE_CAP_RV(rv);

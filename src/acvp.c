@@ -911,6 +911,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 break;
             case ACVP_ML_DSA_SIGGEN_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.ml_dsa_siggen_cap->param_sets);
+                acvp_cap_free_domain(&cap_entry->cap.ml_dsa_siggen_cap->msg_len);
                 free(cap_entry->cap.ml_dsa_siggen_cap);
                 break;
             case ACVP_ML_DSA_SIGVER_TYPE:
@@ -1173,7 +1174,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
 
         /* 
          * Convert the JSON from a fully qualified to a value that can be 
-         * added to the file. Kind of klumsy, but it works.
+         * added to the file. Kind of clumsy, but it works.
          */
         kat_array = json_value_get_array(ctx->kat_resp);
         kat_val = json_array_get_value(kat_array, 1);
@@ -1297,7 +1298,7 @@ ACVP_RESULT acvp_run_vectors_from_file_offline(ACVP_CTX *ctx, const char *req_fi
 
         /* 
          * Convert the JSON from a fully qualified to a value that can be 
-         * added to the file. Kind of klumsy, but it works.
+         * added to the file. Kind of clumsy, but it works.
          */
         kat_array = json_value_get_array(ctx->kat_resp);
         kat_val = json_array_get_value(kat_array, 1);
@@ -2377,7 +2378,7 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
 
         rv = ctx->totp_cb(&token, ACVP_TOTP_TOKEN_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Error occured in application callback while generating TOTP");
+            ACVP_LOG_ERR("Error occurred in application callback while generating TOTP");
             rv = ACVP_TOTP_FAIL;
             goto err;
         }
@@ -3290,7 +3291,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
     ACVP_STRING_LIST *failedModeList = NULL;
     /*
      * Maintains a list of the vector set URLs we have already looked up,
-     * so we don't redownload failed vector sets every time a retry is done
+     * so we don't re-download failed vector sets every time a retry is done
      */
      ACVP_STRING_LIST *failedVsList = NULL;
 
@@ -3361,7 +3362,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                     break;
                 }
                 if (!acvp_lookup_str_list(&failedVsList, vsurl)) {
-                    //append the vsurl to the list so we dont download/check same one twice
+                    //append the vs url to the list so we dont download/check same one twice
                     rv = acvp_append_str_list(&failedVsList, vsurl);
                     if (rv != ACVP_SUCCESS) {
                         ACVP_LOG_ERR("Error appending failed algorithm name to list, skipping...");
@@ -3450,7 +3451,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
              * If any tests are incomplete, retry, even if some have failed
              */
             acvp_list_failing_algorithms(ctx, &failedAlgList, &failedModeList);
-            ACVP_LOG_STATUS("TestSession results incomplete...");
+            ACVP_LOG_STATUS("Test session results incomplete...");
             if (acvp_retry_handler(ctx, &retry_interval, &time_waited_so_far, 1, ACVP_WAITING_FOR_RESULTS) != ACVP_KAT_DOWNLOAD_RETRY) {
                 ACVP_LOG_STATUS("Maximum wait time with server reached! (Max: %d seconds)", ACVP_MAX_WAIT_TIME);
                 rv = ACVP_TRANSPORT_FAIL;
@@ -3658,7 +3659,7 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
 
     /*
      * Check the total length of our path, prefix, and total concatenated filename. 
-     * Add 6 to checks for .json and the _ beteween prefix and session ID
+     * Add 6 to checks for .json and the _ between prefix and session ID
      * If any lengths are too long, just use default prefix and location
      */
     if (path) {

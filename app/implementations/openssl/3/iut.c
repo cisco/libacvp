@@ -71,7 +71,7 @@ ACVP_RESULT iut_setup(APP_CONFIG *cfg) {
         /* Run a quick sanity check to determine that the FIPS provider is functioning properly */
         rv = fips_sanity_check();
         if (rv != ACVP_SUCCESS) {
-            printf("Error occured when testing FIPS at startup (rv = %d). Please verify the FIPS provider is\n", rv);
+            printf("Error occurred when testing FIPS at startup (rv = %d). Please verify the FIPS provider is\n", rv);
             printf("properly installed and configured. Exiting...\n\n");
             return 1;
         }

@@ -98,13 +98,13 @@ static void print_usage(int code) {
     printf("Perform a FIPS Validation for this testSession:\n");
     printf("      --fips_validation <full metadata file>\n");
     printf("\n");
-    printf("To specify a cert number associated with all prerequistes:\n");
+    printf("To specify a cert number associated with all prerequisites:\n");
     printf("      --certnum <string>\n");
     printf("\n");
     printf("To register manually using a JSON file instead of application settings use:\n");
     printf("      --manual_registration <file>\n");
     printf("\n");
-    printf("To retreive and output the JSON form of the currently registered capabilities:\n");
+    printf("To retrieve and output the JSON form of the currently registered capabilities:\n");
     printf("      --get_registration\n");
     printf("\n");
     printf("To register and save the vectors to file:\n");
@@ -124,7 +124,7 @@ static void print_usage(int code) {
     printf("\n");
     printf("Note: --resume_session and --get_results use the test session info file created automatically by the library as input\n");
     printf("\n");
-    printf("To resume a previous test session that was interupted:\n");
+    printf("To resume a previous test session that was interrupted:\n");
     printf("      --resume_session <session_file>\n");
     printf("            Note: this does not save your arguments from your initial run and you MUST include them\n");
     printf("            again (e.x. --aes,  --vector_req and --fips_validation)\n");

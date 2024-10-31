@@ -30,7 +30,7 @@ void iut_ml_kem_cleanup(void) {
  * This function loops through the rng_buffer buffer and returns it as RNG; once at the end
  * of the buffer, it goes back to the beginning
  */
-void oqs_rng_callback_acvp(uint8_t *random_array, size_t bytes_to_read) {
+static void oqs_rng_callback_acvp(uint8_t *random_array, size_t bytes_to_read) {
     int remaining_bytes = bytes_to_read;
     int bytes_sent = 0;
     int bytes_going_this_round = 0;
@@ -53,7 +53,6 @@ void oqs_rng_callback_acvp(uint8_t *random_array, size_t bytes_to_read) {
     }
 }
 
- 
 int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
     ACVP_ML_KEM_TC *tc =NULL;
     int rv = ACVP_CRYPTO_MODULE_FAIL;
