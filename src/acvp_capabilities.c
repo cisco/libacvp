@@ -736,7 +736,27 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
             goto err;
         }
         break;
-
+    case ACVP_SLH_DSA_KEYGEN_TYPE:
+        cap_entry->cap.slh_dsa_keygen_cap = calloc(1, sizeof(ACVP_SLH_DSA_CAP));
+        if (!cap_entry->cap.slh_dsa_keygen_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+    case ACVP_SLH_DSA_SIGGEN_TYPE:
+        cap_entry->cap.slh_dsa_siggen_cap = calloc(1, sizeof(ACVP_SLH_DSA_CAP));
+        if (!cap_entry->cap.slh_dsa_siggen_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+    case ACVP_SLH_DSA_SIGVER_TYPE:
+        cap_entry->cap.slh_dsa_sigver_cap = calloc(1, sizeof(ACVP_SLH_DSA_CAP));
+        if (!cap_entry->cap.slh_dsa_sigver_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
     case ACVP_KDF135_TPM_TYPE:
     default:
         ACVP_LOG_ERR("Invalid parameter 'type'");
@@ -10140,7 +10160,7 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Deterministic property for ML-DSA can only be set for siggen");
             return ACVP_INVALID_ARG;
         }
-        if (value < ACVP_ML_DSA_DETERMINISTIC_NO|| value > ACVP_ML_DSA_DETERMINISTIC_BOTH) {
+        if (value < ACVP_DETERMINISTIC_NO|| value > ACVP_DETERMINISTIC_BOTH) {
             ACVP_LOG_ERR("Invalid value provided for ML-DSA deterministic mode");
             return ACVP_INVALID_ARG;
         }
@@ -10301,6 +10321,231 @@ ACVP_RESULT acvp_cap_ml_kem_set_parm(ACVP_CTX *ctx,
         return acvp_append_param_list(&ml_kem_cap->functions, value);
     default:
         ACVP_LOG_ERR("Invalid parameter provided for ML-KEM");
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_slh_dsa_enable(ACVP_CTX *ctx,
+                                ACVP_CIPHER cipher,
+                                int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_RESULT result = ACVP_NO_CAP;
+    ACVP_SUB_SLH_DSA alg;
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+        return ACVP_INVALID_ARG;
+    }
+
+    alg = acvp_get_slh_dsa_alg(cipher);
+    if (alg == 0) {
+        ACVP_LOG_ERR("Invalid cipher value");
+        return ACVP_INVALID_ARG;
+    }
+    switch (alg) {
+    case ACVP_SUB_SLH_DSA_KEYGEN:
+        result = acvp_cap_list_append(ctx, ACVP_SLH_DSA_KEYGEN_TYPE, cipher, crypto_handler);
+        break;
+    case ACVP_SUB_SLH_DSA_SIGGEN:
+        result = acvp_cap_list_append(ctx, ACVP_SLH_DSA_SIGGEN_TYPE, cipher, crypto_handler);
+        break;
+    case ACVP_SUB_SLH_DSA_SIGVER:
+        result = acvp_cap_list_append(ctx, ACVP_SLH_DSA_SIGVER_TYPE, cipher, crypto_handler);
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher provided to acvp_cap_slh_dsa_enable()");
+        break;
+    }
+
+    if (result != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Error occurred while enabling SLH-DSA algorithm. rv: %d", result);
+    }
+
+    return result;
+}
+
+ACVP_RESULT acvp_cap_slh_dsa_set_parm(ACVP_CTX *ctx,
+                                  ACVP_CIPHER cipher,
+                                  int group,
+                                  ACVP_SLH_DSA_PARAM param, int value) {
+    ACVP_CAPS_LIST *cap = NULL;
+    ACVP_SLH_DSA_CAP *slh_dsa_cap = NULL;
+    ACVP_SLH_DSA_CAP_GROUP *group_obj = NULL;
+    ACVP_SUB_SLH_DSA alg;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+    alg = acvp_get_slh_dsa_alg(cipher);
+    switch (alg) {
+    case ACVP_SUB_SLH_DSA_KEYGEN:
+        if (group != 0) {
+            ACVP_LOG_ERR("Group must be 0 for SLH-DSA keygen");
+            return ACVP_INVALID_ARG;
+        }
+        slh_dsa_cap = cap->cap.slh_dsa_keygen_cap;
+        break;
+    case ACVP_SUB_SLH_DSA_SIGGEN:
+        slh_dsa_cap = cap->cap.slh_dsa_siggen_cap;
+        break;
+    case ACVP_SUB_SLH_DSA_SIGVER:
+        slh_dsa_cap = cap->cap.slh_dsa_sigver_cap;
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher provided for setting SLH-DSA paramater");
+        return ACVP_INVALID_ARG;
+    }
+
+    /* Check if group already exists, make one if not */
+    if (!slh_dsa_cap->cap_group) {
+        slh_dsa_cap->cap_group = calloc(1, sizeof(ACVP_SLH_DSA_CAP_GROUP));
+        if (!slh_dsa_cap->cap_group) {
+            ACVP_LOG_ERR("Malloc error registering SLH-DSA capability");
+            return ACVP_MALLOC_FAIL;
+        }
+        slh_dsa_cap->cap_group->group_id = group;
+        group_obj = slh_dsa_cap->cap_group;
+    } else {
+        group_obj = acvp_locate_slh_dsa_cap_group(slh_dsa_cap, group);
+        if (!group_obj) {
+            group_obj = slh_dsa_cap->cap_group;
+            while (group_obj->next) {
+                group_obj = group_obj->next;
+            }
+            group_obj->next = calloc(1, sizeof(ACVP_SLH_DSA_CAP_GROUP));
+            if (!group_obj->next) {
+                ACVP_LOG_ERR("Malloc error registering SLH-DSA capability");
+                return ACVP_MALLOC_FAIL;
+            }
+            group_obj = group_obj->next;
+            group_obj->group_id = group;
+        }
+    }
+
+    switch (param) {
+    case ACVP_SLH_DSA_PARAM_PARAMETER_SET:
+        if (value <= ACVP_SLH_DSA_PARAM_SET_NONE || value >= ACVP_SLH_DSA_PARAM_SET_MAX) {
+            ACVP_LOG_ERR("Invalid SLH-DSA parameter set provided");
+            return ACVP_INVALID_ARG;
+        }
+        return acvp_append_param_list(&group_obj->param_sets, value);
+    case ACVP_SLH_DSA_PARAM_DETERMINISTIC_MODE:
+        if (group != 0) {
+            ACVP_LOG_INFO("Note: group number specified for SLH-DSA deterministic mode, but does not apply at group level - ignoring...");
+        }
+        if (alg != ACVP_SUB_SLH_DSA_SIGGEN) {
+            ACVP_LOG_ERR("Deterministic property for SLH-DSA can only be set for siggen");
+            return ACVP_INVALID_ARG;
+        }
+        if (value < ACVP_DETERMINISTIC_NO|| value > ACVP_DETERMINISTIC_BOTH) {
+            ACVP_LOG_ERR("Invalid value provided for SLH-DSA deterministic mode");
+            return ACVP_INVALID_ARG;
+        }
+        slh_dsa_cap->deterministic = value;
+        return ACVP_SUCCESS;
+    case ACVP_SLH_DSA_PARAM_MSG_LENGTH:
+        if (value < 8 || value > ACVP_SLH_DSA_MSG_BIT_MAX || value % 8 != 0) {
+            ACVP_LOG_ERR("Invalid length for SLH-DSA message length (Min: 8, Max: %d)\n", ACVP_SLH_DSA_MSG_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+        acvp_append_sl_list(&group_obj->msg_len.values, value);
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid parameter provided for SLH-DSA");
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_slh_dsa_set_domain(ACVP_CTX *ctx,
+                                  ACVP_CIPHER cipher,
+                                  int group,
+                                  ACVP_SLH_DSA_PARAM param,
+                                  int min,
+                                  int max,
+                                  int increment) {
+    ACVP_CAPS_LIST *cap = NULL;
+    ACVP_SLH_DSA_CAP *slh_dsa_cap = NULL;
+    ACVP_SLH_DSA_CAP_GROUP *group_obj = NULL;
+    ACVP_SUB_SLH_DSA alg;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+    alg = acvp_get_slh_dsa_alg(cipher);
+
+    switch (alg) {
+    case ACVP_SUB_SLH_DSA_SIGGEN:
+        slh_dsa_cap = cap->cap.slh_dsa_siggen_cap;
+        break;
+    case ACVP_SUB_SLH_DSA_SIGVER:
+        slh_dsa_cap = cap->cap.slh_dsa_sigver_cap;
+        break;
+    case ACVP_SUB_SLH_DSA_KEYGEN:
+    default:
+        ACVP_LOG_ERR("Invalid cipher provided for setting SLH-DSA domain");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (validate_domain_range(min, max, increment) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Invalid domain values provided for SLH-DSA\n");
+        return ACVP_INVALID_ARG;
+    }
+
+    /* Check if group already exists, make one if not */
+    if (!slh_dsa_cap->cap_group) {
+        slh_dsa_cap->cap_group = calloc(1, sizeof(ACVP_SLH_DSA_CAP_GROUP));
+        if (!slh_dsa_cap->cap_group) {
+            ACVP_LOG_ERR("Malloc error registering SLH-DSA capability");
+            return ACVP_MALLOC_FAIL;
+        }
+        slh_dsa_cap->cap_group->group_id = group;
+        group_obj = slh_dsa_cap->cap_group;
+    } else {
+        group_obj = acvp_locate_slh_dsa_cap_group(slh_dsa_cap, group);
+        if (!group_obj) {
+            group_obj = slh_dsa_cap->cap_group;
+            while (group_obj->next) {
+                group_obj = group_obj->next;
+            }
+            group_obj->next = calloc(1, sizeof(ACVP_SLH_DSA_CAP_GROUP));
+            if (!group_obj->next) {
+                ACVP_LOG_ERR("Malloc error registering SLH-DSA capability");
+                return ACVP_MALLOC_FAIL;
+            }
+            group_obj = group_obj->next;
+            group_obj->group_id = group;
+        }
+    }
+
+    switch (param) {
+    case ACVP_SLH_DSA_PARAM_MSG_LENGTH:
+        if (min < 8 || max > ACVP_SLH_DSA_MSG_BIT_MAX || increment % 8 != 0) {
+            ACVP_LOG_ERR("Invalid domain provided for SLH-DSA message length (Min: 8, Max: %d, Increment: 8)\n", ACVP_SLH_DSA_MSG_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+        group_obj->msg_len.min = min;
+        group_obj->msg_len.max = max;
+        group_obj->msg_len.increment = increment;
+        break;
+    case ACVP_SLH_DSA_PARAM_PARAMETER_SET:
+    case ACVP_SLH_DSA_PARAM_DETERMINISTIC_MODE:
+    default:
+        ACVP_LOG_ERR("Invalid parameter provided for SLH-DSA domain");
         return ACVP_INVALID_ARG;
     }
 

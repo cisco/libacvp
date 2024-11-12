@@ -83,6 +83,7 @@ typedef struct app_config {
     int safe_primes;
     int lms;
     int ml_dsa; int ml_kem;
+    int slh_dsa;
     int testall; /* So the app can check whether the user indicated to test all possible algorithms */
 } APP_CONFIG;
 

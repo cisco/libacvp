@@ -909,6 +909,46 @@ const char *acvp_lookup_ml_kem_param_set_str(ACVP_ML_KEM_PARAM_SET param_set) {
     return NULL;
 }
 
+#define ACVP_SLH_DSA_PARAM_SET_STR_MAX 18
+static struct acvp_enum_string_pair slh_dsa_param_set_tbl[] = {
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_128S, "SLH-DSA-SHA2-128s"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_128F, "SLH-DSA-SHA2-128f"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_192S, "SLH-DSA-SHA2-192s"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_192F, "SLH-DSA-SHA2-192f"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_256S, "SLH-DSA-SHA2-256s"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_256F, "SLH-DSA-SHA2-256f"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_128S, "SLH-DSA-SHAKE-128s"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_128F, "SLH-DSA-SHAKE-128f"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_192S, "SLH-DSA-SHAKE-192s"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_192F, "SLH-DSA-SHAKE-192f"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_256S, "SLH-DSA-SHAKE-256s"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_256F, "SLH-DSA-SHAKE-256f"}
+
+};
+
+static int slh_dsa_param_set_tbl_len = sizeof(slh_dsa_param_set_tbl) / sizeof(struct acvp_enum_string_pair);
+
+ACVP_SLH_DSA_PARAM_SET acvp_lookup_slh_dsa_param_set(const char *str) {
+    int diff = 1, i = 0;
+    for (i = 0; i < slh_dsa_param_set_tbl_len; i++) {
+        strcmp_s(slh_dsa_param_set_tbl[i].string, strnlen_s(slh_dsa_param_set_tbl[i].string, ACVP_SLH_DSA_PARAM_SET_STR_MAX), str, &diff);
+        if (!diff) {
+            return slh_dsa_param_set_tbl[i].enum_value;
+        }
+    }
+    return 0;
+}
+
+const char *acvp_lookup_slh_dsa_param_set_str(ACVP_SLH_DSA_PARAM_SET param_set) {
+    int i = 0;
+    for (i = 0; i < slh_dsa_param_set_tbl_len; i++) {
+        if (param_set == slh_dsa_param_set_tbl[i].enum_value) {
+            return slh_dsa_param_set_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
 /* This seems too small to dictate having its own table/function, but future expandability may be useful */
 static struct acvp_enum_string_pair rsa_key_format_tbl[] = {
     { ACVP_RSA_KEY_FORMAT_STANDARD, "standard" },
@@ -1119,6 +1159,17 @@ ACVP_DRBG_CAP_GROUP *acvp_create_drbg_group(ACVP_DRBG_MODE_LIST *mode, int group
     }
 
     return grp;
+}
+
+ACVP_SLH_DSA_CAP_GROUP *acvp_locate_slh_dsa_cap_group(ACVP_SLH_DSA_CAP *cap, int id) {
+    ACVP_SLH_DSA_CAP_GROUP *group = cap->cap_group;
+    while (group) {
+        if (group->group_id == id) {
+            return group;
+        }
+        group = group->next;
+    }
+    return NULL;
 }
 
 /*

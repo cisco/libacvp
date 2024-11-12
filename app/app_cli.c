@@ -78,6 +78,7 @@ static void print_usage(int code) {
     printf("      --lms\n");
     printf("      --ml_dsa\n");
     printf("      --ml_kem\n");
+    printf("      --slh_dsa\n");
     printf("\n");
 
     printf("      If running hash, a maximum size for large data testing (LDT) may be required on specific\n");
@@ -217,6 +218,7 @@ static ko_longopt_t longopts[] = {
     { "eddsa", ko_no_argument, 328 },
     { "ml_dsa", ko_no_argument, 329 },
     { "ml_kem", ko_no_argument, 330 },
+    { "slh_dsa", ko_no_argument, 331 },
     { "all_algs", ko_no_argument, 350 },
     { "manual_registration", ko_required_argument, 400 },
     { "fips_validation", ko_required_argument, 402 },
@@ -410,6 +412,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             break;
         case 330:
             cfg->ml_kem = 1;
+            cfg->empty_alg = 0;
+            break;
+        case 331:
+            cfg->slh_dsa = 1;
             cfg->empty_alg = 0;
             break;
         case 'a':

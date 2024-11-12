@@ -5070,7 +5070,7 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
         ml_dsa_cap = cap_entry->cap.ml_dsa_siggen_cap;
         break;
     case ACVP_SUB_ML_DSA_SIGVER:
-        ml_dsa_cap = cap_entry->cap.ml_dsa_siggen_cap;
+        ml_dsa_cap = cap_entry->cap.ml_dsa_sigver_cap;
         break;
     default:
         goto err;
@@ -5101,13 +5101,13 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
         json_object_set_value(cap_obj, "deterministic", json_value_init_array());
         temp_arr = json_object_get_array(cap_obj, "deterministic");
         switch (ml_dsa_cap->deterministic) {
-        case ACVP_ML_DSA_DETERMINISTIC_NO:
+        case ACVP_DETERMINISTIC_NO:
             json_array_append_boolean(temp_arr, 0);
             break;
-        case ACVP_ML_DSA_DETERMINISTIC_YES:
+        case ACVP_DETERMINISTIC_YES:
             json_array_append_boolean(temp_arr, 1);
             break;
-        case ACVP_ML_DSA_DETERMINISTIC_BOTH:
+        case ACVP_DETERMINISTIC_BOTH:
             json_array_append_boolean(temp_arr, 1);
             json_array_append_boolean(temp_arr, 0);
             break;
@@ -5229,6 +5229,147 @@ static ACVP_RESULT acvp_build_ml_kem_register_cap(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 err:
     ACVP_LOG_ERR("Error occured when building ML-KEM JSON");
+    return ACVP_INTERNAL_ERR;
+}
+
+static ACVP_RESULT acvp_build_slh_dsa_register_cap(ACVP_CTX *ctx,
+                                                  JSON_Object *cap_obj,
+                                                  ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_arr = NULL, *cap_arr = NULL;
+    JSON_Value *temp_val = NULL, *temp2_val = NULL;
+    JSON_Object *temp_obj = NULL, *temp2_obj = NULL;
+    ACVP_RESULT result;
+    const char *revision = NULL, *mode = NULL, *tmp_str = NULL;
+    ACVP_SLH_DSA_CAP *slh_dsa_cap = NULL;
+    ACVP_SLH_DSA_CAP_GROUP *group_obj = NULL;
+    ACVP_SUB_SLH_DSA alg = 0;
+    ACVP_PARAM_LIST *sets = NULL;
+    ACVP_SL_LIST *lengths = NULL;
+
+    if (!cap_entry) {
+        goto err;
+    }
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+    mode = acvp_lookup_cipher_mode_str(cap_entry->cipher);
+    if (!mode) {
+        goto err;
+    }
+    json_object_set_string(cap_obj, "mode", mode);
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) { return ACVP_INVALID_ARG; }
+    json_object_set_string(cap_obj, "revision", revision);
+
+    if (cap_entry->prereq_vals) {
+        result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+        if (result != ACVP_SUCCESS) { return result; }
+    }
+
+    alg = acvp_get_slh_dsa_alg(cap_entry->cipher);
+
+    switch (alg) {
+    case ACVP_SUB_SLH_DSA_KEYGEN:
+        slh_dsa_cap = cap_entry->cap.slh_dsa_keygen_cap;
+        break;
+    case ACVP_SUB_SLH_DSA_SIGGEN:
+        slh_dsa_cap = cap_entry->cap.slh_dsa_siggen_cap;
+
+        break;
+    case ACVP_SUB_SLH_DSA_SIGVER:
+        slh_dsa_cap = cap_entry->cap.slh_dsa_sigver_cap;
+        break;
+    default:
+        goto err;
+    }
+
+    if (!slh_dsa_cap) {
+        return ACVP_NO_CAP;
+    }
+    group_obj = slh_dsa_cap->cap_group;
+
+    switch (alg) {
+    case ACVP_SUB_SLH_DSA_KEYGEN:
+        if (group_obj->param_sets) {
+            json_object_set_value(cap_obj, "parameterSets", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "parameterSets");
+            sets = group_obj->param_sets;
+            while (sets) {
+                tmp_str = acvp_lookup_slh_dsa_param_set_str(sets->param);
+                if (!tmp_str) {
+                    goto err;
+                }
+                json_array_append_string(temp_arr, tmp_str);
+                sets = sets->next;
+            }
+        } else {
+            ACVP_LOG_ERR("Missing required parameter sets for SLH-DSA registration");
+            goto err;
+        }
+        break;
+    case ACVP_SUB_SLH_DSA_SIGGEN:
+    case ACVP_SUB_SLH_DSA_SIGVER:
+        json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+        cap_arr = json_object_get_array(cap_obj, "capabilities");
+        while (group_obj) {
+            temp_val = json_value_init_object();
+            temp_obj = json_value_get_object(temp_val);
+            json_object_set_value(temp_obj, "parameterSets", json_value_init_array());
+            temp_arr = json_object_get_array(temp_obj, "parameterSets");
+            sets = group_obj->param_sets;
+            while (sets) {
+                tmp_str = acvp_lookup_slh_dsa_param_set_str(sets->param);
+                if (!tmp_str) {
+                    goto err;
+                }
+                json_array_append_string(temp_arr, tmp_str);
+                sets = sets->next;
+            }
+
+            json_object_set_value(temp_obj, "messageLength", json_value_init_array());
+            temp_arr = json_object_get_array(temp_obj, "messageLength");
+            temp2_val = json_value_init_object();
+            temp2_obj = json_value_get_object(temp2_val);
+            json_object_set_number(temp2_obj, "min", group_obj->msg_len.min);
+            json_object_set_number(temp2_obj, "max", group_obj->msg_len.max);
+            json_object_set_number(temp2_obj, "increment", group_obj->msg_len.increment);
+            json_array_append_value(temp_arr, temp2_val);
+            lengths = group_obj->msg_len.values;
+            while (lengths) {
+                json_array_append_number(temp_arr, lengths->length);
+                lengths = lengths->next;
+            }
+            json_array_append_value(cap_arr, temp_val);
+            group_obj = group_obj->next;
+        }
+        break;
+    default:
+        goto err;
+    }
+
+    if (alg == ACVP_SUB_SLH_DSA_SIGGEN) {
+        json_object_set_value(cap_obj, "deterministic", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "deterministic");
+        switch (slh_dsa_cap->deterministic) {
+        case ACVP_DETERMINISTIC_NO:
+            json_array_append_boolean(temp_arr, 0);
+            break;
+        case ACVP_DETERMINISTIC_YES:
+            json_array_append_boolean(temp_arr, 1);
+            break;
+        case ACVP_DETERMINISTIC_BOTH:
+            json_array_append_boolean(temp_arr, 1);
+            json_array_append_boolean(temp_arr, 0);
+            break;
+        default:
+            goto err;
+        }
+    }
+
+    return ACVP_SUCCESS;
+err:
+    ACVP_LOG_ERR("Error occurred when building SLH-DSA JSON");
     return ACVP_INTERNAL_ERR;
 }
 
@@ -5574,6 +5715,11 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_ML_KEM_KEYGEN:
             case ACVP_ML_KEM_XCAP:
                 rv = acvp_build_ml_kem_register_cap(ctx, cap_obj, cap_entry);
+                break;
+            case ACVP_SLH_DSA_KEYGEN:
+            case ACVP_SLH_DSA_SIGGEN:
+            case ACVP_SLH_DSA_SIGVER:
+                rv = acvp_build_slh_dsa_register_cap(ctx, cap_obj, cap_entry);
                 break;
             case ACVP_CIPHER_START:
             case ACVP_CIPHER_END:
