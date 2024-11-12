@@ -266,6 +266,9 @@ typedef enum acvp_cipher {
     ACVP_ML_DSA_SIGVER,
     ACVP_ML_KEM_KEYGEN,
     ACVP_ML_KEM_XCAP,
+    ACVP_SLH_DSA_KEYGEN,
+    ACVP_SLH_DSA_SIGGEN,
+    ACVP_SLH_DSA_SIGVER,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -459,6 +462,13 @@ typedef enum acvp_alg_type_ml_kem {
     ACVP_SUB_ML_KEM_KEYGEN = ACVP_ML_KEM_KEYGEN,
     ACVP_SUB_ML_KEM_XCAP
 } ACVP_SUB_ML_KEM;
+
+/** @enum ACVP_SUB_SLH_DSA */
+typedef enum acvp_alg_type_slh_dsa {
+    ACVP_SUB_SLH_DSA_KEYGEN = ACVP_SLH_DSA_KEYGEN,
+    ACVP_SUB_SLH_DSA_SIGGEN,
+    ACVP_SUB_SLH_DSA_SIGVER
+} ACVP_SUB_SLH_DSA;
 
 #define CIPHER_TO_ALG(alg2) (alg_tbl[cipher].alg.alg2)
 
@@ -2641,12 +2651,12 @@ typedef enum acvp_ml_dsa_param_set {
     ACVP_ML_DSA_PARAM_SET_MAX
 } ACVP_ML_DSA_PARAM_SET;
 
-/** @enum ACVP_ML_DSA_DETERMINISTIC_MODE */
-typedef enum acvp_ml_dsa_deterministic_mode {
-    ACVP_ML_DSA_DETERMINISTIC_NO = 0,
-    ACVP_ML_DSA_DETERMINISTIC_YES,
-    ACVP_ML_DSA_DETERMINISTIC_BOTH
-} ACVP_ML_DSA_DETERMINISTIC_MODE;
+/** @enum ACVP_DETERMINISTIC_MODE */
+typedef enum acvp_deterministic_mode {
+    ACVP_DETERMINISTIC_NO = 0,
+    ACVP_DETERMINISTIC_YES,
+    ACVP_DETERMINISTIC_BOTH
+} ACVP_DETERMINISTIC_MODE;
 
 /** enum ACVP_ML_DSA_TESTTYPE */
 typedef enum acvp_ml_dsa_testtype {
@@ -2712,7 +2722,7 @@ typedef enum acvp_ml_kem_param_set {
 } ACVP_ML_KEM_PARAM_SET;
 
 /** @enum ACVP_ML_KEM_FUNCTION */
-typedef enum acvp_ml_kem_deterministic_mode {
+typedef enum acvp_ml_kem_fuction {
     ACVP_ML_KEM_FUNCTION_NONE = 0,
     ACVP_ML_KEM_FUNCTION_ENCAPSULATE,
     ACVP_ML_KEM_FUNCTION_DECAPSULATE,
@@ -2763,6 +2773,74 @@ typedef struct acvp_ml_kem_tc_t {
 
 } ACVP_ML_KEM_TC;
 
+/** @enum ACVP_SLH_DSA_PARAM */
+typedef enum acvp_slh_dsa_param {
+    ACVP_SLH_DSA_PARAM_PARAMETER_SET = 1,
+    ACVP_SLH_DSA_PARAM_DETERMINISTIC_MODE,
+    ACVP_SLH_DSA_PARAM_MSG_LENGTH
+} ACVP_SLH_DSA_PARAM;
+
+/**
+ * @enum ACVP_SLH_DSA_PARAM_SET
+ * Note: naming may seem clunky, but matches existing naming conventions ("SLH-DSA-SHA2-192s" refers to a
+ * very specific set of values in the FIPS doc)
+ */
+typedef enum acvp_slh_dsa_param_set {
+    ACVP_SLH_DSA_PARAM_SET_NONE = 0,
+    ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_128S,
+    ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_128F,
+    ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_192S,
+    ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_192F,
+    ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_256S,
+    ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_256F,
+    ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_128S,
+    ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_128F,
+    ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_192S,
+    ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_192F,
+    ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_256S,
+    ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_256F,
+    ACVP_SLH_DSA_PARAM_SET_MAX
+} ACVP_SLH_DSA_PARAM_SET;
+
+/**
+ * @struct ACVP_SLH_DSA_TC
+ * @brief This struct holds data that represents a single test case for SLH-DSA testing. This data is
+ *        passed between libacvp and the crypto module.
+ */
+typedef struct acvp_slh_dsa_tc_t {
+    unsigned int tc_id;    /**< Test case id */
+    unsigned int tg_id; /**< Test group id */
+
+    ACVP_CIPHER cipher;
+    ACVP_SLH_DSA_PARAM_SET param_set;
+
+    /* Both keygen and signatures */
+    unsigned char *pub_key;
+    unsigned char *secret_key;
+    int pub_key_len;
+    int secret_key_len;
+
+    /* Keygen */
+    unsigned char *secret_seed;
+    unsigned char *secret_prf;
+    unsigned char *pub_seed;
+    int secret_seed_len;
+    int secret_prf_len;
+    int pub_seed_len;
+
+    /* Signatures */
+    int is_deterministic;
+    unsigned char *rnd; /* only if not deterministic */
+    unsigned char *msg;
+    unsigned char *sig;
+
+    int rnd_len;
+    int msg_len;
+    int sig_len;
+    ACVP_TEST_DISPOSITION ver_disposition;
+
+} ACVP_SLH_DSA_TC;
+
 /**
  * @struct ACVP_TEST_CASE
  * @brief This is the abstracted test case representation used for passing test case data to/from
@@ -2806,6 +2884,7 @@ typedef struct acvp_test_case_t {
         ACVP_LMS_TC *lms;
         ACVP_ML_DSA_TC *ml_dsa;
         ACVP_ML_KEM_TC *ml_kem;
+        ACVP_SLH_DSA_TC *slh_dsa;
     } tc; /**< the union abstracting the test case for passing to the user application */
 } ACVP_TEST_CASE;
 
@@ -4606,6 +4685,83 @@ ACVP_RESULT acvp_cap_ml_kem_set_parm(ACVP_CTX *ctx,
                                   ACVP_ML_KEM_PARAM param, int value);
 
 /**
+ * @brief acvp_cap_slh_dsa_enable() should be used to enable SLH-DSA capabilities. Specific modes and
+ *        parameters can use acvp_cap_slh_dsa_set_parm.
+ *
+ *        When the application enables a crypto capability, such as SLH-DSA, it also needs to
+ *        specify a callback function that will be used by libacvp when that crypto capability is
+ *        needed during a test session.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param crypto_handler Address of function implemented by application that
+ *        is invoked by libacvp when the crypto capability is needed during a test session. This
+ *        crypto_handler function is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_slh_dsa_enable(ACVP_CTX *ctx,
+                                ACVP_CIPHER cipher,
+                                int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+/**
+ * @brief acvp_cap_slh_dsa_set_parm() allows an application to specify operational
+ *        parameters to be used for a given SLH-DSA alg during a test session with the ACVP
+ *        server. This function should be called to enable crypto capabilities for SLH-DSA
+ *        capabilities that will be tested by the ACVP server.
+ *
+ *        This function may be called multiple times to specify more than one crypto parameter
+ *        value for the SLH-DSA algorithm. The ACVP_CIPHER value passed to this function should
+ *        already have been setup by invoking acvp_cap_slh_dsa_enable().
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability
+ * @param group The group of capabilities being defined arbitrarily. Different groups can be
+ *        defined for different capabilities; e.g. different lengths/parameter sets.
+ * @param param ACVP_SLH_DSA_PARAM enum value identifying the algorithm parameter that is being
+ *        specified.
+ * @param value the value corresponding to the parameter being set, at present only generation mode
+ *        is supported.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_slh_dsa_set_parm(ACVP_CTX *ctx,
+                                  ACVP_CIPHER cipher,
+                                  int group,
+                                  ACVP_SLH_DSA_PARAM param, int value);
+
+
+/**
+ * @brief acvp_cap_slh_dsa_set_domain() allows an application to specify operational
+ *        parameters to be used for a given SLH-DSA alg during a test session with the ACVP
+ *        server. This function should be called to enable crypto capabilities for SLH-DSA
+ *        capabilities that will be tested by the ACVP server.
+ *
+ *        This function may be called multiple times to specify more than one crypto parameter
+ *        value for the SLH-DSA algorithm. The ACVP_CIPHER value passed to this function should
+ *        already have been setup by invoking acvp_cap_slh_dsa_enable().
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param group The group of capabilities being defined arbitrarily. Different groups can be
+ *        defined for different capabilities; e.g. different lengths/parameter sets.
+ * @param param ACVP_SLH_DSA_PARAM enum value identifying the algorithm parameter that is being
+ *        specified.
+ * @param min Minumum supported value for the corresponding parameter
+ * @param max Maximum supported value for the corresponding parameter
+ * @param increment Increment value supported
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_slh_dsa_set_domain(ACVP_CTX *ctx,
+                                       ACVP_CIPHER cipher,
+                                       int group,
+                                       ACVP_SLH_DSA_PARAM param,
+                                       int min,
+                                       int max,
+                                       int increment);
+
+/**
  * @brief acvp_enable_prereq_cap() allows an application to specify a prerequisite for a cipher
  *        capability that was previously registered.
  *
@@ -5058,6 +5214,7 @@ ACVP_SUB_KAS acvp_get_kas_alg(ACVP_CIPHER cipher);
 ACVP_SUB_LMS acvp_get_lms_alg(ACVP_CIPHER cipher);
 ACVP_SUB_ML_DSA acvp_get_ml_dsa_alg(ACVP_CIPHER cipher);
 ACVP_SUB_ML_KEM acvp_get_ml_kem_alg(ACVP_CIPHER cipher);
+ACVP_SUB_SLH_DSA acvp_get_slh_dsa_alg(ACVP_CIPHER cipher);
 
 /**
  * @brief acvp_sleep() waits a given number of seconds before continuing processing. This function performs identically across platforms.
