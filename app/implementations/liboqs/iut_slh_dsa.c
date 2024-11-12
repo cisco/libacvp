@@ -60,7 +60,7 @@ int app_slh_dsa_handler(ACVP_TEST_CASE *test_case) {
      * For keygen, take tc->secret_seed, tc->secret_prf, and tc->pub_seed
      * and use them to generate tc->secret_key and tc->pub_key (and their _len values)
      *
-     * For siggen, a secret key and message a provided (tc->secret_key, tc->msg) and are expected to be
+     * For siggen, a secret key and message are provided (tc->secret_key, tc->msg) and are expected to be
      * used to generate a signature (tc->sig) and its len value. If the test case is NOT deterministic
      * (!tc->is_deterministic) then the additional randomness value (tc->rnd) must be integrated.
      *
@@ -126,7 +126,7 @@ int app_slh_dsa_handler(ACVP_TEST_CASE *test_case) {
     default:
         printf("Invalid parameter set provided for SLH-DSA\n");
         break;
-}
+    }
 
     sig = OQS_SIG_new(param_set);
     if (!sig) {
