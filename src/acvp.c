@@ -620,6 +620,26 @@ static void acvp_cap_free_lms(ACVP_LMS_CAP *cap) {
     free(cap);
 }
 
+
+static void acvp_cap_free_ml_dsa(ACVP_ML_DSA_CAP *cap) {
+    ACVP_ML_DSA_CAP_GROUP *group = cap->cap_group, *iter = NULL;
+
+    if (!group) {
+        return;
+    }
+
+    while (group) {
+        acvp_cap_free_pl(group->param_sets);
+        acvp_cap_free_pl(group->hash_algs);
+        iter = group->next;
+        free(group);
+        group = iter;
+    }
+
+    free(cap);
+    return;
+}
+
 static void acvp_cap_free_slh_dsa(ACVP_SLH_DSA_CAP *cap) {
     ACVP_SLH_DSA_CAP_GROUP *group = cap->cap_group, *iter = NULL;
 
@@ -928,17 +948,13 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_lms(cap_entry->cap.lms_sigver_cap);
                 break;
             case ACVP_ML_DSA_KEYGEN_TYPE:
-                acvp_cap_free_pl(cap_entry->cap.ml_dsa_keygen_cap->param_sets);
-                free(cap_entry->cap.ml_dsa_keygen_cap);
+                acvp_cap_free_ml_dsa(cap_entry->cap.ml_dsa_keygen_cap);
                 break;
             case ACVP_ML_DSA_SIGGEN_TYPE:
-                acvp_cap_free_pl(cap_entry->cap.ml_dsa_siggen_cap->param_sets);
-                acvp_cap_free_domain(&cap_entry->cap.ml_dsa_siggen_cap->msg_len);
-                free(cap_entry->cap.ml_dsa_siggen_cap);
+                acvp_cap_free_ml_dsa(cap_entry->cap.ml_dsa_siggen_cap);
                 break;
             case ACVP_ML_DSA_SIGVER_TYPE:
-                acvp_cap_free_pl(cap_entry->cap.ml_dsa_sigver_cap->param_sets);
-                free(cap_entry->cap.ml_dsa_sigver_cap);
+                acvp_cap_free_ml_dsa(cap_entry->cap.ml_dsa_sigver_cap);
                 break;
             case ACVP_ML_KEM_KEYGEN_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.ml_kem_keygen_cap->param_sets);

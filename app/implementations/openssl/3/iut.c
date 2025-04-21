@@ -110,7 +110,7 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
         printf("Registering capabilities for FP 3.1.2...\n");
         return register_capabilities_fp_312(ctx, cfg);
     } else {
-        printf("Registering capabilities for FP in development...\n");
-        return register_capabilities_fp_dev(ctx, cfg);
+        printf("Registering capabilities for FP 3.4.0 (not certified)...\n");
+        return register_capabilities_fp_340(ctx, cfg);
     }
 }

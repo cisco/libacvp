@@ -1161,6 +1161,17 @@ ACVP_DRBG_CAP_GROUP *acvp_create_drbg_group(ACVP_DRBG_MODE_LIST *mode, int group
     return grp;
 }
 
+ACVP_ML_DSA_CAP_GROUP *acvp_locate_ml_dsa_cap_group(ACVP_ML_DSA_CAP *cap, int id) {
+    ACVP_ML_DSA_CAP_GROUP *group = cap->cap_group;
+    while (group) {
+        if (group->group_id == id) {
+            return group;
+        }
+        group = group->next;
+    }
+    return NULL;
+}
+
 ACVP_SLH_DSA_CAP_GROUP *acvp_locate_slh_dsa_cap_group(ACVP_SLH_DSA_CAP *cap, int id) {
     ACVP_SLH_DSA_CAP_GROUP *group = cap->cap_group;
     while (group) {
@@ -1211,6 +1222,29 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
     *val = reg_arry_val;
     *arry = reg_arry;
     return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_get_tc_str_from_json(ACVP_CTX *ctx, JSON_Object *obj, const char *key, const char **out) {
+    const char *val= NULL;
+    ACVP_RESULT rv = ACVP_INTERNAL_ERR;
+
+    if (!json_object_has_value(obj, key)) {
+        ACVP_LOG_ERR("Server JSON is missing '%s' data", key);
+        rv = ACVP_TC_MISSING_DATA;
+        goto err;
+    }
+
+    val = json_object_get_string(obj, key);
+    if (!val) {
+        ACVP_LOG_ERR("Server JSON provided an invalid '%s' value", key);
+        rv = ACVP_TC_INVALID_DATA;
+        goto err;
+    }
+
+    *out = val;
+    rv = ACVP_SUCCESS;
+err:
+    return rv;
 }
 
 /*

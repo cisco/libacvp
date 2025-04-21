@@ -90,6 +90,42 @@ static ACVP_RESULT acvp_lookup_prereqVals(JSON_Object *cap_obj, ACVP_CAPS_LIST *
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_append_true_false_array(JSON_Object *parent, const char *name, int value) {
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
+    JSON_Array *arr = NULL;
+    if (json_object_has_value(parent, name)) {
+        return ACVP_INVALID_ARG;
+    }
+
+    json_object_set_value(parent, name, json_value_init_array());
+    val = json_object_get_value(parent, name);
+    if (!val) {
+        return ACVP_JSON_ERR;
+        }
+
+
+    arr = json_value_get_array(val);
+    if (!arr) {
+        return ACVP_JSON_ERR;
+    }
+
+    switch(value) {
+    case 0:
+        json_array_append_boolean(arr, 0);
+        return ACVP_SUCCESS;
+    case 1:
+        json_array_append_boolean(arr, 1);
+        return ACVP_SUCCESS;
+    case 2:
+        json_array_append_boolean(arr, 1);
+        json_array_append_boolean(arr, 0);
+        return ACVP_SUCCESS;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+}
+
 static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *msg_array = NULL;
     JSON_Array *temp_arr = NULL;
@@ -5029,15 +5065,17 @@ err:
 static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
                                                   JSON_Object *cap_obj,
                                                   ACVP_CAPS_LIST *cap_entry) {
-    JSON_Array *temp_arr = NULL;
-    JSON_Value *temp_val = NULL;
-    JSON_Object *temp_obj = NULL;
+    JSON_Array *temp_arr = NULL, *cap_arr = NULL;
+    JSON_Value *temp_val = NULL, *temp2_val = NULL;
+    JSON_Object *temp_obj = NULL, *temp2_obj = NULL;
     ACVP_RESULT result;
     const char *revision = NULL, *mode = NULL, *tmp_str = NULL;
     ACVP_ML_DSA_CAP *ml_dsa_cap = NULL;
     ACVP_SUB_ML_DSA alg = 0;
     ACVP_PARAM_LIST *sets = NULL;
     ACVP_SL_LIST *lengths = NULL;
+    ACVP_ML_DSA_CAP_GROUP *group_obj = NULL;
+    int tf_val = 0, use_mu = 0;
 
     if (!cap_entry) {
         goto err;
@@ -5079,60 +5117,160 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
     if (!ml_dsa_cap) {
         return ACVP_NO_CAP;
     }
-
-    if (ml_dsa_cap->param_sets) {
-        json_object_set_value(cap_obj, "parameterSets", json_value_init_array());
-        temp_arr = json_object_get_array(cap_obj, "parameterSets");
-        sets = ml_dsa_cap->param_sets;
-        while (sets) {
-            tmp_str = acvp_lookup_ml_dsa_param_set_str(sets->param);
-            if (!tmp_str) {
-                goto err;
-            }
-            json_array_append_string(temp_arr, tmp_str);
-            sets = sets->next;
-        }
-    } else {
-        ACVP_LOG_ERR("Missing required parameter sets for ML-DSA registration");
-        goto err;
+    group_obj = ml_dsa_cap->cap_group;
+    if (!group_obj) {
+        ACVP_LOG_ERR("Missing required parameters for ML-DSA registration");
+        return ACVP_NO_CAP;
     }
 
-    if (alg == ACVP_SUB_ML_DSA_SIGGEN) {
-        json_object_set_value(cap_obj, "deterministic", json_value_init_array());
-        temp_arr = json_object_get_array(cap_obj, "deterministic");
-        switch (ml_dsa_cap->deterministic) {
-        case ACVP_DETERMINISTIC_NO:
-            json_array_append_boolean(temp_arr, 0);
+    switch (alg) {
+    case ACVP_SUB_ML_DSA_KEYGEN:
+        if (group_obj->param_sets) {
+            json_object_set_value(cap_obj, "parameterSets", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "parameterSets");
+            sets = group_obj->param_sets;
+            while (sets) {
+                tmp_str = acvp_lookup_ml_dsa_param_set_str(sets->param);
+                if (!tmp_str) {
+                    goto err;
+                }
+                json_array_append_string(temp_arr, tmp_str);
+                sets = sets->next;
+            }
+        } else {
+            ACVP_LOG_ERR("Missing required parameter sets for ML-DSA registration");
+            goto err;
+        }
+        break;
+    case ACVP_SUB_ML_DSA_SIGGEN:
+    case ACVP_SUB_ML_DSA_SIGVER:
+        if (alg == ACVP_SUB_ML_DSA_SIGGEN) {
+            tf_val = ml_dsa_cap->deterministic; /* Must change if ACVP_DETERMINISTIC_MODE changes */
+            if (acvp_append_true_false_array(cap_obj, "deterministic", tf_val) != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Error appending deterministic to ML-DSA JSON");
+                goto err;
+            }
+        }
+
+        json_object_set_value(cap_obj, "signatureInterfaces", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "signatureInterfaces");
+        switch(ml_dsa_cap->sig_interface) {
+        case ACVP_ML_DSA_SIG_INTERFACE_INTERNAL:
+            json_array_append_string(temp_arr, "internal");
+            use_mu = 1;
             break;
-        case ACVP_DETERMINISTIC_YES:
-            json_array_append_boolean(temp_arr, 1);
+        case ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL:
+            json_array_append_string(temp_arr, "external");
             break;
-        case ACVP_DETERMINISTIC_BOTH:
-            json_array_append_boolean(temp_arr, 1);
-            json_array_append_boolean(temp_arr, 0);
+        case ACVP_ML_DSA_SIG_INTERFACE_BOTH:
+            json_array_append_string(temp_arr, "internal");
+            json_array_append_string(temp_arr, "external");
+            use_mu = 1;
             break;
         default:
+            ACVP_LOG_ERR("Invalid ML-DSA signature interface");
             goto err;
         }
 
-        json_object_set_value(cap_obj, "messageLength", json_value_init_array());
-        temp_arr = json_object_get_array(cap_obj, "messageLength");
-        temp_val = json_value_init_object();
-        temp_obj = json_value_get_object(temp_val);
-        json_object_set_number(temp_obj, "min", ml_dsa_cap->msg_len.min);
-        json_object_set_number(temp_obj, "max", ml_dsa_cap->msg_len.max);
-        json_object_set_number(temp_obj, "increment", ml_dsa_cap->msg_len.increment);
-        json_array_append_value(temp_arr, temp_val);
-        lengths = ml_dsa_cap->msg_len.values;
-        while (lengths) {
-            json_array_append_number(temp_arr, lengths->length);
-            lengths = lengths->next;
+        if (use_mu) {
+            tf_val = ml_dsa_cap->mu - 1; /* Must change if ACVP_ML_DSA_MU changes */
+            if (acvp_append_true_false_array(cap_obj, "externalMu", tf_val) != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Error appending mu to ML-DSA JSON");
+                goto err;
+            }
         }
+
+        json_object_set_value(cap_obj, "preHash", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "preHash");
+        switch (ml_dsa_cap->prehash) {
+        case ACVP_ML_DSA_PREHASH_NO:
+            json_array_append_string(temp_arr, "pure");
+            break;
+        case ACVP_ML_DSA_PREHASH_YES:
+            json_array_append_string(temp_arr, "preHash");
+            break;
+        case ACVP_ML_DSA_PREHASH_BOTH:
+            json_array_append_string(temp_arr, "pure");
+            json_array_append_string(temp_arr, "preHash");
+            break;
+        default:
+            ACVP_LOG_ERR("Invalid ML-DSA preHash value");
+            goto err;
+        }
+
+        json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+        cap_arr = json_object_get_array(cap_obj, "capabilities");
+        while (group_obj) {
+            temp_val = json_value_init_object();
+            temp_obj = json_value_get_object(temp_val);
+            json_object_set_value(temp_obj, "parameterSets", json_value_init_array());
+            temp_arr = json_object_get_array(temp_obj, "parameterSets");
+            sets = group_obj->param_sets;
+            while (sets) {
+                tmp_str = acvp_lookup_ml_dsa_param_set_str(sets->param);
+                if (!tmp_str) {
+                    goto err;
+                }
+                json_array_append_string(temp_arr, tmp_str);
+                sets = sets->next;
+            }
+
+            json_object_set_value(temp_obj, "messageLength", json_value_init_array());
+            temp_arr = json_object_get_array(temp_obj, "messageLength");
+            temp2_val = json_value_init_object();
+            temp2_obj = json_value_get_object(temp2_val);
+            json_object_set_number(temp2_obj, "min", group_obj->msg_len.min);
+            json_object_set_number(temp2_obj, "max", group_obj->msg_len.max);
+            json_object_set_number(temp2_obj, "increment", group_obj->msg_len.increment);
+            json_array_append_value(temp_arr, temp2_val);
+            lengths = group_obj->msg_len.values;
+            while (lengths) {
+                json_array_append_number(temp_arr, lengths->length);
+                lengths = lengths->next;
+            }
+            json_array_append_value(cap_arr, temp_val);
+
+            if (group_obj->hash_algs) {
+                json_object_set_value(temp_obj, "hashAlgs", json_value_init_array());
+                temp_arr = json_object_get_array(temp_obj, "hashAlgs");
+                sets = group_obj->hash_algs;
+                while (sets) {
+                    tmp_str = acvp_lookup_hash_alg_name(sets->param);
+                    if (!tmp_str) {
+                        goto err;
+                    }
+                    json_array_append_string(temp_arr, tmp_str);
+                    sets = sets->next;
+                }
+            }
+
+            if (group_obj->context_len.values || group_obj->context_len.increment) {
+                json_object_set_value(temp_obj, "contextLength", json_value_init_array());
+                temp_arr = json_object_get_array(temp_obj, "contextLength");
+                if (group_obj->context_len.increment) {
+                    temp2_val = json_value_init_object();
+                    temp2_obj = json_value_get_object(temp2_val);
+                    json_object_set_number(temp2_obj, "min", group_obj->context_len.min);
+                    json_object_set_number(temp2_obj, "max", group_obj->context_len.max);
+                    json_object_set_number(temp2_obj, "increment", group_obj->context_len.increment);
+                    json_array_append_value(temp_arr, temp2_val);
+                }
+                if (group_obj->context_len.values) {
+                    lengths = group_obj->context_len.values;
+                    while (lengths) {
+                        json_array_append_number(temp_arr, lengths->length);
+                        lengths = lengths->next;
+                    }
+                }
+            }
+            group_obj = group_obj->next;
+        }
+        break;
     }
 
     return ACVP_SUCCESS;
 err:
-    ACVP_LOG_ERR("Error occured when building ML-DSA JSON");
+    ACVP_LOG_ERR("Error occurred when building ML-DSA JSON");
     return ACVP_INTERNAL_ERR;
 }
 
