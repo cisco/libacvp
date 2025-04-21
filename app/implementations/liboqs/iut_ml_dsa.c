@@ -10,9 +10,60 @@
 #include "app_lcl.h"
 #include "safe_lib.h"
 
-#if 0
-
 #include <oqs/sig.h>
+
+/* We need to declare the internal OQS signature functions - we have the library, liboqs-internal, but no headers */
+extern int pqcrystals_ml_dsa_44_ref_signature_internal(uint8_t *sig,
+        size_t *siglen,
+        const uint8_t *m,
+        size_t mlen,
+        const uint8_t *pre,
+        size_t prelen,
+        const uint8_t rnd[32],
+        const uint8_t *sk);
+
+extern int pqcrystals_ml_dsa_44_ref_verify_internal(const uint8_t *sig,
+        size_t siglen,
+        const uint8_t *m,
+        size_t mlen,
+        const uint8_t *pre,
+        size_t prelen,
+        const uint8_t *pk);
+
+extern int pqcrystals_ml_dsa_65_ref_signature_internal(uint8_t *sig,
+        size_t *siglen,
+        const uint8_t *m,
+        size_t mlen,
+        const uint8_t *pre,
+        size_t prelen,
+        const uint8_t rnd[32],
+        const uint8_t *sk);
+
+extern int pqcrystals_ml_dsa_65_ref_verify_internal(const uint8_t *sig,
+        size_t siglen,
+        const uint8_t *m,
+        size_t mlen,
+        const uint8_t *pre,
+        size_t prelen,
+        const uint8_t *pk);
+
+extern int pqcrystals_ml_dsa_87_ref_signature_internal(uint8_t *sig,
+        size_t *siglen,
+        const uint8_t *m,
+        size_t mlen,
+        const uint8_t *pre,
+        size_t prelen,
+        const uint8_t rnd[32],
+        const uint8_t *sk);
+
+extern int pqcrystals_ml_dsa_87_ref_verify_internal(const uint8_t *sig,
+        size_t siglen,
+        const uint8_t *m,
+        size_t mlen,
+        const uint8_t *pre,
+        size_t prelen,
+        const uint8_t *pk);
+
 
 /* Seed buffer for keygen */
 static unsigned char *rng_buffer = NULL;
@@ -21,17 +72,11 @@ static size_t rng_buf_size = 0;
 /* Iterator for the seed buffer */
 static int rng_buf_pos = 0;
 
-/* Siggen handles some data per-group, this keeps track of the current group */
-static int current_tg = 0;
-static unsigned char *group_key = NULL;
-
 void iut_ml_dsa_cleanup(void) {
     if (rng_buffer) free(rng_buffer);
     rng_buffer = NULL;
     rng_buf_pos = 0;
     rng_buf_size = 0;
-    if (group_key) free(group_key);
-    group_key = NULL;
 }
 
 /**
@@ -68,11 +113,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
      * For keygen, take tc->seed and use it to generate tc->pub_key and tc->secret_key (and their
      * _len values)
      *
-     * For siggen, there are two test types (tc->type). AFT, and GDT. GDT tests provide a message,
-     * tc->msg, and expects a pub key and a signature, tc->sig, value in response. the pk value is
-     * generated once PER GROUP. The library will take the pk value from the first test case in the
-     * test group.
-     * Siggen AFT provides a message and a secret key value, and expects a signature in
+     * For siggen, Siggen AFT provides a message and a secret key value, and expects a signature in
      * response. if you are not testing deterministically (tc->deterministic flag), then a random
      * value (tc->rnd) is also provided to incorporate.
      *
@@ -86,8 +127,14 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
     ACVP_ML_DSA_TC *tc = NULL;
     ACVP_SUB_ML_DSA alg = 0;
     int rv = ACVP_CRYPTO_MODULE_FAIL;
+    int (*sig_gen_internal_func)(uint8_t *sig, size_t *siglen, const uint8_t *m, size_t mlen,
+            const uint8_t *pre, size_t prelen, const uint8_t rnd[32], const uint8_t *sk) = NULL;
+    int (*sig_ver_internal_func)(const uint8_t *sig, size_t siglen, const uint8_t *m, size_t mlen,
+            const uint8_t *pre, size_t prelen, const uint8_t *pk) = NULL;
     OQS_SIG *sig = NULL;
     const char *param_set = NULL;
+    size_t outlen = 0;
+
     if (!test_case) {
         return -1;
     }
@@ -101,12 +148,24 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
     switch (tc->param_set) {
     case ACVP_ML_DSA_PARAM_SET_ML_DSA_44:
         param_set = OQS_SIG_alg_ml_dsa_44;
+        if (tc->sig_interface == ACVP_ML_DSA_SIG_INTERFACE_INTERNAL) {
+            sig_gen_internal_func = pqcrystals_ml_dsa_44_ref_signature_internal;
+            sig_ver_internal_func = pqcrystals_ml_dsa_44_ref_verify_internal;
+        }
         break;
     case ACVP_ML_DSA_PARAM_SET_ML_DSA_65:
         param_set = OQS_SIG_alg_ml_dsa_65;
+        if (tc->sig_interface == ACVP_ML_DSA_SIG_INTERFACE_INTERNAL) {
+            sig_gen_internal_func = pqcrystals_ml_dsa_65_ref_signature_internal;
+            sig_ver_internal_func = pqcrystals_ml_dsa_65_ref_verify_internal;
+        }
         break;
     case ACVP_ML_DSA_PARAM_SET_ML_DSA_87:
         param_set = OQS_SIG_alg_ml_dsa_87;
+        if (tc->sig_interface == ACVP_ML_DSA_SIG_INTERFACE_INTERNAL) {
+            sig_gen_internal_func = pqcrystals_ml_dsa_87_ref_signature_internal;
+            sig_ver_internal_func = pqcrystals_ml_dsa_87_ref_verify_internal;
+        }
         break;
     case ACVP_ML_DSA_PARAM_SET_NONE:
     case ACVP_ML_DSA_PARAM_SET_MAX:
@@ -151,8 +210,60 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
         tc->pub_key_len = (int)sig->length_public_key;
         tc->secret_key_len = (int)sig->length_secret_key;
         break;
+
     case ACVP_SUB_ML_DSA_SIGGEN:
+        if (rng_buffer) {
+            printf("Error: rng_buffer value should not already be set\n");
+            goto end;
+        }
+
+        /* place rnd in the buffer if it exists - otherwise, deterministic */
+        if (!tc->is_deterministic) {
+            rng_buf_size = tc->rnd_len;
+            rng_buffer = calloc(rng_buf_size, sizeof(unsigned char));
+            if (!rng_buffer) {
+                printf("Error allocating rnd buffer for ML-DSA\n");
+                goto end;
+            }
+            memcpy_s(rng_buffer, rng_buf_size, tc->rnd, tc->rnd_len);
+        } else {
+            rng_buf_size = 32;
+            rng_buffer = calloc(rng_buf_size, sizeof(unsigned char));
+            if (!rng_buffer) {
+                printf("Error allocating rnd buffer for ML-DSA\n");
+                goto end;
+            }
+        }
+
+        OQS_randombytes_custom_algorithm(&oqs_rng_callback_acvp);
+
+        if (tc->sig_interface == ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL) {
+            if (OQS_SIG_sign_with_ctx_str(sig, tc->sig, &outlen, tc->msg, (size_t)tc->msg_len, tc->context, (size_t)tc->context_len, tc->secret_key) != OQS_SUCCESS) {
+                printf("Failure generating signature with context in ML-DSA\n");
+                goto end;
+            }
+        } else {
+            if (sig_gen_internal_func(tc->sig, &outlen, tc->msg, tc->msg_len, NULL, 0, rng_buffer, tc->secret_key) != OQS_SUCCESS) {
+                printf("Failure generating signature in ML-DSA\n");
+                goto end;
+            }
+        }
+        tc->sig_len = (int)outlen;
+
+        break;
     case ACVP_SUB_ML_DSA_SIGVER:
+        tc->ver_disposition = 0;
+
+        if (tc->sig_interface == ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL) {
+            if (OQS_SIG_verify_with_ctx_str(sig, tc->msg, (size_t)tc->msg_len, tc->sig, (size_t)tc->sig_len, tc->context, (size_t)tc->context_len, tc->pub_key) == OQS_SUCCESS) {
+                tc->ver_disposition = 1;
+            }
+        } else {
+            if (sig_ver_internal_func(tc->sig, tc->sig_len, tc->msg, tc->msg_len, NULL, 0, tc->pub_key) == OQS_SUCCESS) {
+                tc->ver_disposition = 1;
+            }
+        }
+        break;
     default:
         printf("Invalid algorithm provided in ML-DSA handler\n");
         goto end;
@@ -168,14 +279,3 @@ end:
     return rv;
 
 }
-
-#else
-int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
-
-    if (!test_case) {
-        return -1;
-    }
-
-    return 0;
-}
-#endif

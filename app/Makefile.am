@@ -16,7 +16,7 @@ tmp_sources += implementations/openssl/3/iut.c \
                implementations/openssl/3/registrations/fp_30X.c \
                implementations/openssl/3/registrations/fp_312.c \
                implementations/openssl/3/registrations/non_fips.c \
-               implementations/openssl/3/registrations/fp_dev.c \
+               implementations/openssl/3/registrations/fp_340.c \
                implementations/openssl/3/iut_aes.c \
                implementations/openssl/3/iut_cmac.c \
                implementations/openssl/3/iut_des.c \
@@ -41,8 +41,7 @@ if APP_IUT_LIBOQS
 tmp_sources += implementations/liboqs/iut.c \
                implementations/liboqs/iut.h \
                implementations/liboqs/iut_ml_kem.c \
-               implementations/liboqs/iut_ml_dsa.c \
-               implementations/liboqs/iut_slh_dsa.c
+               implementations/liboqs/iut_ml_dsa.c
 endif
 
 if !BUILD_APP_AS_LIB

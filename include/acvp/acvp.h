@@ -11,7 +11,7 @@
  * this file except in compliance with the License. You can obtain a copy
  * in the file LICENSE in the source distribution or at
  * https://github.com/cisco/libacvp/LICENSE
- */
+, */
 
 #ifndef acvp_h
 #define acvp_h
@@ -2635,7 +2635,12 @@ typedef struct acvp_lms_tc_t {
 typedef enum acvp_ml_dsa_param {
     ACVP_ML_DSA_PARAM_PARAMETER_SET = 1,
     ACVP_ML_DSA_PARAM_DETERMINISTIC_MODE,
-    ACVP_ML_DSA_PARAM_MSG_LENGTH
+    ACVP_ML_DSA_PARAM_MSG_LEN,
+    ACVP_ML_DSA_PARAM_SIG_INTERFACE,
+    ACVP_ML_DSA_PARAM_PREHASH,
+    ACVP_ML_DSA_PARAM_MU,
+    ACVP_ML_DSA_PARAM_HASH_ALG,
+    ACVP_ML_DSA_PARAM_CONTEXT_LEN
 } ACVP_ML_DSA_PARAM;
 
 /**
@@ -2651,6 +2656,30 @@ typedef enum acvp_ml_dsa_param_set {
     ACVP_ML_DSA_PARAM_SET_MAX
 } ACVP_ML_DSA_PARAM_SET;
 
+/* @enum ACVP_ML_DSA_SIG_INTERFACE */
+typedef enum acvp_ml_dsa_sig_interface {
+    ACVP_ML_DSA_SIG_INTERFACE_NOT_SET = 0,
+    ACVP_ML_DSA_SIG_INTERFACE_INTERNAL,
+    ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL,
+    ACVP_ML_DSA_SIG_INTERFACE_BOTH
+} ACVP_ML_DSA_SIG_INTERFACE;
+
+/** @enum ACVP_ML_DSA_PREHASH - only applies when SIG_INTERFACE = EXTERNAL */
+typedef enum acvp_ml_dsa_prehash {
+    ACVP_ML_DSA_PREHASH_NOT_SET = 0, /**< Not set */
+    ACVP_ML_DSA_PREHASH_NO,          /**< No pre-hashing, AKA "pure" */
+    ACVP_ML_DSA_PREHASH_YES,         /**< Pre-hashing enabled */
+    ACVP_ML_DSA_PREHASH_BOTH         /**< Both pre-hashed and pure tests */
+} ACVP_ML_DSA_PREHASH;
+
+/** @enum ACVP_ML_DSA_MU - only applies when SIG_INTERFACE = INTERNAL or BOTH */
+typedef enum acvp_ml_dsa_mu {
+    ACVP_ML_DSA_MU_NOT_SET = 0,      /**< Not set */
+    ACVP_ML_DSA_MU_INTERNAL,         /**< Internal mu value */
+    ACVP_ML_DSA_MU_EXTERNAL,         /**< External mu value */
+    ACVP_ML_DSA_MU_BOTH              /**< Supports both internal and external mu values */
+} ACVP_ML_DSA_MU;
+
 /** @enum ACVP_DETERMINISTIC_MODE */
 typedef enum acvp_deterministic_mode {
     ACVP_DETERMINISTIC_NO = 0,
@@ -2658,11 +2687,10 @@ typedef enum acvp_deterministic_mode {
     ACVP_DETERMINISTIC_BOTH
 } ACVP_DETERMINISTIC_MODE;
 
-/** enum ACVP_ML_DSA_TESTTYPE */
+/** @enum ACVP_ML_DSA_TESTTYPE */
 typedef enum acvp_ml_dsa_testtype {
     ACVP_ML_DSA_TESTTYPE_NONE = 0,
-    ACVP_ML_DSA_TESTTYPE_AFT,
-    ACVP_ML_DSA_TESTTYPE_GDT
+    ACVP_ML_DSA_TESTTYPE_AFT
 } ACVP_ML_DSA_TESTTYPE;
 
 
@@ -2677,7 +2705,6 @@ typedef struct acvp_ml_dsa_tc_t {
 
     ACVP_CIPHER cipher;
     ACVP_ML_DSA_TESTTYPE type;
-
     ACVP_ML_DSA_PARAM_SET param_set;
 
     /* Both keys and sigs */
@@ -2691,13 +2718,21 @@ typedef struct acvp_ml_dsa_tc_t {
     int seed_len;
 
     /* Signature values */
-    unsigned char *rnd;
-    int rnd_len;
     int is_deterministic;
+    ACVP_ML_DSA_SIG_INTERFACE sig_interface;
+    int is_prehash;
+    int is_mu_external;
+
+    unsigned char *rnd;
     unsigned char *msg;
     unsigned char *sig;
+    unsigned char *context;
+    unsigned char *mu;
+    int rnd_len;
     int msg_len;
     int sig_len;
+    int context_len;
+    int mu_len;
     ACVP_TEST_DISPOSITION ver_disposition;
 
 } ACVP_ML_DSA_TC;
@@ -4610,6 +4645,7 @@ ACVP_RESULT acvp_cap_ml_dsa_enable(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
                                   ACVP_CIPHER cipher,
+                                  int group,
                                   ACVP_ML_DSA_PARAM param, int value);
 
 
@@ -4635,6 +4671,7 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_cap_ml_dsa_set_domain(ACVP_CTX *ctx,
                                        ACVP_CIPHER cipher,
+                                       int group,
                                        ACVP_ML_DSA_PARAM param,
                                        int min,
                                        int max,

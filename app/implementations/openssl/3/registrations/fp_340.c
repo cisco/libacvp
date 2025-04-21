@@ -37,7 +37,7 @@ static int enable_kda(ACVP_CTX *ctx);
 static int enable_kts_ifc(ACVP_CTX *ctx);
 static int enable_kdf(ACVP_CTX *ctx);
 
-ACVP_RESULT register_capabilities_fp_dev(ACVP_CTX *ctx, APP_CONFIG *cfg) {
+ACVP_RESULT register_capabilities_fp_340(ACVP_CTX *ctx, APP_CONFIG *cfg) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (cfg->aes || cfg->testall) { if ((rv = enable_aes(ctx))) goto end; }

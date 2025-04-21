@@ -937,6 +937,10 @@
 #define ACVP_ML_DSA_MSG_STR_MAX (ACVP_ML_DSA_MSG_BIT_MAX >> 2)
 #define ACVP_ML_DSA_MSG_BYTE_MAX (ACVP_ML_DSA_MSG_BIT_MAX >> 3)
 
+#define ACVP_ML_DSA_CONTEXT_BIT_MAX 2040
+#define ACVP_ML_DSA_CONTEXT_STR_MAX (ACVP_ML_DSA_CONTEXT_BIT_MAX >> 2)
+#define ACVP_ML_DSA_CONTEXT_BYTE_MAX (ACVP_ML_DSA_CONTEXT_BIT_MAX >> 3)
+
 #define ACVP_ML_KEM_TMP_BIT_MAX 65536 //arbitrary
 #define ACVP_ML_KEM_TMP_STR_MAX (ACVP_ML_KEM_TMP_BIT_MAX >> 2)
 #define ACVP_ML_KEM_TMP_BYTE_MAX (ACVP_ML_KEM_TMP_BIT_MAX >> 3)
@@ -1683,11 +1687,22 @@ typedef struct acvp_lms_capability_t {
     ACVP_LMS_SPECIFIC_LIST *specific_list;
 } ACVP_LMS_CAP;
 
+typedef struct acvp_ml_dsa_cap_group_t {
+    unsigned int group_id;                 /**< the value used to identify this set of capabilities */
+    ACVP_PARAM_LIST *param_sets;           /**< KeyGen doesn't have multiple groups; but avoid duplicate code */
+    ACVP_JSON_DOMAIN_OBJ msg_len;          /**< Message length supported for signatures */
+    ACVP_PARAM_LIST *hash_algs;            /**< SigGen/SigVer hash algorithms supported if prehash enabled */
+    ACVP_JSON_DOMAIN_OBJ context_len;      /**< SigGen/SigVer context length for external interfaces */
+    struct acvp_ml_dsa_cap_group_t *next;  /**< Pointer to the next group of capabilities */
+} ACVP_ML_DSA_CAP_GROUP;
+
 typedef struct acvp_ml_dsa_capability_t {
     ACVP_CIPHER cipher;
-    ACVP_PARAM_LIST *param_sets;
-    ACVP_DETERMINISTIC_MODE deterministic; /* For siggen only */
-    ACVP_JSON_DOMAIN_OBJ msg_len;
+    ACVP_DETERMINISTIC_MODE deterministic;   /**< For siggen only */
+    ACVP_ML_DSA_MU mu;                       /**< SigGen/SigVer mu mode */
+    ACVP_ML_DSA_SIG_INTERFACE sig_interface; /**< SigGen/SigVer interface */
+    ACVP_ML_DSA_PREHASH prehash;             /**< SigGen/SigVer prehash support */
+    ACVP_ML_DSA_CAP_GROUP *cap_group;        /**< Pointer to the first group of capabilities */
 } ACVP_ML_DSA_CAP;
 
 typedef struct acvp_ml_kem_capability_t {
@@ -2154,6 +2169,7 @@ ACVP_DRBG_MODE_LIST *acvp_create_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_
 ACVP_DRBG_CAP_GROUP *acvp_locate_drbg_group_entry(ACVP_DRBG_MODE_LIST *mode, int group);
 ACVP_DRBG_CAP_GROUP *acvp_create_drbg_group(ACVP_DRBG_MODE_LIST *mode, int group);
 
+ACVP_ML_DSA_CAP_GROUP *acvp_locate_ml_dsa_cap_group(ACVP_ML_DSA_CAP *cap, int id);
 ACVP_SLH_DSA_CAP_GROUP *acvp_locate_slh_dsa_cap_group(ACVP_SLH_DSA_CAP *cap, int id);
 
 const char *acvp_lookup_rsa_sig_type_str(ACVP_RSA_SIG_TYPE type);
@@ -2164,6 +2180,8 @@ ACVP_RSA_PUB_EXP_MODE acvp_lookup_rsa_pub_exp_mode(const char *str);
 int acvp_lookup_rsa_randpq_index(const char *value);
 
 ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **arry);
+
+ACVP_RESULT acvp_get_tc_str_from_json(ACVP_CTX *ctx, JSON_Object *obj, const char *key, const char **out);
 
 ACVP_RESULT is_valid_tf_param(int value);
 

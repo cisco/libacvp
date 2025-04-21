@@ -14,9 +14,7 @@
 
 int app_ml_kem_handler(ACVP_TEST_CASE *test_case);
 int app_ml_dsa_handler(ACVP_TEST_CASE *test_case);
-int app_slh_dsa_handler(ACVP_TEST_CASE *test_case);
 
 void iut_ml_kem_cleanup(void);
 
 #endif // ACVP_APP_IUT_H
-
