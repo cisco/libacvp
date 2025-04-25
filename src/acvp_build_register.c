@@ -92,7 +92,6 @@ static ACVP_RESULT acvp_lookup_prereqVals(JSON_Object *cap_obj, ACVP_CAPS_LIST *
 
 static ACVP_RESULT acvp_append_true_false_array(JSON_Object *parent, const char *name, int value) {
     JSON_Value *val = NULL;
-    JSON_Object *obj = NULL;
     JSON_Array *arr = NULL;
     if (json_object_has_value(parent, name)) {
         return ACVP_INVALID_ARG;
