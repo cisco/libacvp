@@ -16,14 +16,6 @@
 #include <openssl/core_names.h>
 #include <openssl/err.h>
 
-#ifndef OSSL_SIGNATURE_PARAM_INSTANCE
-#define OSSL_SIGNATURE_PARAM_INSTANCE "instance"
-#endif
-
-#ifndef OSSL_SIGNATURE_PARAM_CONTEXT_STRING 
-#define OSSL_SIGNATURE_PARAM_CONTEXT_STRING "context-string"
-#endif
-
 static unsigned char *eddsa_group_q = NULL;
 static size_t group_q_len = 0;
 static EVP_PKEY *group_pkey = NULL;

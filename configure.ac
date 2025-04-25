@@ -260,6 +260,8 @@ if test "x$disable_lib_detection" = "xno"; then
                 [ssl_ver="3"])
 
             # Search for SSL and Crypto libs, and if it doesn't fail set the make vars accordingly
+            # Use this LD flag temporarily to hopefully avoid grabbing system openssl (todo: fix)
+            LDFLAGS="$LDFLAGS -L$iut_dir/lib64"
             AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [], [
                 LDFLAGS="$LDFLAGS -L$iut_dir/lib64"
                 unset ac_cv_search_EVP_EncryptInit # This value gets referenced as a cache so needs unsetting
@@ -299,6 +301,7 @@ if test "x$disable_lib_detection" = "xno"; then
     # Check for curl
     if test "x$libcurldir" != "x" ; then
         LDFLAGS="$LDFLAGS -L$libcurldir/lib"
+        CPPFLAGS="$CPPFLAGS -I$libcurldir/include"
         AC_CHECK_LIB([curl], [curl_easy_init], [],
             [AC_MSG_FAILURE(Curl not found in provided curl dir)], ["$lib_dependencies"])
     fi
