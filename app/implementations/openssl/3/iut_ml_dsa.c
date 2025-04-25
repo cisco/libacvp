@@ -16,6 +16,7 @@
 #include <openssl/core_names.h>
 #include <openssl/err.h>
 
+#define ML_DSA_MAX_BUF_SIZE 8192
 /* Stubs for new functions to allow old versions of OpenSSL to compile */
 #if OPENSSL_VERSION_NUMBER < 0x30400000L
 int EVP_PKEY_verify_message_init(EVP_PKEY_CTX *ctx, EVP_SIGNATURE *algo, const OSSL_PARAM params[]) {
@@ -112,8 +113,8 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             printf("Error generating key in ML-DSA keygen\n");
             goto end;
         }
-        EVP_PKEY_get_octet_string_param(pkey, OSSL_PKEY_PARAM_PRIV_KEY, tc->secret_key, 8192, &sk_len);
-        EVP_PKEY_get_octet_string_param(pkey, OSSL_PKEY_PARAM_PUB_KEY, tc->pub_key, 8192, &pk_len);
+        EVP_PKEY_get_octet_string_param(pkey, OSSL_PKEY_PARAM_PRIV_KEY, tc->secret_key, ML_DSA_MAX_BUF_SIZE, &sk_len);
+        EVP_PKEY_get_octet_string_param(pkey, OSSL_PKEY_PARAM_PUB_KEY, tc->pub_key, ML_DSA_MAX_BUF_SIZE, &pk_len);
         tc->secret_key_len = (int)sk_len;
         tc->pub_key_len = (int)pk_len;
         break;
@@ -206,7 +207,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
         }
 
         /* Copy results back into test case */
-        memcpy_s(tc->sig, 8192, sig_buf, sig_len);
+        memcpy_s(tc->sig, ML_DSA_MAX_BUF_SIZE, sig_buf, sig_len);
         tc->sig_len = (int)sig_len;
 
         break;

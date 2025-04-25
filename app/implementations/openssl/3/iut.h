@@ -112,6 +112,12 @@ ACVP_RESULT register_capabilities_fp_350(ACVP_CTX *ctx, APP_CONFIG *cfg);
 #ifndef OSSL_SIGNATURE_PARAM_TEST_ENTROPY
 #define OSSL_SIGNATURE_PARAM_TEST_ENTROPY "test-entropy"
 #endif
+#ifndef OSSL_PKEY_PARAM_ML_KEM_SEED
+#define OSSL_PKEY_PARAM_ML_KEM_SEED "seed"
+#endif
+#ifndef OSSL_KEM_PARAM_IKME
+#define OSSL_KEM_PARAM_IKME "ikme"
+#endif
 
 /* Added in 3.4.0 for EDDSA */
 #ifndef OSSL_SIGNATURE_PARAM_INSTANCE
