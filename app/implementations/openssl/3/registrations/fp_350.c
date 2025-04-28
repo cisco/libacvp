@@ -2405,7 +2405,32 @@ end:
 #endif
 
 static int enable_ml_kem(ACVP_CTX *ctx) {
-    return 0;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    rv = acvp_cap_ml_kem_enable(ctx, ACVP_ML_KEM_KEYGEN, &app_ml_kem_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_KEYGEN, ACVP_ML_KEM_PARAM_PARAMETER_SET, ACVP_ML_KEM_PARAM_SET_ML_KEM_512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_KEYGEN, ACVP_ML_KEM_PARAM_PARAMETER_SET, ACVP_ML_KEM_PARAM_SET_ML_KEM_768);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_KEYGEN, ACVP_ML_KEM_PARAM_PARAMETER_SET, ACVP_ML_KEM_PARAM_SET_ML_KEM_1024);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_ml_kem_enable(ctx, ACVP_ML_KEM_XCAP, &app_ml_kem_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP, ACVP_ML_KEM_PARAM_PARAMETER_SET, ACVP_ML_KEM_PARAM_SET_ML_KEM_512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP, ACVP_ML_KEM_PARAM_PARAMETER_SET, ACVP_ML_KEM_PARAM_SET_ML_KEM_768);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP, ACVP_ML_KEM_PARAM_PARAMETER_SET, ACVP_ML_KEM_PARAM_SET_ML_KEM_1024);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP, ACVP_ML_KEM_PARAM_FUNCTION, ACVP_ML_KEM_FUNCTION_ENCAPSULATE);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP, ACVP_ML_KEM_PARAM_FUNCTION, ACVP_ML_KEM_FUNCTION_DECAPSULATE);
+    CHECK_ENABLE_CAP_RV(rv);
+
+end:
+    return rv;
 }
 
 static int enable_ml_dsa(ACVP_CTX *ctx) {
