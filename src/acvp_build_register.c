@@ -5451,7 +5451,7 @@ static ACVP_RESULT acvp_build_slh_dsa_register_cap(ACVP_CTX *ctx,
         if (alg == ACVP_SUB_SLH_DSA_SIGGEN) {
             tf_val = slh_dsa_cap->deterministic; /* Must change if ACVP_DETERMINISTIC_MODE changes */
             if (acvp_append_true_false_array(cap_obj, "deterministic", tf_val) != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Error appending deterministic to ML-DSA JSON");
+                ACVP_LOG_ERR("Error appending deterministic to SLH-DSA JSON");
                 goto err;
             }
         }
