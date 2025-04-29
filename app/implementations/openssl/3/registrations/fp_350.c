@@ -38,6 +38,7 @@ static int enable_kts_ifc(ACVP_CTX *ctx);
 static int enable_kdf(ACVP_CTX *ctx);
 static int enable_ml_kem(ACVP_CTX *ctx);
 static int enable_ml_dsa(ACVP_CTX *ctx);
+static int enable_slh_dsa(ACVP_CTX *ctx);
 
 ACVP_RESULT register_capabilities_fp_350(ACVP_CTX *ctx, APP_CONFIG *cfg) {
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -61,6 +62,7 @@ ACVP_RESULT register_capabilities_fp_350(ACVP_CTX *ctx, APP_CONFIG *cfg) {
     if (cfg->safe_primes || cfg->testall) { if ((rv = enable_safe_primes(ctx))) goto end; }
     if (cfg->ml_kem || cfg->testall) { if ((rv = enable_ml_kem(ctx))) goto end; }
     if (cfg->ml_dsa || cfg->testall) { if ((rv = enable_ml_dsa(ctx))) goto end; }
+    if (cfg->slh_dsa || cfg->testall) { if ((rv = enable_slh_dsa(ctx))) goto end; }
 end:
     return rv;
 }
@@ -2449,9 +2451,9 @@ static int enable_ml_dsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_DETERMINISTIC_MODE, ACVP_DETERMINISTIC_BOTH);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_SIG_INTERFACE, ACVP_ML_DSA_SIG_INTERFACE_BOTH);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_SIG_INTERFACE, ACVP_SIG_INTERFACE_BOTH);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_PREHASH, ACVP_ML_DSA_PREHASH_NO);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_PREHASH, ACVP_SIG_PREHASH_NO);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_MU, ACVP_ML_DSA_MU_EXTERNAL);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2468,9 +2470,9 @@ static int enable_ml_dsa(ACVP_CTX *ctx) {
 
     rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_SIGVER, &app_ml_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_SIG_INTERFACE, ACVP_ML_DSA_SIG_INTERFACE_BOTH);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_SIG_INTERFACE, ACVP_SIG_INTERFACE_BOTH);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_PREHASH, ACVP_ML_DSA_PREHASH_NO);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_PREHASH, ACVP_SIG_PREHASH_NO);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_MU, ACVP_ML_DSA_MU_EXTERNAL);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2486,5 +2488,111 @@ static int enable_ml_dsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
 end:
+    return rv;
+}
+
+static int enable_slh_dsa(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    rv = acvp_cap_slh_dsa_enable(ctx, ACVP_SLH_DSA_KEYGEN, &app_slh_dsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_KEYGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_128S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_KEYGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_128F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_KEYGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_192S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_KEYGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_192F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_KEYGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_256S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_KEYGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_256F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_KEYGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_128S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_KEYGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_128F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_KEYGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_192S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_KEYGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_192F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_KEYGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_256S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_KEYGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_256F);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_slh_dsa_enable(ctx, ACVP_SLH_DSA_SIGGEN, &app_slh_dsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_DETERMINISTIC_MODE, ACVP_DETERMINISTIC_BOTH);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_SIG_INTERFACE, ACVP_SIG_INTERFACE_BOTH);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PREHASH, ACVP_SIG_PREHASH_NO);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_128S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_128F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_192S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_192F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_256S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_256F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_128S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_128F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_192S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_192F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_256S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_256F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_domain(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_MSG_LEN, 8, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_domain(ctx, ACVP_SLH_DSA_SIGGEN, 0, ACVP_SLH_DSA_PARAM_CONTEXT_LEN, 0, 2040, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_slh_dsa_enable(ctx, ACVP_SLH_DSA_SIGVER, &app_slh_dsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_SIG_INTERFACE, ACVP_SIG_INTERFACE_BOTH);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PREHASH, ACVP_SIG_PREHASH_NO);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_128S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_128F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_192S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_192F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_256S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_256F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_128S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_128F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_192S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_192F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_256S);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_parm(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_PARAMETER_SET, ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_256F);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_domain(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_MSG_LEN, 8, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_slh_dsa_set_domain(ctx, ACVP_SLH_DSA_SIGVER, 0, ACVP_SLH_DSA_PARAM_CONTEXT_LEN, 0, 2040, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+
+ end:
     return rv;
 }

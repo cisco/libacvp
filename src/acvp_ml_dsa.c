@@ -108,7 +108,7 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
                                     ACVP_ML_DSA_TESTTYPE type,
                                     ACVP_ML_DSA_PARAM_SET param_set,
                                     int is_deterministic,
-                                    ACVP_ML_DSA_SIG_INTERFACE sig_interface,
+                                    ACVP_SIG_INTERFACE sig_interface,
                                     int is_prehash,
                                     int is_mu_external,
                                     ACVP_HASH_ALG hash_alg,
@@ -134,6 +134,7 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
     /* The below values are only used in certain combinations of capabilities */
     stc->is_prehash = is_prehash;
     stc->is_mu_external = is_mu_external;
+    stc->hash_alg = hash_alg;
 
     /* buffers needed for both keys and sigs */
     stc->pub_key = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
@@ -197,7 +198,7 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
      * mu is provided for both, IF the sig interface is internal and mu is not
      */
     if (cipher == ACVP_ML_DSA_SIGGEN || cipher == ACVP_ML_DSA_SIGVER) {
-        if (!(sig_interface == ACVP_ML_DSA_SIG_INTERFACE_INTERNAL && is_mu_external)) {
+        if (!(sig_interface == ACVP_SIG_INTERFACE_INTERNAL && is_mu_external)) {
             stc->msg = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
             if (!stc->msg) {
                 goto err;
@@ -221,7 +222,7 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
             }
         }
 
-        if (sig_interface == ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL) {
+        if (sig_interface == ACVP_SIG_INTERFACE_EXTERNAL) {
             stc->context = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
             if (!stc->context) {
                 goto err;
@@ -262,26 +263,26 @@ static ACVP_ML_DSA_TESTTYPE read_test_type(const char *str) {
     return 0;
 }
 
-static ACVP_ML_DSA_SIG_INTERFACE read_sig_interface(const char *str) {
+static ACVP_SIG_INTERFACE read_sig_interface(const char *str) {
     int diff = 0;
 
     strcmp_s("internal", 8, str, &diff);
-    if (!diff) { return ACVP_ML_DSA_SIG_INTERFACE_INTERNAL; }
+    if (!diff) { return ACVP_SIG_INTERFACE_INTERNAL; }
     strcmp_s("external", 8, str, &diff);
-    if (!diff) { return ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL; }
+    if (!diff) { return ACVP_SIG_INTERFACE_EXTERNAL; }
 
-    return ACVP_ML_DSA_SIG_INTERFACE_NOT_SET;
+    return ACVP_SIG_INTERFACE_NOT_SET;
 }
 
-static ACVP_ML_DSA_PREHASH read_prehash(const char *str) {
+static ACVP_SIG_PREHASH read_prehash(const char *str) {
     int diff = 0;
 
     strcmp_s("pure", 4, str, &diff);
-    if (!diff) return ACVP_ML_DSA_PREHASH_NO;
+    if (!diff) return ACVP_SIG_PREHASH_NO;
     strcmp_s("preHash", 7, str, &diff);
-    if (!diff) return ACVP_ML_DSA_PREHASH_YES;
+    if (!diff) return ACVP_SIG_PREHASH_YES;
 
-    return ACVP_ML_DSA_PREHASH_NOT_SET;
+    return ACVP_SIG_PREHASH_NOT_SET;
 }
 
 ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
@@ -315,7 +316,7 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     ACVP_ML_DSA_TESTTYPE type = 0;
     ACVP_ML_DSA_PARAM_SET param_set = 0;
-    ACVP_ML_DSA_SIG_INTERFACE sig_interface = 0;
+    ACVP_SIG_INTERFACE sig_interface = 0;
     const char *alg_str = NULL, *mode_str = NULL, *type_str = NULL, *param_set_str = NULL,  *pub_str = NULL;
     const char *seed_str = NULL, *msg_str = NULL, *sig_str = NULL, *secret_str = NULL, *rnd_str = NULL;
     const char *prehash_str = NULL, *sig_interface_str = NULL, *context_str = NULL, *mu_str = NULL, *hash_alg_str = NULL;
@@ -430,26 +431,26 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             sig_interface = read_sig_interface(sig_interface_str);
-            if (sig_interface == ACVP_ML_DSA_SIG_INTERFACE_NOT_SET) {
+            if (sig_interface == ACVP_SIG_INTERFACE_NOT_SET) {
                 ACVP_LOG_ERR("Server JSON invalid 'signatureInterface'");
                 goto err;
             }
 
-            if (sig_interface == ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL) {
+            if (sig_interface == ACVP_SIG_INTERFACE_EXTERNAL) {
                 rv = acvp_get_tc_str_from_json(ctx, groupobj, "preHash", &prehash_str);
                 if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
                 switch(read_prehash(prehash_str)) {
-                case ACVP_ML_DSA_PREHASH_NO:
+                case ACVP_SIG_PREHASH_NO:
                     is_prehash = 0;
                     break;
-                case ACVP_ML_DSA_PREHASH_YES:
+                case ACVP_SIG_PREHASH_YES:
                     is_prehash = 1;
                     break;
-                case ACVP_ML_DSA_PREHASH_NOT_SET:
-                case ACVP_ML_DSA_PREHASH_BOTH:
+                case ACVP_SIG_PREHASH_NOT_SET:
+                case ACVP_SIG_PREHASH_BOTH:
                 default:
                     ACVP_LOG_ERR("Server JSON invalid 'preHash' value");
                     rv = ACVP_TC_INVALID_DATA;
@@ -494,7 +495,7 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (prehash_str) {
                 ACVP_LOG_VERBOSE("             preHash: %s", prehash_str);
             }
-            if (sig_interface == ACVP_ML_DSA_SIG_INTERFACE_INTERNAL) {
+            if (sig_interface == ACVP_SIG_INTERFACE_INTERNAL) {
                 ACVP_LOG_VERBOSE("           externalMu: %s", is_mu_external ? "true" : "false");
             }
         }
@@ -520,7 +521,7 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
             } else {
-                if (sig_interface == ACVP_ML_DSA_SIG_INTERFACE_INTERNAL && is_mu_external) {
+                if (sig_interface == ACVP_SIG_INTERFACE_INTERNAL && is_mu_external) {
                     mu_str = json_object_get_string(testobj, "mu");
                     if (!mu_str) {
                         ACVP_LOG_ERR("Server JSON missing 'mu'");
@@ -537,7 +538,7 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            if ((alg_id == ACVP_ML_DSA_SIGGEN || alg_id == ACVP_ML_DSA_SIGVER) && sig_interface == ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL && is_prehash == 1) {
+            if ((alg_id == ACVP_ML_DSA_SIGGEN || alg_id == ACVP_ML_DSA_SIGVER) && sig_interface == ACVP_SIG_INTERFACE_EXTERNAL && is_prehash == 1) {
                 rv = acvp_get_tc_str_from_json(ctx, testobj, "hashAlg", &hash_alg_str);
                 if (rv != ACVP_SUCCESS) {
                     goto err;
@@ -551,7 +552,7 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if ((alg_id == ACVP_ML_DSA_SIGGEN || alg_id == ACVP_ML_DSA_SIGVER) &&
-                (sig_interface == ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL)) {
+                (sig_interface == ACVP_SIG_INTERFACE_EXTERNAL)) {
                 rv = acvp_get_tc_str_from_json(ctx, testobj, "context", &context_str);
                 if (rv != ACVP_SUCCESS) {
                     goto err;

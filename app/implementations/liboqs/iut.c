@@ -73,9 +73,9 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_DETERMINISTIC_MODE, ACVP_DETERMINISTIC_BOTH);
         CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_SIG_INTERFACE, ACVP_ML_DSA_SIG_INTERFACE_BOTH);
+        rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_SIG_INTERFACE, ACVP_SIG_INTERFACE_BOTH);
         CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_PREHASH, ACVP_ML_DSA_PREHASH_NO);
+        rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_PREHASH, ACVP_SIG_PREHASH_NO);
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_MU, ACVP_ML_DSA_MU_INTERNAL);
         CHECK_ENABLE_CAP_RV(rv);
@@ -92,9 +92,9 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
 
         rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_SIGVER, &app_ml_dsa_handler);
         CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_SIG_INTERFACE, ACVP_ML_DSA_SIG_INTERFACE_BOTH);
+        rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_SIG_INTERFACE, ACVP_SIG_INTERFACE_BOTH);
         CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_PREHASH, ACVP_ML_DSA_PREHASH_NO);
+        rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_PREHASH, ACVP_SIG_PREHASH_NO);
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_MU, ACVP_ML_DSA_MU_INTERNAL);
         CHECK_ENABLE_CAP_RV(rv);

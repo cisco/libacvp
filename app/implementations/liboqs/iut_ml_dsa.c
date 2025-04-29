@@ -148,21 +148,21 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
     switch (tc->param_set) {
     case ACVP_ML_DSA_PARAM_SET_ML_DSA_44:
         param_set = OQS_SIG_alg_ml_dsa_44;
-        if (tc->sig_interface == ACVP_ML_DSA_SIG_INTERFACE_INTERNAL) {
+        if (tc->sig_interface == ACVP_SIG_INTERFACE_INTERNAL) {
             sig_gen_internal_func = pqcrystals_ml_dsa_44_ref_signature_internal;
             sig_ver_internal_func = pqcrystals_ml_dsa_44_ref_verify_internal;
         }
         break;
     case ACVP_ML_DSA_PARAM_SET_ML_DSA_65:
         param_set = OQS_SIG_alg_ml_dsa_65;
-        if (tc->sig_interface == ACVP_ML_DSA_SIG_INTERFACE_INTERNAL) {
+        if (tc->sig_interface == ACVP_SIG_INTERFACE_INTERNAL) {
             sig_gen_internal_func = pqcrystals_ml_dsa_65_ref_signature_internal;
             sig_ver_internal_func = pqcrystals_ml_dsa_65_ref_verify_internal;
         }
         break;
     case ACVP_ML_DSA_PARAM_SET_ML_DSA_87:
         param_set = OQS_SIG_alg_ml_dsa_87;
-        if (tc->sig_interface == ACVP_ML_DSA_SIG_INTERFACE_INTERNAL) {
+        if (tc->sig_interface == ACVP_SIG_INTERFACE_INTERNAL) {
             sig_gen_internal_func = pqcrystals_ml_dsa_87_ref_signature_internal;
             sig_ver_internal_func = pqcrystals_ml_dsa_87_ref_verify_internal;
         }
@@ -237,7 +237,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
 
         OQS_randombytes_custom_algorithm(&oqs_rng_callback_acvp);
 
-        if (tc->sig_interface == ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL) {
+        if (tc->sig_interface == ACVP_SIG_INTERFACE_EXTERNAL) {
             if (OQS_SIG_sign_with_ctx_str(sig, tc->sig, &outlen, tc->msg, (size_t)tc->msg_len, tc->context, (size_t)tc->context_len, tc->secret_key) != OQS_SUCCESS) {
                 printf("Failure generating signature with context in ML-DSA\n");
                 goto end;
@@ -254,7 +254,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SUB_ML_DSA_SIGVER:
         tc->ver_disposition = 0;
 
-        if (tc->sig_interface == ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL) {
+        if (tc->sig_interface == ACVP_SIG_INTERFACE_EXTERNAL) {
             if (OQS_SIG_verify_with_ctx_str(sig, tc->msg, (size_t)tc->msg_len, tc->sig, (size_t)tc->sig_len, tc->context, (size_t)tc->context_len, tc->pub_key) == OQS_SUCCESS) {
                 tc->ver_disposition = 1;
             }

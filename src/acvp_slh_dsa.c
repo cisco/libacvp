@@ -94,6 +94,7 @@ static ACVP_RESULT acvp_slh_dsa_release_tc(ACVP_SLH_DSA_TC *stc) {
     if (stc->rnd) free(stc->rnd);
     if (stc->msg) free(stc->msg);
     if (stc->sig) free(stc->sig);
+    if (stc->context) free(stc->context);
     memzero_s(stc, sizeof(ACVP_SLH_DSA_TC));
 
     return ACVP_SUCCESS;
@@ -105,6 +106,10 @@ static ACVP_RESULT acvp_slh_dsa_init_tc(ACVP_CTX *ctx,
                                     int tc_id,
                                     int tg_id,
                                     ACVP_SLH_DSA_PARAM_SET param_set,
+                                    int is_deterministic,
+                                    ACVP_SIG_INTERFACE sig_interface,
+                                    int is_prehash,
+                                    ACVP_HASH_ALG hash_alg,
                                     const char *pub_key,
                                     const char *secret_key,
                                     const char *secret_seed,
@@ -113,7 +118,7 @@ static ACVP_RESULT acvp_slh_dsa_init_tc(ACVP_CTX *ctx,
                                     const char *rnd,
                                     const char *msg,
                                     const char *sig,
-                                    int is_deterministic) {
+                                    const char *context) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     memzero_s(stc, sizeof(ACVP_SLH_DSA_TC));
@@ -123,6 +128,9 @@ static ACVP_RESULT acvp_slh_dsa_init_tc(ACVP_CTX *ctx,
     stc->cipher = cipher;
     stc->param_set = param_set;
     stc->is_deterministic = is_deterministic;
+    stc->sig_interface = sig_interface;
+    stc->is_prehash = is_prehash;
+    stc->hash_alg = hash_alg;
 
     stc->pub_key = calloc(ACVP_SLH_DSA_KEY_BYTE_MAX, sizeof(unsigned char));
     if (!stc->pub_key) {
@@ -216,6 +224,18 @@ static ACVP_RESULT acvp_slh_dsa_init_tc(ACVP_CTX *ctx,
                 return rv;
             }
         }
+
+        if (sig_interface == ACVP_SIG_INTERFACE_EXTERNAL) {
+            stc->context = calloc(ACVP_SLH_DSA_CTX_BYTE_MAX, sizeof(unsigned char));
+            if (!stc->context) {
+                goto err;
+            }
+            rv = acvp_hexstr_to_bin(context, stc->context, ACVP_SLH_DSA_CTX_BYTE_MAX, &(stc->context_len));
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex conversion failure (context)");
+                return rv;
+            }
+        }
     }
 
     return ACVP_SUCCESS;
@@ -223,6 +243,28 @@ static ACVP_RESULT acvp_slh_dsa_init_tc(ACVP_CTX *ctx,
 err:
     ACVP_LOG_ERR("Failed to allocate buffer in SLH-DSA test case");
     return ACVP_MALLOC_FAIL;
+}
+
+static ACVP_SIG_INTERFACE read_sig_interface(const char *str) {
+    int diff = 0;
+
+    strcmp_s("internal", 8, str, &diff);
+    if (!diff) { return ACVP_SIG_INTERFACE_INTERNAL; }
+    strcmp_s("external", 8, str, &diff);
+    if (!diff) { return ACVP_SIG_INTERFACE_EXTERNAL; }
+
+    return ACVP_SIG_INTERFACE_NOT_SET;
+}
+
+static ACVP_SIG_PREHASH read_prehash(const char *str) {
+    int diff = 0;
+
+    strcmp_s("pure", 4, str, &diff);
+    if (!diff) return ACVP_SIG_PREHASH_NO;
+    strcmp_s("preHash", 7, str, &diff);
+    if (!diff) return ACVP_SIG_PREHASH_YES;
+
+    return ACVP_SIG_PREHASH_NOT_SET;
 }
 
 ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
@@ -257,8 +299,11 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_SLH_DSA_PARAM_SET param_set = 0;
     const char *alg_str = NULL, *mode_str = NULL, *param_set_str = NULL,  *pub_str = NULL;
     const char *secret_seed_str = NULL, *secret_prf_str = NULL, *pub_seed_str = NULL, *msg_str = NULL,
-               *sig_str = NULL, *secret_str = NULL, *rnd_str = NULL;
-    int is_deterministic = 0;
+               *sig_str = NULL, *secret_str = NULL, *rnd_str = NULL, *context_str = NULL, *sig_interface_str = NULL,
+               *prehash_str = NULL, *hash_alg_str = NULL;
+    int is_deterministic = -1, is_prehash = -1;
+    ACVP_SIG_INTERFACE sig_interface = ACVP_SIG_INTERFACE_NOT_SET;
+    ACVP_HASH_ALG hash_alg = ACVP_NO_SHA;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -358,6 +403,44 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             is_deterministic = json_object_get_boolean(groupobj, "deterministic");
         }
 
+        if (alg_id == ACVP_SLH_DSA_SIGGEN || alg_id == ACVP_SLH_DSA_SIGVER) {
+            sig_interface_str = json_object_get_string(groupobj, "signatureInterface");
+            if (!sig_interface_str) {
+                ACVP_LOG_ERR("Server JSON missing 'signatureInterface'");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+            sig_interface = read_sig_interface(sig_interface_str);
+            if (sig_interface == ACVP_SIG_INTERFACE_NOT_SET) {
+                ACVP_LOG_ERR("Server JSON invalid 'signatureInterface'");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
+
+            if (sig_interface == ACVP_SIG_INTERFACE_EXTERNAL) {
+                prehash_str = json_object_get_string(groupobj, "preHash");
+                if (!prehash_str) {
+                    ACVP_LOG_ERR("Server JSON missing 'preHash'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+                switch(read_prehash(prehash_str)) {
+                case ACVP_SIG_PREHASH_NO:
+                    is_prehash = 0;
+                    break;
+                case ACVP_SIG_PREHASH_YES:
+                    is_prehash = 1;
+                    break;
+                case ACVP_SIG_PREHASH_NOT_SET:
+                case ACVP_SIG_PREHASH_BOTH:
+                default:
+                    ACVP_LOG_ERR("Server JSON invalid 'preHash' value");
+                    rv = ACVP_TC_INVALID_DATA;
+                    goto err;
+                }
+            }
+        }
+
         ACVP_LOG_VERBOSE("           Test group: %d", i);
         if (param_set_str) {
             ACVP_LOG_VERBOSE("            param set: %s", param_set_str);
@@ -408,6 +491,19 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
+
+                if (sig_interface == ACVP_SIG_INTERFACE_EXTERNAL && is_prehash == 1) {
+                    rv = acvp_get_tc_str_from_json(ctx, testobj, "hashAlg", &hash_alg_str);
+                    if (rv != ACVP_SUCCESS) {
+                        goto err;
+                    }
+                    hash_alg = acvp_lookup_hash_alg(hash_alg_str);
+                    if (hash_alg == ACVP_NO_SHA) {
+                        ACVP_LOG_ERR("Server JSON unknown 'hashAlg'");
+                        rv = ACVP_TC_INVALID_DATA;
+                        goto err;
+                    }
+                }
             }
 
             if (alg_id == ACVP_SLH_DSA_SIGVER) {
@@ -444,6 +540,15 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
+            if ((alg_id == ACVP_SLH_DSA_SIGGEN || alg_id == ACVP_SLH_DSA_SIGVER) && sig_interface == ACVP_SIG_INTERFACE_EXTERNAL) {
+                context_str = json_object_get_string(testobj, "context");
+                if (!context_str) {
+                    ACVP_LOG_ERR("Server JSON missing 'context'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+            }
+
             ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
             if (secret_seed_str) {
@@ -470,6 +575,9 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rnd_str) {
                 ACVP_LOG_VERBOSE("              rnd: %s", rnd_str);
             }
+            if (context_str) {
+                ACVP_LOG_VERBOSE("          context: %s", context_str);
+            }
 
             /* Create a new test case in the response */
             r_tval = json_value_init_object();
@@ -477,8 +585,9 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            rv = acvp_slh_dsa_init_tc(ctx, &stc, alg_id, tc_id, tg_id, param_set, pub_str,
-                                  secret_str, secret_seed_str, secret_prf_str, pub_seed_str, rnd_str, msg_str, sig_str, is_deterministic);
+            rv = acvp_slh_dsa_init_tc(ctx, &stc, alg_id, tc_id, tg_id, param_set, is_deterministic, sig_interface,
+                                      is_prehash, hash_alg, pub_str, secret_str, secret_seed_str, secret_prf_str,
+                                      pub_seed_str, rnd_str, msg_str, sig_str, context_str);
 
             /* Process the current test vector... */
             if (rv == ACVP_SUCCESS) {
