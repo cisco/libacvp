@@ -33,7 +33,8 @@ tmp_sources += implementations/openssl/3/iut.c \
                implementations/openssl/3/iut_rsa.c \
                implementations/openssl/3/iut_hash.c \
                implementations/openssl/3/iut_ml_dsa.c \
-               implementations/openssl/3/iut_ml_kem.c
+               implementations/openssl/3/iut_ml_kem.c \
+               implementations/openssl/3/iut_slh_dsa.c
 endif
 
 if APP_IUT_JENT

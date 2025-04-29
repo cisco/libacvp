@@ -78,6 +78,7 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case);
 int app_aes_handler_gmac(ACVP_TEST_CASE *test_case);
 int app_ml_dsa_handler(ACVP_TEST_CASE *test_case);
 int app_ml_kem_handler(ACVP_TEST_CASE *test_case);
+int app_slh_dsa_handler(ACVP_TEST_CASE *test_case);
 
 void app_aes_cleanup(void);
 void app_des_cleanup(void);
@@ -118,6 +119,12 @@ ACVP_RESULT register_capabilities_fp_350(ACVP_CTX *ctx, APP_CONFIG *cfg);
 #ifndef OSSL_KEM_PARAM_IKME
 #define OSSL_KEM_PARAM_IKME "ikme"
 #endif
+#ifndef OSSL_PKEY_PARAM_SLH_DSA_SEED
+#define OSSL_PKEY_PARAM_SLH_DSA_SEED "seed"
+#endif
+#ifndef OSSL_SIGNATURE_PARAM_MESSAGE_ENCODING
+#define OSSL_SIGNATURE_PARAM_MESSAGE_ENCODING "message-encoding"
+#endif
 
 /* Added in 3.4.0 for EDDSA */
 #ifndef OSSL_SIGNATURE_PARAM_INSTANCE
@@ -125,6 +132,11 @@ ACVP_RESULT register_capabilities_fp_350(ACVP_CTX *ctx, APP_CONFIG *cfg);
 #endif
 #ifndef OSSL_SIGNATURE_PARAM_CONTEXT_STRING
 #define OSSL_SIGNATURE_PARAM_CONTEXT_STRING "context-string"
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x30400000L
+int EVP_PKEY_verify_message_init(EVP_PKEY_CTX *ctx, EVP_SIGNATURE *algo, const OSSL_PARAM params[]);
+int EVP_PKEY_sign_message_init(EVP_PKEY_CTX *ctx, EVP_SIGNATURE *algo, const OSSL_PARAM params[]);
 #endif
 
 /* exposed at some point between 3.1.2 and 3.5 */

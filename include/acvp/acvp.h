@@ -2656,21 +2656,21 @@ typedef enum acvp_ml_dsa_param_set {
     ACVP_ML_DSA_PARAM_SET_MAX
 } ACVP_ML_DSA_PARAM_SET;
 
-/* @enum ACVP_ML_DSA_SIG_INTERFACE */
-typedef enum acvp_ml_dsa_sig_interface {
-    ACVP_ML_DSA_SIG_INTERFACE_NOT_SET = 0,
-    ACVP_ML_DSA_SIG_INTERFACE_INTERNAL,
-    ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL,
-    ACVP_ML_DSA_SIG_INTERFACE_BOTH
-} ACVP_ML_DSA_SIG_INTERFACE;
+/* @enum ACVP_SIG_INTERFACE */
+typedef enum ACVP_SIG_INTERFACE {
+    ACVP_SIG_INTERFACE_NOT_SET = 0,
+    ACVP_SIG_INTERFACE_INTERNAL,
+    ACVP_SIG_INTERFACE_EXTERNAL,
+    ACVP_SIG_INTERFACE_BOTH
+} ACVP_SIG_INTERFACE;
 
-/** @enum ACVP_ML_DSA_PREHASH - only applies when SIG_INTERFACE = EXTERNAL */
-typedef enum acvp_ml_dsa_prehash {
-    ACVP_ML_DSA_PREHASH_NOT_SET = 0, /**< Not set */
-    ACVP_ML_DSA_PREHASH_NO,          /**< No pre-hashing, AKA "pure" */
-    ACVP_ML_DSA_PREHASH_YES,         /**< Pre-hashing enabled */
-    ACVP_ML_DSA_PREHASH_BOTH         /**< Both pre-hashed and pure tests */
-} ACVP_ML_DSA_PREHASH;
+/** @enum ACVP_SIG_PREHASH - only applies when SIG_INTERFACE = EXTERNAL */
+typedef enum ACVP_SIG_PREHASH {
+    ACVP_SIG_PREHASH_NOT_SET = 0, /**< Not set */
+    ACVP_SIG_PREHASH_NO,          /**< No pre-hashing, AKA "pure" */
+    ACVP_SIG_PREHASH_YES,         /**< Pre-hashing enabled */
+    ACVP_SIG_PREHASH_BOTH         /**< Both pre-hashed and pure tests */
+} ACVP_SIG_PREHASH;
 
 /** @enum ACVP_ML_DSA_MU - only applies when SIG_INTERFACE = INTERNAL or BOTH */
 typedef enum acvp_ml_dsa_mu {
@@ -2706,6 +2706,7 @@ typedef struct acvp_ml_dsa_tc_t {
     ACVP_CIPHER cipher;
     ACVP_ML_DSA_TESTTYPE type;
     ACVP_ML_DSA_PARAM_SET param_set;
+    ACVP_HASH_ALG hash_alg;
 
     /* Both keys and sigs */
     unsigned char *pub_key;
@@ -2719,7 +2720,7 @@ typedef struct acvp_ml_dsa_tc_t {
 
     /* Signature values */
     int is_deterministic;
-    ACVP_ML_DSA_SIG_INTERFACE sig_interface;
+    ACVP_SIG_INTERFACE sig_interface;
     int is_prehash;
     int is_mu_external;
 
@@ -2811,8 +2812,12 @@ typedef struct acvp_ml_kem_tc_t {
 /** @enum ACVP_SLH_DSA_PARAM */
 typedef enum acvp_slh_dsa_param {
     ACVP_SLH_DSA_PARAM_PARAMETER_SET = 1,
+    ACVP_SLH_DSA_PARAM_SIG_INTERFACE,
+    ACVP_SLH_DSA_PARAM_PREHASH,
     ACVP_SLH_DSA_PARAM_DETERMINISTIC_MODE,
-    ACVP_SLH_DSA_PARAM_MSG_LENGTH
+    ACVP_SLH_DSA_PARAM_MSG_LEN,
+    ACVP_SLH_DSA_PARAM_HASH_ALG,
+    ACVP_SLH_DSA_PARAM_CONTEXT_LEN
 } ACVP_SLH_DSA_PARAM;
 
 /**
@@ -2848,6 +2853,8 @@ typedef struct acvp_slh_dsa_tc_t {
 
     ACVP_CIPHER cipher;
     ACVP_SLH_DSA_PARAM_SET param_set;
+    ACVP_SIG_INTERFACE sig_interface;
+    ACVP_HASH_ALG hash_alg;
 
     /* Both keygen and signatures */
     unsigned char *pub_key;
@@ -2865,13 +2872,15 @@ typedef struct acvp_slh_dsa_tc_t {
 
     /* Signatures */
     int is_deterministic;
+    int is_prehash;
     unsigned char *rnd; /* only if not deterministic */
     unsigned char *msg;
     unsigned char *sig;
-
+    unsigned char *context;
     int rnd_len;
     int msg_len;
     int sig_len;
+    int context_len;
     ACVP_TEST_DISPOSITION ver_disposition;
 
 } ACVP_SLH_DSA_TC;

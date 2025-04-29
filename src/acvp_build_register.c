@@ -5154,14 +5154,14 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
         json_object_set_value(cap_obj, "signatureInterfaces", json_value_init_array());
         temp_arr = json_object_get_array(cap_obj, "signatureInterfaces");
         switch(ml_dsa_cap->sig_interface) {
-        case ACVP_ML_DSA_SIG_INTERFACE_INTERNAL:
+        case ACVP_SIG_INTERFACE_INTERNAL:
             json_array_append_string(temp_arr, "internal");
             use_mu = 1;
             break;
-        case ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL:
+        case ACVP_SIG_INTERFACE_EXTERNAL:
             json_array_append_string(temp_arr, "external");
             break;
-        case ACVP_ML_DSA_SIG_INTERFACE_BOTH:
+        case ACVP_SIG_INTERFACE_BOTH:
             json_array_append_string(temp_arr, "internal");
             json_array_append_string(temp_arr, "external");
             use_mu = 1;
@@ -5182,13 +5182,13 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
         json_object_set_value(cap_obj, "preHash", json_value_init_array());
         temp_arr = json_object_get_array(cap_obj, "preHash");
         switch (ml_dsa_cap->prehash) {
-        case ACVP_ML_DSA_PREHASH_NO:
+        case ACVP_SIG_PREHASH_NO:
             json_array_append_string(temp_arr, "pure");
             break;
-        case ACVP_ML_DSA_PREHASH_YES:
+        case ACVP_SIG_PREHASH_YES:
             json_array_append_string(temp_arr, "preHash");
             break;
-        case ACVP_ML_DSA_PREHASH_BOTH:
+        case ACVP_SIG_PREHASH_BOTH:
             json_array_append_string(temp_arr, "pure");
             json_array_append_string(temp_arr, "preHash");
             break;
@@ -5382,6 +5382,7 @@ static ACVP_RESULT acvp_build_slh_dsa_register_cap(ACVP_CTX *ctx,
     ACVP_SUB_SLH_DSA alg = 0;
     ACVP_PARAM_LIST *sets = NULL;
     ACVP_SL_LIST *lengths = NULL;
+    int tf_val = 0;
 
     if (!cap_entry) {
         goto err;
@@ -5447,6 +5448,50 @@ static ACVP_RESULT acvp_build_slh_dsa_register_cap(ACVP_CTX *ctx,
         break;
     case ACVP_SUB_SLH_DSA_SIGGEN:
     case ACVP_SUB_SLH_DSA_SIGVER:
+        if (alg == ACVP_SUB_SLH_DSA_SIGGEN) {
+            tf_val = slh_dsa_cap->deterministic; /* Must change if ACVP_DETERMINISTIC_MODE changes */
+            if (acvp_append_true_false_array(cap_obj, "deterministic", tf_val) != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Error appending deterministic to SLH-DSA JSON");
+                goto err;
+            }
+        }
+
+        json_object_set_value(cap_obj, "signatureInterfaces", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "signatureInterfaces");
+        switch(slh_dsa_cap->sig_interface) {
+        case ACVP_SIG_INTERFACE_INTERNAL:
+            json_array_append_string(temp_arr, "internal");
+            break;
+        case ACVP_SIG_INTERFACE_EXTERNAL:
+            json_array_append_string(temp_arr, "external");
+            break;
+        case ACVP_SIG_INTERFACE_BOTH:
+            json_array_append_string(temp_arr, "internal");
+            json_array_append_string(temp_arr, "external");
+            break;
+        default:
+            ACVP_LOG_ERR("Invalid SLH-DSA signature interface");
+            goto err;
+        }
+
+        json_object_set_value(cap_obj, "preHash", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "preHash");
+        switch (slh_dsa_cap->prehash) {
+        case ACVP_SIG_PREHASH_NO:
+            json_array_append_string(temp_arr, "pure");
+            break;
+        case ACVP_SIG_PREHASH_YES:
+            json_array_append_string(temp_arr, "preHash");
+            break;
+        case ACVP_SIG_PREHASH_BOTH:
+            json_array_append_string(temp_arr, "pure");
+            json_array_append_string(temp_arr, "preHash");
+            break;
+        default:
+            ACVP_LOG_ERR("Invalid SLH-DSA preHash value");
+            goto err;
+        }
+
         json_object_set_value(cap_obj, "capabilities", json_value_init_array());
         cap_arr = json_object_get_array(cap_obj, "capabilities");
         while (group_obj) {
@@ -5478,30 +5523,45 @@ static ACVP_RESULT acvp_build_slh_dsa_register_cap(ACVP_CTX *ctx,
                 lengths = lengths->next;
             }
             json_array_append_value(cap_arr, temp_val);
+
+            if (group_obj->hash_algs) {
+                json_object_set_value(temp_obj, "hashAlgs", json_value_init_array());
+                temp_arr = json_object_get_array(temp_obj, "hashAlgs");
+                sets = group_obj->hash_algs;
+                while (sets) {
+                    tmp_str = acvp_lookup_hash_alg_name(sets->param);
+                    if (!tmp_str) {
+                        goto err;
+                    }
+                    json_array_append_string(temp_arr, tmp_str);
+                    sets = sets->next;
+                }
+            }
+
+            if (group_obj->context_len.values || group_obj->context_len.increment) {
+                json_object_set_value(temp_obj, "contextLength", json_value_init_array());
+                temp_arr = json_object_get_array(temp_obj, "contextLength");
+                if (group_obj->context_len.increment) {
+                    temp2_val = json_value_init_object();
+                    temp2_obj = json_value_get_object(temp2_val);
+                    json_object_set_number(temp2_obj, "min", group_obj->context_len.min);
+                    json_object_set_number(temp2_obj, "max", group_obj->context_len.max);
+                    json_object_set_number(temp2_obj, "increment", group_obj->context_len.increment);
+                    json_array_append_value(temp_arr, temp2_val);
+                }
+                if (group_obj->context_len.values) {
+                    lengths = group_obj->context_len.values;
+                    while (lengths) {
+                        json_array_append_number(temp_arr, lengths->length);
+                        lengths = lengths->next;
+                    }
+                }
+            }
             group_obj = group_obj->next;
         }
         break;
     default:
         goto err;
-    }
-
-    if (alg == ACVP_SUB_SLH_DSA_SIGGEN) {
-        json_object_set_value(cap_obj, "deterministic", json_value_init_array());
-        temp_arr = json_object_get_array(cap_obj, "deterministic");
-        switch (slh_dsa_cap->deterministic) {
-        case ACVP_DETERMINISTIC_NO:
-            json_array_append_boolean(temp_arr, 0);
-            break;
-        case ACVP_DETERMINISTIC_YES:
-            json_array_append_boolean(temp_arr, 1);
-            break;
-        case ACVP_DETERMINISTIC_BOTH:
-            json_array_append_boolean(temp_arr, 1);
-            json_array_append_boolean(temp_arr, 0);
-            break;
-        default:
-            goto err;
-        }
     }
 
     return ACVP_SUCCESS;

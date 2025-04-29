@@ -949,6 +949,10 @@
 #define ACVP_SLH_DSA_MSG_STR_MAX (ACVP_SLH_DSA_MSG_BIT_MAX >> 2)
 #define ACVP_SLH_DSA_MSG_BYTE_MAX (ACVP_SLH_DSA_MSG_BIT_MAX >> 3)
 
+#define ACVP_SLH_DSA_CTX_BIT_MAX 2040
+#define ACVP_SLH_DSA_CTX_STR_MAX (ACVP_SLH_DSA_CTX_BIT_MAX >> 2)
+#define ACVP_SLH_DSA_CTX_BYTE_MAX (ACVP_SLH_DSA_CTX_BIT_MAX >> 3)
+
 //technically 398848 from FIPS205 for SHA/SHAKE 256f variants, but the server may try incorrect long lengths for sigver
 #define ACVP_SLH_DSA_SIG_BIT_MAX 400000
 #define ACVP_SLH_DSA_SIG_STR_MAX (ACVP_SLH_DSA_SIG_BIT_MAX >> 2)
@@ -1700,8 +1704,8 @@ typedef struct acvp_ml_dsa_capability_t {
     ACVP_CIPHER cipher;
     ACVP_DETERMINISTIC_MODE deterministic;   /**< For siggen only */
     ACVP_ML_DSA_MU mu;                       /**< SigGen/SigVer mu mode */
-    ACVP_ML_DSA_SIG_INTERFACE sig_interface; /**< SigGen/SigVer interface */
-    ACVP_ML_DSA_PREHASH prehash;             /**< SigGen/SigVer prehash support */
+    ACVP_SIG_INTERFACE sig_interface;        /**< SigGen/SigVer interface */
+    ACVP_SIG_PREHASH prehash;                /**< SigGen/SigVer prehash support */
     ACVP_ML_DSA_CAP_GROUP *cap_group;        /**< Pointer to the first group of capabilities */
 } ACVP_ML_DSA_CAP;
 
@@ -1715,6 +1719,8 @@ typedef struct acvp_slh_dsa_cap_group_t {
     unsigned int group_id;
     ACVP_PARAM_LIST *param_sets;
     ACVP_JSON_DOMAIN_OBJ msg_len;
+    ACVP_PARAM_LIST *hash_algs;
+    ACVP_JSON_DOMAIN_OBJ context_len;
     struct acvp_slh_dsa_cap_group_t *next;
 } ACVP_SLH_DSA_CAP_GROUP;
 
@@ -1723,6 +1729,8 @@ typedef struct acvp_slh_dsa_capability_t {
     ACVP_CIPHER cipher;
     ACVP_SLH_DSA_CAP_GROUP *cap_group;
     ACVP_DETERMINISTIC_MODE deterministic; /* For siggen only */
+    ACVP_SIG_INTERFACE sig_interface; /* SigGen/SigVer interface */
+    ACVP_SIG_PREHASH prehash; /* SigGen/SigVer prehash support */
 } ACVP_SLH_DSA_CAP;
 
 typedef struct acvp_caps_list_t {

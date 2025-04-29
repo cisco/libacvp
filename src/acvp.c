@@ -631,6 +631,8 @@ static void acvp_cap_free_ml_dsa(ACVP_ML_DSA_CAP *cap) {
     while (group) {
         acvp_cap_free_pl(group->param_sets);
         acvp_cap_free_pl(group->hash_algs);
+        acvp_cap_free_domain(&group->msg_len);
+        acvp_cap_free_domain(&group->context_len);
         iter = group->next;
         free(group);
         group = iter;
@@ -649,6 +651,9 @@ static void acvp_cap_free_slh_dsa(ACVP_SLH_DSA_CAP *cap) {
 
     while (group) {
         acvp_cap_free_pl(group->param_sets);
+        acvp_cap_free_pl(group->hash_algs);
+        acvp_cap_free_domain(&group->msg_len);
+        acvp_cap_free_domain(&group->context_len);
         iter = group->next;
         free(group);
         group = iter;

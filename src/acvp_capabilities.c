@@ -10224,7 +10224,7 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
         if (group != 0) {
             ACVP_LOG_WARN("Group number supplied for ML-DSA signature interface but does not apply, ignoring");
         }
-        if (value <= ACVP_ML_DSA_SIG_INTERFACE_NOT_SET || value > ACVP_ML_DSA_SIG_INTERFACE_BOTH) {
+        if (value <= ACVP_SIG_INTERFACE_NOT_SET || value > ACVP_SIG_INTERFACE_BOTH) {
             ACVP_LOG_ERR("Invalid value provided for ML-DSA signature interface");
             return ACVP_INVALID_ARG;
         }
@@ -10234,12 +10234,12 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
         if (group != 0) {
             ACVP_LOG_WARN("Group number supplied for ML-DSA prehash mode but does not apply, ignoring");
         }
-        if (ml_dsa_cap->sig_interface != ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL &&
-            ml_dsa_cap->sig_interface != ACVP_ML_DSA_SIG_INTERFACE_BOTH) {
+        if (ml_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_EXTERNAL &&
+            ml_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_BOTH) {
             ACVP_LOG_ERR(" ML-DSA prehash mode can only be set when sig interface is external or both");
             return ACVP_INVALID_ARG;
         }
-        if (value <= ACVP_ML_DSA_PREHASH_NOT_SET || value > ACVP_ML_DSA_PREHASH_BOTH) {
+        if (value <= ACVP_SIG_PREHASH_NOT_SET || value > ACVP_SIG_PREHASH_BOTH) {
             ACVP_LOG_ERR("Invalid value provided for ML-DSA prehash mode");
             return ACVP_INVALID_ARG;
         }
@@ -10249,8 +10249,8 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
         if (group != 0) {
             ACVP_LOG_WARN("Group number supplied for ML-DSA mu mode but does not apply, ignoring");
         }
-        if (ml_dsa_cap->sig_interface != ACVP_ML_DSA_SIG_INTERFACE_INTERNAL &&
-            ml_dsa_cap->sig_interface != ACVP_ML_DSA_SIG_INTERFACE_BOTH) {
+        if (ml_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_INTERNAL &&
+            ml_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_BOTH) {
             ACVP_LOG_ERR(" ML-DSA mu mode can only be set when sig interface is internal or both");
             return ACVP_INVALID_ARG;
         }
@@ -10261,8 +10261,8 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
         ml_dsa_cap->mu = value;
         break;
     case ACVP_ML_DSA_PARAM_HASH_ALG:
-        if (ml_dsa_cap->prehash != ACVP_ML_DSA_PREHASH_YES &&
-            ml_dsa_cap->prehash != ACVP_ML_DSA_PREHASH_BOTH) {
+        if (ml_dsa_cap->prehash != ACVP_SIG_PREHASH_YES &&
+            ml_dsa_cap->prehash != ACVP_SIG_PREHASH_BOTH) {
             ACVP_LOG_ERR(" ML-DSA hash algorithm can only be set when prehash is yes or both");
             return ACVP_INVALID_ARG;
         }
@@ -10273,8 +10273,8 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
         acvp_append_param_list(&group_obj->hash_algs, value);
         break;
     case ACVP_ML_DSA_PARAM_CONTEXT_LEN:
-        if (ml_dsa_cap->sig_interface != ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL &&
-            ml_dsa_cap->sig_interface != ACVP_ML_DSA_SIG_INTERFACE_BOTH) {
+        if (ml_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_EXTERNAL &&
+            ml_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_BOTH) {
             ACVP_LOG_ERR(" ML-DSA context length can only be set when sig interface is external or both");
             return ACVP_INVALID_ARG;
         }
@@ -10369,8 +10369,8 @@ ACVP_RESULT acvp_cap_ml_dsa_set_domain(ACVP_CTX *ctx,
         group_obj->msg_len.increment = increment;
         break;
     case ACVP_ML_DSA_PARAM_CONTEXT_LEN:
-        if (ml_dsa_cap->sig_interface != ACVP_ML_DSA_SIG_INTERFACE_EXTERNAL &&
-            ml_dsa_cap->sig_interface != ACVP_ML_DSA_SIG_INTERFACE_BOTH) {
+        if (ml_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_EXTERNAL &&
+            ml_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_BOTH) {
             ACVP_LOG_ERR(" ML-DSA context length can only be set when sig interface is external or both");
             return ACVP_INVALID_ARG;
         }
@@ -10550,6 +10550,18 @@ ACVP_RESULT acvp_cap_slh_dsa_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Group must be 0 for SLH-DSA keygen");
             return ACVP_INVALID_ARG;
         }
+        switch (param) {
+        case ACVP_SLH_DSA_PARAM_DETERMINISTIC_MODE:
+        case ACVP_SLH_DSA_PARAM_MSG_LEN:
+        case ACVP_SLH_DSA_PARAM_SIG_INTERFACE:
+        case ACVP_SLH_DSA_PARAM_PREHASH:
+        case ACVP_SLH_DSA_PARAM_CONTEXT_LEN:
+            ACVP_LOG_ERR("Tried setting non-applicable parameter for SLH-DSA KeyGen");
+            return ACVP_INVALID_ARG;
+        case ACVP_SLH_DSA_PARAM_PARAMETER_SET:
+        default:
+            break;
+        }
         slh_dsa_cap = cap->cap.slh_dsa_keygen_cap;
         break;
     case ACVP_SUB_SLH_DSA_SIGGEN:
@@ -10610,12 +10622,61 @@ ACVP_RESULT acvp_cap_slh_dsa_set_parm(ACVP_CTX *ctx,
         }
         slh_dsa_cap->deterministic = value;
         return ACVP_SUCCESS;
-    case ACVP_SLH_DSA_PARAM_MSG_LENGTH:
+    case ACVP_SLH_DSA_PARAM_SIG_INTERFACE:
+        if (group != 0) {
+            ACVP_LOG_WARN("Group number supplied for SLH-DSA signature interface but does not apply, ignoring");
+        }
+        if (value <= ACVP_SIG_INTERFACE_NOT_SET || value > ACVP_SIG_INTERFACE_BOTH) {
+            ACVP_LOG_ERR("Invalid value provided for SLH-DSA signature interface");
+            return ACVP_INVALID_ARG;
+        }
+        slh_dsa_cap->sig_interface = value;
+        break;
+    case ACVP_SLH_DSA_PARAM_PREHASH:
+        if (group != 0) {
+            ACVP_LOG_WARN("Group number supplied for SLH-DSA prehash mode but does not apply, ignoring");
+        }
+        if (slh_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_EXTERNAL &&
+            slh_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_BOTH) {
+            ACVP_LOG_ERR(" SLH-DSA prehash mode can only be set when sig interface is external or both");
+            return ACVP_INVALID_ARG;
+        }
+        if (value <= ACVP_SIG_PREHASH_NOT_SET || value > ACVP_SIG_PREHASH_BOTH) {
+            ACVP_LOG_ERR("Invalid value provided for SLH-DSA prehash mode");
+            return ACVP_INVALID_ARG;
+        }
+        slh_dsa_cap->prehash = value;
+        break;
+    case ACVP_SLH_DSA_PARAM_HASH_ALG:
+        if (slh_dsa_cap->prehash != ACVP_SIG_PREHASH_YES &&
+            slh_dsa_cap->prehash != ACVP_SIG_PREHASH_BOTH) {
+            ACVP_LOG_ERR(" SLH-DSA hash algorithm can only be set when prehash is yes or both");
+            return ACVP_INVALID_ARG;
+        }
+        if (value <= ACVP_NO_SHA || value >= ACVP_HASH_ALG_MAX) {
+            ACVP_LOG_ERR("Invalid hash algorithm provided for SLH-DSA");
+            return ACVP_INVALID_ARG;
+        }
+        acvp_append_param_list(&group_obj->hash_algs, value);
+        break;
+    case ACVP_SLH_DSA_PARAM_MSG_LEN:
         if (value < 8 || value > ACVP_SLH_DSA_MSG_BIT_MAX || value % 8 != 0) {
             ACVP_LOG_ERR("Invalid length for SLH-DSA message length (Min: 8, Max: %d)\n", ACVP_SLH_DSA_MSG_BIT_MAX);
             return ACVP_INVALID_ARG;
         }
         acvp_append_sl_list(&group_obj->msg_len.values, value);
+        break;
+    case ACVP_SLH_DSA_PARAM_CONTEXT_LEN:
+        if (slh_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_EXTERNAL &&
+            slh_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_BOTH) {
+            ACVP_LOG_ERR(" SLH-DSA context length can only be set when sig interface is external or both");
+            return ACVP_INVALID_ARG;
+        }
+        if (value < 0 || value > ACVP_SLH_DSA_CTX_BIT_MAX) {
+            ACVP_LOG_ERR("Invalid value provided for SLH-DSA context length (Min: 0, Max: %d)\n", ACVP_SLH_DSA_CTX_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+        acvp_append_sl_list(&group_obj->context_len.values, value);
         break;
     default:
         ACVP_LOG_ERR("Invalid parameter provided for SLH-DSA");
@@ -10692,7 +10753,7 @@ ACVP_RESULT acvp_cap_slh_dsa_set_domain(ACVP_CTX *ctx,
     }
 
     switch (param) {
-    case ACVP_SLH_DSA_PARAM_MSG_LENGTH:
+    case ACVP_SLH_DSA_PARAM_MSG_LEN:
         if (min < 8 || max > ACVP_SLH_DSA_MSG_BIT_MAX || increment % 8 != 0) {
             ACVP_LOG_ERR("Invalid domain provided for SLH-DSA message length (Min: 8, Max: %d, Increment: 8)\n", ACVP_SLH_DSA_MSG_BIT_MAX);
             return ACVP_INVALID_ARG;
@@ -10701,8 +10762,25 @@ ACVP_RESULT acvp_cap_slh_dsa_set_domain(ACVP_CTX *ctx,
         group_obj->msg_len.max = max;
         group_obj->msg_len.increment = increment;
         break;
+    case ACVP_SLH_DSA_PARAM_CONTEXT_LEN:
+        if (slh_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_EXTERNAL &&
+            slh_dsa_cap->sig_interface != ACVP_SIG_INTERFACE_BOTH) {
+            ACVP_LOG_ERR(" SLH-DSA context length can only be set when sig interface is external or both");
+            return ACVP_INVALID_ARG;
+        }
+        if (min < 0 || max > ACVP_SLH_DSA_CTX_BIT_MAX || increment % 8 != 0) {
+            ACVP_LOG_ERR("Invalid value provided for SLH-DSA context length (Min: 0, Max: %d)\n", ACVP_SLH_DSA_CTX_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+        group_obj->context_len.min = min;
+        group_obj->context_len.max = max;
+        group_obj->context_len.increment = increment;
+        break;
     case ACVP_SLH_DSA_PARAM_PARAMETER_SET:
     case ACVP_SLH_DSA_PARAM_DETERMINISTIC_MODE:
+    case ACVP_SLH_DSA_PARAM_SIG_INTERFACE:
+    case ACVP_SLH_DSA_PARAM_PREHASH:
+    case ACVP_SLH_DSA_PARAM_HASH_ALG:
     default:
         ACVP_LOG_ERR("Invalid parameter provided for SLH-DSA domain");
         return ACVP_INVALID_ARG;
