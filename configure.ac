@@ -67,6 +67,8 @@ lib_dependencies=""
 ssl_ver=""
 iut_cflags=""
 iut_ldflags=""
+iut_lib_flags=""
+iut_lib_name=""
 
 # Option to disable app builds
 AC_ARG_ENABLE([app],
@@ -176,6 +178,7 @@ AC_ARG_ENABLE([wrapper-library],
 # This var should be set to indicate the crypto library being tested with a given build of acvp_app
 # This does not apply for --disable-app builds
 # Set default value here, change based on args below 
+# iut_lib_name should match the name of the library lib<name>. Multiple library names can be referenced using single space delimiter.
 acvp_app_iut=""
 iut_specified=0;
 # SSL dir only used if building app too 
@@ -184,24 +187,23 @@ if test "x$disable_app" = "xno" ; then
     AC_ARG_WITH([ssl-dir],
         [AS_HELP_STRING([--with-ssl-dir],
         [location of OpenSSL install folder])],
-        [iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="openssl"; iut_lflag="-lssl -lcrypto"],
+        [iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="openssl"; iut_lib_name="ssl crypto"; use_strict_linking="yes"],
         [])
-    # If using SSL >= 3.0.0, FIPS is mananged at runtime
 
     AC_ARG_WITH([jent-dir],
         [AS_HELP_STRING([--with-jent-dir],
         [Path to JENT install directory])],
-        [iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="jent"; iut_lflag="-ljitterentropy"],
+        [iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="jent"; iut_lib_name="jitterentropy"; use_strict_linking="yes"],
         [])
 
     AC_ARG_WITH([liboqs-dir],
         [AS_HELP_STRING([--with-liboqs-dir],
         [Path to liboqs install directory])],
-        [iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="liboqs"; iut_lflag="-loqs"],
+        [iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="liboqs"; iut_lib_name="oqs"; use_strict_linking="yes"],
         [])
 
     if test $iut_specified -gt 1 ; then
-        AC_MSG_FAILURE([Multiple testable implementations provided. Please only provide a path to one testable implementations])
+        AC_MSG_FAILURE([Multiple testable implementations provided. Please only provide a path to one testable implementation])
     fi
 
     if test $iut_specified -eq 0 ; then
@@ -232,26 +234,61 @@ if test "x$disable_lib_detection" = "xno"; then
         LDFLAGS=" -Wl,--allow-multiple-definition $LDFLAGS"
     fi
 
+    if test "x$enable_offline" != "xfalse"; then
+        AC_SEARCH_LIBS([gzdopen], [z], [lib_dependencies+="-lz "], [], [])
+    fi
+
     if test "x$disable_app" = "xno" ; then
         ##########################################################
         # Begin checks for IUT. Only one of these should be done #
         ##########################################################
 
-        LDFLAGS="$LDFLAGS -L$iut_dir/lib"
-        CPPFLAGS="-I$iut_dir/include"
-        use_lib64="false"
+        # Note about linking behavior for IUTs:
+        # By default, compiler/linker tends to look in its preset system directories for libraries if it cannot find libraries
+        # In the path we have provided. In the case of IUT testing, we definitely do not want this. We ONLY want to link to a
+        # IUT in a user provided path, so we don't accidentally link to and test a system library. There really is not a great
+        # mechanism to exclude grabbing specific libraries from the system paths; you can exclude all system dirs, but then the
+        # project does not know how to link to the system level dependencies like libc or even crt0. The best approach is seemingly
+        # to point the linker to the EXACT path and name of the library you want. However, we often still want to automatically
+        # detect and switch between static or shared libraries (check for shared, if none, use static). That is logic we have to
+        # handle ourselves.
+
+        if test "x$use_strict_linking" = "xyes"; then
+            # Iterate over each library in iut_lib_name. set IFS to a space; use IFS to parse the words. Hopefully is portable enough.
+            tmp_ifs="$IFS"
+            IFS=" "
+            for lib in $iut_lib_name; do
+                AC_MSG_CHECKING(for presence of lib${lib} in lib/lib64 dirs)
+                # Check for shared libraries in lib64, then lib. If no match, check for static libraries in either dir.
+                if test -f "$iut_dir/lib64/lib${lib}.so"; then
+                    iut_lib_flags+="$iut_dir/lib64/lib${lib}.so "
+                elif test -f "$iut_dir/lib64/lib${lib}.dylib"; then
+                    iut_lib_flags+="$iut_dir/lib64/lib${lib}.dylib "
+                elif test -f "$iut_dir/lib/lib${lib}.so"; then
+                    iut_lib_flags+="$iut_dir/lib/lib${lib}.so "
+                elif test -f "$iut_dir/lib/lib${lib}.dylib"; then
+                    iut_lib_flags+="$iut_dir/lib/lib${lib}.dylib "
+                elif test -f "$iut_dir/lib64/lib${lib}.a"; then
+                    iut_lib_flags+="$iut_dir/lib64/lib${lib}.a "
+                elif test -f "$iut_dir/lib/lib${lib}.a"; then
+                    iut_lib_flags+="$iut_dir/lib/lib${lib}.a "
+                else
+                    AC_MSG_FAILURE([Cannot locate lib${lib} in $iut_dir/lib64 or $iut_dir/lib])
+                fi
+                AC_MSG_RESULT(yes)
+            done
+            IFS="$tmp_ifs"
+            tmp_cflags="$CFLAGS"
+            CFLAGS="$CFLAGS -I$iut_dir/include"
+            LIBS="$iut_lib_flags $LIBS"
+        fi
 
         if test "x$acvp_app_iut" = "xopenssl"; then
-            # OpenSSL can depend on libdl; Curl can depend on libz. Check if these are present
-            # and add them to LIBS if so.
             AC_SEARCH_LIBS([dlopen], [dl], [lib_dependencies+="-ldl "], [], [])
-            AC_SEARCH_LIBS([gzdopen], [z], [lib_dependencies+="-lz "], [], [])
 
-            # Check what version of SSL is being linked.
-            AC_CHECK_HEADER([openssl/opensslv.h], [], [AC_MSG_FAILURE([Unable to read opensslslv.h to determine SSL library version])])
             AC_COMPILE_IFELSE(
                 [AC_LANG_PROGRAM([[
-                    #include <openssl/opensslv.h>
+                    #include <$iut_dir/include/openssl/opensslv.h>
                     #if OPENSSL_VERSION_NUMBER >= 0x30000000L
                     #error "Detected OpenSSL version 3.0.0 or greater"
                     #endif
@@ -259,29 +296,40 @@ if test "x$disable_lib_detection" = "xno"; then
                 [AC_MSG_FAILURE([OpenSSL versions under 3 not currently supported])],
                 [ssl_ver="3"])
 
-            # Search for SSL and Crypto libs, and if it doesn't fail set the make vars accordingly
-            # Use this LD flag temporarily to hopefully avoid grabbing system openssl (todo: fix)
-            LDFLAGS="$LDFLAGS -L$iut_dir/lib64"
-            AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [], [
-                LDFLAGS="$LDFLAGS -L$iut_dir/lib64"
-                unset ac_cv_search_EVP_EncryptInit # This value gets referenced as a cache so needs unsetting
-                AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [use_lib64="true"], 
-                               [AC_MSG_FAILURE([Cannot locate libcrypto])], ["$lib_dependencies"])],
-            [])
-
-            AC_SEARCH_LIBS([SSL_CTX_new], [ssl], [],
-                        [AC_MSG_FAILURE([Cannot locate libssl])], ["$lib_dependencies"])
+            # Attempt to link to IUT. We don't use AC_SEARCH_LIBS or CHECK_LIB here since we need to control search paths
+            AC_MSG_CHECKING(for link to libcrypto)
+            AC_LINK_IFELSE(
+                [AC_LANG_PROGRAM([
+                    #include <openssl/evp.h>
+                ], [EVP_CIPHER_CTX_get_num(NULL);])],
+                [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given libcrypto])]
+            )
+            AC_MSG_CHECKING(for link to libssl)
+            AC_LINK_IFELSE(
+                [AC_LANG_PROGRAM([
+                    #include <openssl/ssl.h>
+                ], [SSL_CTX_get0_param(NULL);])],
+                [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given libssl])]
+            )
 
         elif test "x$acvp_app_iut" = "xjent"; then
 
-            AC_SEARCH_LIBS([jent_entropy_init], [jitterentropy], [],
-                        [AC_MSG_FAILURE([Cannot locate libjitterentropy])], ["$lib_dependencies"])
+            AC_MSG_CHECKING(for link to jitterentropy)
+            AC_LINK_IFELSE(
+                [AC_LANG_PROGRAM([
+                    #include <jitterentropy.h>
+                ], [jent_entropy_init();])],
+                [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given liboqs])]
+            )
 
         elif test "x$acvp_app_iut" = "xliboqs"; then
-            lib_dependencies+="-lcrypto "
-            AC_SEARCH_LIBS([OQS_version], [oqs], [],
-                        [AC_MSG_FAILURE([Cannot locate liboqs])], ["$lib_dependencies"])
-
+            AC_MSG_CHECKING(for link to liboqs)
+            AC_LINK_IFELSE(
+                [AC_LANG_PROGRAM([
+                    #include <oqs/common.h>
+                ], [OQS_version();])],
+                [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given liboqs])]
+            )
         fi
         ######################
         # End checks for IUT #
@@ -310,6 +358,9 @@ if test "x$disable_lib_detection" = "xno"; then
     CPPFLAGS="$proj_temp_cppflags"
     LDFLAGS="$pre_ldflags"
     LIBS="$pre_libs"
+    if test "x$use_strict_linking" = "xyes"; then
+        CFLAGS="$tmp_cflags"
+    fi
 else
     #assume we are using openssl 3.X if lib check is disabled
     if test "x$acvp_app_iut" = "xopenssl"; then
@@ -331,18 +382,16 @@ if test "x$disable_app" = "xno" ; then
     # Set any IUT specific flags not captured previously
 
     # Set flags needed for all IUTs
-    iut_cflags="-I$iut_dir/include $iut_cflags"
+    iut_cflags="-I$iut_dir/include"
 
-    if test "x$use_lib64" = "xtrue" ; then
-        iut_ldflags="$iut_ldflags -L$iut_dir/lib64"
-    else
+    if test "x$use_strict_linking" != "xyes"; then
         iut_ldflags="$iut_ldflags -L$iut_dir/lib"
     fi
 
     # Send the flags off to the automake files
     AC_SUBST([IUT_CFLAGS], "$iut_cflags")
-    AC_SUBST([IUT_LDFLAGS], "$iut_ldflags $iut_lflag")
-
+    AC_SUBST([IUT_LDFLAGS], "$iut_ldflags")
+    AC_SUBST([IUT_LIBS], "$iut_lib_flags")
 fi
 
 # Tell the automake files which IUT we are using. Only one of these should ever be enabled.

@@ -688,6 +688,7 @@ APP_IUT_OPENSSL_1_FALSE
 APP_IUT_OPENSSL_1_TRUE
 APP_IUT_JENT_FALSE
 APP_IUT_JENT_TRUE
+IUT_LIBS
 IUT_LDFLAGS
 IUT_CFLAGS
 FORCE_STATIC_FALSE
@@ -12759,6 +12760,8 @@ lib_dependencies=""
 ssl_ver=""
 iut_cflags=""
 iut_ldflags=""
+iut_lib_flags=""
+iut_lib_name=""
 
 # Option to disable app builds
 # Check whether --enable-app was given.
@@ -12948,6 +12951,7 @@ fi
 # This var should be set to indicate the crypto library being tested with a given build of acvp_app
 # This does not apply for --disable-app builds
 # Set default value here, change based on args below
+# iut_lib_name should match the name of the library lib<name>. Multiple library names can be referenced using single space delimiter.
 acvp_app_iut=""
 iut_specified=0;
 # SSL dir only used if building app too
@@ -12957,16 +12961,15 @@ if test "x$disable_app" = "xno" ; then
 # Check whether --with-ssl-dir was given.
 if test ${with_ssl_dir+y}
 then :
-  withval=$with_ssl_dir; iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="openssl"; iut_lflag="-lssl -lcrypto"
+  withval=$with_ssl_dir; iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="openssl"; iut_lib_name="ssl crypto"; use_strict_linking="yes"
 fi
 
-    # If using SSL >= 3.0.0, FIPS is mananged at runtime
 
 
 # Check whether --with-jent-dir was given.
 if test ${with_jent_dir+y}
 then :
-  withval=$with_jent_dir; iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="jent"; iut_lflag="-ljitterentropy"
+  withval=$with_jent_dir; iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="jent"; iut_lib_name="jitterentropy"; use_strict_linking="yes"
 fi
 
 
@@ -12974,14 +12977,14 @@ fi
 # Check whether --with-liboqs-dir was given.
 if test ${with_liboqs_dir+y}
 then :
-  withval=$with_liboqs_dir; iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="liboqs"; iut_lflag="-loqs"
+  withval=$with_liboqs_dir; iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="liboqs"; iut_lib_name="oqs"; use_strict_linking="yes"
 fi
 
 
     if test $iut_specified -gt 1 ; then
         { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "Multiple testable implementations provided. Please only provide a path to one testable implementations
+as_fn_error $? "Multiple testable implementations provided. Please only provide a path to one testable implementation
 See \`config.log' for more details" "$LINENO" 5; }
     fi
 
@@ -13016,18 +13019,119 @@ if test "x$disable_lib_detection" = "xno"; then
         LDFLAGS=" -Wl,--allow-multiple-definition $LDFLAGS"
     fi
 
+    if test "x$enable_offline" != "xfalse"; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing gzdopen" >&5
+printf %s "checking for library containing gzdopen... " >&6; }
+if test ${ac_cv_search_gzdopen+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+char gzdopen ();
+int
+main (void)
+{
+return gzdopen ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' z
+do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_search_gzdopen=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext
+  if test ${ac_cv_search_gzdopen+y}
+then :
+  break
+fi
+done
+if test ${ac_cv_search_gzdopen+y}
+then :
+
+else $as_nop
+  ac_cv_search_gzdopen=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_gzdopen" >&5
+printf "%s\n" "$ac_cv_search_gzdopen" >&6; }
+ac_res=$ac_cv_search_gzdopen
+if test "$ac_res" != no
+then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+  lib_dependencies+="-lz "
+fi
+
+    fi
+
     if test "x$disable_app" = "xno" ; then
         ##########################################################
         # Begin checks for IUT. Only one of these should be done #
         ##########################################################
 
-        LDFLAGS="$LDFLAGS -L$iut_dir/lib"
-        CPPFLAGS="-I$iut_dir/include"
-        use_lib64="false"
+        # Note about linking behavior for IUTs:
+        # By default, compiler/linker tends to look in its preset system directories for libraries if it cannot find libraries
+        # In the path we have provided. In the case of IUT testing, we definitely do not want this. We ONLY want to link to a
+        # IUT in a user provided path, so we don't accidentally link to and test a system library. There really is not a great
+        # mechanism to exclude grabbing specific libraries from the system paths; you can exclude all system dirs, but then the
+        # project does not know how to link to the system level dependencies like libc or even crt0. The best approach is seemingly
+        # to point the linker to the EXACT path and name of the library you want. However, we often still want to automatically
+        # detect and switch between static or shared libraries (check for shared, if none, use static). That is logic we have to
+        # handle ourselves.
+
+        if test "x$use_strict_linking" = "xyes"; then
+            # Iterate over each library in iut_lib_name. set IFS to a space; use IFS to parse the words. Hopefully is portable enough.
+            tmp_ifs="$IFS"
+            IFS=" "
+            for lib in $iut_lib_name; do
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for presence of lib${lib} in lib/lib64 dirs" >&5
+printf %s "checking for presence of lib${lib} in lib/lib64 dirs... " >&6; }
+                # Check for shared libraries in lib64, then lib. If no match, check for static libraries in either dir.
+                if test -f "$iut_dir/lib64/lib${lib}.so"; then
+                    iut_lib_flags+="$iut_dir/lib64/lib${lib}.so "
+                elif test -f "$iut_dir/lib64/lib${lib}.dylib"; then
+                    iut_lib_flags+="$iut_dir/lib64/lib${lib}.dylib "
+                elif test -f "$iut_dir/lib/lib${lib}.so"; then
+                    iut_lib_flags+="$iut_dir/lib/lib${lib}.so "
+                elif test -f "$iut_dir/lib/lib${lib}.dylib"; then
+                    iut_lib_flags+="$iut_dir/lib/lib${lib}.dylib "
+                elif test -f "$iut_dir/lib64/lib${lib}.a"; then
+                    iut_lib_flags+="$iut_dir/lib64/lib${lib}.a "
+                elif test -f "$iut_dir/lib/lib${lib}.a"; then
+                    iut_lib_flags+="$iut_dir/lib/lib${lib}.a "
+                else
+                    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Cannot locate lib${lib} in $iut_dir/lib64 or $iut_dir/lib
+See \`config.log' for more details" "$LINENO" 5; }
+                fi
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+            done
+            IFS="$tmp_ifs"
+            tmp_cflags="$CFLAGS"
+            CFLAGS="$CFLAGS -I$iut_dir/include"
+            LIBS="$iut_lib_flags $LIBS"
+        fi
 
         if test "x$acvp_app_iut" = "xopenssl"; then
-            # OpenSSL can depend on libdl; Curl can depend on libz. Check if these are present
-            # and add them to LIBS if so.
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing dlopen" >&5
 printf %s "checking for library containing dlopen... " >&6; }
 if test ${ac_cv_search_dlopen+y}
@@ -13087,82 +13191,11 @@ then :
   lib_dependencies+="-ldl "
 fi
 
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing gzdopen" >&5
-printf %s "checking for library containing gzdopen... " >&6; }
-if test ${ac_cv_search_gzdopen+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char gzdopen ();
-int
-main (void)
-{
-return gzdopen ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' z
-do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_search_gzdopen=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext
-  if test ${ac_cv_search_gzdopen+y}
-then :
-  break
-fi
-done
-if test ${ac_cv_search_gzdopen+y}
-then :
-
-else $as_nop
-  ac_cv_search_gzdopen=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_gzdopen" >&5
-printf "%s\n" "$ac_cv_search_gzdopen" >&6; }
-ac_res=$ac_cv_search_gzdopen
-if test "$ac_res" != no
-then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-  lib_dependencies+="-lz "
-fi
-
-
-            # Check what version of SSL is being linked.
-            ac_fn_c_check_header_compile "$LINENO" "openssl/opensslv.h" "ac_cv_header_openssl_opensslv_h" "$ac_includes_default"
-if test "x$ac_cv_header_openssl_opensslv_h" = xyes
-then :
-
-else $as_nop
-  { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "Unable to read opensslslv.h to determine SSL library version
-See \`config.log' for more details" "$LINENO" 5; }
-fi
 
             cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-                    #include <openssl/opensslv.h>
+                    #include <$iut_dir/include/openssl/opensslv.h>
                     #if OPENSSL_VERSION_NUMBER >= 0x30000000L
                     #error "Detected OpenSSL version 3.0.0 or greater"
                     #endif
@@ -13186,336 +13219,124 @@ else $as_nop
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
-            # Search for SSL and Crypto libs, and if it doesn't fail set the make vars accordingly
-            # Use this LD flag temporarily to hopefully avoid grabbing system openssl (todo: fix)
-            LDFLAGS="$LDFLAGS -L$iut_dir/lib64"
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing EVP_EncryptInit" >&5
-printf %s "checking for library containing EVP_EncryptInit... " >&6; }
-if test ${ac_cv_search_EVP_EncryptInit+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+            # Attempt to link to IUT. We don't use AC_SEARCH_LIBS or CHECK_LIB here since we need to control search paths
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to libcrypto" >&5
+printf %s "checking for link to libcrypto... " >&6; }
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char EVP_EncryptInit ();
+                    #include <openssl/evp.h>
+
 int
 main (void)
 {
-return EVP_EncryptInit ();
+EVP_CIPHER_CTX_get_num(NULL);
   ;
   return 0;
 }
 _ACEOF
-for ac_lib in '' crypto
-do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_link "$LINENO"
 then :
-  ac_cv_search_EVP_EncryptInit=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext
-  if test ${ac_cv_search_EVP_EncryptInit+y}
-then :
-  break
-fi
-done
-if test ${ac_cv_search_EVP_EncryptInit+y}
-then :
-
-else $as_nop
-  ac_cv_search_EVP_EncryptInit=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_EVP_EncryptInit" >&5
-printf "%s\n" "$ac_cv_search_EVP_EncryptInit" >&6; }
-ac_res=$ac_cv_search_EVP_EncryptInit
-if test "$ac_res" != no
-then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-else $as_nop
-
-                LDFLAGS="$LDFLAGS -L$iut_dir/lib64"
-                unset ac_cv_search_EVP_EncryptInit # This value gets referenced as a cache so needs unsetting
-                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing EVP_EncryptInit" >&5
-printf %s "checking for library containing EVP_EncryptInit... " >&6; }
-if test ${ac_cv_search_EVP_EncryptInit+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char EVP_EncryptInit ();
-int
-main (void)
-{
-return EVP_EncryptInit ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' crypto
-do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib "$lib_dependencies" $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_search_EVP_EncryptInit=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext
-  if test ${ac_cv_search_EVP_EncryptInit+y}
-then :
-  break
-fi
-done
-if test ${ac_cv_search_EVP_EncryptInit+y}
-then :
-
-else $as_nop
-  ac_cv_search_EVP_EncryptInit=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_EVP_EncryptInit" >&5
-printf "%s\n" "$ac_cv_search_EVP_EncryptInit" >&6; }
-ac_res=$ac_cv_search_EVP_EncryptInit
-if test "$ac_res" != no
-then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-  use_lib64="true"
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
 else $as_nop
   { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "Cannot locate libcrypto
+as_fn_error $? "Cannot link to given libcrypto
 See \`config.log' for more details" "$LINENO" 5; }
-fi
 
 fi
-
-
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing SSL_CTX_new" >&5
-printf %s "checking for library containing SSL_CTX_new... " >&6; }
-if test ${ac_cv_search_SSL_CTX_new+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to libssl" >&5
+printf %s "checking for link to libssl... " >&6; }
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char SSL_CTX_new ();
+                    #include <openssl/ssl.h>
+
 int
 main (void)
 {
-return SSL_CTX_new ();
+SSL_CTX_get0_param(NULL);
   ;
   return 0;
 }
 _ACEOF
-for ac_lib in '' ssl
-do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib "$lib_dependencies" $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_link "$LINENO"
 then :
-  ac_cv_search_SSL_CTX_new=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext
-  if test ${ac_cv_search_SSL_CTX_new+y}
-then :
-  break
-fi
-done
-if test ${ac_cv_search_SSL_CTX_new+y}
-then :
-
-else $as_nop
-  ac_cv_search_SSL_CTX_new=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_SSL_CTX_new" >&5
-printf "%s\n" "$ac_cv_search_SSL_CTX_new" >&6; }
-ac_res=$ac_cv_search_SSL_CTX_new
-if test "$ac_res" != no
-then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
 else $as_nop
   { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "Cannot locate libssl
+as_fn_error $? "Cannot link to given libssl
 See \`config.log' for more details" "$LINENO" 5; }
-fi
 
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
 
         elif test "x$acvp_app_iut" = "xjent"; then
 
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing jent_entropy_init" >&5
-printf %s "checking for library containing jent_entropy_init... " >&6; }
-if test ${ac_cv_search_jent_entropy_init+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to jitterentropy" >&5
+printf %s "checking for link to jitterentropy... " >&6; }
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char jent_entropy_init ();
+                    #include <jitterentropy.h>
+
 int
 main (void)
 {
-return jent_entropy_init ();
+jent_entropy_init();
   ;
   return 0;
 }
 _ACEOF
-for ac_lib in '' jitterentropy
-do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib "$lib_dependencies" $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_link "$LINENO"
 then :
-  ac_cv_search_jent_entropy_init=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext
-  if test ${ac_cv_search_jent_entropy_init+y}
-then :
-  break
-fi
-done
-if test ${ac_cv_search_jent_entropy_init+y}
-then :
-
-else $as_nop
-  ac_cv_search_jent_entropy_init=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_jent_entropy_init" >&5
-printf "%s\n" "$ac_cv_search_jent_entropy_init" >&6; }
-ac_res=$ac_cv_search_jent_entropy_init
-if test "$ac_res" != no
-then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
 else $as_nop
   { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "Cannot locate libjitterentropy
+as_fn_error $? "Cannot link to given liboqs
 See \`config.log' for more details" "$LINENO" 5; }
-fi
 
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
 
         elif test "x$acvp_app_iut" = "xliboqs"; then
-            lib_dependencies+="-lcrypto "
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing OQS_version" >&5
-printf %s "checking for library containing OQS_version... " >&6; }
-if test ${ac_cv_search_OQS_version+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to liboqs" >&5
+printf %s "checking for link to liboqs... " >&6; }
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char OQS_version ();
+                    #include <oqs/common.h>
+
 int
 main (void)
 {
-return OQS_version ();
+OQS_version();
   ;
   return 0;
 }
 _ACEOF
-for ac_lib in '' oqs
-do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib "$lib_dependencies" $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_link "$LINENO"
 then :
-  ac_cv_search_OQS_version=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext
-  if test ${ac_cv_search_OQS_version+y}
-then :
-  break
-fi
-done
-if test ${ac_cv_search_OQS_version+y}
-then :
-
-else $as_nop
-  ac_cv_search_OQS_version=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_OQS_version" >&5
-printf "%s\n" "$ac_cv_search_OQS_version" >&6; }
-ac_res=$ac_cv_search_OQS_version
-if test "$ac_res" != no
-then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
 else $as_nop
   { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "Cannot locate liboqs
+as_fn_error $? "Cannot link to given liboqs
 See \`config.log' for more details" "$LINENO" 5; }
+
 fi
-
-
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
         fi
         ######################
         # End checks for IUT #
@@ -13636,6 +13457,9 @@ fi
     CPPFLAGS="$proj_temp_cppflags"
     LDFLAGS="$pre_ldflags"
     LIBS="$pre_libs"
+    if test "x$use_strict_linking" = "xyes"; then
+        CFLAGS="$tmp_cflags"
+    fi
 else
     #assume we are using openssl 3.X if lib check is disabled
     if test "x$acvp_app_iut" = "xopenssl"; then
@@ -13657,19 +13481,18 @@ if test "x$disable_app" = "xno" ; then
     # Set any IUT specific flags not captured previously
 
     # Set flags needed for all IUTs
-    iut_cflags="-I$iut_dir/include $iut_cflags"
+    iut_cflags="-I$iut_dir/include"
 
-    if test "x$use_lib64" = "xtrue" ; then
-        iut_ldflags="$iut_ldflags -L$iut_dir/lib64"
-    else
+    if test "x$use_strict_linking" != "xyes"; then
         iut_ldflags="$iut_ldflags -L$iut_dir/lib"
     fi
 
     # Send the flags off to the automake files
     IUT_CFLAGS="$iut_cflags"
 
-    IUT_LDFLAGS="$iut_ldflags $iut_lflag"
+    IUT_LDFLAGS="$iut_ldflags"
 
+    IUT_LIBS="$iut_lib_flags"
 
 fi
 
