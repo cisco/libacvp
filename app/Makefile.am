@@ -55,7 +55,7 @@ acvp_app_includedir=$(includedir)/acvp
 acvp_app_SOURCES = ${tmp_sources}
 acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(IUT_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS)
 acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) $(IUT_LDFLAGS)
-acvp_app_LDADD = $(ADDL_LIB_DEPENDENCIES)
+acvp_app_LDADD =  $(IUT_LIBS) $(ADDL_LIB_DEPENDENCIES)
 
 if FORCE_STATIC
 acvp_app_LDFLAGS += -all-static

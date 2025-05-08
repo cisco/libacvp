@@ -277,6 +277,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 IUT_CFLAGS = @IUT_CFLAGS@
 IUT_LDFLAGS = @IUT_LDFLAGS@
+IUT_LIBS = @IUT_LIBS@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBACVP_CFLAGS = @LIBACVP_CFLAGS@
@@ -379,7 +380,7 @@ AUTOMAKE_OPTIONS = foreign
 @LIB_NOT_SUPPORTED_FALSE@LIB_DIR = src
 @LIB_NOT_SUPPORTED_TRUE@LIB_DIR = 
 dist_data_DATA = README.md
-EXTRA_DIST = ms docker certs scripts metadata murl test Doxyfile
+EXTRA_DIST = ms docker certs scripts metadata murl test Doxyfile app/implementations/stubs
 SUBDIRS = safe_c_stub $(LIB_DIR) $(APP_DIR) $(TEST_DIR)
 all: all-recursive
 

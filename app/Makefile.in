@@ -314,7 +314,8 @@ am__objects_8 = acvp_app-app_main.$(OBJEXT) acvp_app-app_cli.$(OBJEXT) \
 	$(am__objects_6) $(am__objects_7)
 @BUILD_APP_AS_LIB_FALSE@am_acvp_app_OBJECTS = $(am__objects_8)
 acvp_app_OBJECTS = $(am_acvp_app_OBJECTS)
-@BUILD_APP_AS_LIB_FALSE@acvp_app_DEPENDENCIES = $(am__DEPENDENCIES_1)
+@BUILD_APP_AS_LIB_FALSE@acvp_app_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+@BUILD_APP_AS_LIB_FALSE@	$(am__DEPENDENCIES_1)
 acvp_app_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(acvp_app_CFLAGS) \
 	$(CFLAGS) $(acvp_app_LDFLAGS) $(LDFLAGS) -o $@
@@ -487,6 +488,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 IUT_CFLAGS = @IUT_CFLAGS@
 IUT_LDFLAGS = @IUT_LDFLAGS@
+IUT_LIBS = @IUT_LIBS@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBACVP_CFLAGS = @LIBACVP_CFLAGS@
@@ -593,7 +595,7 @@ tmp_sources = app_main.c app_cli.c app_utils.c app_lcl.h totp/totp.c \
 @BUILD_APP_AS_LIB_FALSE@acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) \
 @BUILD_APP_AS_LIB_FALSE@	$(IUT_LDFLAGS) $(am__append_4) \
 @BUILD_APP_AS_LIB_FALSE@	$(am__append_5)
-@BUILD_APP_AS_LIB_FALSE@acvp_app_LDADD = $(ADDL_LIB_DEPENDENCIES)
+@BUILD_APP_AS_LIB_FALSE@acvp_app_LDADD = $(IUT_LIBS) $(ADDL_LIB_DEPENDENCIES)
 @BUILD_APP_AS_LIB_TRUE@lib_LTLIBRARIES = libacvp_app.la
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_includedir = ${includedir}/acvp
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_la_SOURCES = ${tmp_sources}
