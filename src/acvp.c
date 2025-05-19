@@ -1774,6 +1774,7 @@ ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filenam
         } else {
             printf("%s,\n", ctx->curl_buf);
         }
+        vsid_url = NULL;
     }
     //append the final ']'
     rv = acvp_json_serialize_to_file_pretty_a(NULL, save_filename);
