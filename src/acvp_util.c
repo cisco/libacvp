@@ -1161,7 +1161,7 @@ ACVP_DRBG_CAP_GROUP *acvp_create_drbg_group(ACVP_DRBG_MODE_LIST *mode, int group
     return grp;
 }
 
-ACVP_ML_DSA_CAP_GROUP *acvp_locate_ml_dsa_cap_group(ACVP_ML_DSA_CAP *cap, int id) {
+ACVP_ML_DSA_CAP_GROUP *acvp_locate_ml_dsa_cap_group(ACVP_ML_DSA_CAP *cap, unsigned int id) {
     ACVP_ML_DSA_CAP_GROUP *group = cap->cap_group;
     while (group) {
         if (group->group_id == id) {
@@ -1172,7 +1172,7 @@ ACVP_ML_DSA_CAP_GROUP *acvp_locate_ml_dsa_cap_group(ACVP_ML_DSA_CAP *cap, int id
     return NULL;
 }
 
-ACVP_SLH_DSA_CAP_GROUP *acvp_locate_slh_dsa_cap_group(ACVP_SLH_DSA_CAP *cap, int id) {
+ACVP_SLH_DSA_CAP_GROUP *acvp_locate_slh_dsa_cap_group(ACVP_SLH_DSA_CAP *cap, unsigned int id) {
     ACVP_SLH_DSA_CAP_GROUP *group = cap->cap_group;
     while (group) {
         if (group->group_id == id) {

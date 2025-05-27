@@ -2177,8 +2177,8 @@ ACVP_DRBG_MODE_LIST *acvp_create_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_
 ACVP_DRBG_CAP_GROUP *acvp_locate_drbg_group_entry(ACVP_DRBG_MODE_LIST *mode, int group);
 ACVP_DRBG_CAP_GROUP *acvp_create_drbg_group(ACVP_DRBG_MODE_LIST *mode, int group);
 
-ACVP_ML_DSA_CAP_GROUP *acvp_locate_ml_dsa_cap_group(ACVP_ML_DSA_CAP *cap, int id);
-ACVP_SLH_DSA_CAP_GROUP *acvp_locate_slh_dsa_cap_group(ACVP_SLH_DSA_CAP *cap, int id);
+ACVP_ML_DSA_CAP_GROUP *acvp_locate_ml_dsa_cap_group(ACVP_ML_DSA_CAP *cap, unsigned int id);
+ACVP_SLH_DSA_CAP_GROUP *acvp_locate_slh_dsa_cap_group(ACVP_SLH_DSA_CAP *cap, unsigned int id);
 
 const char *acvp_lookup_rsa_sig_type_str(ACVP_RSA_SIG_TYPE type);
 const char *acvp_lookup_rsa_mask_func_str(ACVP_RSA_MASK_FUNCTION func);
