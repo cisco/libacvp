@@ -114,6 +114,9 @@
     <ClCompile Include="..\..\src\acvp_ml_kem.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\acvp_slh_dsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\acvp_operating_env.c">
       <Filter>Source Files</Filter>
     </ClCompile>

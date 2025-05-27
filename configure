@@ -13076,7 +13076,7 @@ ac_res=$ac_cv_search_gzdopen
 if test "$ac_res" != no
 then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-  lib_dependencies+="-lz "
+  lib_dependencies="${lib_dependencies} -lz "
 fi
 
     fi
@@ -13105,17 +13105,17 @@ fi
 printf %s "checking for presence of lib${lib} in lib/lib64 dirs... " >&6; }
                 # Check for shared libraries in lib64, then lib. If no match, check for static libraries in either dir.
                 if test -f "$iut_dir/lib64/lib${lib}.so"; then
-                    iut_lib_flags+="$iut_dir/lib64/lib${lib}.so "
+                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.so "
                 elif test -f "$iut_dir/lib64/lib${lib}.dylib"; then
-                    iut_lib_flags+="$iut_dir/lib64/lib${lib}.dylib "
+                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.dylib "
                 elif test -f "$iut_dir/lib/lib${lib}.so"; then
-                    iut_lib_flags+="$iut_dir/lib/lib${lib}.so "
+                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.so "
                 elif test -f "$iut_dir/lib/lib${lib}.dylib"; then
-                    iut_lib_flags+="$iut_dir/lib/lib${lib}.dylib "
+                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.dylib "
                 elif test -f "$iut_dir/lib64/lib${lib}.a"; then
-                    iut_lib_flags+="$iut_dir/lib64/lib${lib}.a "
+                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.a "
                 elif test -f "$iut_dir/lib/lib${lib}.a"; then
-                    iut_lib_flags+="$iut_dir/lib/lib${lib}.a "
+                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.a "
                 else
                     { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
@@ -13128,7 +13128,7 @@ printf "%s\n" "yes" >&6; }
             IFS="$tmp_ifs"
             tmp_cflags="$CFLAGS"
             CFLAGS="$CFLAGS -I$iut_dir/include"
-            LIBS="$iut_lib_flags $LIBS"
+            LIBS="${iut_lib_flags} $LIBS"
         fi
 
         if test "x$acvp_app_iut" = "xopenssl"; then
@@ -13188,7 +13188,7 @@ ac_res=$ac_cv_search_dlopen
 if test "$ac_res" != no
 then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-  lib_dependencies+="-ldl "
+  lib_dependencies="${lib_dependencies} -ldl "
 fi
 
 
@@ -13230,7 +13230,7 @@ printf %s "checking for link to libcrypto... " >&6; }
 int
 main (void)
 {
-EVP_CIPHER_CTX_get_num(NULL);
+OpenSSL_version(0);
   ;
   return 0;
 }

@@ -1,20 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="fom|Win32">
-      <Configuration>fom</Configuration>
+    <ProjectConfiguration Include="openssl3|Win32">
+      <Configuration>openssl3</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="fom|x64">
-      <Configuration>fom</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="nofom|Win32">
-      <Configuration>nofom</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="nofom|x64">
-      <Configuration>nofom</Configuration>
+    <ProjectConfiguration Include="openssl3|x64">
+      <Configuration>openssl3</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -25,19 +17,11 @@
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='fom|x64'">
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='openssl3|x64'">
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='fom|Win32'">
-    <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='nofom|x64'">
-    <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='nofom|Win32'">
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='openssl3|Win32'">
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -47,95 +31,69 @@
   <ImportGroup Label="Shared">
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='fom|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='openssl3|Win32'">
     <OutDir>$(SolutionDir)\build\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='fom|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='openssl3|x64'">
     <OutDir>$(SolutionDir)\build\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='nofom|x64'">
-    <OutDir>$(SolutionDir)\build\</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
-  </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='fom|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='openssl3|Win32'">
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;Normaliz.lib;Ws2_32.lib;Wldap32.lib;crypt32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libacvp.lib;fipscanister.lib;libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;Normaliz.lib;Ws2_32.lib;Wldap32.lib;crypt32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libacvp.lib;libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS);$(ProjectDir)..\..\safe_c_stub\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ACV_INC_PATHS);$(ProjectDir)..\..\safe_c_stub\include;$(ProjectDir)..\..\totp;$(ProjectDir)..\..\app\</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='fom|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='openssl3|x64'">
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;Normaliz.lib;Ws2_32.lib;Wldap32.lib;crypt32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libacvp.lib;fipscanister.lib;libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;Normaliz.lib;Ws2_32.lib;Wldap32.lib;crypt32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libacvp.lib;libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS);$(ProjectDir)..\..\safe_c_stub\include</AdditionalIncludeDirectories>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='nofom|Win32'">
-    <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;Normaliz.lib;Ws2_32.lib;Wldap32.lib;crypt32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libacvp.lib;libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
-    </Link>
-    <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS);$(ProjectDir)..\..\safe_c_stub\include</AdditionalIncludeDirectories>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='nofom|x64'">
-    <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;Normaliz.lib;Ws2_32.lib;Wldap32.lib;crypt32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libacvp.lib;libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
-    </Link>
-    <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS);$(ProjectDir)..\..\safe_c_stub\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ACV_INC_PATHS);$(ProjectDir)..\..\safe_c_stub\include;$(ProjectDir)..\..\app\totp;$(ProjectDir)..\..\app\</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\app_aes.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_aes.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_cmac.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_des.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_drbg.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_dsa.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_ecdsa.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_eddsa.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_hmac.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kas.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kdf.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kda.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kmac.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_ml_dsa.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_ml_kem.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_slh_dsa.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_rsa.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_hash.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_utils.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_30X.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_312.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_340.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_350.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\non_fips.c" />
     <ClCompile Include="..\..\app\app_cli.c" />
-    <ClCompile Include="..\..\app\app_cmac.c" />
-    <ClCompile Include="..\..\app\app_des.c" />
-    <ClCompile Include="..\..\app\app_drbg.c" />
-    <ClCompile Include="..\..\app\app_dsa.c" />
-    <ClCompile Include="..\..\app\app_ecdsa.c" />
-    <ClCompile Include="..\..\app\app_eddsa.c" />
-    <ClCompile Include="..\..\app\app_hmac.c" />
-    <ClCompile Include="..\..\app\app_kas.c" />
-    <ClCompile Include="..\..\app\app_kdf.c" />
-    <ClCompile Include="..\..\app\app_kda.c" />
-    <ClCompile Include="..\..\app\app_kmac.c" />
-    <ClCompile Include="..\..\app\app_lms.c" />
-    <ClCompile Include="..\..\app\app_ml_dsa.c" />
-    <ClCompile Include="..\..\app\app_ml_kem.c" />
-    <ClCompile Include="..\..\app\app_main.c" />
-    <ClCompile Include="..\..\app\app_rsa.c" />
-    <ClCompile Include="..\..\app\app_sha.c" />
     <ClCompile Include="..\..\app\app_utils.c" />
+    <ClCompile Include="..\..\app\app_main.c" />
+    <ClCompile Include="..\..\app\totp\hmac_sha256.c" />
+    <ClCompile Include="..\..\app\totp\sha256.c" />
+    <ClCompile Include="..\..\app\totp\totp.c" />
     <ClCompile Include="..\..\safe_c_stub\src\safe_str_stub.c" />
     <ClCompile Include="..\..\safe_c_stub\src\safe_mem_stub.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\app\app_fips_init_lcl.h" />
-    <ClInclude Include="..\..\app\app_fips_lcl.h" />
-    <ClInclude Include="..\..\app\app_lcl.h" />
-    <ClInclude Include="..\..\app\ketopt.h" />
-    <ClCompile Include="..\..\safe_c_stub\include\mem_primitives_lib.h" />
-    <ClCompile Include="..\..\safe_c_stub\include\safe_lib.h" />
-    <ClCompile Include="..\..\safe_c_stub\include\safe_lib_errno.h" />
-    <ClCompile Include="..\..\safe_c_stub\include\safe_mem_lib.h" />
-    <ClCompile Include="..\..\safe_c_stub\include\safe_str_lib.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

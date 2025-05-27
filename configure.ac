@@ -235,7 +235,7 @@ if test "x$disable_lib_detection" = "xno"; then
     fi
 
     if test "x$enable_offline" != "xfalse"; then
-        AC_SEARCH_LIBS([gzdopen], [z], [lib_dependencies+="-lz "], [], [])
+        AC_SEARCH_LIBS([gzdopen], [z], [lib_dependencies="${lib_dependencies} -lz "], [], [])
     fi
 
     if test "x$disable_app" = "xno" ; then
@@ -261,17 +261,17 @@ if test "x$disable_lib_detection" = "xno"; then
                 AC_MSG_CHECKING(for presence of lib${lib} in lib/lib64 dirs)
                 # Check for shared libraries in lib64, then lib. If no match, check for static libraries in either dir.
                 if test -f "$iut_dir/lib64/lib${lib}.so"; then
-                    iut_lib_flags+="$iut_dir/lib64/lib${lib}.so "
+                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.so "
                 elif test -f "$iut_dir/lib64/lib${lib}.dylib"; then
-                    iut_lib_flags+="$iut_dir/lib64/lib${lib}.dylib "
+                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.dylib "
                 elif test -f "$iut_dir/lib/lib${lib}.so"; then
-                    iut_lib_flags+="$iut_dir/lib/lib${lib}.so "
+                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.so "
                 elif test -f "$iut_dir/lib/lib${lib}.dylib"; then
-                    iut_lib_flags+="$iut_dir/lib/lib${lib}.dylib "
+                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.dylib "
                 elif test -f "$iut_dir/lib64/lib${lib}.a"; then
-                    iut_lib_flags+="$iut_dir/lib64/lib${lib}.a "
+                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.a "
                 elif test -f "$iut_dir/lib/lib${lib}.a"; then
-                    iut_lib_flags+="$iut_dir/lib/lib${lib}.a "
+                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.a "
                 else
                     AC_MSG_FAILURE([Cannot locate lib${lib} in $iut_dir/lib64 or $iut_dir/lib])
                 fi
@@ -280,11 +280,11 @@ if test "x$disable_lib_detection" = "xno"; then
             IFS="$tmp_ifs"
             tmp_cflags="$CFLAGS"
             CFLAGS="$CFLAGS -I$iut_dir/include"
-            LIBS="$iut_lib_flags $LIBS"
+            LIBS="${iut_lib_flags} $LIBS"
         fi
 
         if test "x$acvp_app_iut" = "xopenssl"; then
-            AC_SEARCH_LIBS([dlopen], [dl], [lib_dependencies+="-ldl "], [], [])
+            AC_SEARCH_LIBS([dlopen], [dl], [lib_dependencies="${lib_dependencies} -ldl "], [], [])
 
             AC_COMPILE_IFELSE(
                 [AC_LANG_PROGRAM([[
@@ -301,7 +301,7 @@ if test "x$disable_lib_detection" = "xno"; then
             AC_LINK_IFELSE(
                 [AC_LANG_PROGRAM([
                     #include <openssl/evp.h>
-                ], [EVP_CIPHER_CTX_get_num(NULL);])],
+                ], [OpenSSL_version(0);])],
                 [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given libcrypto])]
             )
             AC_MSG_CHECKING(for link to libssl)
