@@ -15,64 +15,94 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\app_aes.c">
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_aes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_cmac.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_des.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_drbg.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_dsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_ecdsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_eddsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_hmac.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kas.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kdf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kda.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kmac.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_ml_dsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_ml_kem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_slh_dsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_rsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_hash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_utils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_30X.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_312.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_340.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_350.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\non_fips.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\app_cli.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\app_cmac.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_des.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_drbg.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_dsa.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_ecdsa.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_eddsa.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_hmac.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_kas.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_kdf.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_kda.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_kmac.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_lms.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_ml_dsa.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\app_ml_kem.c">
+    <ClCompile Include="..\..\app\app_utils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\app_main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\app_rsa.c">
+    <ClCompile Include="..\..\app\totp\sha256.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\app_sha.c">
+    <ClCompile Include="..\..\app\totp\hmac_sha256.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\app_utils.c">
+    <ClCompile Include="..\..\app\totp\totp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\safe_c_stub\src\safe_str_stub.c">
@@ -81,6 +111,8 @@
     <ClCompile Include="..\..\safe_c_stub\src\safe_mem_stub.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="..\..\safe_c_stub\include\mem_primitives_lib.h">
       <Filter>Header Files</Filter>
     </ClCompile>
@@ -96,12 +128,13 @@
     <ClCompile Include="..\..\safe_c_stub\include\safe_str_lib.h">
       <Filter>Header Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\app\app_fips_init_lcl.h">
+    <ClCompile Include="..\..\app\totp\hmac_sha256.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\app_fips_lcl.h">
+    </ClCompile>
+    <ClCompile Include="..\..\app\totp\sha256.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\app\implementations\openssl\3\iut.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\app_lcl.h">

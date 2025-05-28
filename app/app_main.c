@@ -96,6 +96,25 @@ static ACVP_RESULT progress(char *msg, ACVP_LOG_LVL level) {
 
     printf("[ACVP]");
 
+#ifdef _WIN32
+    switch (level) {
+    case ACVP_LOG_LVL_ERR:
+        printf("[ERROR]");
+        break;
+    case ACVP_LOG_LVL_WARN:
+        printf("[WARNING]");
+        break;
+    case ACVP_LOG_LVL_STATUS:
+    case ACVP_LOG_LVL_INFO:
+    case ACVP_LOG_LVL_VERBOSE:
+    case ACVP_LOG_LVL_DEBUG:
+    case ACVP_LOG_LVL_NONE:
+    case ACVP_LOG_LVL_MAX:
+    default:
+        break;
+    }
+
+#else
     switch (level) {
     case ACVP_LOG_LVL_ERR:
         printf(ANSI_COLOR_RED "[ERROR]" ANSI_COLOR_RESET);
@@ -112,6 +131,7 @@ static ACVP_RESULT progress(char *msg, ACVP_LOG_LVL level) {
     default:
         break;
     }
+#endif
 
     printf(": %s\n", msg);
 

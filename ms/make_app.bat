@@ -7,13 +7,7 @@ rem Visual Studio wants absolute paths in some cases
 set ACV_ROOT_PATH_REL=%~dp0..\
 for %%i in ("%ACV_ROOT_PATH_REL%") do SET "ACV_ROOT_PATH=%%~fi
 
-set PROJ_CONFIG="nofom"
-
-if NOT [%FOM_DIR%] == [] (
-  set ACV_LIB_PATHS=%FOM_DIR%\lib
-  set ACV_INC_PATHS=%FOM_DIR%\include
-  set PROJ_CONFIG=fom
-)
+set PROJ_CONFIG="openssl3"
 
 if [%SSL_DIR%] == [] (
   echo "Missing SSL dir, stopping"

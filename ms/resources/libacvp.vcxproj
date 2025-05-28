@@ -159,6 +159,7 @@
     <ClCompile Include="..\..\src\acvp_lms.c" />
     <ClCompile Include="..\..\src\acvp_ml_dsa.c" />
     <ClCompile Include="..\..\src\acvp_ml_kem.c" />
+    <ClCompile Include="..\..\src\acvp_slh_dsa.c" />
     <ClCompile Include="..\..\src\acvp_operating_env.c" />
     <ClCompile Include="..\..\src\acvp_rsa_keygen.c" />
     <ClCompile Include="..\..\src\acvp_rsa_sig.c" />
