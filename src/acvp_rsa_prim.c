@@ -35,7 +35,7 @@ static ACVP_RESULT acvp_rsa_decprim_output_tc_rev_1(ACVP_CTX *ctx, ACVP_RSA_PRIM
 
     rv = acvp_bin_to_hexstr(stc->e, stc->e_len, tmp, ACVP_RSA_EXP_LEN_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (p)");
+        ACVP_LOG_ERR("Hex conversion failure (p)");
         goto err;
     }
     json_object_set_string(tc_rsp, "e", (const char *)tmp);
@@ -43,7 +43,7 @@ static ACVP_RESULT acvp_rsa_decprim_output_tc_rev_1(ACVP_CTX *ctx, ACVP_RSA_PRIM
 
     rv = acvp_bin_to_hexstr(stc->n, stc->n_len, tmp, ACVP_RSA_EXP_LEN_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (q)");
+        ACVP_LOG_ERR("Hex conversion failure (q)");
         goto err;
     }
     json_object_set_string(tc_rsp, "n", (const char *)tmp);
@@ -54,7 +54,7 @@ static ACVP_RESULT acvp_rsa_decprim_output_tc_rev_1(ACVP_CTX *ctx, ACVP_RSA_PRIM
     if (stc->disposition) {
         rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_RSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (q)");
+            ACVP_LOG_ERR("Hex conversion failure (q)");
             goto err;
         }
         json_object_set_string(tc_rsp, "plainText", (const char *)tmp);
@@ -78,7 +78,7 @@ static ACVP_RESULT acvp_rsa_decprim_output_tc_rev_56br2(ACVP_CTX *ctx, ACVP_RSA_
     if (stc->disposition) {
         rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_RSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (pt)");
+            ACVP_LOG_ERR("Hex conversion failure (pt)");
             goto err;
         }
         json_object_set_string(tc_rsp, "pt", (const char *)tmp);
@@ -101,7 +101,7 @@ static ACVP_RESULT acvp_rsa_sigprim_output_tc(ACVP_CTX *ctx, ACVP_RSA_PRIM_TC *s
     if (stc->disposition) {
         rv = acvp_bin_to_hexstr(stc->signature, stc->sig_len, tmp, ACVP_RSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (q)");
+            ACVP_LOG_ERR("Hex conversion failure (q)");
             goto err;
         }
         json_object_set_string(tc_rsp, "signature", (const char *)tmp);
@@ -505,7 +505,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct.");
         return rv;
     }
 
@@ -883,7 +883,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct.");
         return rv;
     }
 

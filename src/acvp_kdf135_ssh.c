@@ -118,7 +118,7 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -133,7 +133,7 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
-        ACVP_LOG_ERR("Failed to include testGroups. ");
+        ACVP_LOG_ERR("Failed to include testGroups.");
         rv = ACVP_MISSING_ARG;
         goto err;
     }
@@ -168,14 +168,14 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         // Get the expected (user will generate) key and iv lengths
         cipher_str = json_object_get_string(groupobj, "cipher");
         if (!cipher_str) {
-            ACVP_LOG_ERR("Failed to include cipher. ");
+            ACVP_LOG_ERR("Failed to include cipher.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         sha_str = json_object_get_string(groupobj, "hashAlg");
         if (!sha_str) {
-            ACVP_LOG_ERR("Failed to include hashAlg. ");
+            ACVP_LOG_ERR("Failed to include hashAlg.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
@@ -240,14 +240,14 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         tests = json_object_get_array(groupobj, "tests");
         if (!tests) {
-            ACVP_LOG_ERR("Failed to include tests. ");
+            ACVP_LOG_ERR("Failed to include tests.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
-            ACVP_LOG_ERR("Failed to include tests in array. ");
+            ACVP_LOG_ERR("Failed to include tests in array.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
@@ -259,28 +259,28 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
             if (!tc_id) {
-                ACVP_LOG_ERR("Failed to include tc_id. ");
+                ACVP_LOG_ERR("Failed to include tc_id.");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
 
             shared_secret_str = json_object_get_string(testobj, "k");
             if (!shared_secret_str) {
-                ACVP_LOG_ERR("Failed to include k. ");
+                ACVP_LOG_ERR("Failed to include k.");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
 
             hash_str = json_object_get_string(testobj, "h");
             if (!hash_str) {
-                ACVP_LOG_ERR("Failed to include h. ");
+                ACVP_LOG_ERR("Failed to include h.");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
 
             session_id_str = json_object_get_string(testobj, "sessionId");
             if (!session_id_str) {
-                ACVP_LOG_ERR("Failed to include sessionId. ");
+                ACVP_LOG_ERR("Failed to include sessionId.");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }

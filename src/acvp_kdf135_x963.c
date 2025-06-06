@@ -34,7 +34,7 @@ static ACVP_RESULT acvp_kdf135_x963_output_tc(ACVP_CTX *ctx, ACVP_KDF135_X963_TC
     }
     rv = acvp_bin_to_hexstr(stc->key_data, stc->key_data_len, tmp, ACVP_KDF135_X963_KEYDATA_MAX_CHARS);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (key_data)");
+        ACVP_LOG_ERR("Hex conversion failure (key_data)");
         goto err;
     }
     json_object_set_string(tc_rsp, "keyData", (const char *)tmp);
@@ -180,7 +180,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -196,7 +196,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
-        ACVP_LOG_ERR("Failed to include testGroups. ");
+        ACVP_LOG_ERR("Failed to include testGroups.");
         rv = ACVP_MISSING_ARG;
         goto err;
     }
@@ -228,14 +228,14 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         field_size = json_object_get_number(groupobj, "fieldSize");
         if (!field_size) {
-            ACVP_LOG_ERR("Failed to include field size. ");
+            ACVP_LOG_ERR("Failed to include field size.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         key_data_length = json_object_get_number(groupobj, "keyDataLength");
         if (!key_data_length) {
-            ACVP_LOG_ERR("Failed to include key data length. ");
+            ACVP_LOG_ERR("Failed to include key data length.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
@@ -244,7 +244,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         hash_alg_str = json_object_get_string(groupobj, "hashAlg");
         if (!hash_alg_str) {
-            ACVP_LOG_ERR("Failed to include hashAlg. ");
+            ACVP_LOG_ERR("Failed to include hashAlg.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
@@ -264,14 +264,14 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         tests = json_object_get_array(groupobj, "tests");
         if (!tests) {
-            ACVP_LOG_ERR("Failed to include tests. ");
+            ACVP_LOG_ERR("Failed to include tests.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
-            ACVP_LOG_ERR("Failed to include tests in array. ");
+            ACVP_LOG_ERR("Failed to include tests in array.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
@@ -283,7 +283,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
             if (!tc_id) {
-                ACVP_LOG_ERR("Failed to include tc_id. ");
+                ACVP_LOG_ERR("Failed to include tc_id.");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
@@ -291,13 +291,13 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             z = json_object_get_string(testobj, "z");
             shared_info = json_object_get_string(testobj, "sharedInfo");
             if (!z) {
-                ACVP_LOG_ERR("Failed to include z. ");
+                ACVP_LOG_ERR("Failed to include z.");
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
 
             if (!shared_info) {
-                ACVP_LOG_ERR("Failed to include shared_info. ");
+                ACVP_LOG_ERR("Failed to include shared_info.");
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }

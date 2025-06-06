@@ -39,7 +39,7 @@ static ACVP_RESULT acvp_kts_ifc_output_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_KTS_IFC_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_KTS_IFC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (iutC)");
+            ACVP_LOG_ERR("Hex conversion failure (iutC)");
             goto end;
         }
 
@@ -49,7 +49,7 @@ static ACVP_RESULT acvp_kts_ifc_output_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KTS_IFC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_KTS_IFC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (dkm)");
+        ACVP_LOG_ERR("Hex conversion failure (dkm)");
         goto end;
     }
 
@@ -668,7 +668,7 @@ ACVP_RESULT acvp_kts_ifc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 

@@ -48,7 +48,7 @@ static ACVP_RESULT acvp_kdf108_output_tc(ACVP_CTX *ctx,
     rv = acvp_bin_to_hexstr(stc->key_out, stc->key_out_len,
                             tmp, ACVP_KDF108_KEYOUT_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (key_out)");
+        ACVP_LOG_ERR("Hex conversion failure (key_out)");
         goto end;
     }
     if (stc->mode == ACVP_KDF108_MODE_KMAC) {
@@ -76,7 +76,7 @@ static ACVP_RESULT acvp_kdf108_output_tc(ACVP_CTX *ctx,
         rv = acvp_bin_to_hexstr(stc->fixed_data, stc->fixed_data_len,
                                 tmp, ACVP_KDF108_FIXED_DATA_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (fixed_data)");
+            ACVP_LOG_ERR("Hex conversion failure (fixed_data)");
             goto end;
         }
         json_object_set_string(tc_rsp, "fixedData", tmp);
@@ -385,7 +385,7 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 

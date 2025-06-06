@@ -46,7 +46,7 @@ static ACVP_RESULT acvp_pbkdf_output_tc(ACVP_CTX *ctx,
     rv = acvp_bin_to_hexstr(stc->key, stc->key_len,
                             tmp, ACVP_PBKDF_KEY_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (key)");
+        ACVP_LOG_ERR("Hex conversion failure (key)");
         goto end;
     }
     json_object_set_string(tc_rsp, "derivedKey", tmp);
@@ -258,7 +258,7 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 

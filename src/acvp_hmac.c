@@ -76,7 +76,7 @@ static ACVP_RESULT acvp_hmac_output_tc(ACVP_CTX *ctx, ACVP_HMAC_TC *stc, JSON_Ob
 
     rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp, ACVP_HMAC_MAC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (mac)");
+        ACVP_LOG_ERR("Hex conversion failure (mac)");
         goto end;
     }
     json_object_set_string(tc_rsp, "mac", tmp);
@@ -141,7 +141,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
 
     if (!alg_str) {
-        ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
+        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return ACVP_MALFORMED_JSON;
     }
 
@@ -155,12 +155,12 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id == 0) {
-        ACVP_LOG_ERR("ERROR: unsupported algorithm (%s)", alg_str);
+        ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
         return ACVP_UNSUPPORTED_OP;
     }
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
-        ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
+        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return ACVP_UNSUPPORTED_OP;
     }
 
@@ -169,7 +169,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -184,7 +184,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
-        ACVP_LOG_ERR("Failed to include testGroups. ");
+        ACVP_LOG_ERR("Failed to include testGroups.");
         rv = ACVP_MISSING_ARG;
         goto err;
     }
@@ -212,21 +212,21 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         msglen = json_object_get_number(groupobj, "msgLen");
         if (!msglen) {
-            ACVP_LOG_ERR("Failed to include msgLen. ");
+            ACVP_LOG_ERR("Failed to include msgLen.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         keylen = json_object_get_number(groupobj, "keyLen");
         if (!keylen) {
-            ACVP_LOG_ERR("Failed to include keyLen. ");
+            ACVP_LOG_ERR("Failed to include keyLen.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         maclen = json_object_get_number(groupobj, "macLen");
         if (!maclen) {
-            ACVP_LOG_ERR("Failed to include macLen. ");
+            ACVP_LOG_ERR("Failed to include macLen.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
@@ -236,14 +236,14 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         tests = json_object_get_array(groupobj, "tests");
         if (!tests) {
-            ACVP_LOG_ERR("Failed to include tests. ");
+            ACVP_LOG_ERR("Failed to include tests.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
-            ACVP_LOG_ERR("Failed to include tests in array. ");
+            ACVP_LOG_ERR("Failed to include tests in array.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
@@ -255,13 +255,13 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
             if (!tc_id) {
-                ACVP_LOG_ERR("Failed to include tc_id. ");
+                ACVP_LOG_ERR("Failed to include tc_id.");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
             msg = json_object_get_string(testobj, "msg");
             if (!msg) {
-                ACVP_LOG_ERR("Failed to include msg. ");
+                ACVP_LOG_ERR("Failed to include msg.");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
@@ -275,7 +275,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             key = json_object_get_string(testobj, "key");
             if (!key) {
-                ACVP_LOG_ERR("Failed to include key. ");
+                ACVP_LOG_ERR("Failed to include key.");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
@@ -316,7 +316,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             /* Process the current test vector... */
             if ((cap->crypto_handler)(&tc)) {
-                ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                ACVP_LOG_ERR("crypto module failed the operation");
                 acvp_hmac_release_tc(&stc);
                 json_value_free(r_tval);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -328,7 +328,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             rv = acvp_hmac_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure in hash module");
                 json_value_free(r_tval);
                 acvp_hmac_release_tc(&stc);
                 goto err;
