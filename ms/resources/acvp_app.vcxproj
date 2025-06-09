@@ -62,30 +62,30 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_aes.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_cmac.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_des.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_drbg.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_dsa.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_ecdsa.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_eddsa.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_hmac.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kas.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kdf.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kda.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kmac.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_ml_dsa.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_ml_kem.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_slh_dsa.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_rsa.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_hash.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut_utils.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\iut.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_30X.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_312.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_340.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_350.c" />
-    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\non_fips.c" />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_aes.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_cmac.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_des.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_drbg.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_dsa.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_ecdsa.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_eddsa.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_hmac.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kas.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kdf.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kda.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_kmac.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_ml_dsa.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_ml_kem.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_slh_dsa.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_rsa.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_hash.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_utils.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_30X.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_312.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_340.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\fp_350.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\registrations\non_fips.c" Condition=" '$(Configuration)' == 'openssl3' " />
     <ClCompile Include="..\..\app\app_cli.c" />
     <ClCompile Include="..\..\app\app_utils.c" />
     <ClCompile Include="..\..\app\app_main.c" />
