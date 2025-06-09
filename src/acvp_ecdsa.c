@@ -35,7 +35,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_
     if (cipher == ACVP_ECDSA_KEYGEN) {
         rv = acvp_bin_to_hexstr(stc->qy, stc->qy_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (qy)");
+            ACVP_LOG_ERR("Hex conversion failure (qy)");
             goto err;
         }
         json_object_set_string(tc_rsp, "qy", (const char *)tmp);
@@ -43,7 +43,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_
 
         rv = acvp_bin_to_hexstr(stc->qx, stc->qx_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (qx)");
+            ACVP_LOG_ERR("Hex conversion failure (qx)");
             goto err;
         }
         json_object_set_string(tc_rsp, "qx", (const char *)tmp);
@@ -51,7 +51,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_
 
         rv = acvp_bin_to_hexstr(stc->d, stc->d_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (d)");
+            ACVP_LOG_ERR("Hex conversion failure (d)");
             goto err;
         }
         json_object_set_string(tc_rsp, "d", (const char *)tmp);
@@ -63,7 +63,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_
     if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_DET_ECDSA_SIGGEN) {
         rv = acvp_bin_to_hexstr(stc->r, stc->r_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (r)");
+            ACVP_LOG_ERR("Hex conversion failure (r)");
             goto err;
         }
         json_object_set_string(tc_rsp, "r", (const char *)tmp);
@@ -71,7 +71,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_
 
         rv = acvp_bin_to_hexstr(stc->s, stc->s_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (s)");
+            ACVP_LOG_ERR("Hex conversion failure (s)");
             goto err;
         }
         json_object_set_string(tc_rsp, "s", (const char *)tmp);
@@ -265,7 +265,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
 
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
-        ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
+        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return ACVP_MALFORMED_JSON;
     }
 
@@ -285,7 +285,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
-        ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
+        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return ACVP_UNSUPPORTED_OP;
     }
     ACVP_LOG_VERBOSE("    ECDSA mode: %s", mode_str);
@@ -295,7 +295,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct.");
         return rv;
     }
 
@@ -472,7 +472,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             /* Process the current test vector... */
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
-                    ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                    ACVP_LOG_ERR("crypto module failed the operation");
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     json_value_free(r_tval);
                     goto err;
@@ -490,7 +490,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 char *tmp = calloc(ACVP_ECDSA_EXP_LEN_MAX + 1, sizeof(char));
                 rv = acvp_bin_to_hexstr(stc.qy, stc.qy_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("hex conversion failure (qy)");
+                    ACVP_LOG_ERR("Hex conversion failure (qy)");
                     free(tmp);
                     json_value_free(r_tval);
                     goto err;
@@ -500,7 +500,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
 
                 rv = acvp_bin_to_hexstr(stc.qx, stc.qx_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("hex conversion failure (qx)");
+                    ACVP_LOG_ERR("Hex conversion failure (qx)");
                     free(tmp);
                     json_value_free(r_tval);
                     goto err;
@@ -511,7 +511,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             }
             rv = acvp_ecdsa_output_tc(ctx, alg_id, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure in hash module");
                 json_value_free(r_tval);
                 goto err;
             }

@@ -106,7 +106,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -121,7 +121,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
-        ACVP_LOG_ERR("Failed to include testGroups. ");
+        ACVP_LOG_ERR("Failed to include testGroups.");
         rv = ACVP_MISSING_ARG;
         goto err;
     }
@@ -157,7 +157,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         engine_id = json_object_get_string(groupobj, "engineId");
         if (!engine_id) {
-            ACVP_LOG_ERR("Failed to include engineId. ");
+            ACVP_LOG_ERR("Failed to include engineId.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
@@ -168,14 +168,14 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         tests = json_object_get_array(groupobj, "tests");
         if (!tests) {
-            ACVP_LOG_ERR("Failed to include tests. ");
+            ACVP_LOG_ERR("Failed to include tests.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
-            ACVP_LOG_ERR("Failed to include tests in array. ");
+            ACVP_LOG_ERR("Failed to include tests in array.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
@@ -187,7 +187,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
             if (!tc_id) {
-                ACVP_LOG_ERR("Failed to include tc_id. ");
+                ACVP_LOG_ERR("Failed to include tc_id.");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
@@ -286,7 +286,7 @@ static ACVP_RESULT acvp_kdf135_snmp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SNMP_TC
 
     rv = acvp_bin_to_hexstr(stc->s_key, stc->skey_len, tmp, ACVP_KDF135_SNMP_SKEY_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (s_key)");
+        ACVP_LOG_ERR("Hex conversion failure (s_key)");
         goto err;
     }
     json_object_set_string(tc_rsp, "sharedKey", (const char *)tmp);

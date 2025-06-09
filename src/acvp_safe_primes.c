@@ -93,7 +93,7 @@ static ACVP_RESULT acvp_safe_primes_output_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_SAFE_PRIMES_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->x, stc->xlen, tmp, ACVP_SAFE_PRIMES_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (x)");
+            ACVP_LOG_ERR("Hex conversion failure (x)");
             goto end;
         }
         json_object_set_string(tc_rsp, "x", tmp);
@@ -101,7 +101,7 @@ static ACVP_RESULT acvp_safe_primes_output_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_SAFE_PRIMES_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->y, stc->ylen, tmp, ACVP_SAFE_PRIMES_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (y)");
+            ACVP_LOG_ERR("Hex conversion failure (y)");
             goto end;
         }
         json_object_set_string(tc_rsp, "y", tmp);
@@ -226,7 +226,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 

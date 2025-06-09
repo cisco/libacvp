@@ -118,7 +118,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -594,7 +594,7 @@ static ACVP_RESULT acvp_drbg_output_tc(ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_Ob
 
     rv = acvp_bin_to_hexstr(stc->drb, stc->drb_len, tmp, ACVP_DRB_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (returnedBits)");
+        ACVP_LOG_ERR("Hex conversion failure (returnedBits)");
         goto end;
     }
     json_object_set_string(tc_rsp, "returnedBits", tmp);

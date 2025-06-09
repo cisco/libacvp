@@ -45,7 +45,7 @@ static ACVP_RESULT acvp_slh_dsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACV
         memzero_s(tmp, ACVP_SLH_DSA_SIG_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->pub_key, stc->pub_key_len, tmp, ACVP_SLH_DSA_SIG_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (pk)");
+            ACVP_LOG_ERR("Hex conversion failure (pk)");
             goto end;
         }
         json_object_set_string(tc_rsp, "pk", tmp);
@@ -53,7 +53,7 @@ static ACVP_RESULT acvp_slh_dsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACV
         memzero_s(tmp, ACVP_SLH_DSA_SIG_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->secret_key, stc->secret_key_len, tmp, ACVP_SLH_DSA_SIG_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (sk)");
+            ACVP_LOG_ERR("Hex conversion failure (sk)");
             goto end;
         }
         json_object_set_string(tc_rsp, "sk", tmp);
@@ -61,7 +61,7 @@ static ACVP_RESULT acvp_slh_dsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACV
     case ACVP_SUB_SLH_DSA_SIGGEN:
         rv = acvp_bin_to_hexstr(stc->sig, stc->sig_len, tmp, ACVP_SLH_DSA_SIG_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (signature)");
+            ACVP_LOG_ERR("Hex conversion failure (signature)");
             goto end;
         }
         json_object_set_string(tc_rsp, "signature", tmp);
@@ -340,7 +340,7 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     /* Create ACVP array for response */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct.");
         return rv;
     }
 

@@ -81,7 +81,7 @@ static ACVP_RESULT acvp_hash_output_mct_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSO
         rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp, ACVP_HASH_MD_STR_MAX);
     }
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (md)");
+        ACVP_LOG_ERR("Hex conversion failure (md)");
         goto end;
     }
 
@@ -478,7 +478,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -774,7 +774,7 @@ static ACVP_RESULT acvp_hash_output_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Ob
         rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp, ACVP_HASH_MD_STR_MAX);
     }
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (msg)");
+        ACVP_LOG_ERR("Hex conversion failure (msg)");
         goto end;
     }
     json_object_set_string(tc_rsp, "md", tmp);
@@ -850,7 +850,7 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
         rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_SHAKE_MSG_BYTE_MAX, NULL);
     }
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex converstion failure (msg)");
+        ACVP_LOG_ERR("Hex conversion failure (msg)");
         return rv;
     }
 

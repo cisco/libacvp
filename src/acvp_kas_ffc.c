@@ -86,7 +86,7 @@ static ACVP_RESULT acvp_kas_ffc_output_ssc_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_KAS_FFC_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->piut, stc->piutlen, tmp, ACVP_KAS_FFC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (IUT Pub)");
+            ACVP_LOG_ERR("Hex conversion failure (IUT Pub)");
             goto end;
         }
         json_object_set_string(tc_rsp, "ephemeralPublicIut", tmp);
@@ -94,7 +94,7 @@ static ACVP_RESULT acvp_kas_ffc_output_ssc_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_KAS_FFC_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_FFC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (Z)");
+            ACVP_LOG_ERR("Hex conversion failure (Z)");
             goto end;
         }
         if(stc->md == ACVP_NO_SHA) {
@@ -137,7 +137,7 @@ static ACVP_RESULT acvp_kas_ffc_output_comp_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KAS_FFC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->piut, stc->piutlen, tmp, ACVP_KAS_FFC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (Z)");
+        ACVP_LOG_ERR("Hex conversion failure (Z)");
         goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPublicIut", tmp);
@@ -145,7 +145,7 @@ static ACVP_RESULT acvp_kas_ffc_output_comp_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KAS_FFC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_FFC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (Z)");
+        ACVP_LOG_ERR("Hex conversion failure (Z)");
         goto end;
     }
     json_object_set_string(tc_rsp, "hashZIut", tmp);
@@ -580,7 +580,7 @@ ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -1001,7 +1001,7 @@ ACVP_RESULT acvp_kas_ffc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 

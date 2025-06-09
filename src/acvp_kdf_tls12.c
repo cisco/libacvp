@@ -111,7 +111,7 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -313,7 +313,7 @@ static ACVP_RESULT acvp_kdf_tls12_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS12_TC *st
 
     rv = acvp_bin_to_hexstr(stc->msecret, stc->pm_len, tmp, ACVP_KDF_TLS12_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (mac)");
+        ACVP_LOG_ERR("Hex conversion failure (mac)");
         goto err;
     }
     json_object_set_string(tc_rsp, "masterSecret", tmp);
@@ -321,7 +321,7 @@ static ACVP_RESULT acvp_kdf_tls12_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS12_TC *st
 
     rv = acvp_bin_to_hexstr(stc->kblock, stc->kb_len, tmp, ACVP_KDF_TLS12_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (mac)");
+        ACVP_LOG_ERR("Hex conversion failure (mac)");
         goto err;
     }
     json_object_set_string(tc_rsp, "keyBlock", tmp);

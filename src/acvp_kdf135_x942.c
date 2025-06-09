@@ -215,7 +215,7 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -231,7 +231,7 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
-        ACVP_LOG_ERR("Failed to include testGroups. ");
+        ACVP_LOG_ERR("Failed to include testGroups.");
         rv = ACVP_MISSING_ARG;
         goto err;
     }
@@ -308,14 +308,14 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         tests = json_object_get_array(groupobj, "tests");
         if (!tests) {
-            ACVP_LOG_ERR("Failed to include tests. ");
+            ACVP_LOG_ERR("Failed to include tests.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
-            ACVP_LOG_ERR("Failed to include tests in array. ");
+            ACVP_LOG_ERR("Failed to include tests in array.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }

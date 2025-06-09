@@ -32,7 +32,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC
 
     rv = acvp_bin_to_hexstr(stc->srtp_ke, stc->aes_keylen / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (srtp_ke)");
+        ACVP_LOG_ERR("Hex conversion failure (srtp_ke)");
         goto err;
     }
     json_object_set_string(tc_rsp, "srtpKe", (const char *)tmp);
@@ -40,7 +40,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC
 
     rv = acvp_bin_to_hexstr(stc->srtp_ka, 160 / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (srtp_ka)");
+        ACVP_LOG_ERR("Hex conversion failure (srtp_ka)");
         goto err;
     }
     json_object_set_string(tc_rsp, "srtpKa", (const char *)tmp);
@@ -48,7 +48,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC
 
     rv = acvp_bin_to_hexstr(stc->srtp_ks, 112 / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (srtp_ks)");
+        ACVP_LOG_ERR("Hex conversion failure (srtp_ks)");
         goto err;
     }
     json_object_set_string(tc_rsp, "srtpKs", (const char *)tmp);
@@ -56,7 +56,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC
 
     rv = acvp_bin_to_hexstr(stc->srtcp_ke, stc->aes_keylen / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (srtcp_ke)");
+        ACVP_LOG_ERR("Hex conversion failure (srtcp_ke)");
         goto err;
     }
     json_object_set_string(tc_rsp, "srtcpKe", (const char *)tmp);
@@ -64,7 +64,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC
 
     rv = acvp_bin_to_hexstr(stc->srtcp_ka, 160 / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (srtcp_ka)");
+        ACVP_LOG_ERR("Hex conversion failure (srtcp_ka)");
         goto err;
     }
     json_object_set_string(tc_rsp, "srtcpKa", (const char *)tmp);
@@ -72,7 +72,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC
 
     rv = acvp_bin_to_hexstr(stc->srtcp_ks, 112 / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (srtcp_ks)");
+        ACVP_LOG_ERR("Hex conversion failure (srtcp_ks)");
         goto err;
     }
     json_object_set_string(tc_rsp, "srtcpKs", (const char *)tmp);
@@ -256,7 +256,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 

@@ -32,7 +32,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV1_
 
     rv = acvp_bin_to_hexstr(stc->s_key_id, stc->s_key_id_len, tmp, ACVP_KDF135_IKEV1_SKEY_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (s_key_id)");
+        ACVP_LOG_ERR("Hex conversion failure (s_key_id)");
         goto err;
     }
     json_object_set_string(tc_rsp, "sKeyId", (const char *)tmp);
@@ -40,7 +40,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV1_
 
     rv = acvp_bin_to_hexstr(stc->s_key_id_d, stc->s_key_id_d_len, tmp, ACVP_KDF135_IKEV1_SKEY_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (s_key_id_d)");
+        ACVP_LOG_ERR("Hex conversion failure (s_key_id_d)");
         goto err;
     }
     json_object_set_string(tc_rsp, "sKeyIdD", (const char *)tmp);
@@ -48,7 +48,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV1_
 
     rv = acvp_bin_to_hexstr(stc->s_key_id_a, stc->s_key_id_a_len, tmp, ACVP_KDF135_IKEV1_SKEY_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (s_key_id_a)");
+        ACVP_LOG_ERR("Hex conversion failure (s_key_id_a)");
         goto err;
     }
     json_object_set_string(tc_rsp, "sKeyIdA", (const char *)tmp);
@@ -56,7 +56,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV1_
 
     rv = acvp_bin_to_hexstr(stc->s_key_id_e, stc->s_key_id_e_len, tmp, ACVP_KDF135_IKEV1_SKEY_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (s_key_id_e)");
+        ACVP_LOG_ERR("Hex conversion failure (s_key_id_e)");
         goto err;
     }
     json_object_set_string(tc_rsp, "sKeyIdE", (const char *)tmp);
@@ -275,7 +275,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
