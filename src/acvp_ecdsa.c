@@ -390,7 +390,9 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 goto err;
             }
 
-            is_component = json_object_get_boolean(groupobj, "componentTest");
+            if (alg_id != ACVP_ECDSA_SIGVER) {
+               is_component = json_object_get_boolean(groupobj, "componentTest");
+            }
         }
 
         ACVP_LOG_VERBOSE("           Test group: %d", i);

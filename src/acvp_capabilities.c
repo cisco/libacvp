@@ -5903,7 +5903,7 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
         cap->hash_algs[value] = 1;
         break;
     case ACVP_ECDSA_COMPONENT_TEST:
-        if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_DET_ECDSA_SIGGEN) {
+        if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_DET_ECDSA_SIGGEN) {
             if (value >= ACVP_ECDSA_COMPONENT_MODE_NO && value <= ACVP_ECDSA_COMPONENT_MODE_BOTH) {
                 if (value == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
                     /* This will generate two vector sets, one for and one not for component mode */
@@ -5915,7 +5915,7 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
                 return ACVP_INVALID_ARG;
             }
         } else {
-            ACVP_LOG_ERR("ECDSA Component Tests only apply to siggen and sigver");
+            ACVP_LOG_ERR("ECDSA Component Tests only apply to siggen");
             return ACVP_INVALID_ARG;
         }
         break;

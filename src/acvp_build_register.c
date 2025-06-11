@@ -1599,11 +1599,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
         if (!cap_entry->cap.ecdsa_sigver_cap) {
             return ACVP_NO_CAP;
         }
-        if (ecdsa_cap->component == ACVP_ECDSA_COMPONENT_MODE_YES) {
-            json_object_set_boolean(cap_obj, "componentTest", 1);
-        } else {
-            json_object_set_boolean(cap_obj, "componentTest", 0);
-        }
+
         current_curve = ecdsa_cap->curves;
         //add "universally" set hash algs here instead of later to be resliant to different combos of API calls
         while (current_curve) {
@@ -5785,23 +5781,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 }
                 break;
             case ACVP_ECDSA_SIGVER:
-                /* If component_test = BOTH, we need two registrations */
-                if (cap_entry->cap.ecdsa_sigver_cap->component == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
-                    cap_entry->cap.ecdsa_sigver_cap->component = ACVP_ECDSA_COMPONENT_MODE_NO;
-                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
-                    if (rv != ACVP_SUCCESS) {
-                        cap_entry->cap.ecdsa_sigver_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
-                        break;
-                    }
-                    json_array_append_value(caps_arr, cap_val);
-                    cap_val = json_value_init_object();
-                    cap_obj = json_value_get_object(cap_val);
-                    cap_entry->cap.ecdsa_sigver_cap->component = ACVP_ECDSA_COMPONENT_MODE_YES;
-                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
-                    cap_entry->cap.ecdsa_sigver_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
-                } else {
-                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
-                }
+                rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
                 break;
             case ACVP_EDDSA_KEYGEN:
             case ACVP_EDDSA_KEYVER:

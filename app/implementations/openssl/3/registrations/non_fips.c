@@ -1796,8 +1796,6 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_SIGVER, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_COMPONENT_TEST, ACVP_ECDSA_COMPONENT_MODE_BOTH);
-    CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P224);
     CHECK_ENABLE_CAP_RV(rv);
