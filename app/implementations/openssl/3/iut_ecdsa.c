@@ -202,7 +202,6 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             }
 
             if (alg == ACVP_SUB_DET_ECDSA_SIGGEN) {
-#ifdef ACVP_FIPS186_5
                 if (pkey_pbld) OSSL_PARAM_BLD_free(pkey_pbld);
                 if (params) OSSL_PARAM_free(params);
                 pkey_pbld = NULL;
@@ -220,7 +219,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
                     printf("Error generating parameters for pkey generation in DetECDSA siggen\n");
                     goto err;
                 }
-#endif
+
                 if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
                 pkey_ctx = NULL;
                 if (EVP_DigestSignInit_ex(sig_ctx, &pkey_ctx, md, NULL, NULL, group_pkey, NULL) != 1) {
@@ -346,39 +345,25 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
 
         sig_len = (size_t)i2d_ECDSA_SIG(sig_obj, &sig);
 
-        if (!tc->is_component) {
-            sig_ctx = EVP_MD_CTX_new();
-            if (!sig_ctx) {
-                printf("Error initializing sign CTX for ECDSA sigver\n");
-                goto err;
-            }
+        sig_ctx = EVP_MD_CTX_new();
+        if (!sig_ctx) {
+            printf("Error initializing sign CTX for ECDSA sigver\n");
+            goto err;
+        }
 
-            if (EVP_DigestVerifyInit_ex(sig_ctx, NULL, md, NULL, NULL, pkey, NULL) != 1) {
-                printf("Error initializing signing for ECDSA sigver\n");
-                goto err;
-            }
-            if (EVP_DigestVerify(sig_ctx, sig, sig_len, tc->message, tc->msg_len) == 1) {
-                tc->ver_disposition = 1;
-            }
-        } else {
-            comp_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
-            if (!comp_ctx) {
-                printf("Error initializing sign CTX for ECDSA component sigver\n");
-                goto err;
-            }
-            if (EVP_PKEY_verify_init(comp_ctx) != 1) {
-                printf("Error initializing signing for ECDSA component sigver\n");
-                goto err;
-            }
-            if (EVP_PKEY_verify(comp_ctx, sig, sig_len, tc->message, tc->msg_len) == 1) {
-                tc->ver_disposition = 1;
-            }
+        if (EVP_DigestVerifyInit_ex(sig_ctx, NULL, md, NULL, NULL, pkey, NULL) != 1) {
+            printf("Error initializing signing for ECDSA sigver\n");
+            goto err;
+        }
+        if (EVP_DigestVerify(sig_ctx, sig, sig_len, tc->message, tc->msg_len) == 1) {
+            tc->ver_disposition = 1;
         }
         break;
     default:
         printf("Invalid ECDSA alg in test case\n");
         goto err;
     }
+
     rv = 0;
 err:
     if (qx) BN_free(qx);
