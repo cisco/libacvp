@@ -225,7 +225,11 @@ int main(int argc, char **argv) {
     }
 
     if (cfg.sample) {
-        acvp_mark_as_sample(ctx);
+        rv = acvp_mark_as_sample(ctx);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to mark as sample\n");
+            goto end;
+        }
     }
 
     if (cfg.get) {
@@ -237,15 +241,27 @@ int main(int argc, char **argv) {
     }
 
     if (cfg.post) {
-        acvp_mark_as_post_only(ctx, cfg.post_filename);
+        rv = acvp_mark_as_post_only(ctx, cfg.post_filename);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to mark as post only\n");
+            goto end;
+        }
     }
 
     if (cfg.delete) {
-        acvp_mark_as_delete_only(ctx, cfg.delete_url);
+        rv = acvp_mark_as_delete_only(ctx, cfg.delete_url);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to mark as delete only\n");
+            goto end;
+        }
     }
 
     if (cfg.vector_req && !cfg.vector_rsp) {
-        acvp_mark_as_request_only(ctx, cfg.vector_req_file);
+        rv = acvp_mark_as_request_only(ctx, cfg.vector_req_file);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to mark as request only\n");
+            goto end;
+        }
     }
 
     if (!cfg.vector_req && cfg.vector_rsp) {
@@ -348,7 +364,11 @@ int main(int argc, char **argv) {
     }
     /* PUT with alg testing will submit put_filename with module/oe information */
     if (!cfg.empty_alg && cfg.put) {
-        acvp_mark_as_put_after_test(ctx, cfg.put_filename);
+        rv = acvp_mark_as_put_after_test(ctx, cfg.put_filename);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to mark as put after test\n");
+            goto end;
+        }
     }
     
     if (cfg.get_results) {
@@ -383,7 +403,7 @@ int main(int argc, char **argv) {
      * Run the test session.
      * Perform a FIPS validation on this test session if specified.
      */
-    acvp_run(ctx, cfg.fips_validation);
+    rv = acvp_run(ctx, cfg.fips_validation);
 
 end:
     /*
@@ -401,7 +421,7 @@ end:
 ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, ACVP_LOG_LVL lvl, ACVP_RESULT (*logger)(char *)) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CTX *ctx = NULL;
-
+    APP_CONFIG cfg = {0};
     /*
      * We begin the libacvp usage flow here.
      * First, we create a test session context.
@@ -411,41 +431,28 @@ ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, 
         printf("Failed to create ACVP context: %s\n", acvp_lookup_error_string(rv));
         goto end;
     }
+    cfg.testall = 1;
 
-    /*
-    * We need to register all possible crypto capabilities; since this code
-    * just performs offline testing with already requested vectors
-    */
-    if (enable_aes(ctx)) goto end;
-    if (enable_tdes(ctx)) goto end;
-    if (enable_hash(ctx)) goto end;
-    if (enable_cmac(ctx)) goto end;
-    if (enable_hmac(ctx)) goto end;
-    if (enable_kmac(ctx)) goto end;
-    if (enable_kdf(ctx)) goto end;
-    if (enable_dsa(ctx)) goto end;
-    if (enable_rsa(ctx)) goto end;
-    if (enable_ecdsa(ctx)) goto end;
-    if (enable_eddsa(ctx)) goto end;
-    if (enable_drbg(ctx)) goto end;
-    if (enable_kas_ecc(ctx)) goto end;
-    if (enable_kas_ifc(ctx)) goto end;
-    if (enable_kts_ifc(ctx)) goto end;
-    if (enable_kas_ffc(ctx)) goto end;
-    if (enable_kda(ctx)) goto end;
-    if (enable_safe_primes(ctx)) goto end;
-    if (enable_lms(ctx)) goto end;
+    rv = iut_setup();
+    if (rv != ACVP_SUCCESS) {
+        printf("Error setting up implementation for testing at startup\n");
+        goto end;
+    }
+
+    rv = iut_register_capabilities(ctx, &cfg);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failure occurred while registering capabilities for given implementation\n");
+        goto end;
+    }
 
     rv = acvp_run_vectors_from_file(ctx, path, output);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to run vectors from file");
+    }
 
 end:
-    /*
-     * Free all memory associated with
-     * both the application and libacvp.
-     */
     acvp_cleanup(ctx);
     iut_cleanup();
-
     return rv;
    }
 #endif

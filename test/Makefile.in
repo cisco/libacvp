@@ -285,7 +285,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 am_runtest_OBJECTS = runtest-ut_common.$(OBJEXT) $(am__objects_1) \
 	$(am__objects_2) $(am__objects_3)
 runtest_OBJECTS = $(am_runtest_OBJECTS)
-@APP_NOT_SUPPORTED_FALSE@runtest_DEPENDENCIES = $(APP_LINK)
+am__DEPENDENCIES_1 =
+@APP_NOT_SUPPORTED_FALSE@runtest_DEPENDENCIES = $(APP_LINK) \
+@APP_NOT_SUPPORTED_FALSE@	$(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -592,7 +594,7 @@ tmp_ldflags = $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS) \
 @APP_NOT_SUPPORTED_FALSE@	$(am__append_6)
 runtest_CFLAGS = ${tmp_cflags}
 runtest_LDFLAGS = ${tmp_ldflags}
-@APP_NOT_SUPPORTED_FALSE@runtest_LDADD = $(APP_LINK)
+@APP_NOT_SUPPORTED_FALSE@runtest_LDADD = $(APP_LINK) $(IUT_LIBS)
 runtestdir = 
 runtest_HEADERS = ut_common.h $(am__append_9)
 all: all-am

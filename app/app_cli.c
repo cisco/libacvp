@@ -605,7 +605,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
     if (print_ver) {
         print_version_info(cfg);
-        return 1;
+        return 0;
     }
 
     if (ldt_manually_set && (!cfg->hash && !cfg->testall)) {

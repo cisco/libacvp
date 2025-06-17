@@ -12860,7 +12860,7 @@ else $as_nop
 fi
 
 
-    if test "x$libcurldir" = "x" && test "x$offline" = "xfalse" ; then
+    if test "x$libcurldir" = "x" && test "x$offline" = "x" ; then
         { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "libcurl or libmurl directory must be set if building library for online use
@@ -13403,14 +13403,13 @@ fi
     if test "x$libcurldir" != "x" ; then
         LDFLAGS="$LDFLAGS -L$libcurldir/lib"
         CPPFLAGS="$CPPFLAGS -I$libcurldir/include"
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for curl_easy_init in -lcurl" >&5
-printf %s "checking for curl_easy_init in -lcurl... " >&6; }
-if test ${ac_cv_lib_curl_curl_easy_init+y}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing curl_easy_init" >&5
+printf %s "checking for library containing curl_easy_init... " >&6; }
+if test ${ac_cv_search_curl_easy_init+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcurl "$lib_dependencies" $LIBS"
+  ac_func_search_save_LIBS=$LIBS
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -13426,23 +13425,40 @@ return curl_easy_init ();
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+for ac_lib in '' curl
+do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib "$lib_dependencies" $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"
 then :
-  ac_cv_lib_curl_curl_easy_init=yes
-else $as_nop
-  ac_cv_lib_curl_curl_easy_init=no
+  ac_cv_search_curl_easy_init=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_curl_curl_easy_init" >&5
-printf "%s\n" "$ac_cv_lib_curl_curl_easy_init" >&6; }
-if test "x$ac_cv_lib_curl_curl_easy_init" = xyes
+    conftest$ac_exeext
+  if test ${ac_cv_search_curl_easy_init+y}
 then :
-  printf "%s\n" "#define HAVE_LIBCURL 1" >>confdefs.h
+  break
+fi
+done
+if test ${ac_cv_search_curl_easy_init+y}
+then :
 
-  LIBS="-lcurl $LIBS"
+else $as_nop
+  ac_cv_search_curl_easy_init=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_curl_easy_init" >&5
+printf "%s\n" "$ac_cv_search_curl_easy_init" >&6; }
+ac_res=$ac_cv_search_curl_easy_init
+if test "$ac_res" != no
+then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 else $as_nop
   { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
@@ -13533,16 +13549,21 @@ fi
 
 
 # Set the flags needed for curl/murl library
-if test "x$libcurldir" != "x" ; then
-    LIBCURL_CFLAGS="-I$libcurldir/include"
+if test "x$offline" = "x" ; then
+    if test "x$libcurldir" != "x" ; then
+        LIBCURL_CFLAGS="-I$libcurldir/include"
 
-    LIBCURL_LDFLAGS="-L$libcurldir/lib -lcurl"
+        LIBCURL_LDFLAGS="-L$libcurldir/lib -lcurl"
 
-elif test "x$usemurl" != "x" ; then
-    LIBCURL_CFLAGS="-I$libmurldir/include"
+    elif test "x$usemurl" != "x" ; then
+        LIBCURL_CFLAGS="-I$libmurldir/include"
 
-    LIBCURL_LDFLAGS="-L$libmurldir/lib -lcurl"
+        LIBCURL_LDFLAGS="-L$libmurldir/lib -lcurl"
 
+    else
+        LIBCURL_LDFLAGS="-lcurl"
+
+    fi
 fi
 
 # If given a libacvp_dir, use that when building things dependent on library, otherwise, use defaults
