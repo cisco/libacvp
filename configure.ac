@@ -117,7 +117,7 @@ if test "x$enable_offline" = "xfalse" && test "x$disable_lib" != "xyes" ; then
         [libcurldir="$withval"],
         [with_libcurldir=no])
 
-    if test "x$libcurldir" = "x" && test "x$offline" = "xfalse" ; then
+    if test "x$libcurldir" = "x" && test "x$offline" = "x" ; then
         AC_MSG_FAILURE([libcurl or libmurl directory must be set if building library for online use])
     fi
 fi
@@ -350,7 +350,7 @@ if test "x$disable_lib_detection" = "xno"; then
     if test "x$libcurldir" != "x" ; then
         LDFLAGS="$LDFLAGS -L$libcurldir/lib"
         CPPFLAGS="$CPPFLAGS -I$libcurldir/include"
-        AC_CHECK_LIB([curl], [curl_easy_init], [],
+        AC_SEARCH_LIBS([curl_easy_init], [curl], [],
             [AC_MSG_FAILURE(Curl not found in provided curl dir)], ["$lib_dependencies"])
     fi
 
@@ -403,12 +403,16 @@ AM_CONDITIONAL([APP_IUT_OPENSSL_3], [test "x$acvp_app_iut" = "xopenssl_3"])
 AM_CONDITIONAL([APP_IUT_LIBOQS], [test "x$acvp_app_iut" = "xliboqs"])
 
 # Set the flags needed for curl/murl library
-if test "x$libcurldir" != "x" ; then
-    AC_SUBST([LIBCURL_CFLAGS], "-I$libcurldir/include")
-    AC_SUBST([LIBCURL_LDFLAGS], "-L$libcurldir/lib -lcurl")
-elif test "x$usemurl" != "x" ; then
-    AC_SUBST([LIBCURL_CFLAGS], "-I$libmurldir/include")
-    AC_SUBST([LIBCURL_LDFLAGS], "-L$libmurldir/lib -lcurl")
+if test "x$offline" = "x" ; then
+    if test "x$libcurldir" != "x" ; then
+        AC_SUBST([LIBCURL_CFLAGS], "-I$libcurldir/include")
+        AC_SUBST([LIBCURL_LDFLAGS], "-L$libcurldir/lib -lcurl")
+    elif test "x$usemurl" != "x" ; then
+        AC_SUBST([LIBCURL_CFLAGS], "-I$libmurldir/include")
+        AC_SUBST([LIBCURL_LDFLAGS], "-L$libmurldir/lib -lcurl")
+    else
+        AC_SUBST([LIBCURL_LDFLAGS], "-lcurl")
+    fi
 fi
 
 # If given a libacvp_dir, use that when building things dependent on library, otherwise, use defaults

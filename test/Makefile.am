@@ -107,7 +107,7 @@ runtest_CFLAGS = ${tmp_cflags}
 runtest_LDFLAGS = ${tmp_ldflags}
 
 if ! APP_NOT_SUPPORTED
-runtest_LDADD = $(APP_LINK)
+runtest_LDADD = $(APP_LINK) $(IUT_LIBS)
 endif
 
 runtestdir=

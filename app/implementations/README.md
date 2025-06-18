@@ -1,12 +1,9 @@
 # Overview
 This directory contains code for harnesses for different Implementations Under Test (IUTs)
 supported by acvp_app. Acvp_app will support testing ONE harness per build; which harness is built
-will be determined when running the configure command.
+will be determined when running the configure command. For more information for a given harness,
+view the README.md in its directory.
 
-The openssl directory contains harnesses for OpenSSL version 3.0 and later.
-
-The stub directory is not compiled by default and includes some template functions with
-descriptions meant to help people implement their own harnesses for IuTs.
 
 ## Structure for Harness Code
 
@@ -36,6 +33,7 @@ versions of an IUT should be handled in whatever way is most readable. **Every I
 of IUT with its own capability registration must have their registrations kept in separate places,
 even if the differences are small.** This helps ensure that capability registrations do not change
 after an implementation has received any certification.
+
 
 ## Contributing Harness Code
 
