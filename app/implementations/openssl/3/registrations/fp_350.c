@@ -796,7 +796,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf135_x942_set_domain(ctx, ACVP_KDF_X942_OTHER_INFO_LEN, 0, 4096, 8);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kdf135_x942_set_domain(ctx, ACVP_KDF_X942_ZZ_LEN, 8, 4096, 8);
+    rv = acvp_cap_kdf135_x942_set_domain(ctx, ACVP_KDF_X942_ZZ_LEN, 112, 4096, 8);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf135_x942_set_domain(ctx, ACVP_KDF_X942_SUPP_INFO_LEN, 0, 120, 8);
     CHECK_ENABLE_CAP_RV(rv);

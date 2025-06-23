@@ -153,6 +153,11 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    if (cfg.output_version) {
+        print_version_info(&cfg);
+        goto end;
+    }
+
     rv = iut_setup(&cfg);
     if (rv != ACVP_SUCCESS) {
         printf("Error setting up implementation for testing at startup\n");

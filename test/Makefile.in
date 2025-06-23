@@ -155,6 +155,8 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_utils.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-fp_30X.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-fp_312.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-fp_340.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-fp_350.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-non_fips.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_hash.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_hmac.o \
@@ -166,9 +168,13 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_kas.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_rsa.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_ecdsa.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_eddsa.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_drbg.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_kda.o \
-@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_kmac.o
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_kmac.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_ml_dsa.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_ml_kem.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_slh_dsa.o
 
 @APP_NOT_SUPPORTED_FALSE@am__append_7 = $(IUT_CFLAGS) -I../app
 @APP_NOT_SUPPORTED_FALSE@am__append_8 = $(IUT_LDFLAGS)
