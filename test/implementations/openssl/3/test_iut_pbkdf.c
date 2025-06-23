@@ -99,6 +99,8 @@ void free_pbkdf_tc(ACVP_PBKDF_TC *stc) {
     if (stc->salt) free(stc->salt);
     if (stc->password) free(stc->password);
     if (stc->key) free(stc->key);
+    free(stc);
+    stc = NULL;
 }
 
 /*

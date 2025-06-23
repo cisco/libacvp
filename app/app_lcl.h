@@ -35,6 +35,7 @@ extern char value[JSON_STRING_LENGTH]; /* Non const for API */
 #define ANSI_COLOR_RESET "\x1b[0m"
 
 typedef struct app_config {
+    int output_version;
     ACVP_LOG_LVL level;
     int sample;
     int manual_reg;

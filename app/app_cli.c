@@ -275,7 +275,7 @@ static int check_option_length(const char *opt, int c, int maxAllowed) {
 
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     ketopt_t opt = KETOPT_INIT;
-    int c = 0, diff = 0, len = 0, print_ver = 0, ldt_manually_set = 0;
+    int c = 0, diff = 0, len = 0, ldt_manually_set = 0;
 
     cfg->empty_alg = 1;
 
@@ -289,7 +289,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         case 'v':
         case 301:
             /* Print version info AFTER other args are read, so we can see module runtime info better */
-            print_ver = 1;
+            cfg->output_version = 1;
             break;
         case 'h':
         case 302:
@@ -603,11 +603,6 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         return 1;
     }
 
-    if (print_ver) {
-        print_version_info(cfg);
-        return 0;
-    }
-
     if (ldt_manually_set && (!cfg->hash && !cfg->testall)) {
         printf("Warning: max hash LDT size specified, but hash not enabled. Ignoring provided value...\n");
         acvp_sleep(2);
@@ -617,7 +612,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put && !cfg->get_results
             && !cfg->get_expected && !cfg->manual_reg && !cfg->vector_upload
             && !cfg->delete && !cfg->cancel_session && !(cfg->resume_session && 
-            cfg->vector_req)) {
+            cfg->vector_req) && !cfg->output_version) {
         /* The user needs to select at least 1 algorithm */
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
         printf("%s\n", ACVP_APP_HELP_MSG);

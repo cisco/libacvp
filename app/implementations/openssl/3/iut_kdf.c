@@ -250,7 +250,8 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
 
-    if (stc->counter_location < ACVP_KDF108_FIXED_DATA_ORDER_MIN || stc->counter_location > ACVP_KDF108_FIXED_DATA_ORDER_MAX) {
+    if (!(stc->mac_mode == ACVP_KDF108_MAC_MODE_KMAC_128 || stc->mac_mode == ACVP_KDF108_MAC_MODE_KMAC_256) &&
+            (stc->counter_location <= ACVP_KDF108_FIXED_DATA_ORDER_MIN || stc->counter_location >= ACVP_KDF108_FIXED_DATA_ORDER_MAX)) {
         printf("unsupported counter location in test case\n");
         return -1;
     }

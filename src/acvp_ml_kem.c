@@ -387,15 +387,6 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
-
-            if (type == ACVP_ML_KEM_TESTTYPE_VAL) {
-                dk_str = json_object_get_string(groupobj, "dk");
-                if (!dk_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'dk'");
-                    rv = ACVP_MISSING_ARG;
-                    goto err;
-                }
-            }
         }
 
         ACVP_LOG_VERBOSE("           Test group: %d", i);
@@ -406,10 +397,6 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         if (func_str) {
             ACVP_LOG_VERBOSE("             function: %s", func_str);
         }
-        if (dk_str) {
-            ACVP_LOG_VERBOSE("                   dk: %s", dk_str);
-        }
-
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -455,6 +442,13 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                         goto err;
                     }
                 } else {
+                    dk_str = json_object_get_string(testobj, "dk");
+                    if (!dk_str) {
+                        ACVP_LOG_ERR("Server JSON missing 'dk'");
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
+                    }
+
                     c_str = json_object_get_string(testobj, "c");
                     if (!c_str) {
                         ACVP_LOG_ERR("Server JSON missing 'c'");
@@ -480,6 +474,9 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             if (c_str) {
                 ACVP_LOG_VERBOSE("                c: %s", c_str);
+            }
+            if (dk_str) {
+                ACVP_LOG_VERBOSE("                   dk: %s", dk_str);
             }
 
             /* Create a new test case in the response */
