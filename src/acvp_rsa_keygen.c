@@ -94,105 +94,102 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JS
         }
         json_object_set_string(tc_rsp, "iqmp", (const char *)tmp);
         memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
-    }
-    else {
-		rv = acvp_bin_to_hexstr(stc->d, stc->d_len, tmp, ACVP_RSA_EXP_LEN_MAX);
-		if (rv != ACVP_SUCCESS) {
-		    ACVP_LOG_ERR("Hex conversion failure (d)");
-		    goto err;
-		}
-		json_object_set_string(tc_rsp, "d", (const char *)tmp);
-		memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
+    } else {
+        rv = acvp_bin_to_hexstr(stc->d, stc->d_len, tmp, ACVP_RSA_EXP_LEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (d)");
+            goto err;
+        }
+        json_object_set_string(tc_rsp, "d", (const char *)tmp);
+        memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
     }
 
     // Aux data only if genereated by IUT
-    if (!stc->info_gen_by_server) {
-        if (stc->rand_pq == ACVP_RSA_KEYGEN_B32 ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_B34 ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_B35 || 
-            stc->rand_pq == ACVP_RSA_KEYGEN_PROVABLE ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_PROV_W_PROV_AUX ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX) {
-            // Seed
-            rv = acvp_bin_to_hexstr(stc->seed, stc->seed_len, tmp, ACVP_RSA_SEEDLEN_MAX);
-			if (rv != ACVP_SUCCESS) {
-		        ACVP_LOG_ERR("Hex conversion failure (seed)");
-			    goto err;
-			}
-            json_object_set_string(tc_rsp, "seed", (const char *)tmp);
-            memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
+    if (stc->rand_pq == ACVP_RSA_KEYGEN_B32 ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_B34 ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_B35 ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_PROVABLE ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_PROV_W_PROV_AUX ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX) {
+        // Seed
+        rv = acvp_bin_to_hexstr(stc->seed, stc->seed_len, tmp, ACVP_RSA_SEEDLEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (seed)");
+            goto err;
         }
+        json_object_set_string(tc_rsp, "seed", (const char *)tmp);
+        memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
+    }
 
-        if (stc->rand_pq == ACVP_RSA_KEYGEN_B34 ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_B35 ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_B36 ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_PROV_W_PROV_AUX ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
-            // Bitlens array
-            json_object_set_value(tc_rsp, "bitlens", json_value_init_array());
-            JSON_Array *bitlens_array = json_object_get_array(tc_rsp, "bitlens");
-            json_array_append_number(bitlens_array, stc->bitlen1);
-            json_array_append_number(bitlens_array, stc->bitlen2);
-            json_array_append_number(bitlens_array, stc->bitlen3);
-            json_array_append_number(bitlens_array, stc->bitlen4);
+    if (stc->rand_pq == ACVP_RSA_KEYGEN_B34 ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_B35 ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_B36 ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_PROV_W_PROV_AUX ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
+        // Bitlens array
+        json_object_set_value(tc_rsp, "bitlens", json_value_init_array());
+        JSON_Array *bitlens_array = json_object_get_array(tc_rsp, "bitlens");
+        json_array_append_number(bitlens_array, stc->bitlen1);
+        json_array_append_number(bitlens_array, stc->bitlen2);
+        json_array_append_number(bitlens_array, stc->bitlen3);
+        json_array_append_number(bitlens_array, stc->bitlen4);
+    }
+
+    if (stc->rand_pq == ACVP_RSA_KEYGEN_B35 ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_B36 ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
+        rv = acvp_bin_to_hexstr(stc->xp, stc->xp_len, tmp, ACVP_RSA_EXP_LEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (xp)");
+            goto err;
         }
+        json_object_set_string(tc_rsp, "xP", (const char *)tmp);
+        memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
 
-        if (stc->rand_pq == ACVP_RSA_KEYGEN_B35 ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_B36 ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
-            rv = acvp_bin_to_hexstr(stc->xp, stc->xp_len, tmp, ACVP_RSA_EXP_LEN_MAX);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (xp)");
-                goto err;
-            }
-            json_object_set_string(tc_rsp, "xP", (const char *)tmp);
-            memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
-
-            rv = acvp_bin_to_hexstr(stc->xq, stc->xq_len, tmp, ACVP_RSA_EXP_LEN_MAX);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (xq)");
-                goto err;
-            }
-            json_object_set_string(tc_rsp, "xQ", (const char *)tmp);
-            memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
+        rv = acvp_bin_to_hexstr(stc->xq, stc->xq_len, tmp, ACVP_RSA_EXP_LEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (xq)");
+            goto err;
         }
-        
-        if (stc->rand_pq == ACVP_RSA_KEYGEN_B36 ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
-		    rv = acvp_bin_to_hexstr(stc->xp1, stc->xp1_len, tmp, ACVP_RSA_EXP_LEN_MAX);
-		    if (rv != ACVP_SUCCESS) {
-		        ACVP_LOG_ERR("Hex conversion failure (xp1)");
-		        goto err;
-		    }
-		    json_object_set_string(tc_rsp, "xP1", (const char *)tmp);
-		    memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
+        json_object_set_string(tc_rsp, "xQ", (const char *)tmp);
+        memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
+    }
 
-		    rv = acvp_bin_to_hexstr(stc->xp2, stc->xp2_len, tmp, ACVP_RSA_EXP_LEN_MAX);
-		    if (rv != ACVP_SUCCESS) {
-		        ACVP_LOG_ERR("Hex conversion failure (xp2)");
-		        goto err;
-		    }
-		    json_object_set_string(tc_rsp, "xP2", (const char *)tmp);
-		    memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
+    if (stc->rand_pq == ACVP_RSA_KEYGEN_B36 ||
+        stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
+        rv = acvp_bin_to_hexstr(stc->xp1, stc->xp1_len, tmp, ACVP_RSA_EXP_LEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (xp1)");
+            goto err;
+        }
+        json_object_set_string(tc_rsp, "xP1", (const char *)tmp);
+        memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
 
-		    rv = acvp_bin_to_hexstr(stc->xq1, stc->xq1_len, tmp, ACVP_RSA_EXP_LEN_MAX);
-		    if (rv != ACVP_SUCCESS) {
-		        ACVP_LOG_ERR("Hex conversion failure (xq1)");
-		        goto err;
-		    }
-		    json_object_set_string(tc_rsp, "xQ1", (const char *)tmp);
-		    memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
+        rv = acvp_bin_to_hexstr(stc->xp2, stc->xp2_len, tmp, ACVP_RSA_EXP_LEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (xp2)");
+            goto err;
+        }
+        json_object_set_string(tc_rsp, "xP2", (const char *)tmp);
+        memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
 
-		    rv = acvp_bin_to_hexstr(stc->xq2, stc->xq2_len, tmp, ACVP_RSA_EXP_LEN_MAX);
-		    if (rv != ACVP_SUCCESS) {
-		        ACVP_LOG_ERR("Hex conversion failure (xq2)");
-		        goto err;
-		    }
-		    json_object_set_string(tc_rsp, "xQ2", (const char *)tmp);
-		    memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
-		}
+        rv = acvp_bin_to_hexstr(stc->xq1, stc->xq1_len, tmp, ACVP_RSA_EXP_LEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (xq1)");
+            goto err;
+        }
+        json_object_set_string(tc_rsp, "xQ1", (const char *)tmp);
+        memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
+
+        rv = acvp_bin_to_hexstr(stc->xq2, stc->xq2_len, tmp, ACVP_RSA_EXP_LEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (xq2)");
+            goto err;
+        }
+        json_object_set_string(tc_rsp, "xQ2", (const char *)tmp);
+        memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
     }
 
 err:
@@ -274,9 +271,9 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc(ACVP_CTX *ctx,
     if (!stc->n) { return ACVP_MALLOC_FAIL; }
     stc->d = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
     if (!stc->d) { return ACVP_MALLOC_FAIL; }
-    if (rand_pq == ACVP_RSA_KEYGEN_B36 || 
-		rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX || 
-		!info_gen_by_server) {
+    if (rand_pq == ACVP_RSA_KEYGEN_B36 ||
+        rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX ||
+        !info_gen_by_server) {
         stc->xp = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
         if (!stc->xp) { return ACVP_MALLOC_FAIL; }
         stc->xp1 = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
@@ -339,11 +336,11 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc(ACVP_CTX *ctx,
         }
     }
     if (e) {
-		rv = acvp_hexstr_to_bin(e, stc->e, ACVP_RSA_EXP_BYTE_MAX, &(stc->e_len));
-		if (rv != ACVP_SUCCESS) {
-		    ACVP_LOG_ERR("Hex conversion failure (e)");
-		    return rv;
-		}
+        rv = acvp_hexstr_to_bin(e, stc->e, ACVP_RSA_EXP_BYTE_MAX, &(stc->e_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (e)");
+            return rv;
+        }
     }
     
     stc->seed = calloc(ACVP_RSA_SEEDLEN_MAX, sizeof(unsigned char));
