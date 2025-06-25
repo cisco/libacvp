@@ -12,6 +12,7 @@ libacvp_la_SOURCES =  acvp.c \
                     acvp_aes.c \
                     acvp_des.c \
                     acvp_hash.c \
+                    acvp_hash_mct.c \
                     acvp_drbg.c \
                     acvp_transport.c \
                     acvp_util.c \

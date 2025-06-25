@@ -165,10 +165,11 @@ end:
  */
 int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md) {
     unsigned char *large_data = NULL, *iter = NULL;
+    size_t gib = tc->exp_len / 1024 / 1024 / 1024;
     int numcopies = 0, i = 0, rv = 1;
     EVP_MD_CTX *md_ctx = NULL;
 
-    printf("Performing hash large data test (This may take time...)\n");
+    printf("Performing %lu GiB hash large data test (This may take time...)\n", gib);
 
     large_data = calloc(tc->exp_len, sizeof(unsigned char));
     if (!large_data) {
