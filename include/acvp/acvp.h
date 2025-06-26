@@ -705,13 +705,6 @@ typedef enum acvp_kdf135_snmp_param {
 #define ACVP_STR_SHA3_512       "SHA3-512"
 #define ACVP_STR_SHA_MAX        12
 
-/** @enum ACVP_HASH_MCT_VERSION */
-typedef enum acvp_hash_mct_version {
-    ACVP_HASH_MCT_VERSION_STANDARD = 0,
-    ACVP_HASH_MCT_VERSION_ALTERNATE,
-    ACVP_HASH_MCT_VERSION_MAX
-} ACVP_HASH_MCT_VERSION;
-
 /** @enum ACVP_HASH_PARM */
 typedef enum acvp_hash_param {
     ACVP_HASH_IN_BIT = 1,
@@ -719,8 +712,7 @@ typedef enum acvp_hash_param {
     ACVP_HASH_OUT_BIT, /**< Used for ACVP_HASH_SHAKE_128, ACVP_HASH_SHAKE_256 */
     ACVP_HASH_OUT_LENGTH, /**< Used for ACVP_HASH_SHAKE_128, ACVP_HASH_SHAKE_256 */
     ACVP_HASH_MESSAGE_LEN,
-    ACVP_HASH_LARGE_DATA,
-    ACVP_HASH_MCT_VER
+    ACVP_HASH_LARGE_DATA
 } ACVP_HASH_PARM;
 
 /**
@@ -1292,11 +1284,6 @@ typedef struct acvp_hash_tc_t {
     unsigned int tc_id;           /**< Test case id */
     ACVP_HASH_TESTTYPE test_type; /**< KAT, MCT, VOT, or LDT */
     ACVP_HASH_EXPANSION_METHOD exp_method;  /**< LDT Expansion Technique  */
-    ACVP_HASH_MCT_VERSION mct_version; /**< MCT version, standard, alternate, or 0 for N/A */
-
-    unsigned int mct_shake_min_xof_bits;
-    unsigned int mct_shake_max_xof_bits;
-
     unsigned char *msg; /**< Message input */
     unsigned char *m1; /**< Message input #1
                             Provided when \ref ACVP_HASH_TC.test_type is MCT */
