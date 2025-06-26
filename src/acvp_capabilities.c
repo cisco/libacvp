@@ -3614,13 +3614,7 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
             return ACVP_MALLOC_FAIL;
         }
         break;
-    case ACVP_HASH_MCT_VER:
-        if (value < ACVP_HASH_MCT_VERSION_STANDARD || value >= ACVP_HASH_MCT_VERSION_MAX) {
-            ACVP_LOG_ERR("Invalid MCT version value specified for hash algorithm");
-            return ACVP_INVALID_ARG;
-        }
-        hash_cap->mct_version = value;
-        break;
+
     case ACVP_HASH_OUT_LENGTH:
     case ACVP_HASH_MESSAGE_LEN:
     default:
@@ -3716,9 +3710,8 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     case ACVP_HASH_IN_EMPTY:
     case ACVP_HASH_OUT_BIT:
     case ACVP_HASH_LARGE_DATA:
-    case ACVP_HASH_MCT_VER:
     default:
-        ACVP_LOG_ERR("Invalid parameter provided for hash domain");
+        ACVP_LOG_ERR("Invalid 'parm'");
         return ACVP_INVALID_ARG;
     }
     

@@ -450,10 +450,6 @@
 #define ACVP_ALG_TLS12           "TLS-v1.2"
 #define ACVP_ALG_KDF_TLS12       "KDF"
 
-#define ACVP_STR_HASH_MCT "mctVersion"
-#define ACVP_STR_HASH_MCT_STANDARD "standard"
-#define ACVP_STR_HASH_MCT_ALTERNATE "alternate"
-
 #define ACVP_CAPABILITY_STR_MAX 512 /**< Arbitrary string length limit */
 
 #define ACVP_HEXSTR_MAX (ACVP_DRBG_ENTPY_IN_BIT_MAX >> 2) /**< Represents the largest hexstr that the client will accept.
@@ -1256,7 +1252,6 @@ typedef struct acvp_hash_capability {
     ACVP_JSON_DOMAIN_OBJ out_len; /**< Required for ACVP_HASH_SHAKE_* */
     ACVP_JSON_DOMAIN_OBJ msg_length;
     ACVP_SL_LIST *large_lens;
-    ACVP_HASH_MCT_VERSION mct_version;
 } ACVP_HASH_CAP;
 
 typedef struct acvp_kdf135_snmp_capability {
@@ -2144,12 +2139,6 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg);
 ACVP_RESULT acvp_build_full_registration(ACVP_CTX *ctx, char **out, int *out_len);
 
 ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx, char **out, int *out_len);
-
-/* ACVP handler-specific calls used internally */
-ACVP_RESULT acvp_hash_perform_mct(ACVP_CTX *ctx,
-                                  ACVP_TEST_CASE *tc,
-                                  int (*crypto_handler)(ACVP_TEST_CASE *test_case),
-                                  JSON_Array *res_array);
 
 /*
  * Operating Environment functions

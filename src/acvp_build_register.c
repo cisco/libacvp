@@ -197,18 +197,6 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         }
     }
 
-    switch (cap_entry->cap.hash_cap->mct_version) {
-    case ACVP_HASH_MCT_VERSION_STANDARD:
-        json_object_set_string(cap_obj, ACVP_STR_HASH_MCT, ACVP_STR_HASH_MCT_STANDARD);
-        break;
-    case ACVP_HASH_MCT_VERSION_ALTERNATE:
-        json_object_set_string(cap_obj, ACVP_STR_HASH_MCT, ACVP_STR_HASH_MCT_ALTERNATE);
-        break;
-    case ACVP_HASH_MCT_VERSION_MAX:
-    default:
-        return ACVP_INVALID_ARG;
-    }
-
     return ACVP_SUCCESS;
 }
 
