@@ -137,6 +137,7 @@
     <ClCompile Include="..\..\src\acvp_ecdsa.c" />
     <ClCompile Include="..\..\src\acvp_eddsa.c" />
     <ClCompile Include="..\..\src\acvp_hash.c" />
+    <ClCompile Include="..\..\src\acvp_hash_mct.c" />
     <ClCompile Include="..\..\src\acvp_hmac.c" />
     <ClCompile Include="..\..\src\acvp_kas_ecc.c" />
     <ClCompile Include="..\..\src\acvp_kas_ffc.c" />
