@@ -120,11 +120,11 @@ file in a versions `registrations` folder. Notes:
 - KAS-FFC-SSC dhEphem
 - KAS-IFC-SSC
 - KTS-IFC
-
-#### Key Derivation
 - KDA HKDF
 - KDA onestep
 - KDA twostep
+
+#### KDFs
 - SP800-108 KDF
 - SSH
 - TLS 1.2
