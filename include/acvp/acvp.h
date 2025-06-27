@@ -1220,6 +1220,12 @@ typedef enum acvp_hash_expansion_method {
     ACVP_HASH_EXPANSION_REPEATING
 } ACVP_HASH_EXPANSION_METHOD;
 
+/** @enum ACVP_HASH_MCT_VERSION */
+typedef enum acvp_hash_mct_version {
+    ACVP_HASH_MCT_VERSION_STANDARD = 0,
+    ACVP_HASH_MCT_VERSION_ALTERNATE
+} ACVP_HASH_MCT_VERSION;
+
 /**
  * @struct ACVP_SYM_CIPHER_TC
  * @brief This struct holds data that represents a single test case for a symmetric cipher, such as
@@ -1284,7 +1290,16 @@ typedef struct acvp_hash_tc_t {
     unsigned int tc_id;           /**< Test case id */
     ACVP_HASH_TESTTYPE test_type; /**< KAT, MCT, VOT, or LDT */
     ACVP_HASH_EXPANSION_METHOD exp_method;  /**< LDT Expansion Technique  */
+    ACVP_HASH_MCT_VERSION mct_version; /**< MCT version, standard, alternate, or 0 for N/A */
+
     unsigned char *msg; /**< Message input */
+
+    unsigned int m1_len; /**< Length (in bytes) of \ref ACVP_HASH_TC.m1
+                               Provided when \ref ACVP_HASH_TC.test_type is MCT */
+    unsigned int m2_len; /**< Length (in bytes) of \ref ACVP_HASH_TC.m2
+                               Provided when \ref ACVP_HASH_TC.test_type is MCT */
+    unsigned int m3_len; /**< Length (in bytes) of \ref ACVP_HASH_TC.m3
+                               Provided when \ref ACVP_HASH_TC.test_type is MCT */
     unsigned char *m1; /**< Message input #1
                             Provided when \ref ACVP_HASH_TC.test_type is MCT */
     unsigned char *m2; /**< Message input #2
@@ -5268,6 +5283,18 @@ ACVP_SUB_SLH_DSA acvp_get_slh_dsa_alg(ACVP_CIPHER cipher);
  * @param seconds the number of seconds to wait
  */
 void acvp_sleep(int seconds);
+
+/**
+ * @brief acvp_hash_create_mct_msg() is an optional convenience function that concatenates the 3 values that hash MCT tests require on behalf
+ *        of an implementation. For alternate MCT mode, it handles the required truncating or padding logic as well.
+ *
+ * @param tc Pointer to the ACVP_HASH_TC that contains the values to be concatenated
+ * @param msg_len Pointer to a size_t variable that will be set to the length of the resulting message
+ *
+ * @return Pointer to a char buffer containing the concatenated message. The user is responsible for freeing this memory.
+ *         If the message cannot be created or an error occurs, NULL is returned.
+ */
+unsigned char *acvp_hash_create_mct_msg(ACVP_HASH_TC *tc, size_t *msg_len);
 
 /** @} */
 /** @internal ALL APIS SHOULD BE ADDED ABOVE THESE BLOCKS */

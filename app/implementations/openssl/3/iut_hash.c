@@ -22,6 +22,8 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
     int rc = 1;
     int sha3 = 0, shake = 0;
     ACVP_SUB_HASH alg;
+    unsigned char *mct_msg = NULL;
+    size_t mct_msg_len = 0;
 
     if (!test_case) {
         return 1;
@@ -106,17 +108,15 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
         }
         if (!EVP_DigestInit_ex(md_ctx, md, NULL)) {
             printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
+        }
+
+        /* We can either use this helper function, or concatenate m1/m2/m3 ourselves */
+        mct_msg = acvp_hash_create_mct_msg(tc, &mct_msg_len);
+        if (!mct_msg) {
+            printf("Library failed to generate mct message for test when asked\n");
             goto end;
         }
-        if (!EVP_DigestUpdate(md_ctx, tc->m1, tc->msg_len)) {
-            printf("\nCrypto module error, EVP_DigestUpdate failed\n");
-            goto end;
-        }
-        if (!EVP_DigestUpdate(md_ctx, tc->m2, tc->msg_len)) {
-            printf("\nCrypto module error, EVP_DigestUpdate failed\n");
-            goto end;
-        }
-        if (!EVP_DigestUpdate(md_ctx, tc->m3, tc->msg_len)) {
+        if (!EVP_DigestUpdate(md_ctx, mct_msg, mct_msg_len)) {
             printf("\nCrypto module error, EVP_DigestUpdate failed\n");
             goto end;
         }
@@ -155,6 +155,7 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
 
 end:
     if (md_ctx) EVP_MD_CTX_destroy(md_ctx);
+    if (mct_msg) free(mct_msg);
     return rc;
 }
 

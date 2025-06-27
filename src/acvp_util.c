@@ -1790,3 +1790,53 @@ void acvp_sleep(int seconds) {
 #endif
 }
 
+unsigned char *acvp_hash_create_mct_msg(ACVP_HASH_TC *tc, size_t *msg_len) {
+    unsigned char *tmp = NULL, *out = NULL;
+    size_t tmp_len = 0, out_len = 0;
+    int iter = 0;
+
+    if (!tc) {
+        return NULL;
+    }
+    if (!msg_len) {
+        return NULL;
+    }
+
+    tmp_len = tc->m1_len + tc->m2_len + tc->m3_len;
+    tmp = calloc(tmp_len, sizeof(unsigned char));
+    if (!tmp) {
+        goto err;
+    }
+    memcpy_s(tmp, tmp_len, tc->m1, tc->m1_len);
+    iter += tc->m1_len;
+    memcpy_s(tmp + iter, tmp_len - iter, tc->m2, tc->m2_len);
+    iter += tc->m2_len;
+    memcpy_s(tmp + iter, tmp_len - iter, tc->m3, tc->m3_len);
+
+    /**
+     * For alternate mode, we need the length to equal msg_len, either by truncating or padding end with 0s. Calloc
+     * makes this simpler.
+     */
+    if (tc->mct_version == ACVP_HASH_MCT_VERSION_ALTERNATE) {
+        out = calloc(tc->msg_len, sizeof(unsigned char));
+        if (!out) {
+            goto err;
+        }
+        /* If the concatenation is larger than msg_len, only copy msg_len bytes. If smaller, only copy concatenation bytes, so the calloc 0s remain */
+        out_len = tmp_len > tc->msg_len ? tc->msg_len : tmp_len;
+        memcpy_s(out, tc->msg_len, tmp, out_len);
+        free(tmp);
+        *msg_len = (size_t)tc->msg_len;
+    } else {
+        *msg_len = tmp_len;
+        out = tmp;
+    }
+
+    return out;
+
+err:
+    if (out) free(out);
+    if (tmp) free(tmp);
+    *msg_len = 0;
+    return NULL;
+}
