@@ -450,6 +450,10 @@
 #define ACVP_ALG_TLS12           "TLS-v1.2"
 #define ACVP_ALG_KDF_TLS12       "KDF"
 
+#define ACVP_STR_HASH_MCT "mctVersion"
+#define ACVP_STR_HASH_MCT_STANDARD "standard"
+#define ACVP_STR_HASH_MCT_ALTERNATE "alternate"
+
 #define ACVP_CAPABILITY_STR_MAX 512 /**< Arbitrary string length limit */
 
 #define ACVP_HEXSTR_MAX (ACVP_DRBG_ENTPY_IN_BIT_MAX >> 2) /**< Represents the largest hexstr that the client will accept.
