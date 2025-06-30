@@ -346,152 +346,167 @@ Andrew Karcher (Cisco Systems)
 
 ## Supported Algorithms
 
-|   Algorithm Type   |    Library Support    |    App Support (Open SSL 1.1.1)    |    App Support (OpenSSL 3.X)    |
-| :---------------:  | :-------------------: | :--------------------------------: | :-----------------------------: |
-| **Block Cipher Modes** |                   |                                    |
-| **AES-CBC** |  Y  |  Y  |  Y  |
-| **AES-CFB1** |  Y  |  Y  |  Y  |
-| **AES-CFB8** |  Y  |  Y  |  Y  |
-| **AES-CFB128** |  Y  |  Y  |  Y  |
-| **AES-CTR** |  Y  |  Y  |  Y  |
-| **AES-ECB** |  Y  |  Y  |  Y  |
-| **AES-GCM** |  Y  |  Y  |  Y  |
-| **AES-GCM-SIV** |  Y  |  Y  |  Y  |
-| **AES-KW** |  Y  |  Y  |  Y  |
-| **AES-KWP** |  Y  |  Y  |  Y  |
-| **AES-OFB** |  Y  |  Y  |  Y  |
-| **AES-XPN** |  N  |  N  |  Y  |
-| **AES-XTS** |  Y  |  Y  |  Y  |
-| **AES-FF1** |  N  |  N  |  N  |
-| **AES-FF3-1** |  N  |  N  |  N  |
-| **TDES-CBC** |  Y  |  Y  |  Y  |
-| **TDES-CBCI** |  N  |  N  |  N  |
-| **TDES-CFBP1** |  N  |  N  |  N  |
-| **TDES-CFBP8** |  N  |  N  |  N  |
-| **TDES-CFBP64** |  N  |  N  |  N  |
-| **TDES-CTR** |  Y  |  Y  |  N  |
-| **TDES-ECB** |  Y  |  Y  |  Y  |
-| **TDES-KW** |  Y  |  N  |  N  |
-| **TDES-OFB** |  Y  |  Y  |  N  |
-| **TDES-OFBI** |  N  |  N  |  N  |
-| **Secure Hash** | | |
-| **SHA-1** |  Y  |  Y  |  Y  |
-| **SHA-224** |  Y  |  Y  |  Y  |
-| **SHA-256** |  Y  |  Y  |  Y  |
-| **SHA-384** |  Y  |  Y  |  Y  |
-| **SHA-512** |  Y  |  Y  |  Y  |
-| **SHA-512/224** |  Y  |  Y  |  Y  |
-| **SHA-512/256** |  Y  |  Y  |  Y  |
-| **SHA3-224** |  Y  |  Y  |  Y  |
-| **SHA3-256** |  Y  |  Y  |  Y  |
-| **SHA3-384** |  Y  |  Y  |  Y  |
-| **SHA3-512** |  Y  |  Y  |  Y  |
-| **SHAKE-128** |  Y  |  Y  |  Y  |
-| **SHAKE-256** |  Y  |  Y  |  Y  |
-| **XOFs** | | |
-| **cSHAKE-128** |  N  |  N  |  N  |
-| **cSHAKE-256** |  N  |  N  |  N  |
-| **KMAC-128** |  Y  |  N  |  Y  |
-| **KMAC-256** |  Y  |  N  |  Y  |
-| **ParallelHash-128** |  N  |  N  |  N  |
-| **ParallelHash-256** |  N  |  N  |  N  |
-| **TupleHash-128** |  N  |  N  |  N  |
-| **TupleHash-256** |  N  |  N  |  N  |
-| **Message Authentication** | | |
-| **AES-GMAC** |  Y  |  Y  |  Y  |
-| **AES-CCM** |  Y  |  Y  |  Y  |
-| **CMAC-AES** |  Y  |  Y  |  Y  |
-| **CMAC-TDES** |  Y  |  Y  |  N  |
-| **HMAC-SHA-1** |  Y  |  Y  |  Y  |
-| **HMAC-SHA2-224** |  Y  |  Y  |  Y  |
-| **HMAC-SHA2-256** |  Y  |  Y  |  Y  |
-| **HMAC-SHA2-384** |  Y  |  Y  |  Y  |
-| **HMAC-SHA2-512** |  Y  |  Y  |  Y  |
-| **HMAC-SHA2-512/224** |  Y  |  Y  |  Y  |
-| **HMAC-SHA2-512/256** |  Y  |  Y  |  Y  |
-| **HMAC-SHA3-224** |  Y  |  Y  |  Y  |
-| **HMAC-SHA3-256** |  Y  |  Y  |  Y  |
-| **HMAC-SHA3-384** |  Y  |  Y  |  Y  |
-| **HMAC-SHA3-512** |  Y  |  Y  |  Y  |
-| **DRBG** | | |
-| **ctrDRBG-AES-128** |  Y  |  N  |  Y  |
-| **ctrDRBG-AES-192** |  Y  |  N  |  Y  |
-| **ctrDRBG-AES-256** |  Y  |  N  |  Y  |
-| **ctrDRBG-TDES** |  N  |  N  |  N  |
-| **HASH DRBG** |  Y  |  N  |  Y  |
-| **HMAC DRBG** |  Y  |  N  |  Y  |
-| **Digital Signature** | | |
-| **RSA mode: keyGen** |  Y  |  N  |  Y  |
-| **RSA mode: sigGen** |  Y  |  N  |  Y  |
-| **RSA mode: sigVer** |  Y  |  N  |  Y  |
-| **RSA mode: signatureComponent** |  Y  |  N  |  Y  |
-| **RSA mode: decryptionComponent** |  Y  |  N  |  N  |
-| **RSA mode: legacySigVer** |  N  |  N  |  N  |
-| **ECDSA mode: sigGenComponent** |  Y  |  N  |  Y  |
-| **ECDSA mode: keyGen** |  Y  |  N  |  Y  |
-| **ECDSA mode: keyVer** |  Y  |  N  |  Y  |
-| **ECDSA mode: sigGen** |  Y  |  N  |  Y  |
-| **ECDSA mode: sigVer** |  Y  |  N  |  Y  |
-| **DSA mode: keyGen** |  Y  |  N  |  Y  |
-| **DSA mode: sigVer** |  Y  |  N  |  Y  |
-| **DSA mode: sigGen** |  Y  |  N  |  Y  |
-| **DSA mode: pqgGen** |  Y  |  N  |  Y  |
-| **DSA mode: pqgVer** |  Y  |  N  |  Y  |
-| **EDDSA mode: keyGen** |  Y  |  N  |  Y  |
-| **EDDSA mode: keyVer** |  N  |  N  |  N  |
-| **EDDSA mode: sigGen** |  Y  |  N  |  Y  |
-| **EDDSA mode: sigVer** |  Y  |  N  |  Y  |
-| **LMS mode: keyGen** |  Y  |  N  |  N  |
-| **LMS mode: sigGen** |  Y  |  N  |  N  |
-| **LMS mode: sigVer** |  Y  |  N  |  N  |
-| **Key Agreement** | | |
-| **KAS ECC ephemeralUnified** |  Y  |  N  |  N  |
-| **KAS ECC SSC ephemeralUnified** |  Y  |  N  |  Y  |
-| **KAS ECC fullMqv** |  N  |  N  |  N  |
-| **KAS ECC fullUnified** |  N  |  N  |  N  |
-| **KAS ECC onePassDh** |  N  |  N  |  N  |
-| **KAS ECC onePassMqv** |  N  |  N  |  N  |
-| **KAS ECC OnePassUnified** |  N  |  N  |  N  |
-| **KAS ECC staticUnified** |  N  |  N  |  N  |
-| **KAS ECC CDH-Component** |  Y  |  N  |  Y  |
-| **KAS FFC dhHybrid1** |  N  |  N  |  N  |
-| **KAS FFC mqv2** |  N  |  N  |  N  |
-| **KAS FFC dhEphem** |  Y  |  N  |  N  |
-| **KAS FFC SSC dhEphem** |  Y  |  N  |  Y  |
-| **KAS FFC dhHybridOneFlow** |  N  |  N  |  N  |
-| **KAS FFC mqv1** |  N  |  N  |  N  |
-| **KAS FFC dhOneFlow** |  N  |  N  |  N  |
-| **KAS FFC dhStatic** |  N  |  N  |  N  |
-| **KAS IFC SSC KAS1** |  Y  |  N  |  Y  |
-| **KAS IFC SSC KAS2** |  Y  |  N  |  Y  |
-| **KAS IFC KAS1-basic** |  N  |  N  |  N  |
-| **KAS IFC KAS1-Party_V-confirmation** |  N  |  N  |  N  |
-| **KAS IFC KAS2-basic** |  N  |  N  |  N  |
-| **KAS IFC KAS2-bilateral-confirmation** |  N  |  N  |  N  |
-| **KAS IFC KAS2-Party_U-confirmation** |  N  |  N  |  N  |
-| **KAS IFC KAS2-Party_V-confirmation** |  N  |  N  |  N  |
-| **KTS IFC KTS-OAEP-basic** |  Y  |  N  |  Y  |
-| **KTS IFC KTS-OAEP-Party_V-confirmation** |  N  |  N  |  N  |
-| **KDA HKDF** |  Y  |  N  |  Y  |
-| **KDA ONESTEP** |  Y  |  N  |  Y  |
-| **KDA TWOSTEP** |  Y  |  N  |  Y  |
-| **KDFs** | | |
-| **Counter KDF** |  Y  |  N  |  Y  |
-| **Feedback KDF** |  Y  |  N  |  Y  |
-| **Double Pipeline Iterator KDF** |  Y  |  N  |  N  |
-| **KMAC KDF** |  Y  |  N  |  N  |
-| **IKEv1** |  Y  |  N  |  N  |
-| **IKEv2** |  Y  |  N  |  N  |
-| **SNMP** |  Y  |  N  |  N  |
-| **SRTP** |  Y  |  N  |  N  |
-| **SSH** |  Y  |  N  |  Y  |
-| **TLS 1.2** |  Y  |  N  |  Y  |
-| **TLS 1.3** |  Y  |  N  |  Y  |
-| **TPM** |  N  |  N  |  N  |
-| **ANSX9.63** |  Y  |  N  |  Y  |
-| **ANSX9.42** |  Y  |  N  |  Y  |
-| **PBKDF** |  Y  |  N  |  Y  |
-| **Safe Primes** | | |
-| **SafePrimes KeyGen** |  Y  |  N  |  Y  |
-| **SafePrimes KeyVer** |  Y  |  N  |  Y  |
+This table lists the algorithms supported by the library itself. An implementation typically will
+support a subset of these. If an algorithm is not listed, it can be assumed to be not supported.
+For information about which algorithm each implementation harness supports, please view the README
+for that implementation in the app/implementations folder.
+
+| Algorithm Type        |   Algorithm Name                     | Support |
+| :-------------------: | :----------------------------------: | :-----: |
+| **Symmetric Ciphers** | AES-CBC                              |    ✓    |
+|                       | AES-CBC-CS1                          |    ✓    |
+|                       | AES-CBC-CS2                          |    ✓    |
+|                       | AES-CBC-CS3                          |    ✓    |
+|                       | AES-CFB1                             |    ✓    |
+|                       | AES-CFB8                             |    ✓    |
+|                       | AES-CFB128                           |    ✓    |
+|                       | AES-CTR                              |    ✓    |
+|                       | AES-ECB                              |    ✓    |
+|                       | AES-GCM                              |    ✓    |
+|                       | AES-GCM-SIV                          |    ✓    |
+|                       | AES-KW                               |    ✓    |
+|                       | AES-KWP                              |    ✓    |
+|                       | AES-OFB                              |    ✓    |
+|                       | AES-XPN                              |         |
+|                       | AES-XTS                              |    ✓    |
+|                       | AES-FF1                              |         |
+|                       | AES-FF3-1                            |         |
+|                       | TDES-CBC                             |    ✓    |
+|                       | TDES-CBCI                            |         |
+|                       | TDES-CFBP1                           |         |
+|                       | TDES-CFBP8                           |         |
+|                       | TDES-CFBP64                          |         |
+|                       | TDES-CTR                             |    ✓    |
+|                       | TDES-ECB                             |    ✓    |
+|                       | TDES-KW                              |    ✓    |
+|                       | TDES-OFB                             |    ✓    |
+|                       | TDES-OFBI                            |         |
+|                       | Ascon AEAD128                        |         |
+| **Secure Hash**       | SHA-1                                |    ✓    |
+|                       | SHA-224                              |    ✓    |
+|                       | SHA-256                              |    ✓    |
+|                       | SHA-384                              |    ✓    |
+|                       | SHA-512                              |    ✓    |
+|                       | SHA-512/224                          |    ✓    |
+|                       | SHA-512/256                          |    ✓    |
+|                       | SHA3-224                             |    ✓    |
+|                       | SHA3-256                             |    ✓    |
+|                       | SHA3-384                             |    ✓    |
+|                       | SHA3-512                             |    ✓    |
+|                       | SHAKE-128                            |    ✓    |
+|                       | SHAKE-256                            |    ✓    |
+|                       | Ascon Hash256                        |         |
+| **XOFs**              | cSHAKE-128                           |         |
+|                       | cSHAKE-256                           |         |
+|                       | KMAC-128                             |    ✓    |
+|                       | KMAC-256                             |    ✓    |
+|                       | ParallelHash-128                     |         |
+|                       | ParallelHash-256                     |         |
+|                       | TupleHash-128                        |         |
+|                       | TupleHash-256                        |         |
+|                       | Ascon CXOF128                        |         |
+|                       | Ascon XOF128                         |         |
+| **Message Auth**      | AES-GMAC                             |    ✓    |
+|                       | AES-CCM                              |    ✓    |
+|                       | CMAC-AES                             |    ✓    |
+|                       | CMAC-TDES                            |    ✓    |
+|                       | HMAC-SHA-1                           |    ✓    |
+|                       | HMAC-SHA2-224                        |    ✓    |
+|                       | HMAC-SHA2-256                        |    ✓    |
+|                       | HMAC-SHA2-384                        |    ✓    |
+|                       | HMAC-SHA2-512                        |    ✓    |
+|                       | HMAC-SHA2-512/224                    |    ✓    |
+|                       | HMAC-SHA2-512/256                    |    ✓    |
+|                       | HMAC-SHA3-224                        |    ✓    |
+|                       | HMAC-SHA3-256                        |    ✓    |
+|                       | HMAC-SHA3-384                        |    ✓    |
+|                       | HMAC-SHA3-512                        |    ✓    |
+| **DRBG**              | ctrDRBG-AES-128                      |    ✓    |
+|                       | ctrDRBG-AES-192                      |    ✓    |
+|                       | ctrDRBG-AES-256                      |    ✓    |
+|                       | ctrDRBG-TDES                         |         |
+|                       | HASH DRBG                            |    ✓    |
+|                       | HMAC DRBG                            |    ✓    |
+| **Digital Signature** | RSA mode: keyGen                     |    ✓    |
+|                       | RSA mode: sigGen                     |    ✓    |
+|                       | RSA mode: sigVer                     |    ✓    |
+|                       | RSA mode: signatureComponent         |    ✓    |
+|                       | RSA mode: decryptionComponent        |    ✓    |
+|                       | RSA mode: legacySigVer               |         |
+|                       | ECDSA mode: sigGenComponent          |    ✓    |
+|                       | ECDSA mode: keyGen                   |    ✓    |
+|                       | ECDSA mode: keyVer                   |    ✓    |
+|                       | ECDSA mode: sigGen                   |    ✓    |
+|                       | ECDSA mode: sigVer                   |    ✓    |
+|                       | Det-ECDSA mode: sigGen               |    ✓    |
+|                       | DSA mode: keyGen                     |    ✓    |
+|                       | DSA mode: sigVer                     |    ✓    |
+|                       | DSA mode: sigGen                     |    ✓    |
+|                       | DSA mode: pqgGen                     |    ✓    |
+|                       | DSA mode: pqgVer                     |    ✓    |
+|                       | EDDSA mode: keyGen                   |    ✓    |
+|                       | EDDSA mode: keyVer                   |         |
+|                       | EDDSA mode: sigGen                   |    ✓    |
+|                       | EDDSA mode: sigVer                   |    ✓    |
+|                       | LMS mode: keyGen                     |    ✓    |
+|                       | LMS mode: sigGen                     |    ✓    |
+|                       | LMS mode: sigVer                     |    ✓    |
+|                       | ML-DSA mode: keyGen                  |    ✓    |
+|                       | ML-DSA mode: sigGen                  |    ✓    |
+|                       | ML-DSA mode: sigVer                  |    ✓    |
+|                       | SLH-DSA mode: keyGen                 |    ✓    |
+|                       | SLH-DSA mode: sigGen                 |    ✓    |
+|                       | SLH-DSA mode: sigVer                 |    ✓    |
+| **Key Agreement**     | KAS ECC ephemeralUnified             |    ✓    |
+|                       | KAS ECC SSC ephemeralUnified         |    ✓    |
+|                       | KAS ECC fullMqv                      |         |
+|                       | KAS ECC fullUnified                  |         |
+|                       | KAS ECC onePassDh                    |         |
+|                       | KAS ECC onePassMqv                   |         |
+|                       | KAS ECC OnePassUnified               |         |
+|                       | KAS ECC staticUnified                |         |
+|                       | KAS ECC CDH-Component                |    ✓    |
+|                       | KAS FFC dhHybrid1                    |         |
+|                       | KAS FFC mqv2                         |         |
+|                       | KAS FFC dhEphem                      |    ✓    |
+|                       | KAS FFC SSC dhEphem                  |    ✓    |
+|                       | KAS FFC dhHybridOneFlow              |         |
+|                       | KAS FFC mqv1                         |         |
+|                       | KAS FFC dhOneFlow                    |         |
+|                       | KAS FFC dhStatic                     |         |
+|                       | KAS IFC SSC KAS1                     |    ✓    |
+|                       | KAS IFC SSC KAS2                     |    ✓    |
+|                       | KAS IFC KAS1-basic                   |         |
+|                       | KAS IFC KAS1-Party_V-confirmation    |         |
+|                       | KAS IFC KAS2-basic                   |         |
+|                       | KAS IFC KAS2-bilateral-confirmation  |         |
+|                       | KAS IFC KAS2-Party_U-confirmation    |         |
+|                       | KAS IFC KAS2-Party_V-confirmation    |         |
+|                       | KTS IFC KTS-OAEP-basic               |    ✓    |
+|                       | KTS IFC KTS-OAEP-Party_V-confirmation|         |
+|                       | KDA HKDF                             |    ✓    |
+|                       | KDA ONESTEP                          |    ✓    |
+|                       | KDA TWOSTEP                          |    ✓    |
+|                       | ML-KEM mode: keyGen                  |    ✓    |
+|                       | ML-KEM mode: encapDecap              |    ✓    |
+| **KDFs**              | Counter KDF                          |    ✓    |
+|                       | Feedback KDF                         |    ✓    |
+|                       | Double Pipeline Iterator KDF         |    ✓    |
+|                       | KMAC KDF                             |    ✓    |
+|                       | IKEv1                                |    ✓    |
+|                       | IKEv2                                |    ✓    |
+|                       | SNMP                                 |    ✓    |
+|                       | SRTP                                 |    ✓    |
+|                       | SSH                                  |    ✓    |
+|                       | TLS 1.2                              |    ✓    |
+|                       | TLS 1.3                              |    ✓    |
+|                       | TPM                                  |         |
+|                       | ANSX9.63                             |    ✓    |
+|                       | ANSX9.42                             |    ✓    |
+|                       | PBKDF                                |    ✓    |
+| **Safe Primes**       | SafePrimes KeyGen                    |    ✓    |
+|                       | SafePrimes KeyVer                    |    ✓    |
+| **Conditioning**      | AES-CBC-MAC                          |         |
+|                       | BlockCipher_DF                       |         |
+|                       | Hash_DF                              |         |
 
