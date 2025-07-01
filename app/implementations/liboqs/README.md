@@ -10,7 +10,20 @@ as long as they are thoroughly tested and cleanly written.
 ## Building
 
 This harness is tested to build against `liboqs.a` and `liboqs.so`. To do so, provide `--with-liboqs-dir=<install dir>`
-during `configure`.
+during `configure`. If liboqs is linked against OpenSSL, `--with-ssl-dir=<install dir>` can also be provided, and the
+liboqs harness will still be built. 
+
+
+## Supported Algorithms
+
+#### Digital Signature
+- ML-DSA mode: keyGen
+- ML-DSA mode: sigGen
+- ML-DSA mode: sigVer
+
+#### Key Encapsulation
+- ML-KEM mode: keyGen
+- ML-KEM mode: encapDecap
 
 
 ## Disclaimer

@@ -143,18 +143,6 @@ AC_ARG_WITH([criterion-dir],
     [criteriondir="$withval"],
     [with_criteriondir="no"])
 
-# Disable check for library presence during configure stage
-AC_MSG_CHECKING([disable lib check])
-AC_ARG_ENABLE(lib-check,
-    [AS_HELP_STRING([--disable-lib-check],[Disables checking for presence of libraries during configure. This is ONLY recommended if you have issues with detection and you know the library exists])],
-    [disable_lib_detection="yes"],
-    [disable_lib_detection="no"])
-if test "x$disable_lib_detection" = "xyes"; then
-    AC_MSG_RESULT(yes)
-else
-    AC_MSG_RESULT(no)
-fi
-
 # Disable SSP, in case a platform does not support it
 AC_MSG_CHECKING([disable ssp])
 AC_ARG_ENABLE(ssp,
@@ -179,7 +167,10 @@ AC_ARG_ENABLE([wrapper-library],
 # This does not apply for --disable-app builds
 # Set default value here, change based on args below 
 # iut_lib_name should match the name of the library lib<name>. Multiple library names can be referenced using single space delimiter.
+# OpenSSL is a special case; we want users to be able to indicate a path even with other IUTs are being tested, in case libcurl depends
+# on it as well. So, we only set the iut flags for OpenSSL if no other IUTs are specified.
 acvp_app_iut=""
+ssl_dir=""
 iut_specified=0;
 # SSL dir only used if building app too 
 if test "x$disable_app" = "xno" ; then
@@ -187,7 +178,7 @@ if test "x$disable_app" = "xno" ; then
     AC_ARG_WITH([ssl-dir],
         [AS_HELP_STRING([--with-ssl-dir],
         [location of OpenSSL install folder])],
-        [iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="openssl"; iut_lib_name="ssl crypto"; use_strict_linking="yes"],
+        [ssl_dir="$withval"; use_openssl="yes"],
         [])
 
     AC_ARG_WITH([jent-dir],
@@ -204,10 +195,16 @@ if test "x$disable_app" = "xno" ; then
 
     if test $iut_specified -gt 1 ; then
         AC_MSG_FAILURE([Multiple testable implementations provided. Please only provide a path to one testable implementation])
-    fi
-
-    if test $iut_specified -eq 0 ; then
+    elif test $iut_specified -eq 0 ; then
+        if test "x$ssl_dir" != "x"; then
+            iut_dir="$ssl_dir"
+            iut_specified=$((iut_specified+1))
+            acvp_app_iut="openssl"
+            iut_lib_name="ssl crypto"
+            use_strict_linking="yes"
+        else
             AC_MSG_FAILURE([At least one testable implementation path must be provided or use --disable-app])
+        fi
     fi
 fi
 
@@ -277,6 +274,12 @@ if test "x$disable_lib_detection" = "xno"; then
                 fi
                 AC_MSG_RESULT(yes)
             done
+
+            #if ssl_dir is set, but acvp_app_iut is not openssl, then set the additional dependency flags
+            if test "x$ssl_dir" != "x" && test "x$acvp_app_iut" != "xopenssl"; then
+                lib_dependencies="${lib_dependencies} -L$ssl_dir/lib -L$ssl_dir/lib64 -lssl -lcrypto"
+            fi
+
             IFS="$tmp_ifs"
             tmp_cflags="$CFLAGS"
             CFLAGS="$CFLAGS -I$iut_dir/include"

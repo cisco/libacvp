@@ -32,6 +32,12 @@ Any of these steps can change depending on the version. These are known to work 
 To build acvp_app against this version of jent, just provide `--with-jent-dir=<install dir>` during `configure`.
 
 
+## Supported Algorithms
+
+### Secure Hash
+- SHA3-256
+
+
 ## Disclaimer
 The maintainers of this testing harness do not provide any guarantee of correctness or certification upon its use.
 Support for any given implementation does not imply an endorsement of the implementation.
