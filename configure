@@ -841,7 +841,6 @@ with_libcurl_dir
 enable_cflags
 enable_gcov
 with_criterion_dir
-enable_lib_check
 enable_ssp
 enable_wrapper_library
 with_ssl_dir
@@ -1506,10 +1505,6 @@ Optional Features:
                           statically
   --enable-cflags         Flag to indicate use of enhanced CFLAGS
   --enable-gcov           Flag to indicate use of gcov tool
-  --disable-lib-check     Disables checking for presence of libraries during
-                          configure. This is ONLY recommended if you have
-                          issues with detection and you know the library
-                          exists
   --disable-ssp           Turn off fstack-protector cflag; not all platforms
                           support
   --enable-wrapper-library
@@ -12899,25 +12894,6 @@ else $as_nop
 fi
 
 
-# Disable check for library presence during configure stage
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking disable lib check" >&5
-printf %s "checking disable lib check... " >&6; }
-# Check whether --enable-lib-check was given.
-if test ${enable_lib_check+y}
-then :
-  enableval=$enable_lib_check; disable_lib_detection="yes"
-else $as_nop
-  disable_lib_detection="no"
-fi
-
-if test "x$disable_lib_detection" = "xyes"; then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-else
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
 # Disable SSP, in case a platform does not support it
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking disable ssp" >&5
 printf %s "checking disable ssp... " >&6; }
@@ -12952,7 +12928,10 @@ fi
 # This does not apply for --disable-app builds
 # Set default value here, change based on args below
 # iut_lib_name should match the name of the library lib<name>. Multiple library names can be referenced using single space delimiter.
+# OpenSSL is a special case; we want users to be able to indicate a path even with other IUTs are being tested, in case libcurl depends
+# on it as well. So, we only set the iut flags for OpenSSL if no other IUTs are specified.
 acvp_app_iut=""
+ssl_dir=""
 iut_specified=0;
 # SSL dir only used if building app too
 if test "x$disable_app" = "xno" ; then
@@ -12961,7 +12940,7 @@ if test "x$disable_app" = "xno" ; then
 # Check whether --with-ssl-dir was given.
 if test ${with_ssl_dir+y}
 then :
-  withval=$with_ssl_dir; iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="openssl"; iut_lib_name="ssl crypto"; use_strict_linking="yes"
+  withval=$with_ssl_dir; ssl_dir="$withval"; use_openssl="yes"
 fi
 
 
@@ -12986,13 +12965,19 @@ fi
 printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "Multiple testable implementations provided. Please only provide a path to one testable implementation
 See \`config.log' for more details" "$LINENO" 5; }
-    fi
-
-    if test $iut_specified -eq 0 ; then
+    elif test $iut_specified -eq 0 ; then
+        if test "x$ssl_dir" != "x"; then
+            iut_dir="$ssl_dir"
+            iut_specified=$((iut_specified+1))
+            acvp_app_iut="openssl"
+            iut_lib_name="ssl crypto"
+            use_strict_linking="yes"
+        else
             { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "At least one testable implementation path must be provided or use --disable-app
 See \`config.log' for more details" "$LINENO" 5; }
+        fi
     fi
 fi
 
@@ -13125,6 +13110,12 @@ See \`config.log' for more details" "$LINENO" 5; }
                 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
             done
+
+            #if ssl_dir is set, but acvp_app_iut is not openssl, then set the additional dependency flags
+            if test "x$ssl_dir" != "x" && test "x$acvp_app_iut" != "xopenssl"; then
+                lib_dependencies="${lib_dependencies} -L$ssl_dir/lib -L$ssl_dir/lib64 -lssl -lcrypto"
+            fi
+
             IFS="$tmp_ifs"
             tmp_cflags="$CFLAGS"
             CFLAGS="$CFLAGS -I$iut_dir/include"
