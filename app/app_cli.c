@@ -56,7 +56,7 @@ static void print_usage(int code) {
         printf("capabilities of the provided cryptographic library.\n\n");
     }
     printf("Algorithm Test Suites:\n");
-    printf("Note: not all suites are supported by all supported modules\n");
+    printf("Note: not all suites are supported by all supported implementations.\n");
     printf("      --all_algs (or -a, Enable all of the suites supported by the crypto module)\n");
     printf("      --aes\n");
     printf("      --tdes\n");
@@ -119,6 +119,8 @@ static void print_usage(int code) {
     printf("      -r <file>\n");
     printf("      -p <file>\n");
     printf("\n");
+    printf("To process a generic vector file without libacvp formatting, add:\n");
+    printf("      --generic\n");
     printf("To upload vector responses from file:\n");
     printf("      --vector_upload <file>\n");
     printf("      -u <file>\n");
@@ -239,6 +241,7 @@ static ko_longopt_t longopts[] = {
     { "debug", ko_no_argument, 417 },
     { "get_registration", ko_no_argument, 418 },
     { "set_max_hash_size", ko_required_argument, 419 },
+    { "generic", ko_no_argument, 420 },
     { "disable_fips", ko_no_argument, 500 },
     { NULL, 0, 0 }
 };
@@ -574,6 +577,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             ldt_manually_set = 1;
             break;
 
+        case 420:
+            cfg->generic_vector_file = 1;
+            break;
+
         case 500:
             cfg->disable_fips = 1;
             break;
@@ -606,6 +613,12 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     if (ldt_manually_set && (!cfg->hash && !cfg->testall)) {
         printf("Warning: max hash LDT size specified, but hash not enabled. Ignoring provided value...\n");
         acvp_sleep(2);
+    }
+
+    if (cfg->generic_vector_file && !(cfg->vector_req && cfg->vector_rsp)) {
+        printf(ANSI_COLOR_RED "Generic vector file option requires both --vector_req and --vector_rsp to be set\n" ANSI_COLOR_RESET);
+        printf("%s\n", ACVP_APP_HELP_MSG);
+        return 1;
     }
 
     //Many args do not need an alg specified. Todo: make cleaner

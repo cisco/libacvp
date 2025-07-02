@@ -326,8 +326,12 @@ int main(int argc, char **argv) {
     }
 
     if (cfg.vector_req && cfg.vector_rsp) {
-       rv = acvp_run_vectors_from_file(ctx, cfg.vector_req_file, cfg.vector_rsp_file);
-       goto end;
+        if (!cfg.generic_vector_file) {
+            rv = acvp_run_vectors_from_file(ctx, cfg.vector_req_file, cfg.vector_rsp_file);
+        } else {
+            rv = acvp_run_vectors_from_file_offline(ctx, cfg.vector_req_file, cfg.vector_rsp_file);
+        }
+        goto end;
     }
 
     strncmp_s(DEFAULT_SERVER, DEFAULT_SERVER_LEN, server, DEFAULT_SERVER_LEN, &diff);
