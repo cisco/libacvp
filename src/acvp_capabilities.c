@@ -6819,8 +6819,7 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
                  (value != ACVP_KDF108_MAC_MODE_KMAC_256)) {
                 return ACVP_INVALID_ARG;
             }
-        }
-        else {
+        } else {
             if ( (value == ACVP_KDF108_MAC_MODE_KMAC_128) || 
                  (value == ACVP_KDF108_MAC_MODE_KMAC_256)) {
                 return ACVP_INVALID_ARG;

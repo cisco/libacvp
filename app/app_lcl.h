@@ -56,6 +56,7 @@ typedef struct app_config {
     int get_cost;
     int get_reg;
     int disable_fips;
+    int generic_vector_file;
     char reg_file[JSON_FILENAME_LENGTH + 1];
     char vector_req_file[JSON_FILENAME_LENGTH + 1];
     char vector_rsp_file[JSON_FILENAME_LENGTH + 1];

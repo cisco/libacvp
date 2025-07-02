@@ -1331,8 +1331,7 @@ ACVP_RESULT acvp_run_vectors_from_file_offline(ACVP_CTX *ctx, const char *req_fi
             ACVP_LOG_ERR("JSON obj parse error (no data)");
             goto end;
         }
-    }
-    else {
+    } else {
         // No array, just a single algorithm
         obj = json_value_get_object(val);
     }
@@ -1392,8 +1391,7 @@ skip_error:
         if (reg_array) {
             // Array of algorithms; get the next
             obj = json_array_get_object(reg_array, ++n);
-        }
-        else {
+        } else {
             // One algorithm; mark NULL to exit the while() loop
             obj = NULL;
         }

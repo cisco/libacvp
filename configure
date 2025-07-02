@@ -12996,16 +12996,15 @@ pre_libs="$LIBS"
 # makefile.am have complete control over linker flags
 pre_ldflags="$LDFLAGS"
 
-if test "x$disable_lib_detection" = "xno"; then
-    proj_temp_cppflags="$CPPFLAGS"
+proj_temp_cppflags="$CPPFLAGS"
 
-    # Be more lenient in library detection stage
-    if test "x$allow_multiple" != "xno"; then
-        LDFLAGS=" -Wl,--allow-multiple-definition $LDFLAGS"
-    fi
+# Be more lenient in library detection stage
+if test "x$allow_multiple" != "xno"; then
+    LDFLAGS=" -Wl,--allow-multiple-definition $LDFLAGS"
+fi
 
-    if test "x$enable_offline" != "xfalse"; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing gzdopen" >&5
+if test "x$enable_offline" != "xfalse"; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing gzdopen" >&5
 printf %s "checking for library containing gzdopen... " >&6; }
 if test ${ac_cv_search_gzdopen+y}
 then :
@@ -13064,66 +13063,66 @@ then :
   lib_dependencies="${lib_dependencies} -lz "
 fi
 
-    fi
+fi
 
-    if test "x$disable_app" = "xno" ; then
-        ##########################################################
-        # Begin checks for IUT. Only one of these should be done #
-        ##########################################################
+if test "x$disable_app" = "xno" ; then
+    ##########################################################
+    # Begin checks for IUT. Only one of these should be done #
+    ##########################################################
 
-        # Note about linking behavior for IUTs:
-        # By default, compiler/linker tends to look in its preset system directories for libraries if it cannot find libraries
-        # In the path we have provided. In the case of IUT testing, we definitely do not want this. We ONLY want to link to a
-        # IUT in a user provided path, so we don't accidentally link to and test a system library. There really is not a great
-        # mechanism to exclude grabbing specific libraries from the system paths; you can exclude all system dirs, but then the
-        # project does not know how to link to the system level dependencies like libc or even crt0. The best approach is seemingly
-        # to point the linker to the EXACT path and name of the library you want. However, we often still want to automatically
-        # detect and switch between static or shared libraries (check for shared, if none, use static). That is logic we have to
-        # handle ourselves.
+    # Note about linking behavior for IUTs:
+    # By default, compiler/linker tends to look in its preset system directories for libraries if it cannot find libraries
+    # In the path we have provided. In the case of IUT testing, we definitely do not want this. We ONLY want to link to a
+    # IUT in a user provided path, so we don't accidentally link to and test a system library. There really is not a great
+    # mechanism to exclude grabbing specific libraries from the system paths; you can exclude all system dirs, but then the
+    # project does not know how to link to the system level dependencies like libc or even crt0. The best approach is seemingly
+    # to point the linker to the EXACT path and name of the library you want. However, we often still want to automatically
+    # detect and switch between static or shared libraries (check for shared, if none, use static). That is logic we have to
+    # handle ourselves.
 
-        if test "x$use_strict_linking" = "xyes"; then
-            # Iterate over each library in iut_lib_name. set IFS to a space; use IFS to parse the words. Hopefully is portable enough.
-            tmp_ifs="$IFS"
-            IFS=" "
-            for lib in $iut_lib_name; do
-                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for presence of lib${lib} in lib/lib64 dirs" >&5
+    if test "x$use_strict_linking" = "xyes"; then
+        # Iterate over each library in iut_lib_name. set IFS to a space; use IFS to parse the words. Hopefully is portable enough.
+        tmp_ifs="$IFS"
+        IFS=" "
+        for lib in $iut_lib_name; do
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for presence of lib${lib} in lib/lib64 dirs" >&5
 printf %s "checking for presence of lib${lib} in lib/lib64 dirs... " >&6; }
-                # Check for shared libraries in lib64, then lib. If no match, check for static libraries in either dir.
-                if test -f "$iut_dir/lib64/lib${lib}.so"; then
-                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.so "
-                elif test -f "$iut_dir/lib64/lib${lib}.dylib"; then
-                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.dylib "
-                elif test -f "$iut_dir/lib/lib${lib}.so"; then
-                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.so "
-                elif test -f "$iut_dir/lib/lib${lib}.dylib"; then
-                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.dylib "
-                elif test -f "$iut_dir/lib64/lib${lib}.a"; then
-                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.a "
-                elif test -f "$iut_dir/lib/lib${lib}.a"; then
-                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.a "
-                else
-                    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+            # Check for shared libraries in lib64, then lib. If no match, check for static libraries in either dir.
+            if test -f "$iut_dir/lib64/lib${lib}.so"; then
+                iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.so "
+            elif test -f "$iut_dir/lib64/lib${lib}.dylib"; then
+                iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.dylib "
+            elif test -f "$iut_dir/lib/lib${lib}.so"; then
+                iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.so "
+            elif test -f "$iut_dir/lib/lib${lib}.dylib"; then
+                iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.dylib "
+            elif test -f "$iut_dir/lib64/lib${lib}.a"; then
+                iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.a "
+            elif test -f "$iut_dir/lib/lib${lib}.a"; then
+                iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.a "
+            else
+                { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "Cannot locate lib${lib} in $iut_dir/lib64 or $iut_dir/lib
 See \`config.log' for more details" "$LINENO" 5; }
-                fi
-                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-            done
-
-            #if ssl_dir is set, but acvp_app_iut is not openssl, then set the additional dependency flags
-            if test "x$ssl_dir" != "x" && test "x$acvp_app_iut" != "xopenssl"; then
-                lib_dependencies="${lib_dependencies} -L$ssl_dir/lib -L$ssl_dir/lib64 -lssl -lcrypto"
             fi
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        done
 
-            IFS="$tmp_ifs"
-            tmp_cflags="$CFLAGS"
-            CFLAGS="$CFLAGS -I$iut_dir/include"
-            LIBS="${iut_lib_flags} $LIBS"
+        #if ssl_dir is set, but acvp_app_iut is not openssl, then set the additional dependency flags
+        if test "x$ssl_dir" != "x" && test "x$acvp_app_iut" != "xopenssl"; then
+            lib_dependencies="${lib_dependencies} -L$ssl_dir/lib -L$ssl_dir/lib64 -lssl -lcrypto"
         fi
 
-        if test "x$acvp_app_iut" = "xopenssl"; then
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing dlopen" >&5
+        IFS="$tmp_ifs"
+        tmp_cflags="$CFLAGS"
+        CFLAGS="$CFLAGS -I$iut_dir/include"
+        LIBS="${iut_lib_flags} $LIBS"
+    fi
+
+    if test "x$acvp_app_iut" = "xopenssl"; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing dlopen" >&5
 printf %s "checking for library containing dlopen... " >&6; }
 if test ${ac_cv_search_dlopen+y}
 then :
@@ -13183,13 +13182,13 @@ then :
 fi
 
 
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-                    #include <$iut_dir/include/openssl/opensslv.h>
-                    #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-                    #error "Detected OpenSSL version 3.0.0 or greater"
-                    #endif
+                #include <$iut_dir/include/openssl/opensslv.h>
+                #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+                #error "Detected OpenSSL version 3.0.0 or greater"
+                #endif
 
 int
 main (void)
@@ -13210,13 +13209,13 @@ else $as_nop
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
-            # Attempt to link to IUT. We don't use AC_SEARCH_LIBS or CHECK_LIB here since we need to control search paths
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to libcrypto" >&5
+        # Attempt to link to IUT. We don't use AC_SEARCH_LIBS or CHECK_LIB here since we need to control search paths
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to libcrypto" >&5
 printf %s "checking for link to libcrypto... " >&6; }
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-                    #include <openssl/evp.h>
+                #include <openssl/evp.h>
 
 int
 main (void)
@@ -13239,12 +13238,12 @@ See \`config.log' for more details" "$LINENO" 5; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to libssl" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to libssl" >&5
 printf %s "checking for link to libssl... " >&6; }
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-                    #include <openssl/ssl.h>
+                #include <openssl/ssl.h>
 
 int
 main (void)
@@ -13268,14 +13267,14 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 
-        elif test "x$acvp_app_iut" = "xjent"; then
+    elif test "x$acvp_app_iut" = "xjent"; then
 
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to jitterentropy" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to jitterentropy" >&5
 printf %s "checking for link to jitterentropy... " >&6; }
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-                    #include <jitterentropy.h>
+                #include <jitterentropy.h>
 
 int
 main (void)
@@ -13299,13 +13298,13 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 
-        elif test "x$acvp_app_iut" = "xliboqs"; then
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to liboqs" >&5
+    elif test "x$acvp_app_iut" = "xliboqs"; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to liboqs" >&5
 printf %s "checking for link to liboqs... " >&6; }
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-                    #include <oqs/common.h>
+                #include <oqs/common.h>
 
 int
 main (void)
@@ -13328,19 +13327,19 @@ See \`config.log' for more details" "$LINENO" 5; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
-        fi
-        ######################
-        # End checks for IUT #
-        ######################
     fi
+    ######################
+    # End checks for IUT #
+    ######################
+fi
 
-    if test "x$disable_lib" = "xyes" ; then
-        if test "x$libacvpdir" != "x" ; then
-            LDFLAGS="$LDFLAGS -L$libalibcvpdir/lib"
-        else
-            LDFLAGS="$LDFLAGS -Lsrc/.libs"
-        fi
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for acvp_create_test_session in -lacvp" >&5
+if test "x$disable_lib" = "xyes" ; then
+    if test "x$libacvpdir" != "x" ; then
+        LDFLAGS="$LDFLAGS -L$libalibcvpdir/lib"
+    else
+        LDFLAGS="$LDFLAGS -Lsrc/.libs"
+    fi
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for acvp_create_test_session in -lacvp" >&5
 printf %s "checking for acvp_create_test_session in -lacvp... " >&6; }
 if test ${ac_cv_lib_acvp_acvp_create_test_session+y}
 then :
@@ -13388,13 +13387,13 @@ as_fn_error $? "Cannot find libacvp library
 See \`config.log' for more details" "$LINENO" 5; }
 fi
 
-    fi
+fi
 
-    # Check for curl
-    if test "x$libcurldir" != "x" ; then
-        LDFLAGS="$LDFLAGS -L$libcurldir/lib"
-        CPPFLAGS="$CPPFLAGS -I$libcurldir/include"
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing curl_easy_init" >&5
+# Check for curl
+if test "x$libcurldir" != "x" ; then
+    LDFLAGS="$LDFLAGS -L$libcurldir/lib"
+    CPPFLAGS="$CPPFLAGS -I$libcurldir/include"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing curl_easy_init" >&5
 printf %s "checking for library containing curl_easy_init... " >&6; }
 if test ${ac_cv_search_curl_easy_init+y}
 then :
@@ -13458,21 +13457,14 @@ as_fn_error $? "Curl not found in provided curl dir
 See \`config.log' for more details" "$LINENO" 5; }
 fi
 
-    fi
+fi
 
-    # Reset the flags variables to what they were before checking for libs, we want to manage these
-    CPPFLAGS="$proj_temp_cppflags"
-    LDFLAGS="$pre_ldflags"
-    LIBS="$pre_libs"
-    if test "x$use_strict_linking" = "xyes"; then
-        CFLAGS="$tmp_cflags"
-    fi
-else
-    #assume we are using openssl 3.X if lib check is disabled
-    if test "x$acvp_app_iut" = "xopenssl"; then
-        acvp_app_iut="openssl"
-        ssl_ver="3"
-    fi
+# Reset the flags variables to what they were before checking for libs, we want to manage these
+CPPFLAGS="$proj_temp_cppflags"
+LDFLAGS="$pre_ldflags"
+LIBS="$pre_libs"
+if test "x$use_strict_linking" = "xyes"; then
+    CFLAGS="$tmp_cflags"
 fi
 
 # Regenerate the IUT name if using SSL, appending the version

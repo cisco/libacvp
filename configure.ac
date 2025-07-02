@@ -223,153 +223,145 @@ pre_libs="$LIBS"
 # makefile.am have complete control over linker flags
 pre_ldflags="$LDFLAGS"
 
-if test "x$disable_lib_detection" = "xno"; then
-    proj_temp_cppflags="$CPPFLAGS"
+proj_temp_cppflags="$CPPFLAGS"
 
-    # Be more lenient in library detection stage
-    if test "x$allow_multiple" != "xno"; then
-        LDFLAGS=" -Wl,--allow-multiple-definition $LDFLAGS"
-    fi
+# Be more lenient in library detection stage
+if test "x$allow_multiple" != "xno"; then
+    LDFLAGS=" -Wl,--allow-multiple-definition $LDFLAGS"
+fi
 
-    if test "x$enable_offline" != "xfalse"; then
-        AC_SEARCH_LIBS([gzdopen], [z], [lib_dependencies="${lib_dependencies} -lz "], [], [])
-    fi
+if test "x$enable_offline" != "xfalse"; then
+    AC_SEARCH_LIBS([gzdopen], [z], [lib_dependencies="${lib_dependencies} -lz "], [], [])
+fi
 
-    if test "x$disable_app" = "xno" ; then
-        ##########################################################
-        # Begin checks for IUT. Only one of these should be done #
-        ##########################################################
+if test "x$disable_app" = "xno" ; then
+    ##########################################################
+    # Begin checks for IUT. Only one of these should be done #
+    ##########################################################
 
-        # Note about linking behavior for IUTs:
-        # By default, compiler/linker tends to look in its preset system directories for libraries if it cannot find libraries
-        # In the path we have provided. In the case of IUT testing, we definitely do not want this. We ONLY want to link to a
-        # IUT in a user provided path, so we don't accidentally link to and test a system library. There really is not a great
-        # mechanism to exclude grabbing specific libraries from the system paths; you can exclude all system dirs, but then the
-        # project does not know how to link to the system level dependencies like libc or even crt0. The best approach is seemingly
-        # to point the linker to the EXACT path and name of the library you want. However, we often still want to automatically
-        # detect and switch between static or shared libraries (check for shared, if none, use static). That is logic we have to
-        # handle ourselves.
+    # Note about linking behavior for IUTs:
+    # By default, compiler/linker tends to look in its preset system directories for libraries if it cannot find libraries
+    # In the path we have provided. In the case of IUT testing, we definitely do not want this. We ONLY want to link to a
+    # IUT in a user provided path, so we don't accidentally link to and test a system library. There really is not a great
+    # mechanism to exclude grabbing specific libraries from the system paths; you can exclude all system dirs, but then the
+    # project does not know how to link to the system level dependencies like libc or even crt0. The best approach is seemingly
+    # to point the linker to the EXACT path and name of the library you want. However, we often still want to automatically
+    # detect and switch between static or shared libraries (check for shared, if none, use static). That is logic we have to
+    # handle ourselves.
 
-        if test "x$use_strict_linking" = "xyes"; then
-            # Iterate over each library in iut_lib_name. set IFS to a space; use IFS to parse the words. Hopefully is portable enough.
-            tmp_ifs="$IFS"
-            IFS=" "
-            for lib in $iut_lib_name; do
-                AC_MSG_CHECKING(for presence of lib${lib} in lib/lib64 dirs)
-                # Check for shared libraries in lib64, then lib. If no match, check for static libraries in either dir.
-                if test -f "$iut_dir/lib64/lib${lib}.so"; then
-                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.so "
-                elif test -f "$iut_dir/lib64/lib${lib}.dylib"; then
-                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.dylib "
-                elif test -f "$iut_dir/lib/lib${lib}.so"; then
-                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.so "
-                elif test -f "$iut_dir/lib/lib${lib}.dylib"; then
-                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.dylib "
-                elif test -f "$iut_dir/lib64/lib${lib}.a"; then
-                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.a "
-                elif test -f "$iut_dir/lib/lib${lib}.a"; then
-                    iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.a "
-                else
-                    AC_MSG_FAILURE([Cannot locate lib${lib} in $iut_dir/lib64 or $iut_dir/lib])
-                fi
-                AC_MSG_RESULT(yes)
-            done
-
-            #if ssl_dir is set, but acvp_app_iut is not openssl, then set the additional dependency flags
-            if test "x$ssl_dir" != "x" && test "x$acvp_app_iut" != "xopenssl"; then
-                lib_dependencies="${lib_dependencies} -L$ssl_dir/lib -L$ssl_dir/lib64 -lssl -lcrypto"
-            fi
-
-            IFS="$tmp_ifs"
-            tmp_cflags="$CFLAGS"
-            CFLAGS="$CFLAGS -I$iut_dir/include"
-            LIBS="${iut_lib_flags} $LIBS"
-        fi
-
-        if test "x$acvp_app_iut" = "xopenssl"; then
-            AC_SEARCH_LIBS([dlopen], [dl], [lib_dependencies="${lib_dependencies} -ldl "], [], [])
-
-            AC_COMPILE_IFELSE(
-                [AC_LANG_PROGRAM([[
-                    #include <$iut_dir/include/openssl/opensslv.h>
-                    #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-                    #error "Detected OpenSSL version 3.0.0 or greater"
-                    #endif
-                ]])],
-                [AC_MSG_FAILURE([OpenSSL versions under 3 not currently supported])],
-                [ssl_ver="3"])
-
-            # Attempt to link to IUT. We don't use AC_SEARCH_LIBS or CHECK_LIB here since we need to control search paths
-            AC_MSG_CHECKING(for link to libcrypto)
-            AC_LINK_IFELSE(
-                [AC_LANG_PROGRAM([
-                    #include <openssl/evp.h>
-                ], [OpenSSL_version(0);])],
-                [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given libcrypto])]
-            )
-            AC_MSG_CHECKING(for link to libssl)
-            AC_LINK_IFELSE(
-                [AC_LANG_PROGRAM([
-                    #include <openssl/ssl.h>
-                ], [SSL_CTX_get0_param(NULL);])],
-                [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given libssl])]
-            )
-
-        elif test "x$acvp_app_iut" = "xjent"; then
-
-            AC_MSG_CHECKING(for link to jitterentropy)
-            AC_LINK_IFELSE(
-                [AC_LANG_PROGRAM([
-                    #include <jitterentropy.h>
-                ], [jent_entropy_init();])],
-                [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given liboqs])]
-            )
-
-        elif test "x$acvp_app_iut" = "xliboqs"; then
-            AC_MSG_CHECKING(for link to liboqs)
-            AC_LINK_IFELSE(
-                [AC_LANG_PROGRAM([
-                    #include <oqs/common.h>
-                ], [OQS_version();])],
-                [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given liboqs])]
-            )
-        fi
-        ######################
-        # End checks for IUT #
-        ######################
-    fi
-
-    if test "x$disable_lib" = "xyes" ; then
-        if test "x$libacvpdir" != "x" ; then
-            LDFLAGS="$LDFLAGS -L$libalibcvpdir/lib"
-        else
-            LDFLAGS="$LDFLAGS -Lsrc/.libs"
-        fi
-        AC_CHECK_LIB([acvp], [acvp_create_test_session], [],
-                [AC_MSG_FAILURE([Cannot find libacvp library])], [])
-    fi
-
-    # Check for curl
-    if test "x$libcurldir" != "x" ; then
-        LDFLAGS="$LDFLAGS -L$libcurldir/lib"
-        CPPFLAGS="$CPPFLAGS -I$libcurldir/include"
-        AC_SEARCH_LIBS([curl_easy_init], [curl], [],
-            [AC_MSG_FAILURE(Curl not found in provided curl dir)], ["$lib_dependencies"])
-    fi
-
-    # Reset the flags variables to what they were before checking for libs, we want to manage these
-    CPPFLAGS="$proj_temp_cppflags"
-    LDFLAGS="$pre_ldflags"
-    LIBS="$pre_libs"
     if test "x$use_strict_linking" = "xyes"; then
-        CFLAGS="$tmp_cflags"
+        # Iterate over each library in iut_lib_name. set IFS to a space; use IFS to parse the words. Hopefully is portable enough.
+        tmp_ifs="$IFS"
+        IFS=" "
+        for lib in $iut_lib_name; do
+            AC_MSG_CHECKING(for presence of lib${lib} in lib/lib64 dirs)
+            # Check for shared libraries in lib64, then lib. If no match, check for static libraries in either dir.
+            if test -f "$iut_dir/lib64/lib${lib}.so"; then
+                iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.so "
+            elif test -f "$iut_dir/lib64/lib${lib}.dylib"; then
+                iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.dylib "
+            elif test -f "$iut_dir/lib/lib${lib}.so"; then
+                iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.so "
+            elif test -f "$iut_dir/lib/lib${lib}.dylib"; then
+                iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.dylib "
+            elif test -f "$iut_dir/lib64/lib${lib}.a"; then
+                iut_lib_flags="${iut_lib_flags} $iut_dir/lib64/lib${lib}.a "
+            elif test -f "$iut_dir/lib/lib${lib}.a"; then
+                iut_lib_flags="${iut_lib_flags} $iut_dir/lib/lib${lib}.a "
+            else
+                AC_MSG_FAILURE([Cannot locate lib${lib} in $iut_dir/lib64 or $iut_dir/lib])
+            fi
+            AC_MSG_RESULT(yes)
+        done
+
+        #if ssl_dir is set, but acvp_app_iut is not openssl, then set the additional dependency flags
+        if test "x$ssl_dir" != "x" && test "x$acvp_app_iut" != "xopenssl"; then
+            lib_dependencies="${lib_dependencies} -L$ssl_dir/lib -L$ssl_dir/lib64 -lssl -lcrypto"
+        fi
+
+        IFS="$tmp_ifs"
+        tmp_cflags="$CFLAGS"
+        CFLAGS="$CFLAGS -I$iut_dir/include"
+        LIBS="${iut_lib_flags} $LIBS"
     fi
-else
-    #assume we are using openssl 3.X if lib check is disabled
+
     if test "x$acvp_app_iut" = "xopenssl"; then
-        acvp_app_iut="openssl"
-        ssl_ver="3"
+        AC_SEARCH_LIBS([dlopen], [dl], [lib_dependencies="${lib_dependencies} -ldl "], [], [])
+
+        AC_COMPILE_IFELSE(
+            [AC_LANG_PROGRAM([[
+                #include <$iut_dir/include/openssl/opensslv.h>
+                #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+                #error "Detected OpenSSL version 3.0.0 or greater"
+                #endif
+            ]])],
+            [AC_MSG_FAILURE([OpenSSL versions under 3 not currently supported])],
+            [ssl_ver="3"])
+
+        # Attempt to link to IUT. We don't use AC_SEARCH_LIBS or CHECK_LIB here since we need to control search paths
+        AC_MSG_CHECKING(for link to libcrypto)
+        AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM([
+                #include <openssl/evp.h>
+            ], [OpenSSL_version(0);])],
+            [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given libcrypto])]
+        )
+        AC_MSG_CHECKING(for link to libssl)
+        AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM([
+                #include <openssl/ssl.h>
+            ], [SSL_CTX_get0_param(NULL);])],
+            [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given libssl])]
+        )
+
+    elif test "x$acvp_app_iut" = "xjent"; then
+
+        AC_MSG_CHECKING(for link to jitterentropy)
+        AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM([
+                #include <jitterentropy.h>
+            ], [jent_entropy_init();])],
+            [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given liboqs])]
+        )
+
+    elif test "x$acvp_app_iut" = "xliboqs"; then
+        AC_MSG_CHECKING(for link to liboqs)
+        AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM([
+                #include <oqs/common.h>
+            ], [OQS_version();])],
+            [AC_MSG_RESULT(yes)],[AC_MSG_FAILURE([Cannot link to given liboqs])]
+        )
     fi
+    ######################
+    # End checks for IUT #
+    ######################
+fi
+
+if test "x$disable_lib" = "xyes" ; then
+    if test "x$libacvpdir" != "x" ; then
+        LDFLAGS="$LDFLAGS -L$libalibcvpdir/lib"
+    else
+        LDFLAGS="$LDFLAGS -Lsrc/.libs"
+    fi
+    AC_CHECK_LIB([acvp], [acvp_create_test_session], [],
+            [AC_MSG_FAILURE([Cannot find libacvp library])], [])
+fi
+
+# Check for curl
+if test "x$libcurldir" != "x" ; then
+    LDFLAGS="$LDFLAGS -L$libcurldir/lib"
+    CPPFLAGS="$CPPFLAGS -I$libcurldir/include"
+    AC_SEARCH_LIBS([curl_easy_init], [curl], [],
+        [AC_MSG_FAILURE(Curl not found in provided curl dir)], ["$lib_dependencies"])
+fi
+
+# Reset the flags variables to what they were before checking for libs, we want to manage these
+CPPFLAGS="$proj_temp_cppflags"
+LDFLAGS="$pre_ldflags"
+LIBS="$pre_libs"
+if test "x$use_strict_linking" = "xyes"; then
+    CFLAGS="$tmp_cflags"
 fi
 
 # Regenerate the IUT name if using SSL, appending the version
