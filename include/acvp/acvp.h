@@ -669,6 +669,7 @@ typedef enum acvp_sym_cipher_salt_source {
 typedef enum acvp_sym_cipher_ivgen_mode {
     ACVP_SYM_CIPH_IVGEN_MODE_821 = 1,
     ACVP_SYM_CIPH_IVGEN_MODE_822,
+    ACVP_SYM_CIPH_IVGEN_MODE_BOTH,
     ACVP_SYM_CIPH_IVGEN_MODE_NA,
     ACVP_SYM_CIPH_IVGEN_MODE_MAX
 } ACVP_SYM_CIPH_IVGEN_MODE;
@@ -3060,6 +3061,30 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
                                            int max,
                                            int increment);
 
+/**
+ * @brief acvp_cap_sym_cipher_set_iv_modes allows an application to specify supported
+ *        IV generation mode and source combinations for a given cipher during a test session
+ *        with the ACVP server.
+ *
+ *        The user should call this to specify the supported IV generation modes and sources.
+ *        This can be called multiple times, for different modes and sources.
+ *
+ *        The ACVP_CIPHER value passed to this function should already have been setup by invoking
+ *        acvp_enable_sym_cipher_cap() for that cipher earlier.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param iv_mode ACVP_SYM_CIPH_IVGEN_MODE enum value identifying the IV generation mode
+ *        that is being specified (e.g. 8.2.1 or 8.2.2)
+ * @param iv_src ACVP_SYM_CIPH_IVGEN_SRC enum value identifying the IV generation source
+ *        that is being specified (internal/external/both)
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_sym_cipher_set_iv_modes(ACVP_CTX *ctx,
+                                             ACVP_CIPHER cipher,
+                                             ACVP_SYM_CIPH_IVGEN_MODE iv_mode,
+                                             ACVP_SYM_CIPH_IVGEN_SRC iv_src);
 /**
  * @brief acvp_cap_hash_enable() allows an application to specify a hash capability to be tested
  *        by the ACVP server.

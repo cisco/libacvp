@@ -780,8 +780,6 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         cap_e2->next = cap_entry;
     }
 
-    /* Assume here one cap = one vector set; for special cases we will handle those as the parameter is set */
-    ctx->vs_count++;
     return ACVP_SUCCESS;
 
 err:
@@ -2765,6 +2763,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
                                          ACVP_SYM_CIPH_PARM parm,
                                          int value) {
     ACVP_CAPS_LIST *cap = NULL;
+    int i = 0;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -2981,12 +2980,15 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         }
 
     case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
-        if (value > 0 && value < ACVP_SYM_CIPH_IVGEN_SRC_MAX) {
-            if (value == ACVP_SYM_CIPH_IVGEN_SRC_EITHER) {
-                /* This will generate two vector sets, one for internal ivgen and one for external */
-                ctx->vs_count++;
+        if (value >= ACVP_SYM_CIPH_IVGEN_SRC_INT && value <= ACVP_SYM_CIPH_IVGEN_SRC_EITHER) {
+            /* Set the whole matrix to support this source */
+            for (i = 0; i < ACVP_SYM_CIPH_IVGEN_MODE_MAX; i++) {
+                cap->cap.sym_cap->iv_mode_matrix[i][1] = value;
             }
-            cap->cap.sym_cap->ivgen_source = value;
+
+            return ACVP_SUCCESS;
+        } else if (value == ACVP_SYM_CIPH_IVGEN_SRC_NA) {
+            //Ignore this parameter, as it is not applicable
             return ACVP_SUCCESS;
         } else {
             ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_IVGEN_SRC");
@@ -2994,13 +2996,20 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         }
 
     case ACVP_SYM_CIPH_PARM_IVGEN_MODE:
-        if (value > 0 && value < ACVP_SYM_CIPH_IVGEN_MODE_MAX) {
-            cap->cap.sym_cap->ivgen_mode = value;
+        if (value == ACVP_SYM_CIPH_IVGEN_MODE_BOTH) {
+            cap->cap.sym_cap->iv_mode_matrix[ACVP_SYM_CIPH_IVGEN_MODE_821][0] = 1;
+            cap->cap.sym_cap->iv_mode_matrix[ACVP_SYM_CIPH_IVGEN_MODE_822][0] = 1;
+        } else if (value >= ACVP_SYM_CIPH_IVGEN_MODE_821 && value <= ACVP_SYM_CIPH_IVGEN_MODE_822) {
+            cap->cap.sym_cap->iv_mode_matrix[value][0] = 1;
+        } else if (value == ACVP_SYM_CIPH_IVGEN_MODE_NA) {
+            //Ignore this parameter, as it is not applicable
             return ACVP_SUCCESS;
         } else {
             ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_IVGEN_MODE");
             return ACVP_INVALID_ARG;
         }
+
+        return ACVP_SUCCESS;
     case ACVP_SYM_CIPH_PARM_SALT_SRC:
         if  (cipher == ACVP_AES_XPN && value > 0 && value < ACVP_SYM_CIPH_SALT_SRC_MAX) {
             cap->cap.sym_cap->salt_source = value;
@@ -3282,6 +3291,163 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm_string(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Invalid param");
         return ACVP_INVALID_ARG;
     }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_sym_cipher_set_iv_modes(ACVP_CTX *ctx,
+                                             ACVP_CIPHER cipher,
+                                             ACVP_SYM_CIPH_IVGEN_MODE iv_mode,
+                                             ACVP_SYM_CIPH_IVGEN_SRC iv_src) {
+    ACVP_CAPS_LIST *cap = NULL;
+    ACVP_SYM_CIPHER_CAP *sym_cap = NULL;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    switch (cipher) {
+    case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
+    case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
+        break;
+    case ACVP_CIPHER_START:
+    case ACVP_AES_CCM:
+    case ACVP_AES_ECB:
+    case ACVP_AES_CBC:
+    case ACVP_AES_FF1:
+    case ACVP_AES_FF3:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
+    case ACVP_AES_CFB1:
+    case ACVP_AES_CFB8:
+    case ACVP_AES_CFB128:
+    case ACVP_AES_OFB:
+    case ACVP_AES_CTR:
+    case ACVP_AES_XTS:
+    case ACVP_AES_KW:
+    case ACVP_AES_KWP:
+    case ACVP_TDES_ECB:
+    case ACVP_TDES_CBC:
+    case ACVP_TDES_CBCI:
+    case ACVP_TDES_OFB:
+    case ACVP_TDES_OFBI:
+    case ACVP_TDES_CFB1:
+    case ACVP_TDES_CFB8:
+    case ACVP_TDES_CFB64:
+    case ACVP_TDES_CFBP1:
+    case ACVP_TDES_CFBP8:
+    case ACVP_TDES_CFBP64:
+    case ACVP_TDES_CTR:
+    case ACVP_TDES_KW:
+    case ACVP_HASH_SHA1:
+    case ACVP_HASH_SHA224:
+    case ACVP_HASH_SHA256:
+    case ACVP_HASH_SHA384:
+    case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA512_224:
+    case ACVP_HASH_SHA512_256:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
+    case ACVP_HASHDRBG:
+    case ACVP_HMACDRBG:
+    case ACVP_CTRDRBG:
+    case ACVP_HMAC_SHA1:
+    case ACVP_HMAC_SHA2_224:
+    case ACVP_HMAC_SHA2_256:
+    case ACVP_HMAC_SHA2_384:
+    case ACVP_HMAC_SHA2_512:
+    case ACVP_HMAC_SHA2_512_224:
+    case ACVP_HMAC_SHA2_512_256:
+    case ACVP_HMAC_SHA3_224:
+    case ACVP_HMAC_SHA3_256:
+    case ACVP_HMAC_SHA3_384:
+    case ACVP_HMAC_SHA3_512:
+    case ACVP_CMAC_AES:
+    case ACVP_CMAC_TDES:
+    case ACVP_KMAC_128:
+    case ACVP_KMAC_256:
+    case ACVP_DSA_KEYGEN:
+    case ACVP_DSA_PQGGEN:
+    case ACVP_DSA_PQGVER:
+    case ACVP_DSA_SIGGEN:
+    case ACVP_DSA_SIGVER:
+    case ACVP_RSA_KEYGEN:
+    case ACVP_RSA_SIGGEN:
+    case ACVP_RSA_SIGVER:
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
+    case ACVP_ECDSA_KEYGEN:
+    case ACVP_ECDSA_KEYVER:
+    case ACVP_ECDSA_SIGGEN:
+    case ACVP_ECDSA_SIGVER:
+    case ACVP_KDF135_SNMP:
+    case ACVP_KDF135_SSH:
+    case ACVP_KDF135_SRTP:
+    case ACVP_KDF135_IKEV2:
+    case ACVP_KDF135_IKEV1:
+    case ACVP_KDF135_X942:
+    case ACVP_KDF135_X963:
+    case ACVP_KDF108:
+    case ACVP_PBKDF:
+    case ACVP_KDF_TLS12:
+    case ACVP_KDF_TLS13:
+    case ACVP_KAS_ECC_CDH:
+    case ACVP_KAS_ECC_COMP:
+    case ACVP_KAS_ECC_NOCOMP:
+    case ACVP_KAS_ECC_SSC:
+    case ACVP_KAS_FFC_COMP:
+    case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KDA_ONESTEP:
+    case ACVP_KDA_TWOSTEP:
+    case ACVP_KDA_HKDF:
+    case ACVP_KAS_FFC_SSC:
+    case ACVP_KAS_IFC_SSC:
+    case ACVP_KTS_IFC:
+    case ACVP_SAFE_PRIMES_KEYGEN:
+    case ACVP_SAFE_PRIMES_KEYVER:
+    case ACVP_LMS_SIGGEN:
+    case ACVP_LMS_SIGVER:
+    case ACVP_LMS_KEYGEN:
+    case ACVP_CIPHER_END:
+    default:
+        ACVP_LOG_ERR("Unsupported cipher for setting IV modes/sources");
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        ACVP_LOG_ERR("Cap entry not found, use acvp_cap_sym_cipher_enable() first.");
+        return ACVP_NO_CAP;
+    }
+
+    sym_cap = cap->cap.sym_cap;
+    if (!sym_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    /* If setting both, just use the main param set API */
+    if (iv_mode < ACVP_SYM_CIPH_IVGEN_MODE_821 || iv_mode >= ACVP_SYM_CIPH_IVGEN_MODE_BOTH) {
+        ACVP_LOG_ERR("Invalid IV mode provided when setting AES iv mode/source");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (iv_src < ACVP_SYM_CIPH_IVGEN_SRC_INT || iv_src > ACVP_SYM_CIPH_IVGEN_SRC_EITHER) {
+        ACVP_LOG_ERR("Invalid IV source provided when setting AES iv mode/source");
+        return ACVP_INVALID_ARG;
+    }
+
+    sym_cap->iv_mode_matrix[iv_mode][0] = 1;
+    sym_cap->iv_mode_matrix[iv_mode][1] = iv_src;
 
     return ACVP_SUCCESS;
 }
@@ -5905,10 +6071,6 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
     case ACVP_ECDSA_COMPONENT_TEST:
         if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_DET_ECDSA_SIGGEN) {
             if (value >= ACVP_ECDSA_COMPONENT_MODE_NO && value <= ACVP_ECDSA_COMPONENT_MODE_BOTH) {
-                if (value == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
-                    /* This will generate two vector sets, one for and one not for component mode */
-                    ctx->vs_count++;
-                }
                 cap->component = value;
             } else {
                 ACVP_LOG_ERR("Invalid value given for ECDSA component test mode");
