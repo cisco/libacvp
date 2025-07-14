@@ -557,7 +557,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     } else {
         ivGenLabel = ACVP_AES_IVGEN_STR;
     }
-    switch (sym_cap->ivgen_source) {
+    switch (sym_cap->iv_src) {
     case ACVP_SYM_CIPH_IVGEN_SRC_INT:
         json_object_set_string(cap_obj, ivGenLabel, "internal");
         break;
@@ -594,20 +594,18 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     }
 
     /* Set the IV generation mode if applicable */
-    if (sym_cap->ivgen_source == ACVP_SYM_CIPH_IVGEN_SRC_INT) {
-        switch (sym_cap->ivgen_mode) {
-        case ACVP_SYM_CIPH_IVGEN_MODE_821:
-            json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
-            break;
-        case ACVP_SYM_CIPH_IVGEN_MODE_822:
-            json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
-            break;
-        case ACVP_SYM_CIPH_IVGEN_MODE_NA:
-        case ACVP_SYM_CIPH_IVGEN_MODE_MAX:
-        default:
-            return ACVP_MISSING_ARG;
-            break;
-        }
+    switch (sym_cap->iv_mode) {
+    case ACVP_SYM_CIPH_IVGEN_MODE_821:
+        json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
+        break;
+    case ACVP_SYM_CIPH_IVGEN_MODE_822:
+        json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
+        break;
+    case ACVP_SYM_CIPH_IVGEN_MODE_NA:
+    case ACVP_SYM_CIPH_IVGEN_MODE_MAX:
+    default:
+        return ACVP_MISSING_ARG;
+        break;
     }
 
     /*
@@ -5578,6 +5576,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
     JSON_Array *caps_arr = NULL;
     JSON_Object *cap_obj = NULL;
     const char *name = NULL, *mode = NULL;
+    int i = 0, skip_final_append = 0;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for build_test_session");
@@ -5619,25 +5618,42 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_AES_XPN:
             case ACVP_AES_GMAC:
             case ACVP_AES_CTR:
-                /**
-                 * If we need to test both internal and external IV gen, we need two different
-                 * algorithm registrations/vector sets currently.
-                 */
-                if (cap_entry->cap.sym_cap->ivgen_source == ACVP_SYM_CIPH_IVGEN_SRC_EITHER) {
-                    cap_entry->cap.sym_cap->ivgen_source = ACVP_SYM_CIPH_IVGEN_SRC_INT;
-                    rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
-                    if (rv != ACVP_SUCCESS) {
-                        cap_entry->cap.sym_cap->ivgen_source = ACVP_SYM_CIPH_IVGEN_SRC_EITHER;
-                        break;
+                skip_final_append = 1;
+                /* Can have multiple vector sets; 1 for each IV mode, and one for each IV source */
+                for (i = 0; i < ACVP_SYM_CIPH_IVGEN_MODE_MAX; i++) {
+                    /* If a given mode is enabled, we register that mode */
+                    if (cap_entry->cap.sym_cap->iv_mode_matrix[i][0] == 1) {
+                        if (!cap_val) {
+                            cap_val = json_value_init_object();
+                            cap_obj = json_value_get_object(cap_val);
+                        }
+
+                        cap_entry->cap.sym_cap->iv_mode = i;
+
+                        /* If src is either, build internal vector set registration, than external */
+                        if (cap_entry->cap.sym_cap->iv_mode_matrix[i][1] == ACVP_SYM_CIPH_IVGEN_SRC_EITHER) {
+                            cap_entry->cap.sym_cap->iv_src = ACVP_SYM_CIPH_IVGEN_SRC_INT;
+                            rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+                            if (rv != ACVP_SUCCESS) {
+                                break;
+                            }
+                            json_array_append_value(caps_arr, cap_val);
+                            cap_val = json_value_init_object();
+                            cap_obj = json_value_get_object(cap_val);
+
+                            cap_entry->cap.sym_cap->iv_src = ACVP_SYM_CIPH_IVGEN_SRC_EXT;
+                            rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+
+                        } else {
+                            /* Otherwise, just build the one as-is */
+                            cap_entry->cap.sym_cap->iv_src = cap_entry->cap.sym_cap->iv_mode_matrix[i][1];
+                            rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+                        }
+
+                        /* Since we aren't sure how many appends we are doing, just append here and skip the final */
+                        json_array_append_value(caps_arr, cap_val);
+                        cap_val = NULL;
                     }
-                    json_array_append_value(caps_arr, cap_val);
-                    cap_val = json_value_init_object();
-                    cap_obj = json_value_get_object(cap_val);
-                    cap_entry->cap.sym_cap->ivgen_source = ACVP_SYM_CIPH_IVGEN_SRC_EXT;
-                    rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
-                    cap_entry->cap.sym_cap->ivgen_source = ACVP_SYM_CIPH_IVGEN_SRC_EITHER;
-                } else {
-                    rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
                 }
                 break;
             case ACVP_AES_GCM_SIV:
@@ -5918,7 +5934,11 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
              * Now that we've built up the JSON for this capability,
              * add it to the array of capabilities on the register message.
              */
-            json_array_append_value(caps_arr, cap_val);
+            if (!skip_final_append) {
+                json_array_append_value(caps_arr, cap_val);
+            } else {
+                skip_final_append = 0;
+            }
 
             /* Advance to next cap entry */
             cap_entry = cap_entry->next;

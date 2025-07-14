@@ -25,7 +25,7 @@ static ACVP_RESULT acvp_kdf135_ssh_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SSH_TC *
 static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_KDF135_SSH_TC *stc,
                                            unsigned int tc_id,
                                            ACVP_CIPHER alg_id,
-                                           unsigned int sha_type,
+                                           ACVP_HASH_ALG sha_type,
                                            unsigned int e_key_len,
                                            unsigned int i_key_len,
                                            unsigned int iv_len,

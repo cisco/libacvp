@@ -824,7 +824,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         //RFC3686 does not mention ivgen src in vector set. Read our registered cap instead.
         if (alg_id == ACVP_AES_CTR && conformance == ACVP_CONFORMANCE_RFC3686) {
-            iv_gen =  cap->cap.sym_cap->ivgen_source;
+            iv_gen =  cap->cap.sym_cap->iv_src;
         }
 
         if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM || alg_id == ACVP_AES_GMAC ||

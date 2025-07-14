@@ -96,7 +96,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
-    unsigned char *seed = NULL, *msg = NULL, *tmp = NULL;
+    unsigned char *seed = NULL;
 
     /* Spec: Initial seed value: changes at end of every outer loop iteration */
     seed = stc->msg;

@@ -418,10 +418,6 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_GMAC, ACVP_SYM_CIPH_DOMAIN_IVLEN, 96, 1024, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
-
-
-
-
 end:
 
     return rv;

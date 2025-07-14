@@ -1220,8 +1220,15 @@ typedef struct acvp_sym_cipher_capability {
     ACVP_CONFORMANCE conformance;
     ACVP_SYM_CIPH_DIR direction;
     ACVP_SYM_CIPH_KO keying_option;
-    ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
-    ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
+
+    /* The first row indicates a 0 or 1 for if that IVGEN_MODE is supported. The second row stores the IV_SRC value */
+    unsigned int iv_mode_matrix[ACVP_SYM_CIPH_IVGEN_MODE_MAX][2];
+
+    /* These flags are to temporarily store a given mode and src while building one vector set's registration, since they
+       must all have different vector sets */
+    ACVP_SYM_CIPH_IVGEN_MODE iv_mode;
+    ACVP_SYM_CIPH_IVGEN_SRC iv_src;
+
     ACVP_SYM_CIPH_SALT_SRC salt_source;
     int perform_ctr_tests;
     unsigned int ctr_incr;
@@ -1985,8 +1992,6 @@ struct acvp_ctx_t {
 
     /* crypto module capabilities list */
     ACVP_CAPS_LIST *caps_list;
-    /* Maintain a count of the number of registered vector sets so we can evaluate cost. This can be >= caps_list size */
-    int vs_count;
 
     /* application callbacks */
     ACVP_RESULT (*test_progress_cb) (char *msg, ACVP_LOG_LVL level);

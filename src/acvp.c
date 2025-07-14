@@ -2382,10 +2382,28 @@ ACVP_RESULT acvp_mark_as_delete_only(ACVP_CTX *ctx, char *request_url) {
 }
 
 int acvp_get_vector_set_count(ACVP_CTX *ctx) {
+    JSON_Value *reg = NULL;
+    JSON_Array *tmp_array = NULL;
+    int count = 0;
     if (!ctx) {
         return -1;
     }
-    return ctx->vs_count;
+
+    if (acvp_build_registration_json(ctx, &reg) != ACVP_SUCCESS || !reg) {
+        ACVP_LOG_ERR("Error occured while getting vector set count");
+        return ACVP_INTERNAL_ERR;
+    }
+
+    tmp_array = json_value_get_array(reg);
+    if (!tmp_array) {
+        ACVP_LOG_ERR("Error occured while getting vector set count");
+        return ACVP_INTERNAL_ERR;
+    }
+
+    count = (int)json_array_get_count(tmp_array);
+    json_value_free(reg);
+    return count;
+
 }
 
 /*
