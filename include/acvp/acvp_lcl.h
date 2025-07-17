@@ -520,6 +520,7 @@
 #define ACVP_SYM_AAD_MAX (ACVP_SYM_AAD_BIT_MAX >> 2)      /**< 16384 characters */
 #define ACVP_SYM_AAD_BYTE_MAX (ACVP_SYM_AAD_BIT_MAX >> 3) /**< 8192 bytes */
 
+#define ACVP_AES_FPE_ALPHABET_MAX 64
 #define ACVP_AES_XPN_SALTLEN 96
 
 #define ACVP_AES_CCM_IV_BIT_MIN 56   /**< 56 bits */

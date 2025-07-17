@@ -53,13 +53,15 @@ end:
 ACVP_RESULT iut_setup(APP_CONFIG *cfg) {
     /* No specific setup needed */
     if (!cfg) {
-        return ACVP_INTERNAL_ERR;
+        printf("Error: missing app_config in IUT setup request\n");
+        return ACVP_MISSING_ARG;
     }
     return ACVP_SUCCESS;
 }
 
 void iut_print_version(APP_CONFIG *cfg) {
     if (!cfg) {
+        printf("Error: missing app_config in version request\n");
         return;
     }
     unsigned int jentver = 0, major = 0, minor = 0, patch = 0;

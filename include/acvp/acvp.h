@@ -1279,6 +1279,7 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int fpe_len;
     char* fpe_in;
     char* fpe_out;
+    char *alphabet; /**< For FPE, the alphabet used for the input and output */
 } ACVP_SYM_CIPHER_TC;
 
 /**

@@ -15,7 +15,12 @@
 #include <oqs/common.h>
 
 void iut_print_version(APP_CONFIG *cfg) {
+    if (!cfg) {
+        printf("Error: missing app_config in version request\n");
+        return;
+    }
     printf("liboqs version: %s\n", OQS_version());
+
 }
 
 ACVP_RESULT iut_cleanup() {
@@ -25,6 +30,10 @@ ACVP_RESULT iut_cleanup() {
 
 
 ACVP_RESULT iut_setup(APP_CONFIG *cfg) {
+    if (!cfg) {
+        printf("Error: missing app_config in IUT setup request\n");
+        return ACVP_MISSING_ARG;
+    }
     return ACVP_SUCCESS;
 }
 

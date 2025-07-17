@@ -665,7 +665,8 @@
             "tcId": 130
           }
         ], 
-        "testType": "MCT"
+        "testType": "MCT",
+        "mctVersion": "standard"
       }
     ]
   }

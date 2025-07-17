@@ -1324,7 +1324,7 @@ ACVP_RESULT acvp_run_vectors_from_file_offline(ACVP_CTX *ctx, const char *req_fi
         * libacvp-style and acvpproxy-style files.
         */
         while (((obj = json_array_get_object(reg_array, n)) != NULL) &&
-               (json_object_get_number(obj, "vsId") == 0)) {
+               (!json_object_has_value(obj, "vsId"))) {
             n++;
         }
         if (!obj) {
@@ -3160,6 +3160,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
     JSON_Object *ts_obj = NULL;
     JSON_Object *obj = NULL;
     ACVP_STRING_LIST *vs_entry = NULL;
+    double tmp_num = 0.0;
     int retry_period = 0;
     int retry = 1;
     unsigned int time_waited_so_far = 0;
@@ -3181,7 +3182,8 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
         /*
          * Check if we received a retry response
          */
-        retry_period = (int) json_object_get_number(obj, "retry");
+        tmp_num = json_object_get_number(obj, "retry");
+        retry_period = (int)tmp_num;
         if (retry_period) {
             /*
              * Wait and try again to retrieve the VectorSet
@@ -3263,11 +3265,12 @@ end:
  * is looked up in the alg_tbl[] and invoked here.
  */
 static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
-    int i;
+    int i = 0, vs_id = 0;
+    double tmp = json_object_get_number(obj, "vsId");
     const char *err = json_object_get_string(obj, "error");
     const char *alg = json_object_get_string(obj, "algorithm");
     const char *mode = json_object_get_string(obj, "mode");
-    int vs_id = (int) json_object_get_number(obj, "vsId");
+    vs_id = (int)tmp;
     int diff = 1;
 
     ctx->vs_id = vs_id;

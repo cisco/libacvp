@@ -104,6 +104,15 @@ APP_LINK += ../app/implementations/openssl/3/acvp_app-iut.o \
 
 endif
 
+if APP_IUT_LIBOQS
+APP_LINK += ../app/implementations/liboqs/acvp_app-iut.o \
+            ../app/implementations/liboqs/acvp_app-iut_ml_kem.o \
+            ../app/implementations/liboqs/acvp_app-iut_ml_dsa.o
+endif
+
+if APP_IUT_JENT
+APP_LINK += ../app/implementations/jitter_entropy/acvp_app-iut.o
+endif
 
 tmp_cflags += $(IUT_CFLAGS) -I../app
 tmp_ldflags += $(IUT_LDFLAGS)
@@ -112,9 +121,11 @@ endif
 runtest_CFLAGS = ${tmp_cflags}
 runtest_LDFLAGS = ${tmp_ldflags}
 
+ldadd = $(ADDL_LIB_DEPENDENCIES)
 if ! APP_NOT_SUPPORTED
-runtest_LDADD = $(APP_LINK) $(IUT_LIBS)
+ldadd += $(APP_LINK) $(IUT_LIBS)
 endif
+runtest_LDADD = $(ldadd)
 
 runtestdir=
 runtest_HEADERS = ut_common.h

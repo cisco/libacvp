@@ -77,6 +77,8 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_ML_DSA_PARAM_SET_ML_DSA_87:
         param_set = "ML-DSA-87";
         break;
+    case ACVP_ML_DSA_PARAM_SET_NONE:
+    case ACVP_ML_DSA_PARAM_SET_MAX:
     default:
         printf("Invalid param set in ML-DSA handler\n");
         goto end;

@@ -419,7 +419,7 @@ static ACVP_KAS_IFC_TEST_TYPE read_test_type(const char *str) {
     return 0;
 }
 
-static ACVP_RSA_KEY_FORMAT read_key_gen(const char *str){
+static ACVP_KAS_IFC_KEYGEN read_key_gen(const char *str){
     int diff;
 
     strcmp_s("rsakpg1-basic", 13, str, &diff);

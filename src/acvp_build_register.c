@@ -576,7 +576,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         break;
     }
 
-        /*
+    /*
      * Set the salt generation source if applicable (XPN)
      */
     switch (sym_cap->salt_source) {
@@ -601,10 +601,10 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_SYM_CIPH_IVGEN_MODE_822:
         json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
         break;
+    case ACVP_SYM_CIPH_IVGEN_MODE_BOTH:
     case ACVP_SYM_CIPH_IVGEN_MODE_NA:
     case ACVP_SYM_CIPH_IVGEN_MODE_MAX:
     default:
-        return ACVP_MISSING_ARG;
         break;
     }
 
@@ -658,6 +658,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         case ACVP_SUB_AES_KW:
         case ACVP_SUB_AES_KWP:
         case ACVP_SUB_AES_GMAC:
+        case ACVP_SUB_AES_FF1:
+        case ACVP_SUB_AES_FF3:
             return ACVP_MISSING_ARG;
         default:
             break;
@@ -795,6 +797,9 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_ML_DSA_SIGVER:
     case ACVP_ML_KEM_KEYGEN:
     case ACVP_ML_KEM_XCAP:
+    case ACVP_SLH_DSA_KEYGEN:
+    case ACVP_SLH_DSA_SIGGEN:
+    case ACVP_SLH_DSA_SIGVER:
     case ACVP_CIPHER_END:
         break;
     case ACVP_AES_GCM:
@@ -867,6 +872,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         case ACVP_SUB_AES_CFB8:
         case ACVP_SUB_AES_CFB1:
         case ACVP_SUB_AES_GMAC:
+        case ACVP_SUB_AES_FF1:
+        case ACVP_SUB_AES_FF3:
         default:
             break;
         }
@@ -5160,6 +5167,7 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
             json_array_append_string(temp_arr, "external");
             use_mu = 1;
             break;
+        case ACVP_SIG_INTERFACE_NOT_SET:
         default:
             ACVP_LOG_ERR("Invalid ML-DSA signature interface");
             goto err;
@@ -5186,6 +5194,7 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
             json_array_append_string(temp_arr, "pure");
             json_array_append_string(temp_arr, "preHash");
             break;
+        case ACVP_SIG_PREHASH_NOT_SET:
         default:
             ACVP_LOG_ERR("Invalid ML-DSA preHash value");
             goto err;
@@ -5259,6 +5268,8 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
             group_obj = group_obj->next;
         }
         break;
+    default:
+        goto err;
     }
 
     return ACVP_SUCCESS;
@@ -5463,6 +5474,7 @@ static ACVP_RESULT acvp_build_slh_dsa_register_cap(ACVP_CTX *ctx,
             json_array_append_string(temp_arr, "internal");
             json_array_append_string(temp_arr, "external");
             break;
+        case ACVP_SIG_INTERFACE_NOT_SET:
         default:
             ACVP_LOG_ERR("Invalid SLH-DSA signature interface");
             goto err;
@@ -5481,6 +5493,7 @@ static ACVP_RESULT acvp_build_slh_dsa_register_cap(ACVP_CTX *ctx,
             json_array_append_string(temp_arr, "pure");
             json_array_append_string(temp_arr, "preHash");
             break;
+        case ACVP_SIG_PREHASH_NOT_SET:
         default:
             ACVP_LOG_ERR("Invalid SLH-DSA preHash value");
             goto err;
@@ -5619,7 +5632,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_AES_GMAC:
             case ACVP_AES_CTR:
                 skip_final_append = 1;
-                /* Can have multiple vector sets; 1 for each IV mode, and one for each IV source */
+                /* Can have multiple vector sets; one for each IV mode, and one for each IV source */
                 for (i = 0; i < ACVP_SYM_CIPH_IVGEN_MODE_MAX; i++) {
                     /* If a given mode is enabled, we register that mode */
                     if (cap_entry->cap.sym_cap->iv_mode_matrix[i][0] == 1) {
@@ -5938,6 +5951,10 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 json_array_append_value(caps_arr, cap_val);
             } else {
                 skip_final_append = 0;
+                if (cap_val) {
+                    json_value_free(cap_val);
+                    cap_val = NULL;
+                }
             }
 
             /* Advance to next cap entry */

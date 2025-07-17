@@ -70,6 +70,8 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_ML_KEM_PARAM_SET_ML_KEM_1024:
         param_set = "ML-KEM-1024";
         break;
+    case ACVP_ML_KEM_PARAM_SET_NONE:
+    case ACVP_ML_KEM_PARAM_SET_MAX:
     default:
         printf("Invalid param set in ML-KEM handler\n");
         goto end;
