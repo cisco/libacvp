@@ -16,6 +16,8 @@
 #ifndef acvp_h
 #define acvp_h
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C"
 {

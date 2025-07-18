@@ -8,13 +8,14 @@
  */
 
 #include "app_lcl.h"
+#include "acvp/acvp.h"
+#include "safe_lib.h"
+#include "implementations/openssl/3/iut.h"
 
 #include <openssl/evp.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
-#include "acvp/acvp.h"
-#include "safe_lib.h"
-#include "implementations/openssl/3/iut.h"
+#include <openssl/err.h>
 
 
 #define ML_KEM_MAX_BUF_SIZE 8192
@@ -277,6 +278,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
 
     rv = 0;
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);

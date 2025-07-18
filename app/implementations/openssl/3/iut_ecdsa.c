@@ -9,6 +9,7 @@
 
 #include "app_lcl.h"
 #include "implementations/openssl/3/iut.h"
+#include "safe_lib.h"
 
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
@@ -16,7 +17,7 @@
 #include <openssl/bn.h>
 #include <openssl/ecdsa.h>
 #include <openssl/ec.h>
-#include "safe_lib.h"
+#include <openssl/err.h>
 
 static BIGNUM *ecdsa_group_Qx = NULL;
 static BIGNUM *ecdsa_group_Qy = NULL;
@@ -366,6 +367,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
 
     rv = 0;
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (qx) BN_free(qx);
     if (qy) BN_free(qy);
     if (d) BN_free(d);

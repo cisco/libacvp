@@ -299,6 +299,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
 
     rv = 0;
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);

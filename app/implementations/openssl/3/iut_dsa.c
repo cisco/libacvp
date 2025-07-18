@@ -10,6 +10,7 @@
 
 #include "app_lcl.h"
 #include "implementations/openssl/3/iut.h"
+#include "safe_lib.h"
 
 #if !defined OPENSSL_NO_DSA
 #include <openssl/param_build.h>
@@ -17,7 +18,7 @@
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/dsa.h>
-#include "safe_lib.h"
+#include <openssl/err.h>
 
 #define DSA_MAX_SEED 1024
 
@@ -72,10 +73,12 @@ static int init_group_pkey_paramgen(int l, int n) {
     }
     rv = 0;
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     return rv;
 }
 
 int app_dsa_handler(ACVP_TEST_CASE *test_case) {
+    int rv = 1;
     size_t seed_len = 0, sig_len = 0;
     const char *md = NULL;
     unsigned char *sig = NULL, *sig_iter = NULL;
@@ -488,7 +491,10 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
     default:
         break;
     }
+
+    rv = 0;
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (sig) free(sig);
     if (x) BN_free(x);
     if (y) BN_free(y);
@@ -504,7 +510,7 @@ err:
     if (param_key) EVP_PKEY_free(param_key);
     if (pkey) EVP_PKEY_free(pkey);
     if (sig_ctx) EVP_MD_CTX_free(sig_ctx);
-    return 0;
+    return rv;
 }
 
 #else

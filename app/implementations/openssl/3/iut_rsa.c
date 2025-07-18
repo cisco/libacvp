@@ -9,13 +9,14 @@
 
 #include "app_lcl.h"
 #include "implementations/openssl/3/iut.h"
+#include "safe_lib.h"
 
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/rsa.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
-#include "safe_lib.h"
+#include <openssl/err.h>
 
 #define RSA_BUF_MAX 8192
 
@@ -130,6 +131,7 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
 
     rv = 0;
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (p) BN_free(p);
     if (q) BN_free(q);
     if (n) BN_free(n);
@@ -352,6 +354,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     rv = 0;
 
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (md_ctx) EVP_MD_CTX_free(md_ctx);
     if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
     if (pkey) EVP_PKEY_free(pkey);
@@ -501,6 +504,7 @@ int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
     rv = 0;
 
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (e) BN_free(e);
     if (n) BN_free(n);
     if (d) BN_free(d);
@@ -519,7 +523,7 @@ err:
 }
 
 int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case) {
- BIGNUM *e = NULL, *n = NULL, *d = NULL;
+    BIGNUM *e = NULL, *n = NULL, *d = NULL;
     BIGNUM *p = NULL, *q = NULL, *dmp1 = NULL, *dmq1 = NULL, *iqmp = NULL;
     EVP_PKEY *pkey = NULL;
     EVP_PKEY_CTX *pkey_ctx = NULL, *dec_ctx = NULL;
@@ -616,6 +620,7 @@ int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case) {
 
     rv = 0;
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (e) BN_free(e);
     if (n) BN_free(n);
     if (d) BN_free(d);

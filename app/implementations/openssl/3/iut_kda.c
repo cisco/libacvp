@@ -8,15 +8,16 @@
  */
 
 #include "app_lcl.h"
+#include "acvp/acvp.h"
+#include "safe_lib.h"
+#include "implementations/openssl/3/iut.h"
 
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/kdf.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
-#include "acvp/acvp.h"
-#include "safe_lib.h"
-#include "implementations/openssl/3/iut.h"
+#include <openssl/err.h>
 
 static unsigned char *fixed_info_gen_concat(ACVP_KDA_PATTERN_CANDIDATE *fixedInfoPattern,
                                             unsigned char *literalCandidate,
@@ -154,7 +155,7 @@ end:
 
 int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDA_HKDF_TC *stc = NULL;
-    int rc = 1, fixedInfoLen = 0;
+    int rv = 1, fixedInfoLen = 0;
     unsigned char *fixedInfo = NULL;
     OSSL_PARAM_BLD *pbld = NULL;
     OSSL_PARAM *params = NULL;
@@ -217,20 +218,21 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
         printf("Failure deriving key material in KDA-HKDF\n");
         goto end;
     }
-    rc = 0;
+    rv = 0;
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (fixedInfo) free(fixedInfo);
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
-    return rc;
+    return rv;
 }
 
 
 int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDA_ONESTEP_TC *stc = NULL;
-    int rc = 1, fixedInfoLen = 0;
+    int rv = 1, fixedInfoLen = 0;
     unsigned char *fixedInfo = NULL;
     OSSL_PARAM_BLD *pbld = NULL;
     OSSL_PARAM *params = NULL;
@@ -392,19 +394,20 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
         printf("Failure deriving key material in KDA-OneStep\n");
         goto end;
     }
-    rc = 0;
+    rv = 0;
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     OSSL_PARAM_BLD_free(pbld);
     OSSL_PARAM_free(params);
     if (fixedInfo) free(fixedInfo);
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
-    return rc;
+    return rv;
 }
 
 int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDA_TWOSTEP_TC *stc = NULL;
-    int rc = 1, fixedInfoLen = 0;
+    int rv = 1, fixedInfoLen = 0;
     unsigned char *fixedInfo = NULL;
     OSSL_PARAM_BLD *pbld = NULL;
     OSSL_PARAM *params = NULL;
@@ -508,12 +511,13 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
         printf("Failure deriving key material in KDA twostep\n");
         goto end;
     }
-    rc = 0;
+    rv = 0;
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (fixedInfo) free(fixedInfo);
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
-    return rc;
+    return rv;
 }

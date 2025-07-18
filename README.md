@@ -195,13 +195,13 @@ For these steps, use the Visual Studio Command Prompt for your platform (x64, x8
 x64_86)
 
 Steps:
-1.) Edit and run ms\config_windows.bat
+1. Edit and run ms\config_windows.bat
     -Add all of the directories for your dependencies
-	-Change any needed settings
-2.) Open libacvp.sln and acvp_app.sln in Visual Studio and allow the dialog to update the projects'
-    versions of MSVC and windows SDK to the latest installed (May be unnecessary if versions match)
-3.) run ms/make_lib.bat
-4.) run ms/make_app.bat
+    -Change any needed settings
+2. Open libacvp.sln and acvp_app.sln in Visual Studio and allow the dialog to update the projects'
+   versions of MSVC and windows SDK to the latest installed (May be unnecessary if versions match)
+3. run ms/make_lib.bat
+4. run ms/make_app.bat
 
 The library files and app files will be placed in the ms/build/ directory.
 
@@ -290,26 +290,12 @@ intense load, anywhere from a few seconds to a few days. If there is an issue an
 is lost or the server experiences an error, the library output will indicate it.
 
 `I received a vector set from somewhere other than libacvp, such as a lab. How can I process it?`
-Libacvp expects vector set json files to have a specific formatting. It is possible to manually
-modify the JSON file to make it work though we do not officially support or endorse this process.
-We plan to add support for this usage soon.
+Libacvp by default expects vector set json files to have the same specific formatting it uses to store
+those vector set files.
 
-Moving your vector set into a json array, and putting this as the json object before the vector set
-should allow libacvp to process it using the offline testing process described above; you would
-also need to remove these entries from the output file.
-```
-{
-    "jwt": "NA",
-    "url": "NA",
-    "isSample": false,
-    "vectorSetUrls": [
-        "NA"
-    ]
-}
-```
-Note that this file will not be able to be submitted using libacvp unless you manually input all
-of the correct information in the above object; we do not recommend this and you should instead
-try to submit via wherever you originally got the vector set from.
+If you have a single object vector set file without this formatting, you should be able to run it by
+providing `--generic` alongside the `--vector_req` and `--vector_rsp` commands you would normally use
+to run vectors offline.
 
 ## Credits
 This package was initially written by John Foley of Cisco Systems.
