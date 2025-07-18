@@ -5630,7 +5630,6 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_AES_GCM:
             case ACVP_AES_XPN:
             case ACVP_AES_GMAC:
-            case ACVP_AES_CTR:
                 skip_final_append = 1;
                 /* Can have multiple vector sets; one for each IV mode, and one for each IV source */
                 for (i = 0; i < ACVP_SYM_CIPH_IVGEN_MODE_MAX; i++) {
@@ -5669,6 +5668,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                     }
                 }
                 break;
+            case ACVP_AES_CTR:
             case ACVP_AES_GCM_SIV:
             case ACVP_AES_CCM:
             case ACVP_AES_ECB:
