@@ -70,7 +70,7 @@ static unsigned char *rng_buffer = NULL;
 /* Total size of the seed buffer */
 static size_t rng_buf_size = 0;
 /* Iterator for the seed buffer */
-static int rng_buf_pos = 0;
+static unsigned int rng_buf_pos = 0;
 
 void iut_ml_dsa_cleanup(void) {
     if (rng_buffer) free(rng_buffer);
@@ -84,9 +84,9 @@ void iut_ml_dsa_cleanup(void) {
  * of the buffer, it goes back to the beginning
  */
 static void oqs_rng_callback_acvp(uint8_t *random_array, size_t bytes_to_read) {
-    int remaining_bytes = bytes_to_read;
-    int bytes_sent = 0;
-    int bytes_going_this_round = 0;
+    unsigned int remaining_bytes = bytes_to_read;
+    unsigned int bytes_sent = 0;
+    unsigned int bytes_going_this_round = 0;
 
     if (!rng_buffer || !rng_buf_size) {
         return;

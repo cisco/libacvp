@@ -170,6 +170,8 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     case ACVP_SUB_AES_KW:
     case ACVP_SUB_AES_KWP:
     case ACVP_SUB_AES_GMAC:
+    case ACVP_SUB_AES_FF1:
+    case ACVP_SUB_AES_FF3:
     default:
         break;
     }
@@ -1475,6 +1477,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPH_SALT_SRC salt_src) {
 
     ACVP_RESULT rv;
+    size_t alphabet_len = 0;
 
     memzero_s(stc, sizeof(ACVP_SYM_CIPHER_TC));
 
@@ -1623,6 +1626,15 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
         }
     }
 
+    if (alphabet) {
+        stc->alphabet = calloc(ACVP_AES_FPE_ALPHABET_MAX + 1, sizeof(char));
+        if (!stc->alphabet) {
+            return ACVP_MALLOC_FAIL;
+        }
+        alphabet_len = strnlen_s(alphabet, ACVP_AES_FPE_ALPHABET_MAX);
+        strncpy_s(stc->alphabet, ACVP_AES_FPE_ALPHABET_MAX + 1, alphabet, alphabet_len);
+    }
+
     return ACVP_SUCCESS;
 }
 
@@ -1640,6 +1652,7 @@ static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc) {
     if (stc->salt) free(stc->salt);
     if (stc->fpe_in) free(stc->fpe_in);
     if (stc->fpe_out) free(stc->fpe_out);
+    if (stc->alphabet) free(stc->alphabet);
     memzero_s(stc, sizeof(ACVP_SYM_CIPHER_TC));
 
     return ACVP_SUCCESS;

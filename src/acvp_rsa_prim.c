@@ -753,7 +753,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                rv = acvp_rsa_decprim_init_tc_rev_56br2(ctx, &stc, keyformat, mod, keyformat, d_str, e_str, n_str, p_str,
+                rv = acvp_rsa_decprim_init_tc_rev_56br2(ctx, &stc, pub_exp_mode, mod, keyformat, d_str, e_str, n_str, p_str,
                                                         q_str, dmp1_str, dmq1_str, iqmp_str, cipher);
                 if (rv == ACVP_SUCCESS) {
                     if ((cap->crypto_handler)(&tc)) {

@@ -85,13 +85,12 @@ AC_ARG_ENABLE([lib],
 AM_CONDITIONAL([LIB_NOT_SUPPORTED], [test "x$disable_lib" == "xyes"])
 
 # libacvp library installation dir - only used when building just the app
-if test "x$disable_lib" = "xyes" ; then
-    AC_ARG_WITH([libacvp-dir],
-        [AS_HELP_STRING([--with-libacvp-dir],
-        [Path to libacvp install directory, for use when building the app only])],
-        [libacvpdir="$withval"],
-        [with_libacvpdir=no])
-fi
+AC_ARG_WITH([libacvp-dir],
+    [AS_HELP_STRING([--with-libacvp-dir],
+    [Path to libacvp install directory, for use when building the app only])],
+    [libacvpdir="$withval"],
+    [with_libacvpdir=no])
+
 
 # Offline mode
 AC_ARG_ENABLE([offline],
@@ -340,7 +339,7 @@ fi
 
 if test "x$disable_lib" = "xyes" ; then
     if test "x$libacvpdir" != "x" ; then
-        LDFLAGS="$LDFLAGS -L$libalibcvpdir/lib"
+        LDFLAGS="$LDFLAGS -L$libacvpdir/lib"
     else
         LDFLAGS="$LDFLAGS -Lsrc/.libs"
     fi

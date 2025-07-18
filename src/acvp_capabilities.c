@@ -1070,6 +1070,125 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
                 retval = ACVP_SUCCESS;
             }
             break;
+        case ACVP_CIPHER_START:
+        case ACVP_AES_GCM:
+        case ACVP_AES_GCM_SIV:
+        case ACVP_AES_CCM:
+        case ACVP_AES_ECB:
+        case ACVP_AES_CBC:
+        case ACVP_AES_CBC_CS1:
+        case ACVP_AES_CBC_CS2:
+        case ACVP_AES_CBC_CS3:
+        case ACVP_AES_CFB1:
+        case ACVP_AES_CFB8:
+        case ACVP_AES_CFB128:
+        case ACVP_AES_OFB:
+        case ACVP_AES_CTR:
+        case ACVP_AES_XTS:
+        case ACVP_AES_KW:
+        case ACVP_AES_KWP:
+        case ACVP_AES_GMAC:
+        case ACVP_AES_XPN:
+        case ACVP_TDES_ECB:
+        case ACVP_TDES_CBC:
+        case ACVP_TDES_CBCI:
+        case ACVP_TDES_OFB:
+        case ACVP_TDES_OFBI:
+        case ACVP_TDES_CFB1:
+        case ACVP_TDES_CFB8:
+        case ACVP_TDES_CFB64:
+        case ACVP_TDES_CFBP1:
+        case ACVP_TDES_CFBP8:
+        case ACVP_TDES_CFBP64:
+        case ACVP_TDES_CTR:
+        case ACVP_TDES_KW:
+        case ACVP_HASH_SHA1:
+        case ACVP_HASH_SHA224:
+        case ACVP_HASH_SHA256:
+        case ACVP_HASH_SHA384:
+        case ACVP_HASH_SHA512:
+        case ACVP_HASH_SHA512_224:
+        case ACVP_HASH_SHA512_256:
+        case ACVP_HASH_SHA3_224:
+        case ACVP_HASH_SHA3_256:
+        case ACVP_HASH_SHA3_384:
+        case ACVP_HASH_SHA3_512:
+        case ACVP_HASH_SHAKE_128:
+        case ACVP_HASH_SHAKE_256:
+        case ACVP_HASHDRBG:
+        case ACVP_HMACDRBG:
+        case ACVP_CTRDRBG:
+        case ACVP_HMAC_SHA1:
+        case ACVP_HMAC_SHA2_224:
+        case ACVP_HMAC_SHA2_256:
+        case ACVP_HMAC_SHA2_384:
+        case ACVP_HMAC_SHA2_512:
+        case ACVP_HMAC_SHA2_512_224:
+        case ACVP_HMAC_SHA2_512_256:
+        case ACVP_HMAC_SHA3_224:
+        case ACVP_HMAC_SHA3_256:
+        case ACVP_HMAC_SHA3_384:
+        case ACVP_HMAC_SHA3_512:
+        case ACVP_CMAC_AES:
+        case ACVP_CMAC_TDES:
+        case ACVP_KMAC_128:
+        case ACVP_KMAC_256:
+        case ACVP_DSA_KEYGEN:
+        case ACVP_DSA_PQGGEN:
+        case ACVP_DSA_PQGVER:
+        case ACVP_DSA_SIGGEN:
+        case ACVP_DSA_SIGVER:
+        case ACVP_RSA_KEYGEN:
+        case ACVP_RSA_SIGGEN:
+        case ACVP_RSA_SIGVER:
+        case ACVP_RSA_SIGPRIM:
+        case ACVP_RSA_DECPRIM:
+        case ACVP_ECDSA_KEYGEN:
+        case ACVP_ECDSA_KEYVER:
+        case ACVP_ECDSA_SIGGEN:
+        case ACVP_ECDSA_SIGVER:
+        case ACVP_DET_ECDSA_SIGGEN:
+        case ACVP_EDDSA_KEYGEN:
+        case ACVP_EDDSA_KEYVER:
+        case ACVP_EDDSA_SIGGEN:
+        case ACVP_EDDSA_SIGVER:
+        case ACVP_KDF135_SNMP:
+        case ACVP_KDF135_SSH:
+        case ACVP_KDF135_SRTP:
+        case ACVP_KDF135_IKEV2:
+        case ACVP_KDF135_IKEV1:
+        case ACVP_KDF135_X942:
+        case ACVP_KDF135_X963:
+        case ACVP_KDF108:
+        case ACVP_PBKDF:
+        case ACVP_KDF_TLS12:
+        case ACVP_KDF_TLS13:
+        case ACVP_KAS_ECC_CDH:
+        case ACVP_KAS_ECC_COMP:
+        case ACVP_KAS_ECC_NOCOMP:
+        case ACVP_KAS_ECC_SSC:
+        case ACVP_KAS_FFC_COMP:
+        case ACVP_KAS_FFC_NOCOMP:
+        case ACVP_KDA_ONESTEP:
+        case ACVP_KDA_TWOSTEP:
+        case ACVP_KDA_HKDF:
+        case ACVP_KAS_FFC_SSC:
+        case ACVP_KAS_IFC_SSC:
+        case ACVP_KTS_IFC:
+        case ACVP_SAFE_PRIMES_KEYGEN:
+        case ACVP_SAFE_PRIMES_KEYVER:
+        case ACVP_LMS_SIGGEN:
+        case ACVP_LMS_SIGVER:
+        case ACVP_LMS_KEYGEN:
+        case ACVP_ML_DSA_KEYGEN:
+        case ACVP_ML_DSA_SIGGEN:
+        case ACVP_ML_DSA_SIGVER:
+        case ACVP_ML_KEM_KEYGEN:
+        case ACVP_ML_KEM_XCAP:
+        case ACVP_SLH_DSA_KEYGEN:
+        case ACVP_SLH_DSA_SIGGEN:
+        case ACVP_SLH_DSA_SIGVER:
+        case ACVP_CIPHER_END:
         default:
             break;
         }
@@ -1201,6 +1320,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ML_DSA_SIGVER:
         case ACVP_ML_KEM_KEYGEN:
         case ACVP_ML_KEM_XCAP:
+        case ACVP_SLH_DSA_KEYGEN:
+        case ACVP_SLH_DSA_SIGGEN:
+        case ACVP_SLH_DSA_SIGVER:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1329,6 +1451,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ML_DSA_SIGVER:
         case ACVP_ML_KEM_KEYGEN:
         case ACVP_ML_KEM_XCAP:
+        case ACVP_SLH_DSA_KEYGEN:
+        case ACVP_SLH_DSA_SIGGEN:
+        case ACVP_SLH_DSA_SIGVER:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1457,6 +1582,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ML_DSA_SIGVER:
         case ACVP_ML_KEM_KEYGEN:
         case ACVP_ML_KEM_XCAP:
+        case ACVP_SLH_DSA_KEYGEN:
+        case ACVP_SLH_DSA_SIGGEN:
+        case ACVP_SLH_DSA_SIGVER:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1595,6 +1723,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ML_DSA_SIGVER:
         case ACVP_ML_KEM_KEYGEN:
         case ACVP_ML_KEM_XCAP:
+        case ACVP_SLH_DSA_KEYGEN:
+        case ACVP_SLH_DSA_SIGGEN:
+        case ACVP_SLH_DSA_SIGVER:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1720,6 +1851,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ML_DSA_SIGVER:
         case ACVP_ML_KEM_KEYGEN:
         case ACVP_ML_KEM_XCAP:
+        case ACVP_SLH_DSA_KEYGEN:
+        case ACVP_SLH_DSA_SIGGEN:
+        case ACVP_SLH_DSA_SIGVER:
         case ACVP_CIPHER_END:
         default:
             if (value >= 0 && value <= 65536) {
@@ -1739,6 +1873,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
     case ACVP_SYM_CIPH_PARM_SALT_SRC:
     case ACVP_SYM_CIPH_PARM_CONFORMANCE:
     case ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN:
+    case ACVP_SYM_CIPH_PARM_ALPHABET:
     default:
         break;
     }
@@ -1780,6 +1915,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             }
             break;
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -1798,6 +1934,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             break;
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -1820,6 +1957,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             }
             break;
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -1836,6 +1974,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -1850,6 +1989,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -1868,6 +2008,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             break;
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -1882,6 +2023,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -1896,6 +2038,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -1914,6 +2057,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             break;
         case ACVP_SYM_CIPH_DOMAIN_PTLEN:
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -1936,6 +2080,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             }
             break;
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -1989,6 +2134,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -2006,6 +2152,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -2020,6 +2167,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -2034,6 +2182,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
         case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        case ACVP_SYM_CIPH_DOMAIN_TWEAKLEN:
         default:
             break;
         }
@@ -2133,6 +2282,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_ML_DSA_SIGVER:
     case ACVP_ML_KEM_KEYGEN:
     case ACVP_ML_KEM_XCAP:
+    case ACVP_SLH_DSA_KEYGEN:
+    case ACVP_SLH_DSA_SIGGEN:
+    case ACVP_SLH_DSA_SIGVER:
     case ACVP_CIPHER_END:
     default:
         break;
@@ -2421,6 +2573,15 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
             return ACVP_SUCCESS;
         }
         break;
+    case ACVP_SLH_DSA_KEYGEN:
+    case ACVP_SLH_DSA_SIGGEN:
+    case ACVP_SLH_DSA_SIGVER:
+        if (pre_req == ACVP_PREREQ_DRBG ||
+            pre_req == ACVP_PREREQ_SHA ||
+            pre_req == ACVP_PREREQ_HMAC) {
+            return ACVP_SUCCESS;
+        }
+        break;
     case ACVP_CIPHER_START:
     case ACVP_TDES_CBCI:
     case ACVP_TDES_OFBI:
@@ -2647,6 +2808,9 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
     case ACVP_ML_DSA_SIGVER:
     case ACVP_ML_KEM_KEYGEN:
     case ACVP_ML_KEM_XCAP:
+    case ACVP_SLH_DSA_KEYGEN:
+    case ACVP_SLH_DSA_SIGGEN:
+    case ACVP_SLH_DSA_SIGVER:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -2809,6 +2973,22 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         case ACVP_SYM_CIPH_PARM_DIR:
         case ACVP_SYM_CIPH_PARM_RADIX:
             break;
+        case ACVP_SYM_CIPH_TAGLEN:
+        case ACVP_SYM_CIPH_IVLEN:
+        case ACVP_SYM_CIPH_PTLEN:
+        case ACVP_SYM_CIPH_TWEAK:
+        case ACVP_SYM_CIPH_AADLEN:
+        case ACVP_SYM_CIPH_KW_MODE:
+        case ACVP_SYM_CIPH_PARM_KO:
+        case ACVP_SYM_CIPH_PARM_PERFORM_CTR:
+        case ACVP_SYM_CIPH_PARM_CTR_INCR:
+        case ACVP_SYM_CIPH_PARM_CTR_OVRFLW:
+        case ACVP_SYM_CIPH_PARM_IVGEN_MODE:
+        case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
+        case ACVP_SYM_CIPH_PARM_SALT_SRC:
+        case ACVP_SYM_CIPH_PARM_CONFORMANCE:
+        case ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN:
+        case ACVP_SYM_CIPH_PARM_ALPHABET:
         default:
             ACVP_LOG_ERR("Invalid parameter 'parm' for AES-FPE; try domain-type for all others.\n");
             return ACVP_INVALID_ARG;
@@ -2898,6 +3078,9 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_ML_DSA_SIGVER:
     case ACVP_ML_KEM_KEYGEN:
     case ACVP_ML_KEM_XCAP:
+    case ACVP_SLH_DSA_KEYGEN:
+    case ACVP_SLH_DSA_SIGGEN:
+    case ACVP_SLH_DSA_SIGVER:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -3049,6 +3232,9 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         }
         cap->cap.sym_cap->radix = value;
         return ACVP_SUCCESS;
+    case ACVP_SYM_CIPH_PARM_ALPHABET:
+        ACVP_LOG_ERR("Alphabet paramter is string and can only be set with string API for sym ciphers");
+        return ACVP_INVALID_ARG;
     case ACVP_SYM_CIPH_KEYLEN:
     case ACVP_SYM_CIPH_TAGLEN:
     case ACVP_SYM_CIPH_IVLEN:
@@ -3109,6 +3295,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_SYM_CIPH_PARM_CONFORMANCE:
     case ACVP_SYM_CIPH_PARM_SALT_SRC:
     case ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN:
+    case ACVP_SYM_CIPH_PARM_ALPHABET:
+    case ACVP_SYM_CIPH_PARM_RADIX:
     default:
         return ACVP_INVALID_ARG;
     }
@@ -3209,6 +3397,11 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm_string(ACVP_CTX *ctx,
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
+    case ACVP_DET_ECDSA_SIGGEN:
+    case ACVP_EDDSA_KEYGEN:
+    case ACVP_EDDSA_KEYVER:
+    case ACVP_EDDSA_SIGGEN:
+    case ACVP_EDDSA_SIGVER:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -3237,6 +3430,14 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm_string(ACVP_CTX *ctx,
     case ACVP_LMS_SIGGEN:
     case ACVP_LMS_SIGVER:
     case ACVP_LMS_KEYGEN:
+    case ACVP_ML_DSA_KEYGEN:
+    case ACVP_ML_DSA_SIGGEN:
+    case ACVP_ML_DSA_SIGVER:
+    case ACVP_ML_KEM_KEYGEN:
+    case ACVP_ML_KEM_XCAP:
+    case ACVP_SLH_DSA_KEYGEN:
+    case ACVP_SLH_DSA_SIGGEN:
+    case ACVP_SLH_DSA_SIGVER:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -3287,6 +3488,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm_string(ACVP_CTX *ctx,
     case ACVP_SYM_CIPH_PTLEN:
     case ACVP_SYM_CIPH_TWEAK:
     case ACVP_SYM_CIPH_AADLEN:
+    case ACVP_SYM_CIPH_PARM_RADIX:
     default:
         ACVP_LOG_ERR("Invalid param");
         return ACVP_INVALID_ARG;
@@ -3387,6 +3589,11 @@ ACVP_RESULT acvp_cap_sym_cipher_set_iv_modes(ACVP_CTX *ctx,
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
+    case ACVP_DET_ECDSA_SIGGEN:
+    case ACVP_EDDSA_KEYGEN:
+    case ACVP_EDDSA_KEYVER:
+    case ACVP_EDDSA_SIGGEN:
+    case ACVP_EDDSA_SIGVER:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -3415,6 +3622,14 @@ ACVP_RESULT acvp_cap_sym_cipher_set_iv_modes(ACVP_CTX *ctx,
     case ACVP_LMS_SIGGEN:
     case ACVP_LMS_SIGVER:
     case ACVP_LMS_KEYGEN:
+    case ACVP_ML_DSA_KEYGEN:
+    case ACVP_ML_DSA_SIGGEN:
+    case ACVP_ML_DSA_SIGVER:
+    case ACVP_ML_KEM_KEYGEN:
+    case ACVP_ML_KEM_XCAP:
+    case ACVP_SLH_DSA_KEYGEN:
+    case ACVP_SLH_DSA_SIGGEN:
+    case ACVP_SLH_DSA_SIGVER:
     case ACVP_CIPHER_END:
     default:
         ACVP_LOG_ERR("Unsupported cipher for setting IV modes/sources");
@@ -3596,6 +3811,9 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_ML_DSA_SIGVER:
     case ACVP_ML_KEM_KEYGEN:
     case ACVP_ML_KEM_XCAP:
+    case ACVP_SLH_DSA_KEYGEN:
+    case ACVP_SLH_DSA_SIGGEN:
+    case ACVP_SLH_DSA_SIGVER:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -6982,7 +7200,7 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
                 return ACVP_INVALID_ARG;
             }
         } else {
-            if ( (value == ACVP_KDF108_MAC_MODE_KMAC_128) || 
+            if ( (value == ACVP_KDF108_MAC_MODE_KMAC_128) ||
                  (value == ACVP_KDF108_MAC_MODE_KMAC_256)) {
                 return ACVP_INVALID_ARG;
             }
@@ -8357,8 +8575,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
 /*
  * Append a KAS-FFC pre req val to the capabilities
  */
-static ACVP_RESULT acvp_add_kas_ffc_prereq_val(ACVP_CTX *ctx, ACVP_KAS_FFC_CAP_MODE *kas_ffc_mode,
-                                               ACVP_KAS_FFC_MODE mode,
+static ACVP_RESULT acvp_add_kas_ffc_prereq_val(ACVP_KAS_FFC_CAP_MODE *kas_ffc_mode,
                                                ACVP_PREREQ_ALG pre_req,
                                                char *value) {
     ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
@@ -8440,7 +8657,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_prereq(ACVP_CTX *ctx,
     /*
      * Add the value to the cap
      */
-    return acvp_add_kas_ffc_prereq_val(ctx, kas_ffc_mode, mode, pre_req, value);
+    return acvp_add_kas_ffc_prereq_val(kas_ffc_mode, pre_req, value);
 }
 
 ACVP_RESULT acvp_cap_kas_ffc_enable(ACVP_CTX *ctx,
@@ -10717,6 +10934,7 @@ ACVP_RESULT acvp_cap_slh_dsa_set_parm(ACVP_CTX *ctx,
         case ACVP_SLH_DSA_PARAM_SIG_INTERFACE:
         case ACVP_SLH_DSA_PARAM_PREHASH:
         case ACVP_SLH_DSA_PARAM_CONTEXT_LEN:
+        case ACVP_SLH_DSA_PARAM_HASH_ALG:
             ACVP_LOG_ERR("Tried setting non-applicable parameter for SLH-DSA KeyGen");
             return ACVP_INVALID_ARG;
         case ACVP_SLH_DSA_PARAM_PARAMETER_SET:

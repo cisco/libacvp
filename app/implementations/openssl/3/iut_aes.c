@@ -125,6 +125,8 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SUB_AES_KW:
     case ACVP_SUB_AES_KWP:
     case ACVP_SUB_AES_GMAC:
+    case ACVP_SUB_AES_FF1:
+    case ACVP_SUB_AES_FF3:
     default:
         printf("Error: Unsupported AES mode requested by ACVP server\n");
         rv = 1;
@@ -333,6 +335,8 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SUB_AES_CCM:
     case ACVP_SUB_AES_XPN:
     case ACVP_SUB_AES_GMAC:
+    case ACVP_SUB_AES_FF1:
+    case ACVP_SUB_AES_FF3:
     default:
         printf("Error: Unsupported AES mode requested by ACVP server\n");
         rv = 1;
@@ -551,6 +555,8 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     case ACVP_SUB_AES_CBC_CS1:
     case ACVP_SUB_AES_CBC_CS2:
     case ACVP_SUB_AES_CBC_CS3:
+    case ACVP_SUB_AES_FF1:
+    case ACVP_SUB_AES_FF3:
     default:
         printf("Error: Unsupported AES AEAD mode requested by ACVP server\n");
         rc = 1;

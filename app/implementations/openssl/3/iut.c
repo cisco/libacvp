@@ -25,6 +25,10 @@ int dsa_disabled = 0;
 int max_ldt_size = 0;
 
 void iut_print_version(APP_CONFIG *cfg) {
+    if (!cfg) {
+        printf("Error: missing app_config in version request\n");
+        return;
+    }
     const char *str = NULL;
     printf(" Compiled SSL version: %s\n", OPENSSL_VERSION_TEXT);
     printf("   Linked SSL version: %s\n\n", OpenSSL_version(OPENSSL_VERSION));
@@ -60,6 +64,11 @@ ACVP_RESULT iut_cleanup() {
 ACVP_RESULT iut_setup(APP_CONFIG *cfg) {
     const char *ver_str = NULL;
     ACVP_RESULT rv = -1;
+
+    if (!cfg) {
+        printf("Error: missing app_config in IUT setup request\n");
+        return ACVP_MISSING_ARG;
+    }
 
     if (!cfg->disable_fips) {
         /* sets the property "fips=yes" to be included implicitly in cipher fetches */

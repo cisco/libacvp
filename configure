@@ -12795,7 +12795,6 @@ fi
 
 
 # libacvp library installation dir - only used when building just the app
-if test "x$disable_lib" = "xyes" ; then
 
 # Check whether --with-libacvp-dir was given.
 if test ${with_libacvp_dir+y}
@@ -12805,7 +12804,7 @@ else $as_nop
   with_libacvpdir=no
 fi
 
-fi
+
 
 # Offline mode
 # Check whether --enable-offline was given.
@@ -13335,7 +13334,7 @@ fi
 
 if test "x$disable_lib" = "xyes" ; then
     if test "x$libacvpdir" != "x" ; then
-        LDFLAGS="$LDFLAGS -L$libalibcvpdir/lib"
+        LDFLAGS="$LDFLAGS -L$libacvpdir/lib"
     else
         LDFLAGS="$LDFLAGS -Lsrc/.libs"
     fi

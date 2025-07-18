@@ -205,21 +205,21 @@ static ACVP_KTS_IFC_TEST_TYPE read_test_type(const char *str) {
     return 0;
 }
 
-static ACVP_RSA_KEY_FORMAT read_key_gen(const char *str){
+static ACVP_KTS_IFC_KEYGEN read_key_gen(const char *str){
     int diff;
 
     strcmp_s("rsakpg1-basic", 13, str, &diff);
-    if (!diff) return ACVP_KAS_IFC_RSAKPG1_BASIC;
+    if (!diff) return ACVP_KTS_IFC_RSAKPG1_BASIC;
     strcmp_s("rsakpg1-crt", 11, str, &diff);
-    if (!diff) return ACVP_KAS_IFC_RSAKPG1_CRT;
+    if (!diff) return ACVP_KTS_IFC_RSAKPG1_CRT;
     strcmp_s("rsakpg1-prime-factor", 20, str, &diff);
-    if (!diff) return ACVP_KAS_IFC_RSAKPG1_PRIME_FACTOR;
+    if (!diff) return ACVP_KTS_IFC_RSAKPG1_PRIME_FACTOR;
     strcmp_s("rsakpg2-basic", 13, str, &diff);
-    if (!diff) return ACVP_KAS_IFC_RSAKPG2_BASIC;
+    if (!diff) return ACVP_KTS_IFC_RSAKPG2_BASIC;
     strcmp_s("rsakpg2-crt", 11, str, &diff);
-    if (!diff) return ACVP_KAS_IFC_RSAKPG2_CRT;
+    if (!diff) return ACVP_KTS_IFC_RSAKPG2_CRT;
     strcmp_s("rsakpg2-prime-factor", 20, str, &diff);
-    if (!diff) return ACVP_KAS_IFC_RSAKPG2_PRIME_FACTOR;
+    if (!diff) return ACVP_KTS_IFC_RSAKPG2_PRIME_FACTOR;
 
     return 0;
 }
