@@ -22,12 +22,12 @@ void app_des_cleanup(void) {
 }
 
 int app_des_handler(ACVP_TEST_CASE *test_case) {
-    ACVP_SYM_CIPHER_TC *tc;
-    EVP_CIPHER_CTX *cipher_ctx;
-    const EVP_CIPHER *cipher;
+    ACVP_SYM_CIPHER_TC *tc = NULL;
+    EVP_CIPHER_CTX *cipher_ctx = NULL;
+    const EVP_CIPHER *cipher = NULL;
     unsigned char *iv = 0;
     unsigned char *ctx_iv = NULL;
-    ACVP_SUB_TDES alg;
+    ACVP_SUB_TDES alg = 0;
     int rv = 1;
 
     if (!test_case) {

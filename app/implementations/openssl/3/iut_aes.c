@@ -661,7 +661,7 @@ int app_aes_handler_gmac(ACVP_TEST_CASE *test_case) {
     }
 
 err:
-    if (rv != 0) ERR_print_errors_fp(stderr);
+    if (rv != 0 && tc->direction != ACVP_SYM_CIPH_DIR_DECRYPT) ERR_print_errors_fp(stderr);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (gmac_ctx) EVP_MAC_CTX_free(gmac_ctx);
