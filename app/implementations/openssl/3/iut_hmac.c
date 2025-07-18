@@ -7,14 +7,15 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
+#include "acvp/acvp.h"
+#include "app_lcl.h"
+#include "safe_lib.h"
 
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
-#include "acvp/acvp.h"
-#include "app_lcl.h"
-#include "safe_lib.h"
+#include <openssl/err.h>
 
 int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     ACVP_HMAC_TC    *tc;
@@ -24,15 +25,15 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     OSSL_PARAM *params = NULL;
     const char *md_name = NULL;
     int msg_len;
-    int rc = 1;
+    int rv = 1;
     ACVP_SUB_HMAC alg;
 
     if (!test_case) {
-        return rc;
+        return rv;
     }
 
     tc = test_case->tc.hmac;
-    if (!tc) return rc;
+    if (!tc) return rv;
 
     alg = acvp_get_hmac_alg(tc->cipher);
     if (alg == 0) {
@@ -78,7 +79,7 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
         break;
     default:
         printf("Error: Unsupported hash algorithm requested by ACVP server\n");
-        return rc;
+        return rv;
 
         break;
     }
@@ -123,13 +124,14 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    rc = 0;
+    rv = 0;
 
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (hmac_ctx) EVP_MAC_CTX_free(hmac_ctx);
     if (mac) EVP_MAC_free(mac);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
-    return rc;
+    return rv;
 }
 

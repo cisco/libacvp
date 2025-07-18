@@ -8,9 +8,10 @@
  */
 
 #include "app_lcl.h"
-#include <openssl/evp.h>
-
 #include "safe_mem_lib.h"
+
+#include <openssl/evp.h>
+#include <openssl/err.h>
 
 int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md);
 
@@ -19,7 +20,7 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
     const EVP_MD    *md;
     EVP_MD_CTX *md_ctx = NULL;
     /* assume fail */
-    int rc = 1;
+    int rv = 1;
     int sha3 = 0, shake = 0;
     ACVP_SUB_HASH alg;
     unsigned char *mct_msg = NULL;
@@ -30,7 +31,7 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
     }
 
     tc = test_case->tc.hash;
-    if (!tc) return rc;
+    if (!tc) return rv;
 
     alg = acvp_get_hash_alg(tc->cipher);
     if (alg == 0) {
@@ -95,7 +96,7 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
     }
     md_ctx = EVP_MD_CTX_create();
     if (tc->test_type == ACVP_HASH_TEST_TYPE_LDT) {
-        rc = app_sha_ldt_handler(tc, md);
+        rv = app_sha_ldt_handler(tc, md);
         goto end;
     } else if (tc->test_type == ACVP_HASH_TEST_TYPE_MCT && !sha3 && !shake) {
         /* If Monte Carlo we need to be able to init and then update
@@ -151,12 +152,13 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
         }
     }
 
-    rc = 0;
+    rv = 0;
 
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (md_ctx) EVP_MD_CTX_destroy(md_ctx);
     if (mct_msg) free(mct_msg);
-    return rc;
+    return rv;
 }
 
 /**
@@ -204,6 +206,7 @@ int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md) {
 
     rv = 0;
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (large_data) free(large_data);
     if (md_ctx) EVP_MD_CTX_destroy(md_ctx);
     return rv;

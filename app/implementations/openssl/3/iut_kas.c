@@ -9,6 +9,7 @@
 
 #include "app_lcl.h"
 #include "implementations/openssl/3/iut.h"
+#include "safe_mem_lib.h"
 
 #include<openssl/err.h>
 #include <openssl/evp.h>
@@ -18,7 +19,6 @@
 #include <openssl/rand.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
-#include "safe_mem_lib.h"
 
 #define KAS_ECC_Z_MAX 512
 #define KAS_FFC_Z_MAX 2048
@@ -193,7 +193,7 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
     }
     rv = 0;
 err:
-    ERR_print_errors_fp(stdout);
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (s_pub_key) free(s_pub_key);
     if (i_pub_key) free(i_pub_key);
     if (z) free (z);
@@ -434,6 +434,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     memcpy_s(tc->chash, KAS_FFC_Z_MAX, z, z_len);
     rv = 0;
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (z) free (z);
     if (serv_pbld) OSSL_PARAM_BLD_free(serv_pbld);
     if (iut_pbld) OSSL_PARAM_BLD_free(iut_pbld);
@@ -782,6 +783,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     }
     rv = 0;
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (z) free(z);
     if (encap_s) free(encap_s);
     if (server_n) BN_free(server_n);
@@ -1003,6 +1005,7 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
     }
     rv = 0;
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (e) BN_free(e);
     if (n) BN_free(n);
     if (p) BN_free(p);

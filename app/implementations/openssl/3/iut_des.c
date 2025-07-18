@@ -7,13 +7,12 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
-#include <openssl/evp.h>
-
 #include "acvp/acvp.h"
 #include "app_lcl.h"
 #include "safe_lib.h"
 
+#include <openssl/evp.h>
+#include <openssl/err.h>
 
 static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
 
@@ -29,6 +28,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
     unsigned char *iv = 0;
     unsigned char *ctx_iv = NULL;
     ACVP_SUB_TDES alg;
+    int rv = 1;
 
     if (!test_case) {
         goto err;
@@ -163,10 +163,6 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
             printf("Unsupported direction\n");
             goto err;
         }
-        if (tc->mct_index == ACVP_DES_MCT_INNER - 1) {
-            EVP_CIPHER_CTX_free(cipher_ctx);
-            glb_cipher_ctx = NULL;
-        }
     } else {
         if (tc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, iv, 1);
@@ -188,16 +184,17 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
             printf("Unsupported direction\n");
             goto err;
         }
+    }
 
+    rv = 0;
+err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
+    if (ctx_iv) free(ctx_iv);
+    //free global if not MCT, or if we are at at a specific point in MCT
+    if (glb_cipher_ctx && (tc->test_type != ACVP_SYM_TEST_TYPE_MCT || tc->mct_index == ACVP_DES_MCT_INNER - 1)) {
         EVP_CIPHER_CTX_free(glb_cipher_ctx);
         glb_cipher_ctx = NULL;
     }
-    if (ctx_iv) free(ctx_iv);
-    return 0;
-err:
-    if (ctx_iv) free(ctx_iv);
-    if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
-    glb_cipher_ctx = NULL;
-    return 1;
+    return rv;
 }
 

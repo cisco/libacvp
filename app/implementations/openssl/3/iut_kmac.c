@@ -8,11 +8,12 @@
  */
 
 #include "app_lcl.h"
+#include "safe_lib.h"
 
 #include <openssl/evp.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
-#include "safe_lib.h"
+#include <openssl/err.h>
 
 int app_kmac_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KMAC_TC *tc;
@@ -140,6 +141,7 @@ int app_kmac_handler(ACVP_TEST_CASE *test_case) {
     rv = 0;
 
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (kmac_ctx) EVP_MAC_CTX_free(kmac_ctx);
     if (mac) EVP_MAC_free(mac);
     if (pbld) OSSL_PARAM_BLD_free(pbld);

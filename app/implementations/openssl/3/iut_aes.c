@@ -8,12 +8,14 @@
  */
 
 
-#include <openssl/evp.h>
 #include "acvp/acvp.h"
 #include "app_lcl.h"
 #include "safe_lib.h"
+
+#include <openssl/evp.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
+#include <openssl/err.h>
 
 
 static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
@@ -252,6 +254,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
 
 err:
     if (rv != 0) {
+        ERR_print_errors_fp(stderr);
         if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
         glb_cipher_ctx = NULL;
     }
@@ -388,7 +391,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     EVP_CIPHER_CTX *cipher_ctx = NULL;
     EVP_CIPHER *cipher = NULL;
     unsigned char iv_fixed[4] = { 1, 2, 3, 4 };
-    int rc = 0, ret = 0, direction = 0;
+    int rv = 1, ret = 0, direction = 0;
     ACVP_SUB_AES alg;
     const char *alg_name = NULL;
 
@@ -407,7 +410,6 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     cipher_ctx = EVP_CIPHER_CTX_new();
     if (!cipher_ctx) {
         printf("Error initializing cipher CTX\n");
-        rc = 1;
         goto err;
     }
     EVP_CIPHER_CTX_init(cipher_ctx);
@@ -433,7 +435,6 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             break;
         default:
             printf("Unsupported AES-GCM key length\n");
-            rc = 1;
             goto err;
         }
 
@@ -457,7 +458,6 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             }
             if (!EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
                 printf("acvp_aes_encrypt: iv gen error\n");
-                rc = 1;
                 goto err;
             }
         } else {
@@ -480,11 +480,11 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
             ret = EVP_Cipher(cipher_ctx, NULL, NULL, 0);
             if (ret) {
-                rc = 1;
                 goto err;
             }
         }
 
+        rv = 0;
         break;
     case ACVP_SUB_AES_CCM:
         switch (tc->key_len) {
@@ -499,7 +499,6 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             break;
         default:
             printf("Unsupported AES-CCM key length\n");
-            rc = 1;
             goto err;
         }
 
@@ -519,7 +518,6 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             ret = EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
             if (ret < 0) {
                 printf("Error performing encrypt operation CCM\n");
-                rc = 1;
                 goto err;
             }
             EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_CCM_GET_TAG, tc->tag_len, tc->ct + tc->ct_len);
@@ -534,7 +532,6 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
 
             ret = EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
             if (ret < 0) {
-                rc = 1;
                 goto err;
             }
         }
@@ -559,15 +556,16 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     case ACVP_SUB_AES_FF3:
     default:
         printf("Error: Unsupported AES AEAD mode requested by ACVP server\n");
-        rc = 1;
         goto err;
     }
 
+    rv = 0;
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     /* Cleanup */
     if (cipher_ctx) EVP_CIPHER_CTX_free(cipher_ctx);
     if (cipher) EVP_CIPHER_free(cipher);
-    return rc;
+    return rv;
 }
 
 int app_aes_handler_gmac(ACVP_TEST_CASE *test_case) {
@@ -663,6 +661,7 @@ int app_aes_handler_gmac(ACVP_TEST_CASE *test_case) {
     }
 
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (gmac_ctx) EVP_MAC_CTX_free(gmac_ctx);

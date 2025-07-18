@@ -301,6 +301,7 @@ int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
 
     rv = 0;
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (q) free(q);
     if (d) free(d);
     if (pub_key) free(pub_key);
@@ -310,6 +311,5 @@ err:
     if (pkey) EVP_PKEY_free(pkey);
     if (sig_ctx) EVP_MD_CTX_free(sig_ctx);
     if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
-    ERR_print_errors_fp(stdout);
     return rv;
 }

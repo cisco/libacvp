@@ -10,10 +10,12 @@
 
 
 #include <stdlib.h>
-#include <openssl/rand.h>
 #include "app_lcl.h"
 #include "safe_mem_lib.h"
+
+#include <openssl/rand.h>
 #include <openssl/core_names.h>
+#include <openssl/err.h>
 
 int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     int rv = 1, der_func = 0;
@@ -210,6 +212,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
 
     rv = 0;
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (test) EVP_RAND_CTX_free(test);
     if (rctx) EVP_RAND_CTX_free(rctx);
     if (rand) EVP_RAND_free(rand);

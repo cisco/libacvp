@@ -9,6 +9,7 @@
 
 #include "app_lcl.h"
 #include "implementations/openssl/3/iut.h"
+#include "safe_lib.h"
 
 #include <openssl/evp.h>
 #include <openssl/bn.h>
@@ -16,7 +17,7 @@
 #include <openssl/rand.h>
 #include <openssl/param_build.h>
 #include <openssl/kdf.h>
-#include "safe_lib.h"
+#include <openssl/err.h>
 
 #define TLS_EXT_MASTER_SECRET_CONST      "extended master secret"
 #define TLS_EXT_MASTER_SECRET_CONST_SIZE 22
@@ -51,7 +52,7 @@ static char tls13_expand[] = "EXPAND_ONLY";
 
 int app_kdf135_x942_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDF135_X942_TC *stc = NULL;
-    int rc = 1, info_len = 0, iter = 0;
+    int rv = 1, info_len = 0, iter = 0;
     OSSL_PARAM_BLD *pbld = NULL;
     OSSL_PARAM *params = NULL;
     EVP_KDF *kdf = NULL;
@@ -151,19 +152,20 @@ int app_kdf135_x942_handler(ACVP_TEST_CASE *test_case) {
     }
 
     stc->dkm_len = stc->key_len;
-    rc = 0;
+    rv = 0;
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (acvp_info) free(acvp_info);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
-    return rc;
+    return rv;
 }
 
 int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDF135_X963_TC *stc = NULL;
-    int rc = 1;
+    int rv = 1;
     char *aname = NULL;
     OSSL_PARAM_BLD *pbld = NULL;
     OSSL_PARAM *params = NULL;
@@ -219,19 +221,20 @@ int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
         printf("Failure deriving key material in KDF X963\n");
         goto end;
     }
-    rc = 0;
+    rv = 0;
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (aname) free(aname);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
-    return rc;
+    return rv;
 }
 
 int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDF108_TC *stc = NULL;
-    int rc = 1, isHmac = 1, fixed_len = 64;
+    int rv = 1, isHmac = 1, fixed_len = 64;
     char *aname = NULL;
     unsigned char *fixed = NULL;
     OSSL_PARAM_BLD *pbld = NULL;
@@ -408,20 +411,21 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    rc = 0;
+    rv = 0;
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (aname) free(aname);
     if (fixed) free(fixed);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
-    return rc;
+    return rv;
 }
 
 int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDF135_SSH_TC *stc = NULL;
-    int rc = 1;
+    int rv = 1;
     char *aname = NULL;
     OSSL_PARAM params[6];
     EVP_KDF *kdf = NULL;
@@ -506,17 +510,18 @@ int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    rc = 0;
+    rv = 0;
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (aname) free(aname);
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
-    return rc;
+    return rv;
 }
 
 int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
     ACVP_PBKDF_TC *stc = NULL;
-    int rc = 1;
+    int rv = 1;
     char *aname = NULL;
     OSSL_PARAM_BLD *pbld = NULL;
     OSSL_PARAM *params = NULL;
@@ -592,20 +597,21 @@ int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
     if (EVP_KDF_derive(kctx, stc->key, stc->key_len, params) != 1) {
         printf("Failure deriving key material in PBKDF\n");
     }
-    rc = 0;
+    rv = 0;
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (aname) free(aname);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
-    return rc;
+    return rv;
 }
 
 int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDF_TLS12_TC *tc;
     unsigned char *seed = NULL;
-    int rc = 1, ret = 0, seed_len = 0;
+    int rv = 1, ret = 0, seed_len = 0;
     const char *alg = NULL;
     EVP_KDF *kdf = NULL;
     EVP_KDF_CTX *kctx = NULL;
@@ -715,14 +721,15 @@ int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    rc = 0;
+    rv = 0;
 end:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (kctx) EVP_KDF_CTX_free(kctx);
     if (kdf) EVP_KDF_free(kdf);
     if (seed) free(seed);
-    return rc;
+    return rv;
 }
 
 int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
@@ -1034,6 +1041,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     rv = 0;
 
 err:
+    if (rv != 0) ERR_print_errors_fp(stderr);
     if (zero_input) free(zero_input);
     if (handshake_secret) free(handshake_secret);
     if (master_secret) free(master_secret);
