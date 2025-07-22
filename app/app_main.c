@@ -427,7 +427,7 @@ end:
 #endif
 
 #ifdef ACVP_APP_LIB_WRAPPER
-ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, ACVP_LOG_LVL lvl, ACVP_RESULT (*logger)(char *)) {
+ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, ACVP_LOG_LVL lvl, ACVP_RESULT (*logger)(char *, ACVP_LOG_LVL)) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CTX *ctx = NULL;
     APP_CONFIG cfg = {0};
@@ -442,7 +442,7 @@ ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, 
     }
     cfg.testall = 1;
 
-    rv = iut_setup();
+    rv = iut_setup(&cfg);
     if (rv != ACVP_SUCCESS) {
         printf("Error setting up implementation for testing at startup\n");
         goto end;
