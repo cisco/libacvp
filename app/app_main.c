@@ -27,14 +27,6 @@
 #include "safe_mem_lib.h"
 #include "safe_str_lib.h"
 
-#ifdef ACVPAPP_LMS_SUPPORT
-static int enable_lms(ACVP_CTX *ctx);
-#endif
-#ifdef ACVPAPP_ML_SUPPORT
-static int enable_ml_dsa(ACVP_CTX *ctx);
-static int enable_ml_kem(ACVP_CTX *ctx);
-#endif
-
 const char *server;
 int port;
 const char *ca_chain_file;
@@ -42,12 +34,6 @@ char *cert_file;
 char *key_file;
 const char *path_segment;
 const char *api_context;
-
-#define CHECK_ENABLE_CAP_RV(rv) \
-    if (rv != ACVP_SUCCESS) { \
-        printf("Failed to register capability with libacvp (rv=%d: %s)\n", rv, acvp_lookup_error_string(rv)); \
-        goto end; \
-    }
 
 /*
  * Read the operational parameters from the various environment
@@ -84,12 +70,6 @@ static void setup_session_parameters(void) {
     if (key_file) printf("    ACV_KEY_FILE:   %s\n", key_file);
     printf("\n");
 }
-
-#define CHECK_NON_ALLOWED_ALG(enabled, str) \
-    if (enabled != 0) { \
-        printf("%s\n", str); \
-        rv = 0; \
-    }
 
 /* libacvp calls this function for status updates, debugs, warnings, and errors. */
 static ACVP_RESULT progress(char *msg, ACVP_LOG_LVL level) {
