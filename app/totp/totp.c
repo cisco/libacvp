@@ -94,7 +94,7 @@ base64_decode(const char *in, unsigned int inlen, unsigned char *out) {
             continue;
         case 3:
             out[j++] += (unsigned char)c;
-            continue;;
+            continue;
         default:
             return 0;
         }
