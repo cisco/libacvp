@@ -34,6 +34,6 @@
 
 #include "acvp/acvp.h"
 
-ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, ACVP_LOG_LVL lvl, ACVP_RESULT (*logger)(char *));
+ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, ACVP_LOG_LVL lvl, ACVP_RESULT (*logger)(char *, ACVP_LOG_LVL));
 
 

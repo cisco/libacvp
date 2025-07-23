@@ -123,7 +123,6 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
 
-#define SYM_IV_BYTE_MAX 128
         if (tc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (tc->mct_index == 0) {
                 EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, iv, 1);

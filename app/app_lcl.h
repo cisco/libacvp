@@ -29,6 +29,19 @@ extern "C"
 #define ALG_STR_MAX_LEN 256 /* arbitrary */
 extern char value[JSON_STRING_LENGTH]; /* Non const for API */
 
+#define SYM_IV_BYTE_MAX 128
+
+#define CHECK_ENABLE_CAP_RV(rv) \
+    if (rv != ACVP_SUCCESS) { \
+        printf("Failed to register capability with libacvp (rv=%d: %s)\n", rv, acvp_lookup_error_string(rv)); \
+        goto end; \
+    }
+
+#define CHECK_NON_ALLOWED_ALG(enabled, str) \
+    if (enabled != 0) { \
+        printf("%s\n", str); \
+        rv = 0; \
+    }
 
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_YELLOW "\x1b[33m"
@@ -88,18 +101,6 @@ typedef struct app_config {
     int slh_dsa;
     int testall; /* So the app can check whether the user indicated to test all possible algorithms */
 } APP_CONFIG;
-
-#define CHECK_ENABLE_CAP_RV(rv) \
-    if (rv != ACVP_SUCCESS) { \
-        printf("Failed to register capability with libacvp (rv=%d: %s)\n", rv, acvp_lookup_error_string(rv)); \
-        goto end; \
-    }
-
-#define CHECK_NON_ALLOWED_ALG(enabled, str) \
-    if (enabled != 0) { \
-        printf("%s\n", str); \
-        rv = 0; \
-    }
 
 ACVP_RESULT totp(char **token, int token_max);
 
