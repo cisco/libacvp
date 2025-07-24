@@ -1,4 +1,11 @@
-This directory contains a sample application that uses libacvp.  This
-sample application uses OpenSSL as the crypto module.
+# Overview
 
-Build using 'make clean; make'
+This directory contains all of the code for an application that can run ACVP testing against
+several different cryptographic implementations. For details about each supported implementation and
+their harnesses, view the readmes in the "implementations" directory and its subdirectories.
+
+Excluding the aforementioned implementations directory, this directory contains code that is common
+to the application regardless of which implementation is being built and tested. This includes command
+line parsing (app_cli.c), TOTP generation (the "totp" directory), and general flow of the software
+(app_main.c), as well as various helper functions and headers. The general flow of the software calls into
+implementation-specific code using the functions described in app/implementations/README.md.
