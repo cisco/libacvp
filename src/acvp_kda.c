@@ -51,7 +51,7 @@ static ACVP_RESULT acvp_kda_hkdf_output_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KDA_DKM_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->outputDkm, stc->l, tmp, ACVP_KDA_DKM_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (dkm)");
+        ACVP_LOG_ERR("Hex conversion failure (dkm)");
         goto end;
     }
     json_object_set_string(tc_rsp, "dkm", tmp);
@@ -91,7 +91,7 @@ static ACVP_RESULT acvp_kda_onestep_output_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KDA_DKM_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->outputDkm, stc->l, tmp, ACVP_KDA_DKM_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (dkm)");
+        ACVP_LOG_ERR("Hex conversion failure (dkm)");
         goto end;
     }
     json_object_set_string(tc_rsp, "dkm", tmp);
@@ -279,7 +279,7 @@ static ACVP_RESULT acvp_kda_twostep_output_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KDA_DKM_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->outputDkm, stc->l, tmp, ACVP_KDA_DKM_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (dkm)");
+        ACVP_LOG_ERR("Hex conversion failure (dkm)");
         goto end;
     }
     json_object_set_string(tc_rsp, "dkm", tmp);
@@ -1508,7 +1508,7 @@ ACVP_RESULT acvp_kda_hkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -1604,7 +1604,7 @@ ACVP_RESULT acvp_kda_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -1700,7 +1700,7 @@ ACVP_RESULT acvp_kda_twostep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 

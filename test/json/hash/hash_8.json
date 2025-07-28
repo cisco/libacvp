@@ -662,7 +662,8 @@
             "tcId": 130
           }
         ], 
-        "testType": "MCT"
+        "testType": "MCT",
+        "mctVersion": "standard"
       }
     ], 
     "algorithm": "SHA2-256", 

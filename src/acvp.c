@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -81,6 +81,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_AES_KWP,           &acvp_aes_kat_handler,              ACVP_ALG_AES_KWP,           NULL, ACVP_REV_AES_KWP, {ACVP_SUB_AES_KWP}},
     { ACVP_AES_GMAC,          &acvp_aes_kat_handler,              ACVP_ALG_AES_GMAC,          NULL, ACVP_REV_AES_GMAC, {ACVP_SUB_AES_GMAC}},
     { ACVP_AES_XPN,           &acvp_aes_kat_handler,              ACVP_ALG_AES_XPN ,          NULL, ACVP_REV_AES_XPN, {ACVP_SUB_AES_XPN}},
+    { ACVP_AES_FF1,           &acvp_aes_kat_handler,             ACVP_ALG_AES_FF1,           NULL, ACVP_REV_AES_FF1, {ACVP_SUB_AES_FF1}},
+    { ACVP_AES_FF3,           &acvp_aes_kat_handler,             ACVP_ALG_AES_FF3,           NULL, ACVP_REV_AES_FF3, {ACVP_SUB_AES_FF3}},
     { ACVP_TDES_ECB,          &acvp_des_kat_handler,              ACVP_ALG_TDES_ECB,          NULL, ACVP_REV_TDES_ECB, {ACVP_SUB_TDES_ECB}},
     { ACVP_TDES_CBC,          &acvp_des_kat_handler,              ACVP_ALG_TDES_CBC,          NULL, ACVP_REV_TDES_CBC, {ACVP_SUB_TDES_CBC}},
     { ACVP_TDES_CBCI,         &acvp_des_kat_handler,              ACVP_ALG_TDES_CBCI,         NULL, ACVP_REV_TDES_CBCI, {ACVP_SUB_TDES_CBCI}},
@@ -171,7 +173,15 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_SAFE_PRIMES_KEYVER, &acvp_safe_primes_kat_handler,     ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYVER, ACVP_REV_SAFE_PRIMES, {ACVP_SUB_SAFE_PRIMES_KEYVER}},
     { ACVP_LMS_KEYGEN,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_KEYGEN, ACVP_REV_LMS, {ACVP_SUB_LMS_KEYGEN}},
     { ACVP_LMS_SIGGEN,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGGEN, ACVP_REV_LMS, {ACVP_SUB_LMS_SIGGEN}},
-    { ACVP_LMS_SIGVER,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGVER, ACVP_REV_LMS, {ACVP_SUB_LMS_SIGVER}}
+    { ACVP_LMS_SIGVER,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGVER, ACVP_REV_LMS, {ACVP_SUB_LMS_SIGVER}},
+    { ACVP_ML_DSA_KEYGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_KEYGEN, ACVP_REV_ML_DSA, {ACVP_SUB_ML_DSA_KEYGEN}},
+    { ACVP_ML_DSA_SIGGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGGEN, ACVP_REV_ML_DSA, {ACVP_SUB_ML_DSA_SIGGEN}},
+    { ACVP_ML_DSA_SIGVER,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGVER, ACVP_REV_ML_DSA, {ACVP_SUB_ML_DSA_SIGVER}},
+    { ACVP_ML_KEM_KEYGEN,     &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_KEYGEN, ACVP_REV_ML_KEM, {ACVP_SUB_ML_KEM_KEYGEN}},
+    { ACVP_ML_KEM_XCAP,       &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_XCAP, ACVP_REV_ML_KEM, {ACVP_SUB_ML_KEM_XCAP}},
+    { ACVP_SLH_DSA_KEYGEN,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_KEYGEN, ACVP_REV_SLH_DSA, {ACVP_SUB_SLH_DSA_KEYGEN}},
+    { ACVP_SLH_DSA_SIGGEN,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_SIGGEN, ACVP_REV_SLH_DSA, {ACVP_SUB_SLH_DSA_SIGGEN}},
+    { ACVP_SLH_DSA_SIGVER,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_SIGVER, ACVP_REV_SLH_DSA, {ACVP_SUB_SLH_DSA_SIGVER}}
 };
 
 /*
@@ -609,6 +619,50 @@ static void acvp_cap_free_lms(ACVP_LMS_CAP *cap) {
     }
     free(cap);
 }
+
+
+static void acvp_cap_free_ml_dsa(ACVP_ML_DSA_CAP *cap) {
+    ACVP_ML_DSA_CAP_GROUP *group = cap->cap_group, *iter = NULL;
+
+    if (!group) {
+        return;
+    }
+
+    while (group) {
+        acvp_cap_free_pl(group->param_sets);
+        acvp_cap_free_pl(group->hash_algs);
+        acvp_cap_free_domain(&group->msg_len);
+        acvp_cap_free_domain(&group->context_len);
+        iter = group->next;
+        free(group);
+        group = iter;
+    }
+
+    free(cap);
+    return;
+}
+
+static void acvp_cap_free_slh_dsa(ACVP_SLH_DSA_CAP *cap) {
+    ACVP_SLH_DSA_CAP_GROUP *group = cap->cap_group, *iter = NULL;
+
+    if (!group) {
+        return;
+    }
+
+    while (group) {
+        acvp_cap_free_pl(group->param_sets);
+        acvp_cap_free_pl(group->hash_algs);
+        acvp_cap_free_domain(&group->msg_len);
+        acvp_cap_free_domain(&group->context_len);
+        iter = group->next;
+        free(group);
+        group = iter;
+    }
+
+    free(cap);
+    return;
+}
+
 /*
  * The application will invoke this to free the ACVP context
  * when the test session is finished.
@@ -671,6 +725,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_sl(cap_entry->cap.sym_cap->aadlen);
                 acvp_cap_free_sl(cap_entry->cap.sym_cap->taglen);
                 acvp_cap_free_sl(cap_entry->cap.sym_cap->tweak);
+                free(cap_entry->cap.sym_cap->alphabet);
                 free(cap_entry->cap.sym_cap);
                 break;
             case ACVP_HASH_TYPE:
@@ -803,18 +858,22 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 break;
             case ACVP_EDDSA_KEYGEN_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.eddsa_keygen_cap->curves);
+                acvp_cap_free_domain(&cap_entry->cap.eddsa_keygen_cap->context_len);
                 free(cap_entry->cap.eddsa_keygen_cap);
                 break;
             case ACVP_EDDSA_KEYVER_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.eddsa_keyver_cap->curves);
+                acvp_cap_free_domain(&cap_entry->cap.eddsa_keyver_cap->context_len);
                 free(cap_entry->cap.eddsa_keyver_cap);
                 break;
             case ACVP_EDDSA_SIGGEN_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.eddsa_siggen_cap->curves);
+                acvp_cap_free_domain(&cap_entry->cap.eddsa_siggen_cap->context_len);
                 free(cap_entry->cap.eddsa_siggen_cap);
                 break;
             case ACVP_EDDSA_SIGVER_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.eddsa_sigver_cap->curves);
+                acvp_cap_free_domain(&cap_entry->cap.eddsa_sigver_cap->context_len);
                 free(cap_entry->cap.eddsa_sigver_cap);
                 break;
             case ACVP_KDF135_SRTP_TYPE:
@@ -892,6 +951,34 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 break;
             case ACVP_LMS_SIGVER_TYPE:
                 acvp_cap_free_lms(cap_entry->cap.lms_sigver_cap);
+                break;
+            case ACVP_ML_DSA_KEYGEN_TYPE:
+                acvp_cap_free_ml_dsa(cap_entry->cap.ml_dsa_keygen_cap);
+                break;
+            case ACVP_ML_DSA_SIGGEN_TYPE:
+                acvp_cap_free_ml_dsa(cap_entry->cap.ml_dsa_siggen_cap);
+                break;
+            case ACVP_ML_DSA_SIGVER_TYPE:
+                acvp_cap_free_ml_dsa(cap_entry->cap.ml_dsa_sigver_cap);
+                break;
+            case ACVP_ML_KEM_KEYGEN_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.ml_kem_keygen_cap->param_sets);
+                acvp_cap_free_pl(cap_entry->cap.ml_kem_keygen_cap->functions);
+                free(cap_entry->cap.ml_kem_keygen_cap);
+                break;
+            case ACVP_ML_KEM_XCAP_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.ml_kem_xcap_cap->param_sets);
+                acvp_cap_free_pl(cap_entry->cap.ml_kem_xcap_cap->functions);
+                free(cap_entry->cap.ml_kem_xcap_cap);
+                break;
+            case ACVP_SLH_DSA_KEYGEN_TYPE:
+                acvp_cap_free_slh_dsa(cap_entry->cap.slh_dsa_keygen_cap);
+                break;
+            case ACVP_SLH_DSA_SIGGEN_TYPE:
+                acvp_cap_free_slh_dsa(cap_entry->cap.slh_dsa_siggen_cap);
+                break;
+            case ACVP_SLH_DSA_SIGVER_TYPE:
+                acvp_cap_free_slh_dsa(cap_entry->cap.slh_dsa_sigver_cap);
                 break;
             case ACVP_KDF135_TPM_TYPE:
             default:
@@ -1020,6 +1107,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
     int vs_cnt = 0, isSample = 0;
     const char *jwt = NULL;
     char *json_result = NULL;
+    char url_buffer[128] = { 0 };  // for vsId from filename
 
     ACVP_LOG_STATUS("Beginning offline processing of vector sets...");
 
@@ -1056,7 +1144,9 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
     } else {
         ACVP_LOG_WARN("Missing session URL, results will not be POSTed to server");
+#ifndef ACVP_OFFLINE
         goto end;
+#endif
     }
 
     jwt = json_object_get_string(obj, "jwt");
@@ -1065,7 +1155,9 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
     } else {
         ACVP_LOG_WARN("Missing JWT, results will not be POSTed to server");
+#ifndef ACVP_OFFLINE
         goto end;
+#endif
     }
 
     isSample = json_object_get_boolean(obj, "isSample");
@@ -1089,6 +1181,22 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         if (rv != ACVP_SUCCESS) goto end;
         ACVP_LOG_INFO("Received vsid_url=%s", vsid_url);
     }
+    /* If no vsIds found, try to get it from the filename */
+    if (vs_cnt == 0) {
+        int vsid;
+        char* start = strstr(req_filename, "vs");
+        if (!start || 
+            (strnlen_s(start, ACVP_JSON_FILENAME_MAX) <= 2) || 
+            (0 == (vsid = atoi(start+2)))) {
+            ACVP_LOG_WARN("No vsId in file or filename; cannot proceed");
+            goto end;
+        }
+        ACVP_LOG_STATUS("Retrieved vsId from filename...");
+        sprintf(url_buffer, "/acvp/v1/testSessions/123456/vectorSets/%d", vsid);
+        rv = acvp_append_vsid_url(ctx, url_buffer);
+        if (rv != ACVP_SUCCESS) goto end;
+        ACVP_LOG_INFO("Received vsid_url=%s", url_buffer);
+    }
 
     n++;        /* bump past the version or url, jwt, url sets */
     obj = json_array_get_object(reg_array, n);
@@ -1108,7 +1216,9 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         }
         /* Process the kat vector(s) */
         rv  = acvp_dispatch_vector_set(ctx, obj);
-        if (rv != ACVP_SUCCESS) {
+        if (rv == ACVP_NO_DATA)
+            goto skip_error;
+        else if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("KAT dispatch error");
             goto end;
         }
@@ -1116,7 +1226,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
 
         /* 
          * Convert the JSON from a fully qualified to a value that can be 
-         * added to the file. Kind of klumsy, but it works.
+         * added to the file. Kind of clumsy, but it works.
          */
         kat_array = json_value_get_array(ctx->kat_resp);
         kat_val = json_array_get_value(kat_array, 1);
@@ -1149,12 +1259,148 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         }
 
         json_value_free(file_val);
+        file_val = NULL;
+skip_error:
         n++;
         obj = json_array_get_object(reg_array, n);
         vs_entry = vs_entry->next;
     }
     /* append the final ']' to make the JSON work */ 
     rv = acvp_json_serialize_to_file_pretty_a(NULL, rsp_filename);
+    ACVP_LOG_STATUS("Completed processing of vector sets. Responses saved in specified file.");
+end:
+    json_value_free(val);
+    return rv;
+}
+
+/*
+ * Allows application to load JSON vector file(req_filename) within context
+ * to be read in and used for vector testing. The results are
+ * then saved in a response file(rsp_filename).
+ */
+ACVP_RESULT acvp_run_vectors_from_file_offline(ACVP_CTX *ctx, const char *req_filename, const char *rsp_filename) {
+    JSON_Object *obj = NULL;
+    JSON_Value *val = NULL;
+    JSON_Array *reg_array;
+    JSON_Value *file_val = NULL;
+    JSON_Value *kat_val = NULL;
+    JSON_Array *kat_array;
+    JSON_Value *rsp_val = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    char *json_result = NULL;
+    int n = 0;
+
+    ACVP_LOG_STATUS("Beginning offline processing of vector sets...");
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!req_filename || !rsp_filename) {
+        ACVP_LOG_ERR("Must provide value for JSON filename");
+        return ACVP_MISSING_ARG;
+    }
+
+    if (strnlen_s(req_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided req_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
+    val = json_parse_file(req_filename);
+    reg_array = json_value_get_array(val);
+
+    // What kind of file do we have?
+    if (reg_array) {
+        // Array of objects; optional header and 1..n algorithms
+        obj = json_array_get_object(reg_array, n);
+        if (!obj) {
+            ACVP_LOG_ERR("JSON obj parse error (array with no objects)");
+            goto end;
+        }
+        /* 
+        * If the file contains a header (an object *without* a "vsId"), we throw it away.  
+        * We are processing all the vsIds found in this file, and we don't care about any 
+        * session information (sessionId, jwt, etc).  By not relying on information in 
+        * the header (e.g. vsId), we make the file processor able to process both 
+        * libacvp-style and acvpproxy-style files.
+        */
+        while (((obj = json_array_get_object(reg_array, n)) != NULL) &&
+               (!json_object_has_value(obj, "vsId"))) {
+            n++;
+        }
+        if (!obj) {
+            ACVP_LOG_ERR("JSON obj parse error (no data)");
+            goto end;
+        }
+    } else {
+        // No array, just a single algorithm
+        obj = json_value_get_object(val);
+    }
+
+    while (obj) {
+        /* Process the kat vector(s) */
+        rv  = acvp_dispatch_vector_set(ctx, obj);
+        if (rv == ACVP_NO_DATA)
+            goto skip_error;
+        else if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("KAT dispatch error");
+            goto end;
+        }
+        ACVP_LOG_STATUS("Writing vector set responses for vector set %d...", ctx->vs_id);
+
+        /* 
+         * Convert the JSON from a fully qualified to a value that can be 
+         * added to the file. Kind of clumsy, but it works.
+         */
+        kat_array = json_value_get_array(ctx->kat_resp);
+        kat_val = json_array_get_value(kat_array, 1);
+        if (!kat_val) {
+            ACVP_LOG_ERR("JSON val parse error");
+            goto end;
+        }
+        json_result = json_serialize_to_string_pretty(kat_val, NULL);
+        file_val = json_parse_string(json_result);
+        json_free_serialized_string(json_result);
+
+        /* Track first vector set with file count ( N>0 means there is a header ) */
+        if (n == 1) {
+            rsp_val = json_array_get_value(reg_array, 0);
+            /* start the file with the '[' and identifiers array */
+            rv = acvp_json_serialize_to_file_pretty_w(rsp_val, rsp_filename);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("File write error");
+                json_value_free(file_val);
+                goto end;
+            }
+        } 
+        /* Append vector sets */
+        if (reg_array) // Array of many algorithms
+            rv = acvp_json_serialize_to_file_pretty_a(file_val, rsp_filename);
+        else           // Single algorithm, no "," prefix
+            rv = acvp_json_serialize_to_file_pretty_a_raw(file_val, rsp_filename);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("File write error");
+            json_value_free(file_val);
+            goto end;
+        }
+
+        json_value_free(file_val);
+        file_val = NULL;
+skip_error:
+
+        // What kind of file do we have?
+        if (reg_array) {
+            // Array of algorithms; get the next
+            obj = json_array_get_object(reg_array, ++n);
+        } else {
+            // One algorithm; mark NULL to exit the while() loop
+            obj = NULL;
+        }
+    }
+
+    /* append the final ']' to make the JSON work */ 
+    if (reg_array) {
+        rv = acvp_json_serialize_to_file_pretty_a(NULL, rsp_filename);
+    }
     ACVP_LOG_STATUS("Completed processing of vector sets. Responses saved in specified file.");
 end:
     json_value_free(val);
@@ -1526,6 +1772,7 @@ ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filenam
         } else {
             printf("%s,\n", ctx->curl_buf);
         }
+        vsid_url = NULL;
     }
     //append the final ']'
     rv = acvp_json_serialize_to_file_pretty_a(NULL, save_filename);
@@ -2135,10 +2382,28 @@ ACVP_RESULT acvp_mark_as_delete_only(ACVP_CTX *ctx, char *request_url) {
 }
 
 int acvp_get_vector_set_count(ACVP_CTX *ctx) {
+    JSON_Value *reg = NULL;
+    JSON_Array *tmp_array = NULL;
+    int count = 0;
     if (!ctx) {
         return -1;
     }
-    return ctx->vs_count;
+
+    if (acvp_build_registration_json(ctx, &reg) != ACVP_SUCCESS || !reg) {
+        ACVP_LOG_ERR("Error occured while getting vector set count");
+        return ACVP_INTERNAL_ERR;
+    }
+
+    tmp_array = json_value_get_array(reg);
+    if (!tmp_array) {
+        ACVP_LOG_ERR("Error occured while getting vector set count");
+        return ACVP_INTERNAL_ERR;
+    }
+
+    count = (int)json_array_get_count(tmp_array);
+    json_value_free(reg);
+    return count;
+
 }
 
 /*
@@ -2182,7 +2447,7 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
 
         rv = ctx->totp_cb(&token, ACVP_TOTP_TOKEN_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Error occured in application callback while generating TOTP");
+            ACVP_LOG_ERR("Error occurred in application callback while generating TOTP");
             rv = ACVP_TOTP_FAIL;
             goto err;
         }
@@ -2895,6 +3160,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
     JSON_Object *ts_obj = NULL;
     JSON_Object *obj = NULL;
     ACVP_STRING_LIST *vs_entry = NULL;
+    double tmp_num = 0.0;
     int retry_period = 0;
     int retry = 1;
     unsigned int time_waited_so_far = 0;
@@ -2916,7 +3182,8 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
         /*
          * Check if we received a retry response
          */
-        retry_period = (int) json_object_get_number(obj, "retry");
+        tmp_num = json_object_get_number(obj, "retry");
+        retry_period = (int)tmp_num;
         if (retry_period) {
             /*
              * Wait and try again to retrieve the VectorSet
@@ -2998,11 +3265,12 @@ end:
  * is looked up in the alg_tbl[] and invoked here.
  */
 static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
-    int i;
+    int i = 0, vs_id = 0;
+    double tmp = json_object_get_number(obj, "vsId");
     const char *err = json_object_get_string(obj, "error");
     const char *alg = json_object_get_string(obj, "algorithm");
     const char *mode = json_object_get_string(obj, "mode");
-    int vs_id = (int) json_object_get_number(obj, "vsId");
+    vs_id = (int)tmp;
     int diff = 1;
 
     ctx->vs_id = vs_id;
@@ -3095,7 +3363,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
     ACVP_STRING_LIST *failedModeList = NULL;
     /*
      * Maintains a list of the vector set URLs we have already looked up,
-     * so we don't redownload failed vector sets every time a retry is done
+     * so we don't re-download failed vector sets every time a retry is done
      */
      ACVP_STRING_LIST *failedVsList = NULL;
 
@@ -3166,7 +3434,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                     break;
                 }
                 if (!acvp_lookup_str_list(&failedVsList, vsurl)) {
-                    //append the vsurl to the list so we dont download/check same one twice
+                    //append the vs url to the list so we dont download/check same one twice
                     rv = acvp_append_str_list(&failedVsList, vsurl);
                     if (rv != ACVP_SUCCESS) {
                         ACVP_LOG_ERR("Error appending failed algorithm name to list, skipping...");
@@ -3255,7 +3523,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
              * If any tests are incomplete, retry, even if some have failed
              */
             acvp_list_failing_algorithms(ctx, &failedAlgList, &failedModeList);
-            ACVP_LOG_STATUS("TestSession results incomplete...");
+            ACVP_LOG_STATUS("Test session results incomplete...");
             if (acvp_retry_handler(ctx, &retry_interval, &time_waited_so_far, 1, ACVP_WAITING_FOR_RESULTS) != ACVP_KAT_DOWNLOAD_RETRY) {
                 ACVP_LOG_STATUS("Maximum wait time with server reached! (Max: %d seconds)", ACVP_MAX_WAIT_TIME);
                 rv = ACVP_TRANSPORT_FAIL;
@@ -3463,7 +3731,7 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
 
     /*
      * Check the total length of our path, prefix, and total concatenated filename. 
-     * Add 6 to checks for .json and the _ beteween prefix and session ID
+     * Add 6 to checks for .json and the _ between prefix and session ID
      * If any lengths are too long, just use default prefix and location
      */
     if (path) {
@@ -3991,4 +4259,28 @@ ACVP_SUB_LMS acvp_get_lms_alg(ACVP_CIPHER cipher)
         return 0;
     }
     return (alg_tbl[cipher-1].alg.lms);
+}
+
+ACVP_SUB_ML_DSA acvp_get_ml_dsa_alg(ACVP_CIPHER cipher)
+{
+    if ((cipher == ACVP_CIPHER_START) || (cipher >= ACVP_CIPHER_END)) {
+        return 0;
+    }
+    return (alg_tbl[cipher-1].alg.ml_dsa);
+}
+
+ACVP_SUB_ML_KEM acvp_get_ml_kem_alg(ACVP_CIPHER cipher)
+{
+    if ((cipher == ACVP_CIPHER_START) || (cipher >= ACVP_CIPHER_END)) {
+        return 0;
+    }
+    return (alg_tbl[cipher-1].alg.ml_kem);
+}
+
+ACVP_SUB_SLH_DSA acvp_get_slh_dsa_alg(ACVP_CIPHER cipher)
+{
+    if ((cipher == ACVP_CIPHER_START) || (cipher >= ACVP_CIPHER_END)) {
+        return 0;
+    }
+    return (alg_tbl[cipher-1].alg.slh_dsa);
 }

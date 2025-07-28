@@ -249,21 +249,21 @@ static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx,
     rv = acvp_bin_to_hexstr(stc->key, single_key_byte_len,
                             tmp_k1, single_key_str_len);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (key)");
+        ACVP_LOG_ERR("Hex conversion failure (key)");
         goto err;
     }
 
     rv = acvp_bin_to_hexstr(stc->key + 8, single_key_byte_len,
                             tmp_k2, single_key_str_len);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (key)");
+        ACVP_LOG_ERR("Hex conversion failure (key)");
         goto err;
     }
 
     rv = acvp_bin_to_hexstr(stc->key + 16, single_key_byte_len,
                             tmp_k3, single_key_str_len);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (key)");
+        ACVP_LOG_ERR("Hex conversion failure (key)");
         goto err;
     }
 
@@ -281,7 +281,7 @@ static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx,
 
         rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp_iv, ACVP_SYM_IV_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (iv)");
+            ACVP_LOG_ERR("Hex conversion failure (iv)");
             goto err;
         }
         json_object_set_string(r_tobj, "iv", tmp_iv);
@@ -299,14 +299,14 @@ static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx,
             stc->pt[0] &= ACVP_CFB1_BIT_MASK;
             rv = acvp_bin_to_hexstr(stc->pt, 1, tmp_pt, ACVP_SYM_PT_MAX);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (pt)");
+                ACVP_LOG_ERR("Hex conversion failure (pt)");
                 goto err;
             }
             json_object_set_string(r_tobj, "pt", tmp_pt);
         } else {
             rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp_pt, ACVP_SYM_PT_MAX);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (pt)");
+                ACVP_LOG_ERR("Hex conversion failure (pt)");
                 goto err;
             }
             json_object_set_string(r_tobj, "pt", tmp_pt);
@@ -325,14 +325,14 @@ static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx,
         if (stc->cipher == ACVP_TDES_CFB1) {
             rv = acvp_bin_to_hexstr(stc->ct, 1, tmp_ct, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (ct)");
+                ACVP_LOG_ERR("Hex conversion failure (ct)");
                 goto err;
             }
             json_object_set_string(r_tobj, "ct", tmp_ct);
         } else {
             rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp_ct, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (ct)");
+                ACVP_LOG_ERR("Hex conversion failure (ct)");
                 goto err;
             }
             json_object_set_string(r_tobj, "ct", tmp_ct);
@@ -521,7 +521,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
                 stc->ct[0] &= ACVP_CFB1_BIT_MASK;
                 rv = acvp_bin_to_hexstr(stc->ct, 1, tmp, ACVP_SYM_CT_MAX);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("hex conversion failure (ct)");
+                    ACVP_LOG_ERR("Hex conversion failure (ct)");
                     free(tmp);
                     json_value_free(r_tval);
                     return rv;
@@ -529,7 +529,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
             } else {
                 rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_SYM_CT_MAX);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("hex conversion failure (ct)");
+                    ACVP_LOG_ERR("Hex conversion failure (ct)");
                     free(tmp);
                     json_value_free(r_tval);
                     return rv;
@@ -541,7 +541,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
             if (stc->cipher == ACVP_TDES_CFB1) {
                 rv = acvp_bin_to_hexstr(stc->pt, 1, tmp, ACVP_SYM_CT_MAX);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("hex conversion failure (pt)");
+                    ACVP_LOG_ERR("Hex conversion failure (pt)");
                     free(tmp);
                     json_value_free(r_tval);
                     return rv;
@@ -549,7 +549,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
             } else {
                 rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("hex conversion failure (pt)");
+                    ACVP_LOG_ERR("Hex conversion failure (pt)");
                     free(tmp);
                     json_value_free(r_tval);
                     return rv;
@@ -694,7 +694,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -1058,7 +1058,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
         if (stc->cipher == ACVP_TDES_CFB1) {
             rv = acvp_bin_to_hexstr(stc->ct, (stc->ct_len + 7) / 8, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (ct)");
+                ACVP_LOG_ERR("Hex conversion failure (ct)");
                 free(tmp);
                 return rv;
             }
@@ -1066,7 +1066,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
         } else {
             rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (ct)");
+                ACVP_LOG_ERR("Hex conversion failure (ct)");
                 free(tmp);
                 return rv;
             }
@@ -1083,7 +1083,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
         if (stc->cipher == ACVP_TDES_CFB1) {
             rv = acvp_bin_to_hexstr(stc->pt, (stc->pt_len + 7) / 8, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (pt)");
+                ACVP_LOG_ERR("Hex conversion failure (pt)");
                 free(tmp);
                 return rv;
             }
@@ -1091,7 +1091,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
         } else {
             rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (pt)");
+                ACVP_LOG_ERR("Hex conversion failure (pt)");
                 free(tmp);
                 return rv;
             }

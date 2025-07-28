@@ -1,5 +1,5 @@
 /*****************************************************************************
-* Copyright (c) 2021, Cisco Systems, Inc.
+* Copyright (c) 2025, Cisco Systems, Inc.
 * All rights reserved.
 
 * Redistribution and use in source and binary forms, with or without modification,
@@ -34,6 +34,6 @@
 
 #include "acvp/acvp.h"
 
-ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, ACVP_LOG_LVL lvl, ACVP_RESULT (*logger)(char *));
+ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, ACVP_LOG_LVL lvl, ACVP_RESULT (*logger)(char *, ACVP_LOG_LVL));
 
 

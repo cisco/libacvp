@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -13,9 +13,6 @@
 #include "app_lcl.h"
 #include "acvp/acvp.h"
 #include "safe_lib.h"
-
-#include <openssl/crypto.h>
-#include <openssl/evp.h>
 
 #define ACVP_APP_HELP_MSG "Use acvp_app --help for more information."
 
@@ -59,7 +56,7 @@ static void print_usage(int code) {
         printf("capabilities of the provided cryptographic library.\n\n");
     }
     printf("Algorithm Test Suites:\n");
-    printf("Note: not all suites are supported by all supported modules\n");
+    printf("Note: not all suites are supported by all supported implementations.\n");
     printf("      --all_algs (or -a, Enable all of the suites supported by the crypto module)\n");
     printf("      --aes\n");
     printf("      --tdes\n");
@@ -78,6 +75,10 @@ static void print_usage(int code) {
     printf("      --kas_ifc\n");
     printf("      --kda\n");
     printf("      --kts_ifc\n");
+    printf("      --lms\n");
+    printf("      --ml_dsa\n");
+    printf("      --ml_kem\n");
+    printf("      --slh_dsa\n");
     printf("\n");
 
     printf("      If running hash, a maximum size for large data testing (LDT) may be required on specific\n");
@@ -98,13 +99,13 @@ static void print_usage(int code) {
     printf("Perform a FIPS Validation for this testSession:\n");
     printf("      --fips_validation <full metadata file>\n");
     printf("\n");
-    printf("To specify a cert number associated with all prerequistes:\n");
+    printf("To specify a cert number associated with all prerequisites:\n");
     printf("      --certnum <string>\n");
     printf("\n");
     printf("To register manually using a JSON file instead of application settings use:\n");
     printf("      --manual_registration <file>\n");
     printf("\n");
-    printf("To retreive and output the JSON form of the currently registered capabilities:\n");
+    printf("To retrieve and output the JSON form of the currently registered capabilities:\n");
     printf("      --get_registration\n");
     printf("\n");
     printf("To register and save the vectors to file:\n");
@@ -118,13 +119,15 @@ static void print_usage(int code) {
     printf("      -r <file>\n");
     printf("      -p <file>\n");
     printf("\n");
+    printf("To process a generic vector file without libacvp formatting, add:\n");
+    printf("      --generic\n");
     printf("To upload vector responses from file:\n");
     printf("      --vector_upload <file>\n");
     printf("      -u <file>\n");
     printf("\n");
     printf("Note: --resume_session and --get_results use the test session info file created automatically by the library as input\n");
     printf("\n");
-    printf("To resume a previous test session that was interupted:\n");
+    printf("To resume a previous test session that was interrupted:\n");
     printf("      --resume_session <session_file>\n");
     printf("            Note: this does not save your arguments from your initial run and you MUST include them\n");
     printf("            again (e.x. --aes,  --vector_req and --fips_validation)\n");
@@ -158,11 +161,9 @@ static void print_usage(int code) {
     printf("      --save_to <file>\n");
     printf("      -s <file>\n");
     printf("\n");
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
-    printf("To disable FIPS mode for this run (Note, a warning will be issued):\n");
+    printf("To request disabling FIPS for this run (may not apply to all supported modules):\n");
     printf("      -disable_fips\n");
     printf("\n");
-#endif
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
     printf("    ACV_SERVER (when not set, defaults to %s)\n", DEFAULT_SERVER);
@@ -217,6 +218,9 @@ static ko_longopt_t longopts[] = {
     { "kmac", ko_no_argument, 326 },
     { "lms", ko_no_argument, 327 },
     { "eddsa", ko_no_argument, 328 },
+    { "ml_dsa", ko_no_argument, 329 },
+    { "ml_kem", ko_no_argument, 330 },
+    { "slh_dsa", ko_no_argument, 331 },
     { "all_algs", ko_no_argument, 350 },
     { "manual_registration", ko_required_argument, 400 },
     { "fips_validation", ko_required_argument, 402 },
@@ -237,9 +241,8 @@ static ko_longopt_t longopts[] = {
     { "debug", ko_no_argument, 417 },
     { "get_registration", ko_no_argument, 418 },
     { "set_max_hash_size", ko_required_argument, 419 },
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    { "generic", ko_no_argument, 420 },
     { "disable_fips", ko_no_argument, 500 },
-#endif
     { NULL, 0, 0 }
 };
 
@@ -247,28 +250,6 @@ static ko_longopt_t longopts[] = {
 static void default_config(APP_CONFIG *cfg) {
     cfg->level = ACVP_LOG_LVL_STATUS;
     cfg->max_ldt_size = 8; /* Max in spec is 8 right now, do all by default */
-}
-
-static void enable_all_algorithms(APP_CONFIG *cfg) {
-    cfg->aes = 1;
-    cfg->tdes = 1;
-    cfg->hash = 1;
-    cfg->cmac = 1;
-    cfg->hmac = 1;
-    cfg->kmac = 1;
-    cfg->dsa = 1;
-    cfg->kas_ffc = 1;
-    cfg->safe_primes = 1;
-    cfg->rsa = 1;
-    cfg->drbg = 1;
-    cfg->ecdsa = 1;
-    cfg->eddsa = 1;
-    cfg->kas_ecc = 1;
-    cfg->kas_ifc = 1;
-    cfg->kda = 1;
-    cfg->kts_ifc = 1;
-    cfg->kdf = 1;
-    cfg->lms = 1;
 }
 
 static const char* lookup_arg_name(int c) {
@@ -297,7 +278,7 @@ static int check_option_length(const char *opt, int c, int maxAllowed) {
 
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     ketopt_t opt = KETOPT_INIT;
-    int c = 0, diff = 0, len = 0, print_ver = 0, ldt_manually_set = 0;
+    int c = 0, diff = 0, len = 0, ldt_manually_set = 0;
 
     cfg->empty_alg = 1;
 
@@ -311,7 +292,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         case 'v':
         case 301:
             /* Print version info AFTER other args are read, so we can see module runtime info better */
-            print_ver = 1;
+            cfg->output_version = 1;
             break;
         case 'h':
         case 302:
@@ -428,9 +409,20 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->eddsa = 1;
             cfg->empty_alg = 0;
             break;
+        case 329:
+            cfg->ml_dsa = 1;
+            cfg->empty_alg = 0;
+            break;
+        case 330:
+            cfg->ml_kem = 1;
+            cfg->empty_alg = 0;
+            break;
+        case 331:
+            cfg->slh_dsa = 1;
+            cfg->empty_alg = 0;
+            break;
         case 'a':
         case 350:
-            enable_all_algorithms(cfg);
             cfg->empty_alg = 0;
             cfg->testall = 1;
             break;
@@ -585,11 +577,14 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             ldt_manually_set = 1;
             break;
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+        case 420:
+            cfg->generic_vector_file = 1;
+            break;
+
         case 500:
             cfg->disable_fips = 1;
             break;
-#endif
+
         case '?':
             printf(ANSI_COLOR_RED "unknown option: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - !(opt.pos > 0)));
             printf("%s\n", ACVP_APP_HELP_MSG);
@@ -615,21 +610,22 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         return 1;
     }
 
-    if (print_ver) {
-        print_version_info(cfg->disable_fips == 0);
-        return 1;
-    }
-
-    if (ldt_manually_set && !cfg->hash) {
+    if (ldt_manually_set && (!cfg->hash && !cfg->testall)) {
         printf("Warning: max hash LDT size specified, but hash not enabled. Ignoring provided value...\n");
         acvp_sleep(2);
+    }
+
+    if (cfg->generic_vector_file && !(cfg->vector_req && cfg->vector_rsp)) {
+        printf(ANSI_COLOR_RED "Generic vector file option requires both --vector_req and --vector_rsp to be set\n" ANSI_COLOR_RESET);
+        printf("%s\n", ACVP_APP_HELP_MSG);
+        return 1;
     }
 
     //Many args do not need an alg specified. Todo: make cleaner
     if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put && !cfg->get_results
             && !cfg->get_expected && !cfg->manual_reg && !cfg->vector_upload
             && !cfg->delete && !cfg->cancel_session && !(cfg->resume_session && 
-            cfg->vector_req)) {
+            cfg->vector_req) && !cfg->output_version) {
         /* The user needs to select at least 1 algorithm */
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
         printf("%s\n", ACVP_APP_HELP_MSG);

@@ -1,5 +1,9 @@
 # Libacvp 2.0 Migration Guide
 
+## New in 2.2.0
+
+The included acvp_app application has had a restructure. For details on how to integrate a harness
+into the new structure, view app/implementations/README.md.
 
 ## About
 With the release of libacvp 2.0.0, various changes have been made that are not backwards-compatible

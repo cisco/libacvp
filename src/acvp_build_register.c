@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -88,6 +88,41 @@ static ACVP_RESULT acvp_lookup_prereqVals(JSON_Object *cap_obj, ACVP_CAPS_LIST *
     }
 
     return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_append_true_false_array(JSON_Object *parent, const char *name, int value) {
+    JSON_Value *val = NULL;
+    JSON_Array *arr = NULL;
+    if (json_object_has_value(parent, name)) {
+        return ACVP_INVALID_ARG;
+    }
+
+    json_object_set_value(parent, name, json_value_init_array());
+    val = json_object_get_value(parent, name);
+    if (!val) {
+        return ACVP_JSON_ERR;
+        }
+
+
+    arr = json_value_get_array(val);
+    if (!arr) {
+        return ACVP_JSON_ERR;
+    }
+
+    switch(value) {
+    case 0:
+        json_array_append_boolean(arr, 0);
+        return ACVP_SUCCESS;
+    case 1:
+        json_array_append_boolean(arr, 1);
+        return ACVP_SUCCESS;
+    case 2:
+        json_array_append_boolean(arr, 1);
+        json_array_append_boolean(arr, 0);
+        return ACVP_SUCCESS;
+    default:
+        return ACVP_INVALID_ARG;
+    }
 }
 
 static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
@@ -522,7 +557,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     } else {
         ivGenLabel = ACVP_AES_IVGEN_STR;
     }
-    switch (sym_cap->ivgen_source) {
+    switch (sym_cap->iv_src) {
     case ACVP_SYM_CIPH_IVGEN_SRC_INT:
         json_object_set_string(cap_obj, ivGenLabel, "internal");
         break;
@@ -541,7 +576,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         break;
     }
 
-        /*
+    /*
      * Set the salt generation source if applicable (XPN)
      */
     switch (sym_cap->salt_source) {
@@ -559,20 +594,18 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     }
 
     /* Set the IV generation mode if applicable */
-    if (sym_cap->ivgen_source == ACVP_SYM_CIPH_IVGEN_SRC_INT) {
-        switch (sym_cap->ivgen_mode) {
-        case ACVP_SYM_CIPH_IVGEN_MODE_821:
-            json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
-            break;
-        case ACVP_SYM_CIPH_IVGEN_MODE_822:
-            json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
-            break;
-        case ACVP_SYM_CIPH_IVGEN_MODE_NA:
-        case ACVP_SYM_CIPH_IVGEN_MODE_MAX:
-        default:
-            return ACVP_MISSING_ARG;
-            break;
-        }
+    switch (sym_cap->iv_mode) {
+    case ACVP_SYM_CIPH_IVGEN_MODE_821:
+        json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
+        break;
+    case ACVP_SYM_CIPH_IVGEN_MODE_822:
+        json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
+        break;
+    case ACVP_SYM_CIPH_IVGEN_MODE_BOTH:
+    case ACVP_SYM_CIPH_IVGEN_MODE_NA:
+    case ACVP_SYM_CIPH_IVGEN_MODE_MAX:
+    default:
+        break;
     }
 
     /*
@@ -625,6 +658,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         case ACVP_SUB_AES_KW:
         case ACVP_SUB_AES_KWP:
         case ACVP_SUB_AES_GMAC:
+        case ACVP_SUB_AES_FF1:
+        case ACVP_SUB_AES_FF3:
             return ACVP_MISSING_ARG;
         default:
             break;
@@ -677,6 +712,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_AES_KWP:
     case ACVP_AES_XTS:
     case ACVP_AES_XPN:
+    case ACVP_AES_FF1:
+    case ACVP_AES_FF3:
     case ACVP_HASH_SHA1:
     case ACVP_HASH_SHA224:
     case ACVP_HASH_SHA256:
@@ -755,6 +792,14 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_LMS_SIGGEN:
     case ACVP_LMS_SIGVER:
     case ACVP_LMS_KEYGEN:
+    case ACVP_ML_DSA_KEYGEN:
+    case ACVP_ML_DSA_SIGGEN:
+    case ACVP_ML_DSA_SIGVER:
+    case ACVP_ML_KEM_KEYGEN:
+    case ACVP_ML_KEM_XCAP:
+    case ACVP_SLH_DSA_KEYGEN:
+    case ACVP_SLH_DSA_SIGGEN:
+    case ACVP_SLH_DSA_SIGVER:
     case ACVP_CIPHER_END:
         break;
     case ACVP_AES_GCM:
@@ -794,14 +839,16 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         }
     } else if (sym_cap->payload_len.min || sym_cap->payload_len.max ||
                 sym_cap->payload_len.increment) {
-        json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
-        opts_arr = json_object_get_array(cap_obj, "payloadLen");
-        tmp_val = json_value_init_object();
-        tmp_obj = json_value_get_object(tmp_val);
-        json_object_set_number(tmp_obj, "max", sym_cap->payload_len.max);
-        json_object_set_number(tmp_obj, "min", sym_cap->payload_len.min);
-        json_object_set_number(tmp_obj, "increment", sym_cap->payload_len.increment);
-        json_array_append_value(opts_arr, tmp_val);
+        if (cap_entry->cipher != ACVP_AES_FF1 && cap_entry->cipher != ACVP_AES_FF3) {
+		    json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
+		    opts_arr = json_object_get_array(cap_obj, "payloadLen");
+		    tmp_val = json_value_init_object();
+		    tmp_obj = json_value_get_object(tmp_val);
+		    json_object_set_number(tmp_obj, "max", sym_cap->payload_len.max);
+		    json_object_set_number(tmp_obj, "min", sym_cap->payload_len.min);
+		    json_object_set_number(tmp_obj, "increment", sym_cap->payload_len.increment);
+		    json_array_append_value(opts_arr, tmp_val);
+        }
     } else {
         //For most AES ciphers, we need payload lengths. If TDES, we do not. 
         ACVP_SUB_AES checkAes = acvp_get_aes_alg(cap_entry->cipher);
@@ -825,6 +872,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         case ACVP_SUB_AES_CFB8:
         case ACVP_SUB_AES_CFB1:
         case ACVP_SUB_AES_GMAC:
+        case ACVP_SUB_AES_FF1:
+        case ACVP_SUB_AES_FF3:
         default:
             break;
         }
@@ -859,6 +908,28 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
             json_object_set_number(tmp_obj, "increment", sym_cap->du_len.increment);
             json_array_append_value(opts_arr, tmp_val);
         }
+    }
+
+    if (cap_entry->cipher == ACVP_AES_FF1 || cap_entry->cipher == ACVP_AES_FF3) {
+        json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "capabilities");
+        tmp_val = json_value_init_object();
+        tmp_obj = json_value_get_object(tmp_val);
+        json_object_set_number(tmp_obj, "maxLen", sym_cap->payload_len.max);
+        json_object_set_number(tmp_obj, "minLen", sym_cap->payload_len.min);
+        json_object_set_string(tmp_obj, "alphabet", sym_cap->alphabet);
+        json_object_set_number(tmp_obj, "radix", sym_cap->radix);
+        json_array_append_value(opts_arr, tmp_val);
+    }
+    if (cap_entry->cipher == ACVP_AES_FF1) {
+        json_object_set_value(cap_obj, "tweakLen", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "tweakLen");
+        tmp_val = json_value_init_object();
+        tmp_obj = json_value_get_object(tmp_val);
+        json_object_set_number(tmp_obj, "max", sym_cap->tweak_len.max);
+        json_object_set_number(tmp_obj, "min", sym_cap->tweak_len.min);
+        json_object_set_number(tmp_obj, "increment", sym_cap->tweak_len.increment);
+        json_array_append_value(opts_arr, tmp_val);
     }
 
     /*
@@ -1533,11 +1604,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
         if (!cap_entry->cap.ecdsa_sigver_cap) {
             return ACVP_NO_CAP;
         }
-        if (ecdsa_cap->component == ACVP_ECDSA_COMPONENT_MODE_YES) {
-            json_object_set_boolean(cap_obj, "componentTest", 1);
-        } else {
-            json_object_set_boolean(cap_obj, "componentTest", 0);
-        }
+
         current_curve = ecdsa_cap->curves;
         //add "universally" set hash algs here instead of later to be resliant to different combos of API calls
         while (current_curve) {
@@ -1686,11 +1753,14 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
 }
 
 static ACVP_RESULT acvp_build_eddsa_register_cap(ACVP_CTX *ctx,JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
-    JSON_Array *curves_arr = NULL;
+    JSON_Array *curves_arr = NULL, *context_len_arr = NULL;
     ACVP_PARAM_LIST *current_curve = NULL;
+    ACVP_SL_LIST *list = NULL;
     const char *revision = NULL, *tmp = NULL;
     ACVP_SUB_EDDSA alg;
     ACVP_EDDSA_CAP *eddsa_cap = NULL;
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
 
     alg = acvp_get_eddsa_alg(cap_entry->cipher);
     if (alg == 0) {
@@ -1752,6 +1822,23 @@ static ACVP_RESULT acvp_build_eddsa_register_cap(ACVP_CTX *ctx,JSON_Object *cap_
     if (alg == ACVP_SUB_EDDSA_SIGGEN || alg == ACVP_SUB_EDDSA_SIGVER) {
         json_object_set_boolean(cap_obj, "preHash", eddsa_cap->supports_prehash);
         json_object_set_boolean(cap_obj, "pure", eddsa_cap->supports_pure);
+    }
+
+    if (alg == ACVP_SUB_EDDSA_SIGGEN) {
+    /* key derivation key length list */
+        json_object_set_value(cap_obj, "contextLength", json_value_init_array());
+        context_len_arr = json_object_get_array(cap_obj, "contextLength");
+        val = json_value_init_object();
+        obj = json_value_get_object(val);
+        json_object_set_number(obj, "min", eddsa_cap->context_len.min);
+        json_object_set_number(obj, "max", eddsa_cap->context_len.max);
+        json_object_set_number(obj, "increment", eddsa_cap->context_len.increment);
+        json_array_append_value(context_len_arr, val);
+        list = eddsa_cap->context_len.values;
+        while (list) {
+            json_array_append_number(context_len_arr, list->length);
+            list = list->next;
+        }
     }
 
     return ACVP_SUCCESS;
@@ -4975,6 +5062,521 @@ err:
     return ACVP_INTERNAL_ERR;
 }
 
+static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
+                                                  JSON_Object *cap_obj,
+                                                  ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_arr = NULL, *cap_arr = NULL;
+    JSON_Value *temp_val = NULL, *temp2_val = NULL;
+    JSON_Object *temp_obj = NULL, *temp2_obj = NULL;
+    ACVP_RESULT result;
+    const char *revision = NULL, *mode = NULL, *tmp_str = NULL;
+    ACVP_ML_DSA_CAP *ml_dsa_cap = NULL;
+    ACVP_SUB_ML_DSA alg = 0;
+    ACVP_PARAM_LIST *sets = NULL;
+    ACVP_SL_LIST *lengths = NULL;
+    ACVP_ML_DSA_CAP_GROUP *group_obj = NULL;
+    int tf_val = 0, use_mu = 0;
+
+    if (!cap_entry) {
+        goto err;
+    }
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+    mode = acvp_lookup_cipher_mode_str(cap_entry->cipher);
+    if (!mode) {
+        goto err;
+    }
+    json_object_set_string(cap_obj, "mode", mode);
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) { return ACVP_INVALID_ARG; }
+    json_object_set_string(cap_obj, "revision", revision);
+
+    if (cap_entry->prereq_vals) {
+        result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+        if (result != ACVP_SUCCESS) { return result; }
+    }
+
+    alg = acvp_get_ml_dsa_alg(cap_entry->cipher);
+
+    switch (alg) {
+    case ACVP_SUB_ML_DSA_KEYGEN:
+        ml_dsa_cap = cap_entry->cap.ml_dsa_keygen_cap;
+        break;
+    case ACVP_SUB_ML_DSA_SIGGEN:
+        ml_dsa_cap = cap_entry->cap.ml_dsa_siggen_cap;
+        break;
+    case ACVP_SUB_ML_DSA_SIGVER:
+        ml_dsa_cap = cap_entry->cap.ml_dsa_sigver_cap;
+        break;
+    default:
+        goto err;
+    }
+
+    if (!ml_dsa_cap) {
+        return ACVP_NO_CAP;
+    }
+    group_obj = ml_dsa_cap->cap_group;
+    if (!group_obj) {
+        ACVP_LOG_ERR("Missing required parameters for ML-DSA registration");
+        return ACVP_NO_CAP;
+    }
+
+    switch (alg) {
+    case ACVP_SUB_ML_DSA_KEYGEN:
+        if (group_obj->param_sets) {
+            json_object_set_value(cap_obj, "parameterSets", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "parameterSets");
+            sets = group_obj->param_sets;
+            while (sets) {
+                tmp_str = acvp_lookup_ml_dsa_param_set_str(sets->param);
+                if (!tmp_str) {
+                    goto err;
+                }
+                json_array_append_string(temp_arr, tmp_str);
+                sets = sets->next;
+            }
+        } else {
+            ACVP_LOG_ERR("Missing required parameter sets for ML-DSA registration");
+            goto err;
+        }
+        break;
+    case ACVP_SUB_ML_DSA_SIGGEN:
+    case ACVP_SUB_ML_DSA_SIGVER:
+        if (alg == ACVP_SUB_ML_DSA_SIGGEN) {
+            tf_val = ml_dsa_cap->deterministic; /* Must change if ACVP_DETERMINISTIC_MODE changes */
+            if (acvp_append_true_false_array(cap_obj, "deterministic", tf_val) != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Error appending deterministic to ML-DSA JSON");
+                goto err;
+            }
+        }
+
+        json_object_set_value(cap_obj, "signatureInterfaces", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "signatureInterfaces");
+        switch(ml_dsa_cap->sig_interface) {
+        case ACVP_SIG_INTERFACE_INTERNAL:
+            json_array_append_string(temp_arr, "internal");
+            use_mu = 1;
+            break;
+        case ACVP_SIG_INTERFACE_EXTERNAL:
+            json_array_append_string(temp_arr, "external");
+            break;
+        case ACVP_SIG_INTERFACE_BOTH:
+            json_array_append_string(temp_arr, "internal");
+            json_array_append_string(temp_arr, "external");
+            use_mu = 1;
+            break;
+        case ACVP_SIG_INTERFACE_NOT_SET:
+        default:
+            ACVP_LOG_ERR("Invalid ML-DSA signature interface");
+            goto err;
+        }
+
+        if (use_mu) {
+            tf_val = ml_dsa_cap->mu - 1; /* Must change if ACVP_ML_DSA_MU changes */
+            if (acvp_append_true_false_array(cap_obj, "externalMu", tf_val) != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Error appending mu to ML-DSA JSON");
+                goto err;
+            }
+        }
+
+        json_object_set_value(cap_obj, "preHash", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "preHash");
+        switch (ml_dsa_cap->prehash) {
+        case ACVP_SIG_PREHASH_NO:
+            json_array_append_string(temp_arr, "pure");
+            break;
+        case ACVP_SIG_PREHASH_YES:
+            json_array_append_string(temp_arr, "preHash");
+            break;
+        case ACVP_SIG_PREHASH_BOTH:
+            json_array_append_string(temp_arr, "pure");
+            json_array_append_string(temp_arr, "preHash");
+            break;
+        case ACVP_SIG_PREHASH_NOT_SET:
+        default:
+            ACVP_LOG_ERR("Invalid ML-DSA preHash value");
+            goto err;
+        }
+
+        json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+        cap_arr = json_object_get_array(cap_obj, "capabilities");
+        while (group_obj) {
+            temp_val = json_value_init_object();
+            temp_obj = json_value_get_object(temp_val);
+            json_object_set_value(temp_obj, "parameterSets", json_value_init_array());
+            temp_arr = json_object_get_array(temp_obj, "parameterSets");
+            sets = group_obj->param_sets;
+            while (sets) {
+                tmp_str = acvp_lookup_ml_dsa_param_set_str(sets->param);
+                if (!tmp_str) {
+                    goto err;
+                }
+                json_array_append_string(temp_arr, tmp_str);
+                sets = sets->next;
+            }
+
+            json_object_set_value(temp_obj, "messageLength", json_value_init_array());
+            temp_arr = json_object_get_array(temp_obj, "messageLength");
+            temp2_val = json_value_init_object();
+            temp2_obj = json_value_get_object(temp2_val);
+            json_object_set_number(temp2_obj, "min", group_obj->msg_len.min);
+            json_object_set_number(temp2_obj, "max", group_obj->msg_len.max);
+            json_object_set_number(temp2_obj, "increment", group_obj->msg_len.increment);
+            json_array_append_value(temp_arr, temp2_val);
+            lengths = group_obj->msg_len.values;
+            while (lengths) {
+                json_array_append_number(temp_arr, lengths->length);
+                lengths = lengths->next;
+            }
+            json_array_append_value(cap_arr, temp_val);
+
+            if (group_obj->hash_algs) {
+                json_object_set_value(temp_obj, "hashAlgs", json_value_init_array());
+                temp_arr = json_object_get_array(temp_obj, "hashAlgs");
+                sets = group_obj->hash_algs;
+                while (sets) {
+                    tmp_str = acvp_lookup_hash_alg_name(sets->param);
+                    if (!tmp_str) {
+                        goto err;
+                    }
+                    json_array_append_string(temp_arr, tmp_str);
+                    sets = sets->next;
+                }
+            }
+
+            if (group_obj->context_len.values || group_obj->context_len.increment) {
+                json_object_set_value(temp_obj, "contextLength", json_value_init_array());
+                temp_arr = json_object_get_array(temp_obj, "contextLength");
+                if (group_obj->context_len.increment) {
+                    temp2_val = json_value_init_object();
+                    temp2_obj = json_value_get_object(temp2_val);
+                    json_object_set_number(temp2_obj, "min", group_obj->context_len.min);
+                    json_object_set_number(temp2_obj, "max", group_obj->context_len.max);
+                    json_object_set_number(temp2_obj, "increment", group_obj->context_len.increment);
+                    json_array_append_value(temp_arr, temp2_val);
+                }
+                if (group_obj->context_len.values) {
+                    lengths = group_obj->context_len.values;
+                    while (lengths) {
+                        json_array_append_number(temp_arr, lengths->length);
+                        lengths = lengths->next;
+                    }
+                }
+            }
+            group_obj = group_obj->next;
+        }
+        break;
+    default:
+        goto err;
+    }
+
+    return ACVP_SUCCESS;
+err:
+    ACVP_LOG_ERR("Error occurred when building ML-DSA JSON");
+    return ACVP_INTERNAL_ERR;
+}
+
+static ACVP_RESULT acvp_build_ml_kem_register_cap(ACVP_CTX *ctx,
+                                                  JSON_Object *cap_obj,
+                                                  ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_arr = NULL;
+    ACVP_RESULT result;
+    const char *revision = NULL, *mode = NULL, *tmp_str = NULL;
+    ACVP_ML_KEM_CAP *ml_kem_cap = NULL;
+    ACVP_SUB_ML_KEM alg = 0;
+    ACVP_PARAM_LIST *pl = NULL;
+    if (!cap_entry) {
+        goto err;
+    }
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+    mode = acvp_lookup_cipher_mode_str(cap_entry->cipher);
+    if (!mode) {
+        goto err;
+    }
+    json_object_set_string(cap_obj, "mode", mode);
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) { return ACVP_INVALID_ARG; }
+    json_object_set_string(cap_obj, "revision", revision);
+
+    if (cap_entry->prereq_vals) {
+        result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+        if (result != ACVP_SUCCESS) { return result; }
+    }
+
+    alg = acvp_get_ml_kem_alg(cap_entry->cipher);
+
+    switch (alg) {
+    case ACVP_SUB_ML_KEM_KEYGEN:
+        ml_kem_cap = cap_entry->cap.ml_kem_keygen_cap;
+        break;
+    case ACVP_SUB_ML_KEM_XCAP:
+        ml_kem_cap = cap_entry->cap.ml_kem_xcap_cap;
+        break;
+    default:
+        goto err;
+    }
+
+    if (!ml_kem_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (ml_kem_cap->param_sets) {
+        json_object_set_value(cap_obj, "parameterSets", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "parameterSets");
+        pl = ml_kem_cap->param_sets;
+        while (pl) {
+            tmp_str = acvp_lookup_ml_kem_param_set_str(pl->param);
+            if (!tmp_str) {
+                goto err;
+            }
+            json_array_append_string(temp_arr, tmp_str);
+            pl = pl->next;
+        }
+    } else {
+        ACVP_LOG_ERR("Missing required parameter sets for ML-KEM registration");
+        goto err;
+    }
+
+    if (alg == ACVP_SUB_ML_KEM_XCAP) {
+        if (ml_kem_cap->functions) {
+            json_object_set_value(cap_obj, "functions", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "functions");
+            pl = ml_kem_cap->functions;
+            while (pl) {
+                switch(pl->param) {
+                case ACVP_ML_KEM_FUNCTION_ENCAPSULATE:
+                    json_array_append_string(temp_arr, "encapsulation");
+                    break;
+                case ACVP_ML_KEM_FUNCTION_DECAPSULATE:
+                    json_array_append_string(temp_arr, "decapsulation");
+                    break;
+                case ACVP_ML_KEM_FUNCTION_NONE:
+                case ACVP_ML_KEM_FUNCTION_MAX:
+                default:
+                    goto err;
+                }
+                pl = pl->next;
+            }
+        } else {
+            ACVP_LOG_ERR("Missing required functions for ML-KEM registration");
+            goto err;
+        }
+    }
+
+    return ACVP_SUCCESS;
+err:
+    ACVP_LOG_ERR("Error occured when building ML-KEM JSON");
+    return ACVP_INTERNAL_ERR;
+}
+
+static ACVP_RESULT acvp_build_slh_dsa_register_cap(ACVP_CTX *ctx,
+                                                  JSON_Object *cap_obj,
+                                                  ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_arr = NULL, *cap_arr = NULL;
+    JSON_Value *temp_val = NULL, *temp2_val = NULL;
+    JSON_Object *temp_obj = NULL, *temp2_obj = NULL;
+    ACVP_RESULT result;
+    const char *revision = NULL, *mode = NULL, *tmp_str = NULL;
+    ACVP_SLH_DSA_CAP *slh_dsa_cap = NULL;
+    ACVP_SLH_DSA_CAP_GROUP *group_obj = NULL;
+    ACVP_SUB_SLH_DSA alg = 0;
+    ACVP_PARAM_LIST *sets = NULL;
+    ACVP_SL_LIST *lengths = NULL;
+    int tf_val = 0;
+
+    if (!cap_entry) {
+        goto err;
+    }
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+    mode = acvp_lookup_cipher_mode_str(cap_entry->cipher);
+    if (!mode) {
+        goto err;
+    }
+    json_object_set_string(cap_obj, "mode", mode);
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) { return ACVP_INVALID_ARG; }
+    json_object_set_string(cap_obj, "revision", revision);
+
+    if (cap_entry->prereq_vals) {
+        result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+        if (result != ACVP_SUCCESS) { return result; }
+    }
+
+    alg = acvp_get_slh_dsa_alg(cap_entry->cipher);
+
+    switch (alg) {
+    case ACVP_SUB_SLH_DSA_KEYGEN:
+        slh_dsa_cap = cap_entry->cap.slh_dsa_keygen_cap;
+        break;
+    case ACVP_SUB_SLH_DSA_SIGGEN:
+        slh_dsa_cap = cap_entry->cap.slh_dsa_siggen_cap;
+
+        break;
+    case ACVP_SUB_SLH_DSA_SIGVER:
+        slh_dsa_cap = cap_entry->cap.slh_dsa_sigver_cap;
+        break;
+    default:
+        goto err;
+    }
+
+    if (!slh_dsa_cap) {
+        return ACVP_NO_CAP;
+    }
+    group_obj = slh_dsa_cap->cap_group;
+
+    switch (alg) {
+    case ACVP_SUB_SLH_DSA_KEYGEN:
+        if (group_obj->param_sets) {
+            json_object_set_value(cap_obj, "parameterSets", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "parameterSets");
+            sets = group_obj->param_sets;
+            while (sets) {
+                tmp_str = acvp_lookup_slh_dsa_param_set_str(sets->param);
+                if (!tmp_str) {
+                    goto err;
+                }
+                json_array_append_string(temp_arr, tmp_str);
+                sets = sets->next;
+            }
+        } else {
+            ACVP_LOG_ERR("Missing required parameter sets for SLH-DSA registration");
+            goto err;
+        }
+        break;
+    case ACVP_SUB_SLH_DSA_SIGGEN:
+    case ACVP_SUB_SLH_DSA_SIGVER:
+        if (alg == ACVP_SUB_SLH_DSA_SIGGEN) {
+            tf_val = slh_dsa_cap->deterministic; /* Must change if ACVP_DETERMINISTIC_MODE changes */
+            if (acvp_append_true_false_array(cap_obj, "deterministic", tf_val) != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Error appending deterministic to SLH-DSA JSON");
+                goto err;
+            }
+        }
+
+        json_object_set_value(cap_obj, "signatureInterfaces", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "signatureInterfaces");
+        switch(slh_dsa_cap->sig_interface) {
+        case ACVP_SIG_INTERFACE_INTERNAL:
+            json_array_append_string(temp_arr, "internal");
+            break;
+        case ACVP_SIG_INTERFACE_EXTERNAL:
+            json_array_append_string(temp_arr, "external");
+            break;
+        case ACVP_SIG_INTERFACE_BOTH:
+            json_array_append_string(temp_arr, "internal");
+            json_array_append_string(temp_arr, "external");
+            break;
+        case ACVP_SIG_INTERFACE_NOT_SET:
+        default:
+            ACVP_LOG_ERR("Invalid SLH-DSA signature interface");
+            goto err;
+        }
+
+        json_object_set_value(cap_obj, "preHash", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "preHash");
+        switch (slh_dsa_cap->prehash) {
+        case ACVP_SIG_PREHASH_NO:
+            json_array_append_string(temp_arr, "pure");
+            break;
+        case ACVP_SIG_PREHASH_YES:
+            json_array_append_string(temp_arr, "preHash");
+            break;
+        case ACVP_SIG_PREHASH_BOTH:
+            json_array_append_string(temp_arr, "pure");
+            json_array_append_string(temp_arr, "preHash");
+            break;
+        case ACVP_SIG_PREHASH_NOT_SET:
+        default:
+            ACVP_LOG_ERR("Invalid SLH-DSA preHash value");
+            goto err;
+        }
+
+        json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+        cap_arr = json_object_get_array(cap_obj, "capabilities");
+        while (group_obj) {
+            temp_val = json_value_init_object();
+            temp_obj = json_value_get_object(temp_val);
+            json_object_set_value(temp_obj, "parameterSets", json_value_init_array());
+            temp_arr = json_object_get_array(temp_obj, "parameterSets");
+            sets = group_obj->param_sets;
+            while (sets) {
+                tmp_str = acvp_lookup_slh_dsa_param_set_str(sets->param);
+                if (!tmp_str) {
+                    goto err;
+                }
+                json_array_append_string(temp_arr, tmp_str);
+                sets = sets->next;
+            }
+
+            json_object_set_value(temp_obj, "messageLength", json_value_init_array());
+            temp_arr = json_object_get_array(temp_obj, "messageLength");
+            temp2_val = json_value_init_object();
+            temp2_obj = json_value_get_object(temp2_val);
+            json_object_set_number(temp2_obj, "min", group_obj->msg_len.min);
+            json_object_set_number(temp2_obj, "max", group_obj->msg_len.max);
+            json_object_set_number(temp2_obj, "increment", group_obj->msg_len.increment);
+            json_array_append_value(temp_arr, temp2_val);
+            lengths = group_obj->msg_len.values;
+            while (lengths) {
+                json_array_append_number(temp_arr, lengths->length);
+                lengths = lengths->next;
+            }
+            json_array_append_value(cap_arr, temp_val);
+
+            if (group_obj->hash_algs) {
+                json_object_set_value(temp_obj, "hashAlgs", json_value_init_array());
+                temp_arr = json_object_get_array(temp_obj, "hashAlgs");
+                sets = group_obj->hash_algs;
+                while (sets) {
+                    tmp_str = acvp_lookup_hash_alg_name(sets->param);
+                    if (!tmp_str) {
+                        goto err;
+                    }
+                    json_array_append_string(temp_arr, tmp_str);
+                    sets = sets->next;
+                }
+            }
+
+            if (group_obj->context_len.values || group_obj->context_len.increment) {
+                json_object_set_value(temp_obj, "contextLength", json_value_init_array());
+                temp_arr = json_object_get_array(temp_obj, "contextLength");
+                if (group_obj->context_len.increment) {
+                    temp2_val = json_value_init_object();
+                    temp2_obj = json_value_get_object(temp2_val);
+                    json_object_set_number(temp2_obj, "min", group_obj->context_len.min);
+                    json_object_set_number(temp2_obj, "max", group_obj->context_len.max);
+                    json_object_set_number(temp2_obj, "increment", group_obj->context_len.increment);
+                    json_array_append_value(temp_arr, temp2_val);
+                }
+                if (group_obj->context_len.values) {
+                    lengths = group_obj->context_len.values;
+                    while (lengths) {
+                        json_array_append_number(temp_arr, lengths->length);
+                        lengths = lengths->next;
+                    }
+                }
+            }
+            group_obj = group_obj->next;
+        }
+        break;
+    default:
+        goto err;
+    }
+
+    return ACVP_SUCCESS;
+err:
+    ACVP_LOG_ERR("Error occurred when building SLH-DSA JSON");
+    return ACVP_INTERNAL_ERR;
+}
+
 /*
  * This function builds the JSON register message that
  * will be sent to the ACVP server to advertised the crypto
@@ -4987,6 +5589,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
     JSON_Array *caps_arr = NULL;
     JSON_Object *cap_obj = NULL;
     const char *name = NULL, *mode = NULL;
+    int i = 0, skip_final_append = 0;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for build_test_session");
@@ -5027,28 +5630,45 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_AES_GCM:
             case ACVP_AES_XPN:
             case ACVP_AES_GMAC:
-            case ACVP_AES_CTR:
-                /**
-                 * If we need to test both internal and external IV gen, we need two different
-                 * algorithm registrations/vector sets currently.
-                 */
-                if (cap_entry->cap.sym_cap->ivgen_source == ACVP_SYM_CIPH_IVGEN_SRC_EITHER) {
-                    cap_entry->cap.sym_cap->ivgen_source = ACVP_SYM_CIPH_IVGEN_SRC_INT;
-                    rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
-                    if (rv != ACVP_SUCCESS) {
-                        cap_entry->cap.sym_cap->ivgen_source = ACVP_SYM_CIPH_IVGEN_SRC_EITHER;
-                        break;
+                skip_final_append = 1;
+                /* Can have multiple vector sets; one for each IV mode, and one for each IV source */
+                for (i = 0; i < ACVP_SYM_CIPH_IVGEN_MODE_MAX; i++) {
+                    /* If a given mode is enabled, we register that mode */
+                    if (cap_entry->cap.sym_cap->iv_mode_matrix[i][0] == 1) {
+                        if (!cap_val) {
+                            cap_val = json_value_init_object();
+                            cap_obj = json_value_get_object(cap_val);
+                        }
+
+                        cap_entry->cap.sym_cap->iv_mode = i;
+
+                        /* If src is either, build internal vector set registration, than external */
+                        if (cap_entry->cap.sym_cap->iv_mode_matrix[i][1] == ACVP_SYM_CIPH_IVGEN_SRC_EITHER) {
+                            cap_entry->cap.sym_cap->iv_src = ACVP_SYM_CIPH_IVGEN_SRC_INT;
+                            rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+                            if (rv != ACVP_SUCCESS) {
+                                break;
+                            }
+                            json_array_append_value(caps_arr, cap_val);
+                            cap_val = json_value_init_object();
+                            cap_obj = json_value_get_object(cap_val);
+
+                            cap_entry->cap.sym_cap->iv_src = ACVP_SYM_CIPH_IVGEN_SRC_EXT;
+                            rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+
+                        } else {
+                            /* Otherwise, just build the one as-is */
+                            cap_entry->cap.sym_cap->iv_src = cap_entry->cap.sym_cap->iv_mode_matrix[i][1];
+                            rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+                        }
+
+                        /* Since we aren't sure how many appends we are doing, just append here and skip the final */
+                        json_array_append_value(caps_arr, cap_val);
+                        cap_val = NULL;
                     }
-                    json_array_append_value(caps_arr, cap_val);
-                    cap_val = json_value_init_object();
-                    cap_obj = json_value_get_object(cap_val);
-                    cap_entry->cap.sym_cap->ivgen_source = ACVP_SYM_CIPH_IVGEN_SRC_EXT;
-                    rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
-                    cap_entry->cap.sym_cap->ivgen_source = ACVP_SYM_CIPH_IVGEN_SRC_EITHER;
-                } else {
-                    rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
                 }
                 break;
+            case ACVP_AES_CTR:
             case ACVP_AES_GCM_SIV:
             case ACVP_AES_CCM:
             case ACVP_AES_ECB:
@@ -5063,6 +5683,8 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_AES_KW:
             case ACVP_AES_KWP:
             case ACVP_AES_XTS:
+            case ACVP_AES_FF1:
+            case ACVP_AES_FF3:
             case ACVP_TDES_ECB:
             case ACVP_TDES_CBC:
             case ACVP_TDES_CTR:
@@ -5188,23 +5810,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 }
                 break;
             case ACVP_ECDSA_SIGVER:
-                /* If component_test = BOTH, we need two registrations */
-                if (cap_entry->cap.ecdsa_sigver_cap->component == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
-                    cap_entry->cap.ecdsa_sigver_cap->component = ACVP_ECDSA_COMPONENT_MODE_NO;
-                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
-                    if (rv != ACVP_SUCCESS) {
-                        cap_entry->cap.ecdsa_sigver_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
-                        break;
-                    }
-                    json_array_append_value(caps_arr, cap_val);
-                    cap_val = json_value_init_object();
-                    cap_obj = json_value_get_object(cap_val);
-                    cap_entry->cap.ecdsa_sigver_cap->component = ACVP_ECDSA_COMPONENT_MODE_YES;
-                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
-                    cap_entry->cap.ecdsa_sigver_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
-                } else {
-                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
-                }
+                rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
                 break;
             case ACVP_EDDSA_KEYGEN:
             case ACVP_EDDSA_KEYVER:
@@ -5307,6 +5913,20 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_LMS_SIGVER:
                 rv = acvp_build_lms_register_cap(ctx, cap_obj, cap_entry);
                 break;
+            case ACVP_ML_DSA_KEYGEN:
+            case ACVP_ML_DSA_SIGGEN:
+            case ACVP_ML_DSA_SIGVER:
+                rv = acvp_build_ml_dsa_register_cap(ctx, cap_obj, cap_entry);
+                break;
+            case ACVP_ML_KEM_KEYGEN:
+            case ACVP_ML_KEM_XCAP:
+                rv = acvp_build_ml_kem_register_cap(ctx, cap_obj, cap_entry);
+                break;
+            case ACVP_SLH_DSA_KEYGEN:
+            case ACVP_SLH_DSA_SIGGEN:
+            case ACVP_SLH_DSA_SIGVER:
+                rv = acvp_build_slh_dsa_register_cap(ctx, cap_obj, cap_entry);
+                break;
             case ACVP_CIPHER_START:
             case ACVP_CIPHER_END:
             default:
@@ -5327,7 +5947,15 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
              * Now that we've built up the JSON for this capability,
              * add it to the array of capabilities on the register message.
              */
-            json_array_append_value(caps_arr, cap_val);
+            if (!skip_final_append) {
+                json_array_append_value(caps_arr, cap_val);
+            } else {
+                skip_final_append = 0;
+                if (cap_val) {
+                    json_value_free(cap_val);
+                    cap_val = NULL;
+                }
+            }
 
             /* Advance to next cap entry */
             cap_entry = cap_entry->next;

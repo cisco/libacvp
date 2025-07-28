@@ -136,7 +136,7 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -385,7 +385,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     }
     rv = acvp_bin_to_hexstr(stc->c_early_traffic_secret, stc->cets_len, tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (client early traffic secret)");
+        ACVP_LOG_ERR("Hex conversion failure (client early traffic secret)");
         goto err;
     }
     json_object_set_string(tc_rsp, "clientEarlyTrafficSecret", tmp);
@@ -399,7 +399,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     }
     rv = acvp_bin_to_hexstr(stc->early_expt_master_secret, stc->eems_len, tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (early export master secret)");
+        ACVP_LOG_ERR("Hex conversion failure (early export master secret)");
         goto err;
     }
     json_object_set_string(tc_rsp, "earlyExporterMasterSecret", tmp);
@@ -413,7 +413,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     }
     rv = acvp_bin_to_hexstr(stc->c_hs_traffic_secret, stc->chts_len, tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (client handshake traffic secret)");
+        ACVP_LOG_ERR("Hex conversion failure (client handshake traffic secret)");
         goto err;
     }
     json_object_set_string(tc_rsp, "clientHandshakeTrafficSecret", tmp);
@@ -427,7 +427,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     }
     rv = acvp_bin_to_hexstr(stc->s_hs_traffic_secret, stc->shts_len, tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (server handshake traffic secret)");
+        ACVP_LOG_ERR("Hex conversion failure (server handshake traffic secret)");
         goto err;
     }
     json_object_set_string(tc_rsp, "serverHandshakeTrafficSecret", tmp);
@@ -441,7 +441,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     }
     rv = acvp_bin_to_hexstr(stc->c_app_traffic_secret, stc->cats_len, tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (client app traffic secret)");
+        ACVP_LOG_ERR("Hex conversion failure (client app traffic secret)");
         goto err;
     }
     json_object_set_string(tc_rsp, "clientApplicationTrafficSecret", tmp);
@@ -456,7 +456,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     }
     rv = acvp_bin_to_hexstr(stc->s_app_traffic_secret, stc->sats_len, tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (server app traffic secret)");
+        ACVP_LOG_ERR("Hex conversion failure (server app traffic secret)");
         goto err;
     }
     json_object_set_string(tc_rsp, "serverApplicationTrafficSecret", tmp);
@@ -471,7 +471,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     }
     rv = acvp_bin_to_hexstr(stc->expt_master_secret, stc->ems_len, tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (exporter master secret)");
+        ACVP_LOG_ERR("Hex conversion failure (exporter master secret)");
         goto err;
     }
     json_object_set_string(tc_rsp, "exporterMasterSecret", tmp);
@@ -485,7 +485,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     }
     rv = acvp_bin_to_hexstr(stc->resume_master_secret, stc->rms_len, tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (resumption master secret)");
+        ACVP_LOG_ERR("Hex conversion failure (resumption master secret)");
         goto err;
     }
     json_object_set_string(tc_rsp, "resumptionMasterSecret", tmp);

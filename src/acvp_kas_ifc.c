@@ -40,14 +40,14 @@ static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
     if (stc->kas_role == ACVP_KAS_IFC_INITIATOR) {
         rv = acvp_bin_to_hexstr(stc->iut_ct_z, stc->iut_ct_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (iut_ct_z)");
+            ACVP_LOG_ERR("Hex conversion failure (iut_ct_z)");
             goto end;
         }
         json_object_set_string(tc_rsp, "iutC", tmp);
 
         rv = acvp_bin_to_hexstr(stc->iut_pt_z, stc->iut_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (iut_pt_z)");
+            ACVP_LOG_ERR("Hex conversion failure (iut_pt_z)");
             goto end;
         }
         if (stc->md == ACVP_NO_SHA) {
@@ -65,14 +65,14 @@ static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
         if (stc->scheme == ACVP_KAS_IFC_KAS2) {
             rv = acvp_bin_to_hexstr(stc->iut_ct_z, stc->iut_ct_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (iut_ct_z)");
+                ACVP_LOG_ERR("Hex conversion failure (iut_ct_z)");
                 goto end;
             }
             json_object_set_string(tc_rsp, "iutC", tmp);
 
             rv = acvp_bin_to_hexstr(stc->iut_pt_z, stc->iut_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (iut_pt_z)");
+                ACVP_LOG_ERR("Hex conversion failure (iut_pt_z)");
                 goto end;
             }
             if (stc->md == ACVP_NO_SHA) {
@@ -83,7 +83,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
         } else {
             rv = acvp_bin_to_hexstr(stc->server_pt_z, stc->server_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (server_pt_z)");
+                ACVP_LOG_ERR("Hex conversion failure (server_pt_z)");
                 goto end;
             }
             if (stc->md == ACVP_NO_SHA) {
@@ -114,7 +114,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
         }
         rv = acvp_bin_to_hexstr((const unsigned char *)merge, z_len, tmp, ACVP_KAS_IFC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (KAS2 combined Z)");
+            ACVP_LOG_ERR("Hex conversion failure (KAS2 combined Z)");
             goto end;
         }
         json_object_set_string(tc_rsp, "z", tmp);
@@ -419,7 +419,7 @@ static ACVP_KAS_IFC_TEST_TYPE read_test_type(const char *str) {
     return 0;
 }
 
-static ACVP_RSA_KEY_FORMAT read_key_gen(const char *str){
+static ACVP_KAS_IFC_KEYGEN read_key_gen(const char *str){
     int diff;
 
     strcmp_s("rsakpg1-basic", 13, str, &diff);
@@ -962,7 +962,7 @@ ACVP_RESULT acvp_kas_ifc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 

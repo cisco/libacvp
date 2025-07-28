@@ -65,7 +65,7 @@ static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
     if (direction_verify) {
         rv = acvp_hexstr_to_bin(mac, stc->mac, ACVP_CMAC_MACLEN_MAX, (int *)&(stc->mac_len));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (mac)");
+            ACVP_LOG_ERR("Hex conversion failure (mac)");
             return rv;
         }
     }
@@ -77,30 +77,30 @@ static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
 
     rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_CMAC_MSGLEN_MAX_STR, NULL);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex converstion failure (msg)");
+        ACVP_LOG_ERR("Hex conversion failure (msg)");
         return rv;
     }
 
     if (alg_id == ACVP_CMAC_AES) {
         rv = acvp_hexstr_to_bin(key, stc->key, ACVP_CMAC_KEY_MAX, (int *)&(stc->key_len));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (key)");
+            ACVP_LOG_ERR("Hex conversion failure (key)");
             return rv;
         }
     } else if (alg_id == ACVP_CMAC_TDES) {
         rv = acvp_hexstr_to_bin(key, stc->key, ACVP_CMAC_KEY_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (key1)");
+            ACVP_LOG_ERR("Hex conversion failure (key1)");
             return rv;
         }
         rv = acvp_hexstr_to_bin(key2, stc->key2, ACVP_CMAC_KEY_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (key2)");
+            ACVP_LOG_ERR("Hex conversion failure (key2)");
             return rv;
         }
         rv = acvp_hexstr_to_bin(key3, stc->key3, ACVP_CMAC_KEY_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (key3)");
+            ACVP_LOG_ERR("Hex conversion failure (key3)");
             return rv;
         }
     }
@@ -137,7 +137,7 @@ static ACVP_RESULT acvp_cmac_output_tc(ACVP_CTX *ctx, ACVP_CMAC_TC *stc, JSON_Ob
     } else {
         rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp, ACVP_CMAC_MACLEN_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (mac)");
+            ACVP_LOG_ERR("Hex conversion failure (mac)");
             goto end;
         }
         json_object_set_string(tc_rsp, "mac", tmp);
@@ -208,7 +208,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
 
     if (!alg_str) {
-        ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
+        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return ACVP_MALFORMED_JSON;
     }
 
@@ -222,12 +222,12 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id == 0) {
-        ACVP_LOG_ERR("ERROR: unsupported algorithm (%s)", alg_str);
+        ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
         return ACVP_UNSUPPORTED_OP;
     }
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
-        ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
+        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return ACVP_UNSUPPORTED_OP;
     }
 
@@ -236,7 +236,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -456,7 +456,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             /* Process the current test vector... */
             if ((cap->crypto_handler)(&tc)) {
-                ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                ACVP_LOG_ERR("crypto module failed the operation");
                 acvp_cmac_release_tc(&stc);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
@@ -468,7 +468,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             rv = acvp_cmac_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure in hash module");
                 acvp_cmac_release_tc(&stc);
                 json_value_free(r_tval);
                 goto err;

@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -37,10 +37,10 @@ static ACVP_RESULT acvp_lms_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_LM
 
     switch (mode) {
     case ACVP_SUB_LMS_KEYGEN:
-        memzero_s(tmp, ACVP_KTS_IFC_STR_MAX);
+        memzero_s(tmp, ACVP_LMS_TMP_MAX);
         rv = acvp_bin_to_hexstr(stc->pub_key, stc->pub_key_len, tmp, ACVP_LMS_TMP_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (publicKey)");
+            ACVP_LOG_ERR("Hex conversion failure (publicKey)");
             goto end;
         }
         json_object_set_string(tc_rsp, "publicKey", tmp);
@@ -49,7 +49,7 @@ static ACVP_RESULT acvp_lms_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_LM
         /* This also needs publicKey in the test group response, handled elsewhere */
         rv = acvp_bin_to_hexstr(stc->sig, stc->sig_len, tmp, ACVP_LMS_TMP_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (signature)");
+            ACVP_LOG_ERR("Hex conversion failure (signature)");
             goto end;
         }
         json_object_set_string(tc_rsp, "signature", tmp);
@@ -257,7 +257,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct.");
         return rv;
     }
 
@@ -440,7 +440,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 char *tmp = calloc(ACVP_LMS_TMP_MAX + 1, sizeof(char));
                 rv = acvp_bin_to_hexstr(stc.pub_key, stc.pub_key_len, tmp, ACVP_LMS_TMP_MAX);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("hex conversion failure (pub_key)");
+                    ACVP_LOG_ERR("Hex conversion failure (pub_key)");
                     free(tmp);
                     json_value_free(r_tval);
                     goto err;

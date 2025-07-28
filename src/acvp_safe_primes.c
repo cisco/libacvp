@@ -29,7 +29,7 @@ static ACVP_SAFE_PRIMES_TEST_TYPE read_test_type(const char *str) {
     return 0;
 }
 
-static ACVP_SAFE_PRIMES_PARAM acvp_convert_dgm_string(const char *dgm_str)
+static ACVP_SAFE_PRIMES_MODE acvp_convert_dgm_string(const char *dgm_str)
 {
     int diff = 0;
 
@@ -93,7 +93,7 @@ static ACVP_RESULT acvp_safe_primes_output_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_SAFE_PRIMES_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->x, stc->xlen, tmp, ACVP_SAFE_PRIMES_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (x)");
+            ACVP_LOG_ERR("Hex conversion failure (x)");
             goto end;
         }
         json_object_set_string(tc_rsp, "x", tmp);
@@ -101,7 +101,7 @@ static ACVP_RESULT acvp_safe_primes_output_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_SAFE_PRIMES_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->y, stc->ylen, tmp, ACVP_SAFE_PRIMES_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (y)");
+            ACVP_LOG_ERR("Hex conversion failure (y)");
             goto end;
         }
         json_object_set_string(tc_rsp, "y", tmp);
@@ -118,7 +118,7 @@ static ACVP_RESULT acvp_safe_primes_init_tc(ACVP_CTX *ctx,
                                             int tc_id,
                                             ACVP_CIPHER alg_id,
                                             ACVP_SAFE_PRIMES_TC *stc,
-                                            ACVP_SAFE_PRIMES_PARAM dgm,
+                                            ACVP_SAFE_PRIMES_MODE dgm,
                                             const char *x,
                                             const char *y,
                                             ACVP_SAFE_PRIMES_TEST_TYPE test_type) {
@@ -178,7 +178,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *alg_str = NULL, *dgm_str = NULL, *test_type_str = NULL;
     char *json_result = NULL;
     ACVP_CIPHER alg_id;
-    ACVP_SAFE_PRIMES_PARAM dgm;
+    ACVP_SAFE_PRIMES_MODE dgm;
     ACVP_SAFE_PRIMES_TEST_TYPE test_type;
     const char *mode_str = NULL, *x = NULL, *y = NULL;
     unsigned int i, g_cnt;
@@ -226,7 +226,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 

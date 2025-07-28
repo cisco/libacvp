@@ -7,20 +7,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "acvp_app", "resources\acvp_
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		fom|x64 = fom|x64
-		fom|x86 = fom|x86
-		nofom|x64 = nofom|x64
-		nofom|x86 = nofom|x86
+		openssl3|x64 = openssl3|x64
+		openssl3|x86 = openssl3|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom|x64.ActiveCfg = fom|x64
-		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom|x64.Build.0 = fom|x64
-		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom|x86.ActiveCfg = fom|Win32
-		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom|x86.Build.0 = fom|Win32
-		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom|x64.ActiveCfg = nofom|x64
-		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom|x64.Build.0 = nofom|x64
-		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom|x86.ActiveCfg = nofom|Win32
-		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom|x86.Build.0 = nofom|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.openssl3|x64.ActiveCfg = openssl3|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.openssl3|x64.Build.0 = openssl3|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.openssl3|x86.ActiveCfg = openssl3|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.openssl3|x86.Build.0 = openssl3|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

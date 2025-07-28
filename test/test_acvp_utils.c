@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2020, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -12,7 +12,7 @@
 #include "ut_common.h"
 #include "acvp/acvp_lcl.h"
 
-ACVP_CTX *ctx;
+static ACVP_CTX *ctx;
 
 /*
  * Try to pass variety of parms to acvp_log_msg

@@ -29,7 +29,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV2_
 
     rv = acvp_bin_to_hexstr(stc->s_key_seed, stc->key_out_len, tmp, ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (s_key_seed)");
+        ACVP_LOG_ERR("Hex conversion failure (s_key_seed)");
         goto err;
     }
     json_object_set_string(tc_rsp, "sKeySeed", (const char *)tmp);
@@ -37,7 +37,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV2_
 
     rv = acvp_bin_to_hexstr(stc->s_key_seed_rekey, stc->key_out_len, tmp, ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (s_key_seed_rekey)");
+        ACVP_LOG_ERR("Hex conversion failure (s_key_seed_rekey)");
         goto err;
     }
     json_object_set_string(tc_rsp, "sKeySeedReKey", (const char *)tmp);
@@ -48,7 +48,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV2_
     tmp = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX, sizeof(char));
     rv = acvp_bin_to_hexstr(stc->derived_keying_material, stc->keying_material_len, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (derived_keying_material)");
+        ACVP_LOG_ERR("Hex conversion failure (derived_keying_material)");
         goto err;
     }
     json_object_set_string(tc_rsp, "derivedKeyingMaterial", (const char *)tmp);
@@ -56,7 +56,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV2_
 
     rv = acvp_bin_to_hexstr(stc->derived_keying_material_child, stc->keying_material_len, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (derived_keying_material)");
+        ACVP_LOG_ERR("Hex conversion failure (derived_keying_material)");
         goto err;
     }
     json_object_set_string(tc_rsp, "derivedKeyingMaterialChild", (const char *)tmp);
@@ -64,7 +64,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV2_
 
     rv = acvp_bin_to_hexstr(stc->derived_keying_material_child_dh, stc->keying_material_len, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (derived_keying_material)");
+        ACVP_LOG_ERR("Hex conversion failure (derived_keying_material)");
         goto err;
     }
     json_object_set_string(tc_rsp, "derivedKeyingMaterialDh", (const char *)tmp);
@@ -272,7 +272,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 

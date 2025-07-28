@@ -37,7 +37,7 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc(ACVP_CTX *ctx,
 
     rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (pix)");
+        ACVP_LOG_ERR("Hex conversion failure (pix)");
         goto end;
     }
     json_object_set_string(tc_rsp, "publicIutX", tmp);
@@ -45,7 +45,7 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (piy)");
+        ACVP_LOG_ERR("Hex conversion failure (piy)");
         goto end;
     }
     json_object_set_string(tc_rsp, "publicIutY", tmp);
@@ -53,7 +53,7 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->z, stc->zlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (Z)");
+        ACVP_LOG_ERR("Hex conversion failure (Z)");
         goto end;
     }
     json_object_set_string(tc_rsp, "z", tmp);
@@ -88,7 +88,7 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (Z)");
+            ACVP_LOG_ERR("Hex conversion failure (Z)");
             goto end;
         }
         memcmp_s(stc->chash, ACVP_KAS_ECC_BYTE_MAX, stc->z, stc->zlen, &diff);
@@ -103,7 +103,7 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (pix)");
+        ACVP_LOG_ERR("Hex conversion failure (pix)");
         goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPublicIutX", tmp);
@@ -111,7 +111,7 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (piy)");
+        ACVP_LOG_ERR("Hex conversion failure (piy)");
         goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPublicIutY", tmp);
@@ -119,7 +119,7 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->d, stc->dlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (d)");
+        ACVP_LOG_ERR("Hex conversion failure (d)");
         goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPrivateIut", tmp);
@@ -127,7 +127,7 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (Z)");
+        ACVP_LOG_ERR("Hex conversion failure (Z)");
         goto end;
     }
     json_object_set_string(tc_rsp, "hashZIut", tmp);
@@ -770,7 +770,7 @@ ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -890,7 +890,7 @@ static ACVP_RESULT acvp_kas_ecc_output_ssc_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (Z)");
+            ACVP_LOG_ERR("Hex conversion failure (Z)");
             goto end;
         }
         memcmp_s(stc->chash, ACVP_KAS_ECC_BYTE_MAX, stc->z, stc->zlen, &diff);
@@ -904,7 +904,7 @@ static ACVP_RESULT acvp_kas_ecc_output_ssc_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (pix)");
+            ACVP_LOG_ERR("Hex conversion failure (pix)");
             goto end;
         }
         json_object_set_string(tc_rsp, "ephemeralPublicIutX", tmp);
@@ -912,7 +912,7 @@ static ACVP_RESULT acvp_kas_ecc_output_ssc_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (piy)");
+            ACVP_LOG_ERR("Hex conversion failure (piy)");
             goto end;
         }
         json_object_set_string(tc_rsp, "ephemeralPublicIutY", tmp);
@@ -920,7 +920,7 @@ static ACVP_RESULT acvp_kas_ecc_output_ssc_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->d, stc->dlen, tmp, ACVP_KAS_ECC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (d)");
+            ACVP_LOG_ERR("Hex conversion failure (d)");
             goto end;
         }
         json_object_set_string(tc_rsp, "ephemeralPrivateIut", tmp);
@@ -928,7 +928,7 @@ static ACVP_RESULT acvp_kas_ecc_output_ssc_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (Z)");
+            ACVP_LOG_ERR("Hex conversion failure (Z)");
             goto end;
         }
         if (stc->md == ACVP_NO_SHA) {
@@ -1283,7 +1283,7 @@ ACVP_RESULT acvp_kas_ecc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 

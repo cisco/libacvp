@@ -39,7 +39,7 @@ static ACVP_RESULT acvp_kts_ifc_output_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_KTS_IFC_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_KTS_IFC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (iutC)");
+            ACVP_LOG_ERR("Hex conversion failure (iutC)");
             goto end;
         }
 
@@ -49,7 +49,7 @@ static ACVP_RESULT acvp_kts_ifc_output_tc(ACVP_CTX *ctx,
     memzero_s(tmp, ACVP_KTS_IFC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_KTS_IFC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (dkm)");
+        ACVP_LOG_ERR("Hex conversion failure (dkm)");
         goto end;
     }
 
@@ -205,21 +205,21 @@ static ACVP_KTS_IFC_TEST_TYPE read_test_type(const char *str) {
     return 0;
 }
 
-static ACVP_RSA_KEY_FORMAT read_key_gen(const char *str){
+static ACVP_KTS_IFC_KEYGEN read_key_gen(const char *str){
     int diff;
 
     strcmp_s("rsakpg1-basic", 13, str, &diff);
-    if (!diff) return ACVP_KAS_IFC_RSAKPG1_BASIC;
+    if (!diff) return ACVP_KTS_IFC_RSAKPG1_BASIC;
     strcmp_s("rsakpg1-crt", 11, str, &diff);
-    if (!diff) return ACVP_KAS_IFC_RSAKPG1_CRT;
+    if (!diff) return ACVP_KTS_IFC_RSAKPG1_CRT;
     strcmp_s("rsakpg1-prime-factor", 20, str, &diff);
-    if (!diff) return ACVP_KAS_IFC_RSAKPG1_PRIME_FACTOR;
+    if (!diff) return ACVP_KTS_IFC_RSAKPG1_PRIME_FACTOR;
     strcmp_s("rsakpg2-basic", 13, str, &diff);
-    if (!diff) return ACVP_KAS_IFC_RSAKPG2_BASIC;
+    if (!diff) return ACVP_KTS_IFC_RSAKPG2_BASIC;
     strcmp_s("rsakpg2-crt", 11, str, &diff);
-    if (!diff) return ACVP_KAS_IFC_RSAKPG2_CRT;
+    if (!diff) return ACVP_KTS_IFC_RSAKPG2_CRT;
     strcmp_s("rsakpg2-prime-factor", 20, str, &diff);
-    if (!diff) return ACVP_KAS_IFC_RSAKPG2_PRIME_FACTOR;
+    if (!diff) return ACVP_KTS_IFC_RSAKPG2_PRIME_FACTOR;
 
     return 0;
 }
@@ -668,7 +668,7 @@ ACVP_RESULT acvp_kts_ifc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 

@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -849,6 +849,106 @@ const char *acvp_lookup_lmots_mode_str(ACVP_LMOTS_MODE mode) {
     return NULL;
 }
 
+#define ACVP_ML_DSA_PARAM_SET_STR_MAX 9
+static struct acvp_enum_string_pair ml_dsa_param_set_tbl[] = {
+    { ACVP_ML_DSA_PARAM_SET_ML_DSA_44, "ML-DSA-44"},
+    { ACVP_ML_DSA_PARAM_SET_ML_DSA_65, "ML-DSA-65"},
+    { ACVP_ML_DSA_PARAM_SET_ML_DSA_87, "ML-DSA-87"}
+};
+
+static int ml_dsa_param_set_tbl_len = sizeof(ml_dsa_param_set_tbl) / sizeof(struct acvp_enum_string_pair);
+
+ACVP_ML_DSA_PARAM_SET acvp_lookup_ml_dsa_param_set(const char *str) {
+    int diff = 1, i = 0;
+    for (i = 0; i < ml_dsa_param_set_tbl_len; i++) {
+        strcmp_s(ml_dsa_param_set_tbl[i].string, strnlen_s(ml_dsa_param_set_tbl[i].string, ACVP_ML_DSA_PARAM_SET_STR_MAX), str, &diff);
+        if (!diff) {
+            return ml_dsa_param_set_tbl[i].enum_value;
+        }
+    }
+    return 0;
+}
+
+const char *acvp_lookup_ml_dsa_param_set_str(ACVP_ML_DSA_PARAM_SET param_set) {
+    int i = 0;
+    for (i = 0; i < ml_dsa_param_set_tbl_len; i++) {
+        if (param_set == ml_dsa_param_set_tbl[i].enum_value) {
+            return ml_dsa_param_set_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
+#define ACVP_ML_KEM_PARAM_SET_STR_MAX 11
+static struct acvp_enum_string_pair ml_kem_param_set_tbl[] = {
+    { ACVP_ML_KEM_PARAM_SET_ML_KEM_512, "ML-KEM-512"},
+    { ACVP_ML_KEM_PARAM_SET_ML_KEM_768, "ML-KEM-768"},
+    { ACVP_ML_KEM_PARAM_SET_ML_KEM_1024, "ML-KEM-1024"}
+};
+
+static int ml_kem_param_set_tbl_len = sizeof(ml_kem_param_set_tbl) / sizeof(struct acvp_enum_string_pair);
+
+ACVP_ML_KEM_PARAM_SET acvp_lookup_ml_kem_param_set(const char *str) {
+    int diff = 1, i = 0;
+    for (i = 0; i < ml_kem_param_set_tbl_len; i++) {
+        strcmp_s(ml_kem_param_set_tbl[i].string, strnlen_s(ml_kem_param_set_tbl[i].string, ACVP_ML_KEM_PARAM_SET_STR_MAX), str, &diff);
+        if (!diff) {
+            return ml_kem_param_set_tbl[i].enum_value;
+        }
+    }
+    return 0;
+}
+
+const char *acvp_lookup_ml_kem_param_set_str(ACVP_ML_KEM_PARAM_SET param_set) {
+    int i = 0;
+    for (i = 0; i < ml_kem_param_set_tbl_len; i++) {
+        if (param_set == ml_kem_param_set_tbl[i].enum_value) {
+            return ml_kem_param_set_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
+#define ACVP_SLH_DSA_PARAM_SET_STR_MAX 18
+static struct acvp_enum_string_pair slh_dsa_param_set_tbl[] = {
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_128S, "SLH-DSA-SHA2-128s"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_128F, "SLH-DSA-SHA2-128f"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_192S, "SLH-DSA-SHA2-192s"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_192F, "SLH-DSA-SHA2-192f"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_256S, "SLH-DSA-SHA2-256s"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHA2_256F, "SLH-DSA-SHA2-256f"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_128S, "SLH-DSA-SHAKE-128s"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_128F, "SLH-DSA-SHAKE-128f"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_192S, "SLH-DSA-SHAKE-192s"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_192F, "SLH-DSA-SHAKE-192f"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_256S, "SLH-DSA-SHAKE-256s"},
+    { ACVP_SLH_DSA_PARAM_SET_SLH_DSA_SHAKE_256F, "SLH-DSA-SHAKE-256f"}
+
+};
+
+static int slh_dsa_param_set_tbl_len = sizeof(slh_dsa_param_set_tbl) / sizeof(struct acvp_enum_string_pair);
+
+ACVP_SLH_DSA_PARAM_SET acvp_lookup_slh_dsa_param_set(const char *str) {
+    int diff = 1, i = 0;
+    for (i = 0; i < slh_dsa_param_set_tbl_len; i++) {
+        strcmp_s(slh_dsa_param_set_tbl[i].string, strnlen_s(slh_dsa_param_set_tbl[i].string, ACVP_SLH_DSA_PARAM_SET_STR_MAX), str, &diff);
+        if (!diff) {
+            return slh_dsa_param_set_tbl[i].enum_value;
+        }
+    }
+    return 0;
+}
+
+const char *acvp_lookup_slh_dsa_param_set_str(ACVP_SLH_DSA_PARAM_SET param_set) {
+    int i = 0;
+    for (i = 0; i < slh_dsa_param_set_tbl_len; i++) {
+        if (param_set == slh_dsa_param_set_tbl[i].enum_value) {
+            return slh_dsa_param_set_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
 /* This seems too small to dictate having its own table/function, but future expandability may be useful */
 static struct acvp_enum_string_pair rsa_key_format_tbl[] = {
     { ACVP_RSA_KEY_FORMAT_STANDARD, "standard" },
@@ -1061,6 +1161,28 @@ ACVP_DRBG_CAP_GROUP *acvp_create_drbg_group(ACVP_DRBG_MODE_LIST *mode, int group
     return grp;
 }
 
+ACVP_ML_DSA_CAP_GROUP *acvp_locate_ml_dsa_cap_group(ACVP_ML_DSA_CAP *cap, unsigned int id) {
+    ACVP_ML_DSA_CAP_GROUP *group = cap->cap_group;
+    while (group) {
+        if (group->group_id == id) {
+            return group;
+        }
+        group = group->next;
+    }
+    return NULL;
+}
+
+ACVP_SLH_DSA_CAP_GROUP *acvp_locate_slh_dsa_cap_group(ACVP_SLH_DSA_CAP *cap, unsigned int id) {
+    ACVP_SLH_DSA_CAP_GROUP *group = cap->cap_group;
+    while (group) {
+        if (group->group_id == id) {
+            return group;
+        }
+        group = group->next;
+    }
+    return NULL;
+}
+
 /*
  * Creates a JSON acvp array which consists of
  * [{preamble}, {object}]
@@ -1100,6 +1222,29 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
     *val = reg_arry_val;
     *arry = reg_arry;
     return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_get_tc_str_from_json(ACVP_CTX *ctx, JSON_Object *obj, const char *key, const char **out) {
+    const char *val= NULL;
+    ACVP_RESULT rv = ACVP_INTERNAL_ERR;
+
+    if (!json_object_has_value(obj, key)) {
+        ACVP_LOG_ERR("Server JSON is missing '%s' data", key);
+        rv = ACVP_TC_MISSING_DATA;
+        goto err;
+    }
+
+    val = json_object_get_string(obj, key);
+    if (!val) {
+        ACVP_LOG_ERR("Server JSON provided an invalid '%s' value", key);
+        rv = ACVP_TC_INVALID_DATA;
+        goto err;
+    }
+
+    *out = val;
+    rv = ACVP_SUCCESS;
+err:
+    return rv;
 }
 
 /*
@@ -1539,7 +1684,7 @@ int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain) {
     return domain->min + domain->max + domain->increment;
 }
 
-ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename) {
+ACVP_RESULT acvp_json_serialize_to_file_pretty_a_work(const JSON_Value *value, const char *filename, int first) {
     ACVP_RESULT return_code = ACVP_SUCCESS;
     FILE *fp = NULL;
     char *serialized_string = NULL; 
@@ -1563,7 +1708,7 @@ ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const 
             fclose(fp);
             return ACVP_JSON_ERR;
         }
-        if (fputs(", ", fp) == EOF) {
+        if (!first && (fputs(", ", fp) == EOF)) {  // If first, do *not* add "," before this data
             return_code = ACVP_JSON_ERR;
             goto end;
         }
@@ -1579,7 +1724,18 @@ end:
     return return_code;
 }
 
-ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename) {
+ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename) {
+    return acvp_json_serialize_to_file_pretty_a_work(value, filename, 0);
+}
+
+ACVP_RESULT acvp_json_serialize_to_file_pretty_a_raw(const JSON_Value *value, const char *filename) {
+    return acvp_json_serialize_to_file_pretty_a_work(value, filename, 1);
+}
+
+static ACVP_RESULT acvp_json_serialize_to_file_pretty_w_work(
+        const JSON_Value *value, 
+        const char *filename, 
+        int leading_bracket) { 
     ACVP_RESULT return_code = ACVP_SUCCESS;
     FILE *fp = NULL;
     char *serialized_string = NULL;
@@ -1600,9 +1756,11 @@ ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const 
         json_free_serialized_string(serialized_string);
         return ACVP_JSON_ERR;
     }
+    if (leading_bracket) {
     if (fputs("[ ", fp) == EOF) {
         return_code = ACVP_JSON_ERR;
         goto end;
+    }
     }
     if (fputs(serialized_string, fp) == EOF) {
         json_free_serialized_string(serialized_string);
@@ -1616,6 +1774,14 @@ end:
     return return_code;
 }
 
+ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename) {
+    return acvp_json_serialize_to_file_pretty_w_work(value, filename, 1);
+}
+
+ACVP_RESULT acvp_json_serialize_to_file_pretty_w_raw(const JSON_Value *value, const char *filename) {
+    return acvp_json_serialize_to_file_pretty_w_work(value, filename, 0);
+}
+
 void acvp_sleep(int seconds) {
 #ifdef _WIN32
     Sleep(seconds * 1000);
@@ -1624,3 +1790,53 @@ void acvp_sleep(int seconds) {
 #endif
 }
 
+unsigned char *acvp_hash_create_mct_msg(ACVP_HASH_TC *tc, size_t *msg_len) {
+    unsigned char *tmp = NULL, *out = NULL;
+    size_t tmp_len = 0, out_len = 0;
+    int iter = 0;
+
+    if (!tc) {
+        return NULL;
+    }
+    if (!msg_len) {
+        return NULL;
+    }
+
+    tmp_len = tc->m1_len + tc->m2_len + tc->m3_len;
+    tmp = calloc(tmp_len, sizeof(unsigned char));
+    if (!tmp) {
+        goto err;
+    }
+    memcpy_s(tmp, tmp_len, tc->m1, tc->m1_len);
+    iter += tc->m1_len;
+    memcpy_s(tmp + iter, tmp_len - iter, tc->m2, tc->m2_len);
+    iter += tc->m2_len;
+    memcpy_s(tmp + iter, tmp_len - iter, tc->m3, tc->m3_len);
+
+    /**
+     * For alternate mode, we need the length to equal msg_len, either by truncating or padding end with 0s. Calloc
+     * makes this simpler.
+     */
+    if (tc->mct_version == ACVP_HASH_MCT_VERSION_ALTERNATE) {
+        out = calloc(tc->msg_len, sizeof(unsigned char));
+        if (!out) {
+            goto err;
+        }
+        /* If the concatenation is larger than msg_len, only copy msg_len bytes. If smaller, only copy concatenation bytes, so the calloc 0s remain */
+        out_len = tmp_len > tc->msg_len ? tc->msg_len : tmp_len;
+        memcpy_s(out, tc->msg_len, tmp, out_len);
+        free(tmp);
+        *msg_len = (size_t)tc->msg_len;
+    } else {
+        *msg_len = tmp_len;
+        out = tmp;
+    }
+
+    return out;
+
+err:
+    if (out) free(out);
+    if (tmp) free(tmp);
+    *msg_len = 0;
+    return NULL;
+}

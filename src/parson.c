@@ -65,8 +65,12 @@
 #define IS_NUMBER_INVALID(x) (((x) * 0.0) != 0.0)
 #endif
 
-static JSON_Malloc_Function parson_malloc = malloc;
-static JSON_Free_Function parson_free = free;
+/* Wrappers for stdlib functions; quiets warning on MSVC compiler */
+static void *stdlib_malloc(size_t sz) { return malloc(sz); }
+static void stdlib_free(void* ptr) { if (ptr) free(ptr); }
+
+static JSON_Malloc_Function parson_malloc = stdlib_malloc;
+static JSON_Free_Function parson_free = stdlib_free;
 
 static int parson_escape_slashes = 1;
 
@@ -282,7 +286,7 @@ static int is_valid_utf8(const char *string, size_t string_len) {
 }
 
 static int is_decimal(const char *string, size_t length) {
-    char xX[3] = "xX\0";
+    char xX[3] = { 'x', 'X', 0x00 };
 
     if (length > 1 && string[0] == '0' && string[1] != '.') {
         return 0;
