@@ -1604,7 +1604,6 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
         if (!cap_entry->cap.ecdsa_sigver_cap) {
             return ACVP_NO_CAP;
         }
-
         current_curve = ecdsa_cap->curves;
         //add "universally" set hash algs here instead of later to be resliant to different combos of API calls
         while (current_curve) {

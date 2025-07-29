@@ -291,7 +291,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
          */
         rv = acvp_aes_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("JSON output failure in AES module");
+            ACVP_LOG_ERR("JSON output failure recording test response");
             json_value_free(r_tval);
             free(tmp);
             return rv;
@@ -301,7 +301,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
             stc->mct_index = j;    /* indicates init vs. update */
             /* Process the current AES encrypt test vector... */
             if ((cap->crypto_handler)(tc)) {
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 free(tmp);
                 json_value_free(r_tval);
                 return ACVP_CRYPTO_MODULE_FAIL;
@@ -678,7 +678,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     /* Get the crypto module handler for AES mode */
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id == 0) {
-        ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
+        ACVP_LOG_ERR("Unsupported algorithm (%s)", alg_str);
         return ACVP_TC_INVALID_DATA;
     }
     cap = acvp_locate_cap_entry(ctx, alg_id);
@@ -1260,7 +1260,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 res_tarr = json_object_get_array(r_tobj, "resultsArray");
                 rv = acvp_aes_mct_tc(ctx, cap, &tc, &stc, res_tarr);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("crypto module failed the MCT operation");
+                    ACVP_LOG_ERR("Crypto module failed the MCT operation");
                     json_value_free(r_tval);
                     acvp_aes_release_tc(&stc);
                     goto err;
@@ -1275,7 +1275,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                             alg_id != ACVP_AES_CCM &&
                             alg_id != ACVP_AES_KWP && 
                             alg_id != ACVP_AES_GMAC) {
-                        ACVP_LOG_ERR("crypto module failed the operation");
+                        ACVP_LOG_ERR("Crypto module failed the operation");
                         acvp_aes_release_tc(&stc);
                         json_value_free(r_tval);
                         rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -1288,7 +1288,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                  */
                 rv = acvp_aes_output_tc(ctx, &stc, r_tobj, t_rv);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in AES module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     json_value_free(r_tval);
                     acvp_aes_release_tc(&stc);
                     goto err;

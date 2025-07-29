@@ -39,13 +39,13 @@ static ACVP_RESULT acvp_hmac_init_tc(ACVP_CTX *ctx,
 
     rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_HMAC_MSG_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex converstion failure (msg)");
+        ACVP_LOG_ERR("Hex conversion failure (msg)");
         return rv;
     }
 
     rv = acvp_hexstr_to_bin(key, stc->key, ACVP_HMAC_KEY_BYTE_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex converstion failure (key)");
+        ACVP_LOG_ERR("Hex conversion failure (key)");
         return rv;
     }
 
@@ -155,7 +155,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id == 0) {
-        ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
+        ACVP_LOG_ERR("Unsupported algorithm (%s)", alg_str);
         return ACVP_UNSUPPORTED_OP;
     }
     cap = acvp_locate_cap_entry(ctx, alg_id);
@@ -316,7 +316,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             /* Process the current test vector... */
             if ((cap->crypto_handler)(&tc)) {
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 acvp_hmac_release_tc(&stc);
                 json_value_free(r_tval);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -328,7 +328,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             rv = acvp_hmac_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 json_value_free(r_tval);
                 acvp_hmac_release_tc(&stc);
                 goto err;

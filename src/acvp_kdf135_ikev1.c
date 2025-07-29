@@ -512,7 +512,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             /* Process the current test vector... */
             if ((cap->crypto_handler)(&tc)) {
-                ACVP_LOG_ERR("crypto module failed the KDF IKEv1 operation");
+                ACVP_LOG_ERR("Crypto module failed the KDF IKEv1 operation");
                 acvp_kdf135_ikev1_release_tc(&stc);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
@@ -524,7 +524,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             rv = acvp_kdf135_ikev1_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 acvp_kdf135_ikev1_release_tc(&stc);
                 json_value_free(r_tval);
                 goto err;

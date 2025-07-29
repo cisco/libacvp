@@ -431,7 +431,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
     case ACVP_SUB_TDES_CTR:
     case ACVP_SUB_TDES_KW:
     default:
-        ACVP_LOG_ERR("unsupported algorithm (%d)", stc->cipher);
+        ACVP_LOG_ERR("Unsupported algorithm (%d)", stc->cipher);
         free(tmp);
         return ACVP_UNSUPPORTED_OP;
     }
@@ -449,7 +449,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
          */
         rv = acvp_des_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("JSON output failure in DES module");
+            ACVP_LOG_ERR("JSON output failure recording test response");
             free(tmp);
             json_value_free(r_tval);
             return rv;
@@ -462,7 +462,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
             stc->mct_index = j;    /* indicates init vs. update */
             /* Process the current DES encrypt test vector... */
             if ((cap->crypto_handler)(tc)) {
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 free(tmp);
                 json_value_free(r_tval);
                 return ACVP_CRYPTO_MODULE_FAIL;
@@ -680,7 +680,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id == 0) {
-        ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
+        ACVP_LOG_ERR("Unsupported algorithm (%s)", alg_str);
         return ACVP_UNSUPPORTED_OP;
     }
     cap = acvp_locate_cap_entry(ctx, alg_id);
@@ -982,7 +982,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = acvp_des_mct_tc(ctx, cap, &tc, &stc, res_tarr);
                 if (rv != ACVP_SUCCESS) {
                     json_value_free(r_tval);
-                    ACVP_LOG_ERR("crypto module failed the DES MCT operation");
+                    ACVP_LOG_ERR("Crypto module failed the DES MCT operation");
                     acvp_des_release_tc(&stc);
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     goto err;
@@ -991,7 +991,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 /* Process the current DES encrypt test vector... */
                 int t_rv = (cap->crypto_handler)(&tc);
                 if (t_rv) {
-                    ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                    ACVP_LOG_ERR("Crypto module failed the operation");
                     json_value_free(r_tval);
                     acvp_des_release_tc(&stc);
                     rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -1003,7 +1003,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                  */
                 rv = acvp_des_output_tc(ctx, &stc, r_tobj, t_rv);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in 3DES module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     acvp_des_release_tc(&stc);
                     goto err;
                 }
@@ -1148,7 +1148,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
 
     rv = acvp_hexstr_to_bin(j_key, stc->key, ACVP_SYM_KEY_MAX_BYTES, NULL);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex converstion failure (key)");
+        ACVP_LOG_ERR("Hex conversion failure (key)");
         return rv;
     }
 
@@ -1162,7 +1162,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
         } else {
             rv = acvp_hexstr_to_bin(j_pt, stc->pt, ACVP_SYM_PT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex converstion failure (pt)");
+                ACVP_LOG_ERR("Hex conversion failure (pt)");
                 return rv;
             }
         }
@@ -1178,7 +1178,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
         } else {
             rv = acvp_hexstr_to_bin(j_ct, stc->ct, ACVP_SYM_CT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex converstion failure (ct)");
+                ACVP_LOG_ERR("Hex conversion failure (ct)");
                 return rv;
             }
         }
@@ -1187,7 +1187,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     if (j_iv) {
         rv = acvp_hexstr_to_bin(j_iv, stc->iv, ACVP_SYM_IV_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (iv)");
+            ACVP_LOG_ERR("Hex conversion failure (iv)");
             return rv;
         }
     }

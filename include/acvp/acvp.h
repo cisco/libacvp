@@ -161,7 +161,7 @@ typedef enum acvp_cipher {
     ACVP_AES_CBC_CS2,
     ACVP_AES_CBC_CS3,
     ACVP_AES_CFB1,
-    ACVP_AES_CFB8,
+    ACVP_AES_CFB8,     /* 10 */
     ACVP_AES_CFB128,
     ACVP_AES_OFB,
     ACVP_AES_CTR,
@@ -171,7 +171,7 @@ typedef enum acvp_cipher {
     ACVP_AES_GMAC,
     ACVP_AES_XPN,
     ACVP_AES_FF1,
-    ACVP_AES_FF3,
+    ACVP_AES_FF3,     /* 20 */
     ACVP_TDES_ECB,
     ACVP_TDES_CBC,
     ACVP_TDES_CBCI,
@@ -181,7 +181,7 @@ typedef enum acvp_cipher {
     ACVP_TDES_CFB8,
     ACVP_TDES_CFB64,
     ACVP_TDES_CFBP1,
-    ACVP_TDES_CFBP8,
+    ACVP_TDES_CFBP8,    /* 30 */
     ACVP_TDES_CFBP64,
     ACVP_TDES_CTR,
     ACVP_TDES_KW,
@@ -191,7 +191,7 @@ typedef enum acvp_cipher {
     ACVP_HASH_SHA384,
     ACVP_HASH_SHA512,
     ACVP_HASH_SHA512_224,
-    ACVP_HASH_SHA512_256,
+    ACVP_HASH_SHA512_256,  /* 40 */
     ACVP_HASH_SHA3_224,
     ACVP_HASH_SHA3_256,
     ACVP_HASH_SHA3_384,
@@ -201,7 +201,7 @@ typedef enum acvp_cipher {
     ACVP_HASHDRBG,
     ACVP_HMACDRBG,
     ACVP_CTRDRBG,
-    ACVP_HMAC_SHA1,
+    ACVP_HMAC_SHA1,         /* 50 */
     ACVP_HMAC_SHA2_224,
     ACVP_HMAC_SHA2_256,
     ACVP_HMAC_SHA2_384,
@@ -211,7 +211,7 @@ typedef enum acvp_cipher {
     ACVP_HMAC_SHA3_224,
     ACVP_HMAC_SHA3_256,
     ACVP_HMAC_SHA3_384,
-    ACVP_HMAC_SHA3_512,
+    ACVP_HMAC_SHA3_512,    /* 60 */
     ACVP_CMAC_AES,
     ACVP_CMAC_TDES,
     ACVP_KMAC_128,
@@ -221,7 +221,7 @@ typedef enum acvp_cipher {
     ACVP_DSA_PQGVER,
     ACVP_DSA_SIGGEN,
     ACVP_DSA_SIGVER,
-    ACVP_RSA_KEYGEN,
+    ACVP_RSA_KEYGEN,     /* 70 */
     ACVP_RSA_SIGGEN,
     ACVP_RSA_SIGVER,
     ACVP_RSA_DECPRIM,
@@ -231,7 +231,7 @@ typedef enum acvp_cipher {
     ACVP_ECDSA_SIGGEN,
     ACVP_ECDSA_SIGVER,
     ACVP_DET_ECDSA_SIGGEN,
-    ACVP_EDDSA_KEYGEN,
+    ACVP_EDDSA_KEYGEN,    /* 80 */
     ACVP_EDDSA_KEYVER,
     ACVP_EDDSA_SIGGEN,
     ACVP_EDDSA_SIGVER,
@@ -241,7 +241,7 @@ typedef enum acvp_cipher {
     ACVP_KDF135_IKEV2,
     ACVP_KDF135_IKEV1,
     ACVP_KDF135_X942,
-    ACVP_KDF135_X963,
+    ACVP_KDF135_X963,    /* 90 */
     ACVP_KDF108,
     ACVP_PBKDF,
     ACVP_KDF_TLS12,
@@ -251,7 +251,7 @@ typedef enum acvp_cipher {
     ACVP_KAS_ECC_NOCOMP,
     ACVP_KAS_ECC_SSC,
     ACVP_KAS_FFC_COMP,
-    ACVP_KAS_FFC_NOCOMP,
+    ACVP_KAS_FFC_NOCOMP,   /* 100 */
     ACVP_KAS_FFC_SSC,
     ACVP_KAS_IFC_SSC,
     ACVP_KDA_ONESTEP,
@@ -261,7 +261,7 @@ typedef enum acvp_cipher {
     ACVP_SAFE_PRIMES_KEYGEN,
     ACVP_SAFE_PRIMES_KEYVER,
     ACVP_LMS_KEYGEN,
-    ACVP_LMS_SIGGEN,
+    ACVP_LMS_SIGGEN,      /* 110 */
     ACVP_LMS_SIGVER,
     ACVP_ML_DSA_KEYGEN,
     ACVP_ML_DSA_SIGGEN,
@@ -675,7 +675,6 @@ typedef enum acvp_sym_cipher_ivgen_mode {
     ACVP_SYM_CIPH_IVGEN_MODE_NA,
     ACVP_SYM_CIPH_IVGEN_MODE_MAX
 } ACVP_SYM_CIPH_IVGEN_MODE;
-
 
 /**
  * @enum ACVP_SYM_CIPH_DIR

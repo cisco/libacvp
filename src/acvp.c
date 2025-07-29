@@ -2403,7 +2403,6 @@ int acvp_get_vector_set_count(ACVP_CTX *ctx) {
     count = (int)json_array_get_count(tmp_array);
     json_value_free(reg);
     return count;
-
 }
 
 /*

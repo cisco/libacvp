@@ -1409,7 +1409,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 } else {
                     acvp_kda_release_tc(ACVP_KDA_TWOSTEP, tc);
                 }
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
                 goto err;
@@ -1421,7 +1421,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             if (cipher == ACVP_KDA_HKDF) {
                 rv = acvp_kda_hkdf_output_tc(ctx, tc->tc.kda_hkdf, r_tobj);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in KDA module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     acvp_kda_release_tc(ACVP_KDA_HKDF, tc);
                     json_value_free(r_tval);
                     goto err;
@@ -1429,7 +1429,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             } else if (cipher == ACVP_KDA_ONESTEP) {
                 rv = acvp_kda_onestep_output_tc(ctx, tc->tc.kda_onestep, r_tobj);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in KDA module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     acvp_kda_release_tc(ACVP_KDA_ONESTEP, tc);
                     json_value_free(r_tval);
                     goto err;
@@ -1437,7 +1437,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             } else {
                 rv = acvp_kda_twostep_output_tc(ctx, tc->tc.kda_twostep, r_tobj);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in KDA module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     acvp_kda_release_tc(ACVP_KDA_TWOSTEP, tc);
                     json_value_free(r_tval);
                     goto err;
