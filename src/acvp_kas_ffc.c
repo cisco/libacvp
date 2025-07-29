@@ -506,7 +506,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             /* Process the current KAT test vector... */
             if ((cap->crypto_handler)(tc)) {
                 acvp_kas_ffc_release_tc(stc);
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
                 goto err;
@@ -517,7 +517,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
              */
             rv = acvp_kas_ffc_output_comp_tc(ctx, stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in KAS-FFC module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 acvp_kas_ffc_release_tc(stc);
                 json_value_free(r_tval);
                 goto err;
@@ -929,7 +929,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
             /* Process the current KAT test vector... */
             if ((cap->crypto_handler)(tc)) {
                 acvp_kas_ffc_release_tc(stc);
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
                 goto err;
@@ -940,7 +940,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
              */
             rv = acvp_kas_ffc_output_ssc_tc(ctx, stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in KAS-FFC module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 acvp_kas_ffc_release_tc(stc);
                 json_value_free(r_tval);
                 goto err;

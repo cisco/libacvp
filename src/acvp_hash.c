@@ -130,7 +130,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
             /* Spec: MD = SHA(MSG) */
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 json_value_free(r_tval);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
@@ -156,7 +156,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
         /* Internal: output the test case request values using JSON, append to array */
         rv = acvp_hash_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("JSON output failure in HASH module");
+            ACVP_LOG_ERR("JSON output failure recording test response");
             json_value_free(r_tval);
             return rv;
         }
@@ -235,7 +235,7 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
             /* Process the current SHA test vector... */
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 goto end;
             }
@@ -246,7 +246,7 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
          */
         rv = acvp_hash_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("JSON output failure");
+            ACVP_LOG_ERR("JSON output failure recording test response");
             goto end;
         }
 
@@ -339,7 +339,7 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
             /* Process the current SHA test vector... */
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 goto end;
             }
@@ -362,7 +362,7 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
          */
         rv = acvp_hash_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("JSON output failure");
+            ACVP_LOG_ERR("JSON output failure recording test response");
             goto end;
         }
 
@@ -480,7 +480,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id == 0) {
-        ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
+        ACVP_LOG_ERR("Unsupported algorithm (%s)", alg_str);
         return ACVP_UNSUPPORTED_OP;
     }
     cap = acvp_locate_cap_entry(ctx, alg_id);
@@ -727,7 +727,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
 
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("crypto module failed the HASH MCT operation");
+                    ACVP_LOG_ERR("Crypto module failed the HASH MCT operation");
                     acvp_hash_release_tc(&stc);
                     json_value_free(r_tval);
                     goto err;
@@ -735,7 +735,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             } else {
                 /* Process the current test vector... */
                 if ((cap->crypto_handler)(&tc)) {
-                    ACVP_LOG_ERR("crypto module failed the operation");
+                    ACVP_LOG_ERR("Crypto module failed the operation");
                     acvp_hash_release_tc(&stc);
                     json_value_free(r_tval);
                     rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -747,7 +747,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                  */
                 rv = acvp_hash_output_tc(ctx, &stc, r_tobj);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in hash module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     acvp_hash_release_tc(&stc);
                     json_value_free(r_tval);
                     goto err;

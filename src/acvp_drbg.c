@@ -103,7 +103,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
     if ((alg_id < ACVP_HASHDRBG) || (alg_id > ACVP_CTRDRBG)) {
-        ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
+        ACVP_LOG_ERR("Unsupported algorithm (%s)", alg_str);
         return ACVP_UNSUPPORTED_OP;
     }
 
@@ -534,7 +534,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             /* Process the current test vector... */
             if ((cap->crypto_handler)(&tc)) {
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 acvp_drbg_release_tc(&stc);
                 json_value_free(r_tval);
@@ -546,7 +546,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             rv = acvp_drbg_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in DRBG module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 acvp_drbg_release_tc(&stc);
                 json_value_free(r_tval);
                 goto err;

@@ -227,7 +227,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
-        ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
+        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return ACVP_MALFORMED_JSON;
     }
 
@@ -247,7 +247,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
-        ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
+        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return ACVP_UNSUPPORTED_OP;
     }
     ACVP_LOG_VERBOSE("    LMS mode: %s", mode_str);
@@ -257,7 +257,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct.");
+        ACVP_LOG_ERR("Failed to create JSON response struct. ");
         return rv;
     }
 
@@ -422,7 +422,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             /* Process the current test vector... */
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
-                    ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                    ACVP_LOG_ERR("Crypto module failed the operation");
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     json_value_free(r_tval);
                     goto err;
@@ -451,7 +451,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             rv = acvp_lms_output_tc(ctx, alg_id, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 json_value_free(r_tval);
                 goto err;
             }

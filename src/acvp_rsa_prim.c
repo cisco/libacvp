@@ -505,7 +505,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct.");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -678,7 +678,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                        pass = stc.pass;
                        do {
                            if ((cap->crypto_handler)(&tc)) {
-                               ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+		                       ACVP_LOG_ERR("Crypto module failed the operation");
                                rv = ACVP_CRYPTO_MODULE_FAIL;
                                json_value_free(r_tval);
                                json_value_free(r_cval);
@@ -695,7 +695,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                      */
                     rv = acvp_rsa_decprim_output_tc_rev_1(ctx, &stc, r_cobj);
                     if (rv != ACVP_SUCCESS) {
-                        ACVP_LOG_ERR("ERROR: JSON output failure in primitive module");
+		                ACVP_LOG_ERR("JSON output failure recording test response");
                         json_value_free(r_tval);
                         json_value_free(r_cval);
                         goto err;
@@ -757,7 +757,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                                         q_str, dmp1_str, dmq1_str, iqmp_str, cipher);
                 if (rv == ACVP_SUCCESS) {
                     if ((cap->crypto_handler)(&tc)) {
-                        ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                        ACVP_LOG_ERR("Crypto module failed the operation");
                         rv = ACVP_CRYPTO_MODULE_FAIL;
                         json_value_free(r_tval);
                         goto err;
@@ -767,7 +767,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 /* Output the test case results using JSON */
                 rv = acvp_rsa_decprim_output_tc_rev_56br2(ctx, &stc, r_tobj);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("ERROR: JSON output failure in primitive module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     json_value_free(r_tval);
                     goto err;
                 }
@@ -841,7 +841,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
-        ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
+        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return ACVP_MALFORMED_JSON;
     }
 
@@ -869,7 +869,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
-        ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
+        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return ACVP_UNSUPPORTED_OP;
     }
 
@@ -883,7 +883,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct.");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -1064,7 +1064,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             /* Process the current test vector... */
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
-                    ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                    ACVP_LOG_ERR("Crypto module failed the operation");
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     json_value_free(r_tval);
                     goto err;
@@ -1076,7 +1076,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             rv = acvp_rsa_sigprim_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 json_value_free(r_tval);
                 goto err;
             }

@@ -104,7 +104,6 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JS
         memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
     }
 
-    // Aux data only if genereated by IUT
     if (stc->rand_pq == ACVP_RSA_KEYGEN_B32 ||
         stc->rand_pq == ACVP_RSA_KEYGEN_B34 ||
         stc->rand_pq == ACVP_RSA_KEYGEN_B35 ||
@@ -490,7 +489,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct.");
+        ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
@@ -840,7 +839,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             /* Process the current test vector... */
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
-                    ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                    ACVP_LOG_ERR("Crypto module failed the operation");
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     json_value_free(r_tval);
                     goto err;
@@ -852,7 +851,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             rv = acvp_rsa_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 json_value_free(r_tval);
                 goto err;
             }
