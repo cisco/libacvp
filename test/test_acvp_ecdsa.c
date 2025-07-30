@@ -24,7 +24,7 @@ static void setup(void) {
     /*
      * Enable ECDSA keygen
      */
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -40,7 +40,7 @@ static void setup(void) {
     /*
      * Enable ECDSA keyVer...
      */
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_KEYVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_KEYVER, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -54,7 +54,7 @@ static void setup(void) {
     /*
      * Enable ECDSA sigGen...
      */
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_SIGGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_SIGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_SIGGEN, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -70,7 +70,7 @@ static void setup(void) {
     /*
      * Enable ECDSA sigVer...
      */
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_SIGVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_SIGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -93,7 +93,7 @@ static void setup_fail(void) {
     /*
      * Enable ECDSA keygen
      */
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -109,7 +109,7 @@ static void setup_fail(void) {
     /*
      * Enable ECDSA keyVer...
      */
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYVER, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_KEYVER, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_KEYVER, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -123,7 +123,7 @@ static void setup_fail(void) {
     /*
      * Enable ECDSA sigGen...
      */
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_SIGGEN, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_SIGGEN, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_SIGGEN, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -139,7 +139,7 @@ static void setup_fail(void) {
     /*
      * Enable ECDSA sigVer...
      */
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_SIGVER, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_SIGVER, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -166,7 +166,7 @@ static void teardown(void) {
 Test(ECDSA_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

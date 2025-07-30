@@ -77,7 +77,7 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (cfg->hash || cfg->testall) {
-        rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_256, &app_sha_handler);
+        rv = acvp_enable_algorithm(ctx, ACVP_HASH_SHA3_256, &app_sha_handler);
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_IN_BIT, 0);
         CHECK_ENABLE_CAP_RV(rv);

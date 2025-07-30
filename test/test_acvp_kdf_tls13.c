@@ -21,7 +21,7 @@ static char cvalue[] = "same";
 static void setup(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kdf_tls13_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF_TLS13, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS13, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -47,7 +47,7 @@ static void teardown(void) {
 Test(KDF_TLS13_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kdf_tls13_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF_TLS13, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS13, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

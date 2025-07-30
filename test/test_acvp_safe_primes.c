@@ -24,7 +24,7 @@ static void setup(void) {
     /*
      * Register Safe Prime Key Generation testing
      */
-    rv = acvp_cap_safe_primes_enable(ctx, ACVP_SAFE_PRIMES_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_SAFE_PRIMES_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_SAFE_PRIMES_KEYGEN,
                                   ACVP_PREREQ_DRBG, cvalue);
@@ -57,7 +57,7 @@ static void setup(void) {
     /*
      * Register Safe Prime Key Verify testing
      */
-    rv = acvp_cap_safe_primes_enable(ctx, ACVP_SAFE_PRIMES_KEYVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_SAFE_PRIMES_KEYVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_SAFE_PRIMES_KEYVER,
                                   ACVP_PREREQ_DRBG, cvalue);

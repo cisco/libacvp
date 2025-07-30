@@ -38,7 +38,7 @@ Test(Kdf135SnmpApi, null_ctx) {
     cr_assert(rv == ACVP_UNSUPPORTED_OP);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SNMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -71,7 +71,7 @@ Test(Kdf135SnmpFunc, null_ctx) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SNMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -217,7 +217,7 @@ Test(Kdf135SnmpFail, cryptoFail1) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SNMP, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -252,7 +252,7 @@ Test(Kdf135SnmpFail, cryptoFail2) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SNMP, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -287,7 +287,7 @@ Test(Kdf135SnmpFail, tcidFail) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SNMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -320,7 +320,7 @@ Test(Kdf135SnmpFail, tcFail) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SNMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

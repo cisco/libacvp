@@ -22,7 +22,7 @@ static void teardown(void) {
 Test(EnableCapHash, properly, .fini = teardown) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN,
@@ -50,7 +50,7 @@ Test(EnableCapHash, properly, .fini = teardown) {
 Test(EnableCapHash, param_alg_mismatch, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA256, ACVP_HASH_MESSAGE_LEN,
@@ -64,7 +64,7 @@ Test(EnableCapHash, param_alg_mismatch, .fini = teardown) {
 Test(EnableCapHash, null_handler, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, NULL);
+    rv = acvp_enable_algorithm(ctx, ACVP_HASH_SHA1, NULL);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
@@ -74,7 +74,7 @@ Test(EnableCapHash, null_handler, .fini = teardown) {
 Test(EnableCapHash, invalid_args, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN,
@@ -96,7 +96,7 @@ Test(EnableCapHash, invalid_args, .fini = teardown) {
 Test(EnableCapKDF108, good, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf108_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF108, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF108, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -146,7 +146,7 @@ Test(EnableCapKDF108, good, .fini = teardown) {
 Test(EnableCapKDF108, alg_mismatch, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf108_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF108, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf108_set_domain(ctx, 0, ACVP_KDF108_SUPPORTED_LEN, 8, 384, 8);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -160,7 +160,7 @@ Test(EnableCapKDF108, alg_mismatch, .fini = teardown) {
 Test(EnableCapKDF108, invalid_domain, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf108_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF108, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf108_set_domain(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTED_LEN, 0, 384, 8);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -174,7 +174,7 @@ Test(EnableCapKDF108, invalid_domain, .fini = teardown) {
 Test(EnableCapKDF108, invalid_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf108_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF108, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -202,7 +202,7 @@ Test(EnableCapKDFx963, properly, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -232,7 +232,7 @@ Test(EnableCapKDFx963, properly, .fini = teardown) {
  * tries to enable kdf x963 with empty ctx, expect fail
  */
 Test(EnableCapKDFx963, null_ctx, .fini = teardown) {
-    rv = acvp_cap_kdf135_x963_enable(NULL, &dummy_handler_success);
+    rv = acvp_enable_algorithm(NULL, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -245,7 +245,7 @@ Test(EnableCapKDFx963, invalid_params, .fini = teardown) {
     // shouldn't be called before enable_cap
     rv = acvp_cap_kdf135_x963_set_parm(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_SHA256);
     cr_assert(rv == ACVP_NO_CAP);
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_x963_set_parm(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_SHA256);
     cr_assert(rv == ACVP_SUCCESS);
@@ -270,7 +270,7 @@ Test(EnableCapKDFx963, invalid_params, .fini = teardown) {
 Test(EnableCapKDFSNMP, properly, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SNMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -290,7 +290,7 @@ Test(EnableCapKDFSNMP, properly, .fini = teardown) {
 Test(EnableCapKDFSNMP, param_alg_mismatch, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SNMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_NO_CAP);
@@ -302,7 +302,7 @@ Test(EnableCapKDFSNMP, param_alg_mismatch, .fini = teardown) {
 Test(EnableCapKDFSNMP, invalid_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SNMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -320,7 +320,7 @@ Test(EnableCapKDFSRTP, good, .fini = teardown) {
     
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_srtp_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SRTP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SRTP, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -342,7 +342,7 @@ Test(EnableCapKDFSRTP, good, .fini = teardown) {
  * enable srtp with null ctx
  */
 Test(EnableCapKDFSRTP, null_ctx, .fini = teardown) {
-    rv = acvp_cap_kdf135_srtp_enable(NULL, &dummy_handler_success);
+    rv = acvp_enable_algorithm(NULL, ACVP_KDF135_SRTP, &dummy_handler_success);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -352,7 +352,7 @@ Test(EnableCapKDFSRTP, null_ctx, .fini = teardown) {
 Test(EnableCapKDFSRTP, invalid_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_srtp_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SRTP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_SUPPORT_ZERO_KDR, 3);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -368,7 +368,7 @@ Test(EnableCapKDFSRTP, invalid_params, .fini = teardown) {
 Test(EnableCapKDFSSH, properly, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SSH, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -390,7 +390,7 @@ Test(EnableCapKDFSSH, properly, .fini = teardown) {
  * tries to enable kdf ssh with null_ctx, expect failure
  */
 Test(EnableCapKDFSSH, null_ctx, .fini = teardown) {
-    rv = acvp_cap_kdf135_ssh_enable(NULL, &dummy_handler_success);
+    rv = acvp_enable_algorithm(NULL, ACVP_KDF135_SSH, &dummy_handler_success);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -400,7 +400,7 @@ Test(EnableCapKDFSSH, null_ctx, .fini = teardown) {
 Test(EnableCapKDFSSH, invalid_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SSH, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_TDES_CBC, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -414,7 +414,7 @@ Test(EnableCapKDFSSH, invalid_params, .fini = teardown) {
 Test(EnableCapKDFSSH, param_alg_mismatch, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SSH, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_SSH_METH_TDES_CBC, ACVP_SHA256 | ACVP_SHA384 | ACVP_SHA512);
     cr_assert(rv == ACVP_NO_CAP);
@@ -425,7 +425,7 @@ Test(EnableCapKDFSSH, param_alg_mismatch, .fini = teardown) {
 Test(EnableCapCMAC, properly, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_CMAC_AES, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -449,7 +449,7 @@ Test(EnableCapCMAC, properly, .fini = teardown) {
 Test(EnableCapCMAC, param_alg_mismatch, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_CMAC_AES, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_cmac_set_domain(ctx, ACVP_CMAC_TDES, ACVP_CMAC_MSGLEN, 0, 65536, 8);
@@ -462,16 +462,16 @@ Test(EnableCapCMAC, param_alg_mismatch, .fini = teardown) {
 Test(EnableCapCMAC, null_handler, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, NULL);
+    rv = acvp_enable_algorithm(ctx, ACVP_CMAC_AES, NULL);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
 Test(EnableCapCMAC, invalid_args, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_CMAC_AES, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_TDES, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_CMAC_TDES, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, NULL);
@@ -526,7 +526,7 @@ Test(EnableCapCMAC, invalid_args, .fini = teardown) {
 Test(EnableCapHMAC, properly, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_224, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA2_224, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_224, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -539,11 +539,8 @@ Test(EnableCapHMAC, properly, .fini = teardown) {
 Test(EnableCapHMAC, param_alg_mismatch, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_256, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA2_256, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_cap_hmac_enable(ctx, ACVP_CMAC_AES, &dummy_handler_success);
-    cr_assert(rv == ACVP_INVALID_ARG);
 
     rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYLEN, 32 * 8);
     cr_assert(rv == ACVP_NO_CAP);
@@ -555,14 +552,14 @@ Test(EnableCapHMAC, param_alg_mismatch, .fini = teardown) {
 Test(EnableCapHMAC, null_handler, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_384, NULL);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA2_384, NULL);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
 Test(EnableCapHMAC, invalid_args, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_512, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA2_512, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_512, ACVP_PREREQ_SHA, NULL);
@@ -594,7 +591,7 @@ Test(EnableCapHMAC, invalid_args, .fini = teardown) {
 
 Test(EnableCapRSAkeyGen, proper_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
@@ -610,7 +607,7 @@ Test(EnableCapRSAkeyGen, proper_params, .fini = teardown) {
 
 Test(EnableCapRSAkeyGen, proper_modes, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
@@ -629,7 +626,7 @@ Test(EnableCapRSAkeyGen, proper_modes, .fini = teardown) {
 
 Test(EnableCapRSAkeyGen, proper_modes_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
@@ -649,26 +646,18 @@ Test(EnableCapRSAkeyGen, proper_modes_params, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
 }
 
-Test(EnableCapRSAkeyGen, alg_mismatch, .fini = teardown) {
-    setup_empty_ctx(&ctx);
-    rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_NO_CAP);
-}
-
 /*
  * Most of these params are members of enums, so the app
  * won't even build if it has an invalid value
  */
 Test(EnableCapRSAkeyGen, invalid_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, NULL);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_KEYGEN, NULL);
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_NO_CAP);
     
-    rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_SHA, "");
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -684,7 +673,7 @@ Test(EnableCapRSAkeyGen, invalid_params, .fini = teardown) {
 
 Test(EnableCapRSAkeyGen, invalid_modes_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
@@ -706,7 +695,7 @@ Test(EnableCapRSAkeyGen, invalid_modes_params, .fini = teardown) {
  */
 Test(EnableCapRSAkeyGen, cipher_param_mismatch, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
@@ -730,7 +719,7 @@ Test(EnableCapRSAkeyGen, cipher_param_mismatch, .fini = teardown) {
 
 Test(EnableCapAES, properly, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_GCM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_GCM, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -756,22 +745,14 @@ Test(EnableCapAES, properly, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
 }
 
-Test(EnableCapAES, alg_mismatch, .fini = teardown) {
-    setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_success);
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_set_prereq(ctx, ACVP_AES_GCM, ACVP_PREREQ_AES, cvalue);
-    cr_assert(rv == ACVP_NO_CAP);
-}
-
 Test(EnableCapAES, bad_conformance, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CTR, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CTR, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PARM_CONFORMANCE, ACVP_CONFORMANCE_DEFAULT);
     cr_assert(rv == ACVP_INVALID_ARG);
     
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_GCM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PARM_CONFORMANCE, ACVP_CONFORMANCE_RFC3686);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -783,7 +764,7 @@ Test(EnableCapAES, bad_conformance, .fini = teardown) {
  */
 Test(EnableCapAES, invalid_callback, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, NULL);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_GCM, NULL);
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_GCM, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_NO_CAP);
@@ -795,7 +776,7 @@ Test(EnableCapAES, invalid_callback, .fini = teardown) {
  */
 Test(EnableCapAES, invalid_dir, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_GCM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PARM_DIR, 0);
@@ -808,7 +789,7 @@ Test(EnableCapAES, invalid_dir, .fini = teardown) {
  */
 Test(EnableCapAES, cipher_param_mismatch, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_GCM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_KEYLEN, 128);
@@ -821,7 +802,7 @@ Test(EnableCapAES, cipher_param_mismatch, .fini = teardown) {
  */
 Test(EnableCapAES, invalid_keylens, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB1, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CFB1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 333);
@@ -838,12 +819,12 @@ Test(EnableCapAES, invalid_keylens, .fini = teardown) {
  */
 Test(EnableCapAES, invalid_param_lens, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB1, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CFB1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PTLEN, 999999);
     cr_assert(rv == ACVP_INVALID_ARG);
     
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CCM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CCM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_TAGLEN, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -867,7 +848,7 @@ Test(EnableCapAES, invalid_param_lens, .fini = teardown) {
  */
 Test(EnableCapAES, cipher_invalid_parm_domain, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS2, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CBC_CS2, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_KEYLEN, 0, 128, 8);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -878,7 +859,7 @@ Test(EnableCapAES, cipher_invalid_parm_domain, .fini = teardown) {
  */
 Test(EnableCapAES, cipher_domain_no_ctx, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_XPN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_XPN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_domain(NULL, ACVP_AES_XPN, ACVP_SYM_CIPH_DOMAIN_PTLEN, 0, 128, 8);
     cr_assert(rv == ACVP_NO_CTX);
@@ -889,7 +870,7 @@ Test(EnableCapAES, cipher_domain_no_ctx, .fini = teardown) {
  */
 Test(EnableCapAES, cipher_domain_bad_values, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS3, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CBC_CS3, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_DOMAIN_PTLEN, -64, 128, 8);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -906,7 +887,7 @@ Test(EnableCapAES, cipher_domain_bad_values, .fini = teardown) {
  */
 Test(EnableCapAES, dup_payload_registration, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS1, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CBC_CS1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_PTLEN, 33333);
     cr_assert(rv == ACVP_SUCCESS);
@@ -918,7 +899,7 @@ Test(EnableCapAES, dup_payload_registration, .fini = teardown) {
 
 Test(EnableCapTDES, properly, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_CBC, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
@@ -928,7 +909,7 @@ Test(EnableCapTDES, properly, .fini = teardown) {
 
 Test(EnableCapTDES, alg_param_mismatch, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_CBC, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_TAGLEN, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -942,7 +923,7 @@ Test(EnableCapTDES, alg_param_mismatch, .fini = teardown) {
 Test(EnableCapKDF135IKEv1, good, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_ikev1_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_IKEV1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_IKEV1, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -983,9 +964,9 @@ Test(EnableCapKDF135IKEv1, good, .fini = teardown) {
 Test(EnableCapKDF135IKEv1, null_vals, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_ikev1_enable(NULL, &dummy_handler_success);
+    rv = acvp_enable_algorithm(NULL, ACVP_KDF135_IKEV1, &dummy_handler_success);
     cr_assert(rv == ACVP_NO_CTX);
-    rv = acvp_cap_kdf135_ikev1_enable(ctx, NULL);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_IKEV1, NULL);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
@@ -995,7 +976,7 @@ Test(EnableCapKDF135IKEv1, null_vals, .fini = teardown) {
 Test(EnableCapKDF135IKEv1, invalid_domain, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_ikev1_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_IKEV1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_ikev1_set_domain(ctx, ACVP_KDF_IKEv1_INIT_NONCE_LEN, 0, 2048, 1);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -1024,7 +1005,7 @@ Test(EnableCapKDF135IKEv1, invalid_params, .fini = teardown) {
     
     rv = acvp_cap_kdf135_ikev1_set_parm(ctx, ACVP_KDF_IKEv1_HASH_ALG, 999);
     cr_assert(rv == ACVP_NO_CAP);
-    rv = acvp_cap_kdf135_ikev1_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_IKEV1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_ikev1_set_parm(ctx, ACVP_KDF_IKEv1_HASH_ALG, 999);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -1039,7 +1020,7 @@ Test(EnableCapKDF135IKEv1, invalid_params, .fini = teardown) {
 Test(EnableCapKDF135IKEv2, good, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_ikev2_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_IKEV2, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_IKEV2, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1077,7 +1058,7 @@ Test(EnableCapKDF135IKEv2, good, .fini = teardown) {
 Test(EnableCapKDF135IKEv2, good_domain, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_ikev2_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_IKEV2, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_ikev2_set_domain(ctx, ACVP_RESPOND_NONCE_LEN, 64, 2048, 1);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1095,9 +1076,9 @@ Test(EnableCapKDF135IKEv2, good_domain, .fini = teardown) {
 Test(EnableCapKDF135IKEv2, null_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_ikev2_enable(NULL, &dummy_handler_success);
+    rv = acvp_enable_algorithm(NULL, ACVP_KDF135_IKEV2, &dummy_handler_success);
     cr_assert(rv == ACVP_NO_CTX);
-    rv = acvp_cap_kdf135_ikev2_enable(ctx, NULL);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_IKEV2, NULL);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
@@ -1109,7 +1090,7 @@ Test(EnableCapKDF135IKEv2, invalid_len_params, .fini = teardown) {
 
     rv = acvp_cap_kdf135_ikev2_set_length(ctx, ACVP_INIT_NONCE_LEN, 9999);
     cr_assert(rv == ACVP_NO_CAP);
-    rv = acvp_cap_kdf135_ikev2_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_IKEV2, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_ikev2_set_length(ctx, ACVP_INIT_NONCE_LEN, 9999);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -1144,7 +1125,7 @@ Test(EnableCapKDF135IKEv2, invalid_len_params, .fini = teardown) {
 Test(EnableCapKDF135IKEv2, invalid_hash_alg, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf135_ikev2_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_IKEV2, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_ikev2_set_parm(ctx, ACVP_KDF_HASH_ALG, 999);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -1156,7 +1137,7 @@ Test(EnableCapKDF135IKEv2, invalid_hash_alg, .fini = teardown) {
 Test(EnableCapECDSA, good_keygen, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1196,7 +1177,7 @@ Test(EnableCapECDSA, good_keygen, .fini = teardown) {
 Test(EnableCapECDSA, mode_mismatch_kg, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B233);
     cr_assert(rv == ACVP_NO_CAP);
@@ -1208,7 +1189,7 @@ Test(EnableCapECDSA, mode_mismatch_kg, .fini = teardown) {
 Test(EnableCapECDSA, invalid_params_kg, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_CURVE, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -1226,7 +1207,7 @@ Test(EnableCapECDSA, invalid_params_kg, .fini = teardown) {
 Test(EnableCapECDSA, good_keyver, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_KEYVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_KEYVER, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1264,7 +1245,7 @@ Test(EnableCapECDSA, good_keyver, .fini = teardown) {
 Test(EnableCapECDSA, invalid_params_kv, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_KEYVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -1277,7 +1258,7 @@ Test(EnableCapECDSA, invalid_params_kv, .fini = teardown) {
 Test(EnableCapECDSA, good_siggen, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_SIGGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_SIGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_SIGGEN, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1325,7 +1306,7 @@ Test(EnableCapECDSA, good_siggen, .fini = teardown) {
 Test(EnableCapECDSA, invalid_args_sg, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_SIGGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_SIGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_CURVE, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -1345,7 +1326,7 @@ Test(EnableCapECDSA, invalid_args_sg, .fini = teardown) {
 Test(EnableCapECDSA, good_sigver, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_SIGVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_SIGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1392,7 +1373,7 @@ Test(EnableCapECDSA, good_sigver, .fini = teardown) {
 Test(EnableCapECDSA, invalid_args_sv, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_SIGVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_ECDSA_SIGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -1412,7 +1393,7 @@ Test(EnableCapECDSA, invalid_args_sv, .fini = teardown) {
 Test(EnableCapDRBG, good_hash, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HASHDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
                                    ACVP_DRBG_DER_FUNC_ENABLED, 0);
@@ -1449,7 +1430,7 @@ Test(EnableCapDRBG, good_hash, .fini = teardown) {
 Test(EnableCapDRBG, good_hmac, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_drbg_enable(ctx, ACVP_HMACDRBG, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMACDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
                                      ACVP_PREREQ_SHA, cvalue);
@@ -1490,7 +1471,7 @@ Test(EnableCapDRBG, good_hmac, .fini = teardown) {
 Test(EnableCapDRBG, good_ctr, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_drbg_enable(ctx, ACVP_CTRDRBG, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_CTRDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_CTRDRBG, 
                                      ACVP_PREREQ_AES, cvalue);
@@ -1531,7 +1512,7 @@ Test(EnableCapDRBG, good_ctr, .fini = teardown) {
  * enable drbg with null ctx
  */
 Test(EnableCapDRBG, null_ctx, .fini = teardown) {
-    rv = acvp_cap_drbg_enable(NULL, ACVP_HASHDRBG, &dummy_handler_success);
+    rv = acvp_enable_algorithm(NULL, ACVP_HASHDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -1541,7 +1522,7 @@ Test(EnableCapDRBG, null_ctx, .fini = teardown) {
 Test(EnableCapKASECC, good, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_CDH, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_ECC_CDH, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_PREREQ_ECDSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1572,7 +1553,7 @@ Test(EnableCapKASECC, good, .fini = teardown) {
     rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_B571);
     cr_assert(rv == ACVP_SUCCESS);
     
-    rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_COMP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_ECC_COMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_PREREQ_ECDSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1609,7 +1590,7 @@ Test(EnableCapKASECC, good, .fini = teardown) {
  * enable kas ecc with valid params
  */
 Test(EnableCapKASECC, null_ctx, .fini = teardown) {
-    rv = acvp_cap_kas_ecc_enable(NULL, ACVP_KAS_ECC_CDH, &dummy_handler_success);
+    rv = acvp_enable_algorithm(NULL, ACVP_KAS_ECC_CDH, &dummy_handler_success);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -1619,7 +1600,7 @@ Test(EnableCapKASECC, null_ctx, .fini = teardown) {
 Test(EnableCapKASECC, invalid_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_CDH, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_ECC_CDH, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_FUNCTION, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -1634,7 +1615,7 @@ Test(EnableCapKASECC, invalid_params, .fini = teardown) {
     rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
     
-    rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_COMP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_ECC_COMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_FUNCTION, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -1662,7 +1643,7 @@ Test(EnableCapKASECC, invalid_params, .fini = teardown) {
 Test(EnableCapKASFFC, good, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kas_ffc_enable(ctx, ACVP_KAS_FFC_COMP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_FFC_COMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ffc_set_prereq(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_PREREQ_DSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1698,7 +1679,7 @@ Test(EnableCapKASFFC, good, .fini = teardown) {
  * enable kas ffc with valid params
  */
 Test(EnableCapKASFFC, null_ctx, .fini = teardown) {
-    rv = acvp_cap_kas_ffc_enable(NULL, ACVP_KAS_FFC_COMP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(NULL, ACVP_KAS_FFC_COMP, &dummy_handler_success);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -1708,7 +1689,7 @@ Test(EnableCapKASFFC, null_ctx, .fini = teardown) {
 Test(EnableCapKASFFC, invalid_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kas_ffc_enable(ctx, ACVP_KAS_FFC_COMP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_FFC_COMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     // invalid cipher
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_KAS_FFC_FUNCTION, ACVP_KAS_FFC_FUNC_DPGEN);
@@ -1730,7 +1711,7 @@ Test(EnableCapKASFFC, invalid_params, .fini = teardown) {
 Test(EnableCapKASHKDF, invalid_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kda_enable(ctx, ACVP_KDA_HKDF, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDA_HKDF, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     // invalid cipher
     rv = acvp_cap_kda_set_parm(ctx, ACVP_HASH_SHA256, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_UPARTYINFO, NULL);
@@ -1771,7 +1752,7 @@ Test(EnableCapKASHKDF, invalid_params, .fini = teardown) {
 Test(EnableCapKASKDFONESTEP, invalid_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kda_enable(ctx, ACVP_KDA_ONESTEP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDA_ONESTEP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     // invalid cipher
     rv = acvp_cap_kda_set_parm(ctx, ACVP_HASH_SHA256, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_UPARTYINFO, NULL);
@@ -1811,7 +1792,7 @@ Test(EnableCapKASKDFONESTEP, invalid_params, .fini = teardown) {
 Test(EnableCapKDFTLS13, valid_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kdf_tls13_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF_TLS13, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS13, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1833,9 +1814,9 @@ Test(EnableCapKDFTLS13, valid_params, .fini = teardown) {
 Test(EnableCapKDFTLS13, invalid_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_kdf_tls13_enable(NULL, &dummy_handler_success);
+    rv = acvp_enable_algorithm(NULL, ACVP_KDF_TLS13, &dummy_handler_success);
     cr_assert(rv == ACVP_NO_CTX);
-    rv = acvp_cap_kdf_tls13_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF_TLS13, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS13, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_INVALID_ARG);

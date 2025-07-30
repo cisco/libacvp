@@ -24,7 +24,7 @@ static void setup(void) {
     strncpy(expo_str, "010001", 7); // RSA_F4
 
     /* Support is for IFC-SSC for hashZ only */
-    rv = acvp_cap_kas_ifc_enable(ctx, ACVP_KAS_IFC_SSC, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_IFC_SSC, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_RSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -67,7 +67,7 @@ Test(KAS_IFC_CAPABILITY, good) {
 
     setup_empty_ctx(&ctx);
     /* Support is for IFC-SSC for hashZ only */
-    rv = acvp_cap_kas_ifc_enable(ctx, ACVP_KAS_IFC_SSC, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_IFC_SSC, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_RSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

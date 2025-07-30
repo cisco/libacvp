@@ -21,7 +21,7 @@ static char cvalue[] = "same";
 static void setup(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kdf_tls12_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF_TLS12, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS12, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -38,7 +38,7 @@ static void setup(void) {
 static void setup_fail(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kdf_tls12_enable(ctx, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF_TLS12, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS12, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -62,7 +62,7 @@ static void teardown(void) {
 Test(KDF_TLS12_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kdf_tls12_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF_TLS12, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS12, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

@@ -25,7 +25,7 @@ static void setup(ACVP_CTX *ctx) {
     ACVP_RESULT rv;
 
     /* Enable capabilites */
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA1, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYLEN, 256, 448, 8);
     cr_assert(rv == ACVP_SUCCESS);
@@ -34,7 +34,7 @@ static void setup(ACVP_CTX *ctx) {
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA1, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_224, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA2_224, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYLEN, 256, 448, 8);
     cr_assert(rv == ACVP_SUCCESS);
@@ -43,7 +43,7 @@ static void setup(ACVP_CTX *ctx) {
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_224, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_256, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA2_256, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYLEN, 256, 448, 8);
     cr_assert(rv == ACVP_SUCCESS);
@@ -52,7 +52,7 @@ static void setup(ACVP_CTX *ctx) {
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_256, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_384, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA2_384, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYLEN, 256, 448, 8);
     cr_assert(rv == ACVP_SUCCESS);
@@ -61,7 +61,7 @@ static void setup(ACVP_CTX *ctx) {
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_384, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_512, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA2_512, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYLEN, 256, 448, 8);
     cr_assert(rv == ACVP_SUCCESS);
@@ -77,7 +77,7 @@ static void setup_fail(void) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA1, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA1, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYLEN, 256, 448, 8);
     cr_assert(rv == ACVP_SUCCESS);
@@ -86,7 +86,7 @@ static void setup_fail(void) {
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA1, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_224, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA2_224, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYLEN, 256, 448, 8);
     cr_assert(rv == ACVP_SUCCESS);
@@ -95,7 +95,7 @@ static void setup_fail(void) {
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_224, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_256, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA2_256, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYLEN, 256, 448, 8);
     cr_assert(rv == ACVP_SUCCESS);
@@ -104,7 +104,7 @@ static void setup_fail(void) {
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_256, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_384, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA2_384, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYLEN, 256, 448, 8);
     cr_assert(rv == ACVP_SUCCESS);
@@ -113,7 +113,7 @@ static void setup_fail(void) {
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_384, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_512, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMAC_SHA2_512, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYLEN, 256, 448, 8);
     cr_assert(rv == ACVP_SUCCESS);

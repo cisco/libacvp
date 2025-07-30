@@ -59,7 +59,7 @@ Test(Kdf135x963Func1, null_ctx) {
     }
     
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -102,7 +102,7 @@ Test(Kdf135x963Func2, null_obj) {
     setup_empty_ctx(&ctx);
     
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -127,7 +127,7 @@ Test(Kdf135x963Func3, properly) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -159,7 +159,7 @@ Test(Kdf135x963Func4, missing) {
     setup_empty_ctx(&ctx);
     
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -192,7 +192,7 @@ Test(Kdf135x963Func5, missing) {
     setup_empty_ctx(&ctx);
     
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -224,7 +224,7 @@ Test(Kdf135x963Func6, missing) {
     setup_empty_ctx(&ctx);
     
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -256,7 +256,7 @@ Test(Kdf135x963Func7, invalid) {
     setup_empty_ctx(&ctx);
     
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -288,7 +288,7 @@ Test(Kdf135x963Func8, missing) {
     setup_empty_ctx(&ctx);
     
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -320,7 +320,7 @@ Test(Kdf135x963Func9, missing) {
     setup_empty_ctx(&ctx);
     
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -352,7 +352,7 @@ Test(Kdf135x963Func10, missing) {
     setup_empty_ctx(&ctx);
     
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -385,7 +385,7 @@ Test(Kdf135x963Func11, missing) {
     setup_empty_ctx(&ctx);
     
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -418,7 +418,7 @@ Test(Kdf135x963Func11, missing_tgid) {
     setup_empty_ctx(&ctx);
     
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -451,7 +451,7 @@ Test(Kdf135x963Fail, cryptoFail1) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -484,7 +484,7 @@ Test(Kdf135x963Fail, cryptoFail2) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -517,7 +517,7 @@ Test(Kdf135x963Fail, tgFail) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -548,7 +548,7 @@ Test(Kdf135x963Fail, tcFail) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_X963, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

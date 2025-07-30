@@ -141,7 +141,7 @@ Test(DsaPqgGenApi, null_ctx) {
     cr_assert(rv == ACVP_UNSUPPORTED_OP);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_PQGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     setup_pqggen();
 
@@ -168,7 +168,7 @@ Test(DsaPqgGenFunc, null_ctx) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_PQGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     setup_pqggen();
 
@@ -382,7 +382,7 @@ Test(DsaKeyGenApi, null_ctx) {
     cr_assert(rv == ACVP_UNSUPPORTED_OP);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     setup_keygen();
 
@@ -408,7 +408,7 @@ Test(DsaKeyGenFunc, null_ctx) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     setup_keygen();
 
@@ -551,7 +551,7 @@ Test(DsaSigGenApi, null_ctx) {
     cr_assert(rv == ACVP_UNSUPPORTED_OP);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_SIGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     setup_siggen();
 
@@ -578,7 +578,7 @@ Test(DsaSigGenFunc, null_ctx) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_SIGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     setup_siggen();
 
@@ -756,7 +756,7 @@ Test(DsaSigVerApi, null_ctx) {
     cr_assert(rv == ACVP_UNSUPPORTED_OP);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_SIGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -810,7 +810,7 @@ Test(DsaSigVerFunc, null_ctx) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_SIGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1086,7 +1086,7 @@ Test(DsaPqgVerApi, null_ctx) {
     cr_assert(rv == ACVP_UNSUPPORTED_OP);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_PQGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGVER, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1140,7 +1140,7 @@ Test(DsaPqgVerFunc, null_ctx) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_PQGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGVER, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1384,7 +1384,7 @@ Test(DsaPqgVer_HANDLER, cryptoFail1) {
 
     setup_empty_ctx(&ctx);
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGGEN, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_PQGGEN, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     setup_pqggen();
@@ -1418,7 +1418,7 @@ Test(DsaPqgVer_HANDLER, cryptoFail2) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGGEN, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_PQGGEN, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     setup_pqggen();
@@ -1452,7 +1452,7 @@ Test(DsaKeyGen_HANDLER, cryptoFail1) {
     setup_empty_ctx(&ctx);
     /* Enable capabilites */
 
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_KEYGEN, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     setup_keygen();
@@ -1486,7 +1486,7 @@ Test(DsaKeyGen_HANDLER, cryptoFail2) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_KEYGEN, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     setup_keygen();
@@ -1520,7 +1520,7 @@ Test(SigGen_HANDLER, cryptoFail1) {
     setup_empty_ctx(&ctx);
     /* Enable capabilites */
 
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_SIGGEN, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     setup_siggen();
@@ -1554,7 +1554,7 @@ Test(SigGen_HANDLER, cryptoFail2) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_DSA_SIGGEN, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     setup_siggen();

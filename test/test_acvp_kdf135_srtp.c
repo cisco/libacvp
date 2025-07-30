@@ -23,7 +23,7 @@ static void setup(void) {
 
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kdf135_srtp_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SRTP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SRTP, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -46,7 +46,7 @@ static void setup_fail(void) {
 
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kdf135_srtp_enable(ctx, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SRTP, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SRTP, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -76,7 +76,7 @@ Test(KDF135_SRTP_CAPABILITY, good) {
 
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kdf135_srtp_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SRTP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SRTP, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

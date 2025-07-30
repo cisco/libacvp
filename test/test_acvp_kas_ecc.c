@@ -21,7 +21,7 @@ static char cvalue[] = "same";
 static void setup(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_CDH, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_ECC_CDH, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_PREREQ_ECDSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -52,7 +52,7 @@ static void setup(void) {
     rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_B571);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_COMP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_ECC_COMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_PREREQ_ECDSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -83,7 +83,7 @@ static void setup(void) {
     rv = acvp_cap_kas_ecc_set_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_EE, ACVP_EC_CURVE_P521, ACVP_SHA512);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_SSC, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_ECC_SSC, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_PREREQ_ECDSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -113,7 +113,7 @@ static void setup(void) {
 static void setup_fail(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_CDH, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_ECC_CDH, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_PREREQ_ECDSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -144,7 +144,7 @@ static void setup_fail(void) {
     rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_B571);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_COMP, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_ECC_COMP, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_PREREQ_ECDSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -186,7 +186,7 @@ static void teardown(void) {
 Test(KAS_ECC_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_CDH, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_ECC_CDH, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_PREREQ_ECDSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -217,7 +217,7 @@ Test(KAS_ECC_CAPABILITY, good) {
     rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_B571);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_COMP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_ECC_COMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_PREREQ_ECDSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
