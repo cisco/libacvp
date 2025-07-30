@@ -24,7 +24,7 @@ static void setup(void) {
 
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
@@ -57,7 +57,7 @@ static void setup_fail(void) {
 
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_KEYGEN, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
@@ -97,7 +97,7 @@ Test(RSA_KEYGEN_CAPABILITY, good) {
 
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);

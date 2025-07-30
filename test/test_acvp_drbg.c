@@ -21,7 +21,7 @@ static char cvalue[] = "same";
 static void setup(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HASHDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
@@ -60,7 +60,7 @@ static void setup(void) {
             ACVP_DRBG_RET_BITS_LEN, 160);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_enable(ctx, ACVP_HMACDRBG, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMACDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
@@ -104,7 +104,7 @@ static void setup(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     // ACVP_CTRDRBG
-    rv = acvp_cap_drbg_enable(ctx, ACVP_CTRDRBG, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_CTRDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     //Add length range
@@ -144,7 +144,7 @@ static void setup(void) {
 static void setup_fail(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_HASHDRBG, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
@@ -183,7 +183,7 @@ static void setup_fail(void) {
             ACVP_DRBG_RET_BITS_LEN, 160);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_enable(ctx, ACVP_HMACDRBG, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMACDRBG, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
@@ -227,7 +227,7 @@ static void setup_fail(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     // ACVP_CTRDRBG
-    rv = acvp_cap_drbg_enable(ctx, ACVP_CTRDRBG, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_CTRDRBG, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     //Add length range
@@ -274,7 +274,7 @@ static void teardown(void) {
 Test(DRBG_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HASHDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
@@ -313,7 +313,7 @@ Test(DRBG_CAPABILITY, good) {
             ACVP_DRBG_RET_BITS_LEN, 160);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_enable(ctx, ACVP_HMACDRBG, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HMACDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
@@ -357,7 +357,7 @@ Test(DRBG_CAPABILITY, good) {
     cr_assert(rv == ACVP_SUCCESS);
 
     // ACVP_CTRDRBG
-    rv = acvp_cap_drbg_enable(ctx, ACVP_CTRDRBG, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_CTRDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     //Add length range

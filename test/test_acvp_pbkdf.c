@@ -21,7 +21,7 @@ static char cvalue[] = "same";
 static void setup(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_pbkdf_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_PBKDF, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_PBKDF, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -63,7 +63,7 @@ static void teardown(void) {
 Test(PBKDF_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_pbkdf_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_PBKDF, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_PBKDF, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

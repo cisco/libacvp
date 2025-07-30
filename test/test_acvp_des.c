@@ -23,7 +23,7 @@ static void setup(void) {
     /*
      * Enable 3DES-CBC
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_CBC, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -34,7 +34,7 @@ static void setup(void) {
     /*
      * Enable TDES-CTR
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CTR, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_CTR, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -53,7 +53,7 @@ static void setup_fail(void) {
     /*
      * Enable 3DES-CBC
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_CBC, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -65,7 +65,7 @@ static void setup_fail(void) {
     /*
      * Enable TDES-CTR
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CTR, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_CTR, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -91,7 +91,7 @@ Test(DES_CAPABILITY, good) {
     /*
      * Enable 3DES-ECB
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_ECB, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_ECB, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -102,7 +102,7 @@ Test(DES_CAPABILITY, good) {
     /*
      * Enable 3DES-CBC
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_CBC, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -113,7 +113,7 @@ Test(DES_CAPABILITY, good) {
     /*
      * Enable 3DES-OFB
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_OFB, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_OFB, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
@@ -123,7 +123,7 @@ Test(DES_CAPABILITY, good) {
     /*
      * Enable 3DES-CFB64
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CFB64, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_CFB64, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
@@ -133,7 +133,7 @@ Test(DES_CAPABILITY, good) {
     /*
      * Enable 3DES-CFB8
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CFB8, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_CFB8, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -144,7 +144,7 @@ Test(DES_CAPABILITY, good) {
     /*
      * Enable 3DES-CFB1
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CFB1, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_CFB1, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
@@ -155,7 +155,7 @@ Test(DES_CAPABILITY, good) {
     /*
      * Enable TDES-CTR
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CTR, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_TDES_CTR, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);

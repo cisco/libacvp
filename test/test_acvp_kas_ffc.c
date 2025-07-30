@@ -21,7 +21,7 @@ static char cvalue[] = "same";
 static void setup(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kas_ffc_enable(ctx, ACVP_KAS_FFC_COMP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_FFC_COMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ffc_set_prereq(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_PREREQ_DSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -53,7 +53,7 @@ static void setup(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     /* Support is for FFC-SSC for hashZ only */
-    rv = acvp_cap_kas_ffc_enable(ctx, ACVP_KAS_FFC_SSC, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_FFC_SSC, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ffc_set_prereq(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_PREREQ_DSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -79,7 +79,7 @@ static void setup(void) {
 static void setup_fail(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kas_ffc_enable(ctx, ACVP_KAS_FFC_COMP, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_FFC_COMP, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ffc_set_prereq(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_PREREQ_DSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -111,7 +111,7 @@ static void setup_fail(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     /* Support is for FFC-SSC for hashZ only */
-    rv = acvp_cap_kas_ffc_enable(ctx, ACVP_KAS_FFC_SSC, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_FFC_SSC, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ffc_set_prereq(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_PREREQ_DSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -139,7 +139,7 @@ static void sp_setup(void) {
     setup_empty_ctx(&ctx);
 
     /* Support is for FFC-SSC for hashZ only */
-    rv = acvp_cap_kas_ffc_enable(ctx, ACVP_KAS_FFC_SSC, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_FFC_SSC, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ffc_set_prereq(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_PREREQ_DSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -197,7 +197,7 @@ static void teardown(void) {
 Test(KAS_FFC_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kas_ffc_enable(ctx, ACVP_KAS_FFC_COMP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KAS_FFC_COMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ffc_set_prereq(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_PREREQ_DSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

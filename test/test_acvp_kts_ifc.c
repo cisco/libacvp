@@ -23,7 +23,7 @@ static void setup(void) {
     char *expo_str = calloc(7, sizeof(char));
     strncpy(expo_str, "010001", 7); // RSA_F4
 
-    rv = acvp_cap_kts_ifc_enable(ctx, ACVP_KTS_IFC, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KTS_IFC, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KTS_IFC, ACVP_PREREQ_RSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -80,7 +80,7 @@ Test(KTS_IFC_CAPABILITY, good) {
     char *expo_str = calloc(7, sizeof(char));
     strncpy(expo_str, "010001", 7); // RSA_F4
 
-    rv = acvp_cap_kts_ifc_enable(ctx, ACVP_KTS_IFC, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KTS_IFC, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KTS_IFC, ACVP_PREREQ_RSA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

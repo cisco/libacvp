@@ -39,7 +39,7 @@ Test(Kdf135SshApi, null_ctx) {
     cr_assert(rv == ACVP_UNSUPPORTED_OP);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SSH, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -85,7 +85,7 @@ Test(Kdf135SshFunc, null_ctx) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SSH, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -268,7 +268,7 @@ Test(Kdf135SshFail, cryptoFail1) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SSH, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -317,7 +317,7 @@ Test(Kdf135SshFail, cryptoFail2) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SSH, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -367,7 +367,7 @@ Test(Kdf135SshFail, tcidFail) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SSH, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -414,7 +414,7 @@ Test(Kdf135SshFail, tcFail) {
     setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDF135_SSH, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

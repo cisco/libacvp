@@ -21,7 +21,7 @@ static char cvalue[] = "same";
 static void setup(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_GCM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_GCM, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -69,7 +69,7 @@ static void setup(void) {
     /*
      * Enable AES-ECB 128,192,256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_ECB, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_ECB, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -91,7 +91,7 @@ static void setup(void) {
     /*
      * Enable AES-CBC 128 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CBC, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -113,7 +113,7 @@ static void setup(void) {
     /*
      * Enable AES-CBC-CS1, CS2, and CS3
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS1, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CBC_CS1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
@@ -126,7 +126,7 @@ static void setup(void) {
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 65536, 8);
     cr_assert(rv == ACVP_SUCCESS);
     
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS2, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CBC_CS2, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
@@ -139,7 +139,7 @@ static void setup(void) {
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 65536, 8);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS3, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CBC_CS3, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
@@ -155,7 +155,7 @@ static void setup(void) {
     /*
      * Enable AES-CFB1 128,192,256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB1, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CFB1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -177,7 +177,7 @@ static void setup(void) {
     /*
      * Enable AES-CFB8 128,192,256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB8, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CFB8, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -199,7 +199,7 @@ static void setup(void) {
     /*
      * Enable AES-CFB128 128,192,256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB128, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CFB128, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -221,7 +221,7 @@ static void setup(void) {
     /*
      * Enable AES-OFB 128, 192, 256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_OFB, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_OFB, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -243,7 +243,7 @@ static void setup(void) {
     /*
      * Register AES CCM capabilities
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CCM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CCM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_CCM, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -283,7 +283,7 @@ static void setup(void) {
      * Note: this is with padding disabled, minimum PT length is 128 bits and must be
      *       a multiple of 64 bits. openssl does not support INVERSE mode.
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_KW, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_KW, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -313,7 +313,7 @@ static void setup(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
 #ifdef OPENSSL_KWP
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_KWP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_KWP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -346,7 +346,7 @@ static void setup(void) {
     /*
      * Enable AES-XTS 128 and 256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_XTS, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_XTS, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -368,7 +368,7 @@ static void setup(void) {
     /*
      * Enable AES-CTR 128, 192, 256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CTR, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CTR, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -396,7 +396,7 @@ static void setup(void) {
 static void setup_fail(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_GCM, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_GCM, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -444,7 +444,7 @@ static void setup_fail(void) {
     /*
      * Enable AES-ECB 128,192,256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_ECB, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_ECB, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -466,7 +466,7 @@ static void setup_fail(void) {
     /*
      * Enable AES-CBC 128 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CBC, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -488,7 +488,7 @@ static void setup_fail(void) {
     /*
      * Enable AES-CFB1 128,192,256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB1, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CFB1, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -510,7 +510,7 @@ static void setup_fail(void) {
     /*
      * Enable AES-CFB8 128,192,256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB8, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CFB8, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -532,7 +532,7 @@ static void setup_fail(void) {
     /*
      * Enable AES-CFB128 128,192,256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB128, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CFB128, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -554,7 +554,7 @@ static void setup_fail(void) {
     /*
      * Enable AES-OFB 128, 192, 256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_OFB, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_OFB, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -576,7 +576,7 @@ static void setup_fail(void) {
     /*
      * Register AES CCM capabilities
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CCM, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CCM, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_CCM, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -616,7 +616,7 @@ static void setup_fail(void) {
      * Note: this is with padding disabled, minimum PT length is 128 bits and must be
      *       a multiple of 64 bits. openssl does not support INVERSE mode.
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_KW, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_KW, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -646,7 +646,7 @@ static void setup_fail(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
 #ifdef OPENSSL_KWP
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_KWP, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_KWP, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -679,7 +679,7 @@ static void setup_fail(void) {
     /*
      * Enable AES-XTS 128 and 256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_XTS, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_XTS, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -701,7 +701,7 @@ static void setup_fail(void) {
     /*
      * Enable AES-CTR 128, 192, 256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CTR, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CTR, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -724,7 +724,7 @@ static void setup_fail(void) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PTLEN, 128);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_XPN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_XPN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_XPN, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -761,7 +761,7 @@ static void teardown(void) {
 Test(AES_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_GCM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_GCM, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -809,7 +809,7 @@ Test(AES_CAPABILITY, good) {
     /*
      * Enable AES-ECB 128,192,256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_ECB, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_ECB, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -831,7 +831,7 @@ Test(AES_CAPABILITY, good) {
     /*
      * Enable AES-CBC 128 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CBC, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -853,7 +853,7 @@ Test(AES_CAPABILITY, good) {
     /*
      * Enable AES-CBC-CS1, CS2, and CS3
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS1, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CBC_CS1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
@@ -866,7 +866,7 @@ Test(AES_CAPABILITY, good) {
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 65536, 8);
     cr_assert(rv == ACVP_SUCCESS);
     
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS2, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CBC_CS2, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
@@ -879,7 +879,7 @@ Test(AES_CAPABILITY, good) {
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 65536, 8);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS3, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CBC_CS3, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
@@ -895,7 +895,7 @@ Test(AES_CAPABILITY, good) {
     /*
      * Enable AES-CFB1 128,192,256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB1, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CFB1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -917,7 +917,7 @@ Test(AES_CAPABILITY, good) {
     /*
      * Enable AES-CFB8 128,192,256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB8, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CFB8, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -939,7 +939,7 @@ Test(AES_CAPABILITY, good) {
     /*
      * Enable AES-CFB128 128,192,256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB128, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CFB128, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -961,7 +961,7 @@ Test(AES_CAPABILITY, good) {
     /*
      * Enable AES-OFB 128, 192, 256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_OFB, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_OFB, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -983,7 +983,7 @@ Test(AES_CAPABILITY, good) {
     /*
      * Register AES CCM capabilities
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CCM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CCM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_CCM, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1023,7 +1023,7 @@ Test(AES_CAPABILITY, good) {
      * Note: this is with padding disabled, minimum PT length is 128 bits and must be
      *       a multiple of 64 bits. openssl does not support INVERSE mode.
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_KW, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_KW, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -1053,7 +1053,7 @@ Test(AES_CAPABILITY, good) {
     cr_assert(rv == ACVP_SUCCESS);
 
 #ifdef OPENSSL_KWP
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_KWP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_KWP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -1086,7 +1086,7 @@ Test(AES_CAPABILITY, good) {
     /*
      * Enable AES-XTS 128 and 256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_XTS, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_XTS, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -1108,7 +1108,7 @@ Test(AES_CAPABILITY, good) {
     /*
      * Enable AES-CTR 128, 192, 256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CTR, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_CTR, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -1131,7 +1131,7 @@ Test(AES_CAPABILITY, good) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PTLEN, 128);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_XPN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_AES_XPN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_XPN, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

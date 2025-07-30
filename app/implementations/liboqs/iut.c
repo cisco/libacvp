@@ -41,7 +41,7 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (cfg->ml_kem || cfg->testall) {
-        rv = acvp_cap_ml_kem_enable(ctx, ACVP_ML_KEM_KEYGEN, &app_ml_kem_handler);
+        rv = acvp_enable_algorithm(ctx, ACVP_ML_KEM_KEYGEN, &app_ml_kem_handler);
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_KEYGEN, ACVP_ML_KEM_PARAM_PARAMETER_SET, ACVP_ML_KEM_PARAM_SET_ML_KEM_512);
         CHECK_ENABLE_CAP_RV(rv);
@@ -50,7 +50,7 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
         rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_KEYGEN, ACVP_ML_KEM_PARAM_PARAMETER_SET, ACVP_ML_KEM_PARAM_SET_ML_KEM_1024);
         CHECK_ENABLE_CAP_RV(rv);
 
-        rv = acvp_cap_ml_kem_enable(ctx, ACVP_ML_KEM_XCAP, &app_ml_kem_handler);
+        rv = acvp_enable_algorithm(ctx, ACVP_ML_KEM_XCAP, &app_ml_kem_handler);
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP, ACVP_ML_KEM_PARAM_PARAMETER_SET, ACVP_ML_KEM_PARAM_SET_ML_KEM_512);
         CHECK_ENABLE_CAP_RV(rv);
@@ -69,7 +69,7 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
      * or external interfaces without prehash mode. Should support deterministic and non-deterministic modes.
      */
     if (cfg->ml_dsa || cfg->testall) {
-        rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_KEYGEN, &app_ml_dsa_handler);
+        rv = acvp_enable_algorithm(ctx, ACVP_ML_DSA_KEYGEN, &app_ml_dsa_handler);
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_KEYGEN, 0, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_44);
         CHECK_ENABLE_CAP_RV(rv);
@@ -78,7 +78,7 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
         rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_KEYGEN, 0, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_87);
         CHECK_ENABLE_CAP_RV(rv);
 
-        rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_SIGGEN, &app_ml_dsa_handler);
+        rv = acvp_enable_algorithm(ctx, ACVP_ML_DSA_SIGGEN, &app_ml_dsa_handler);
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_DETERMINISTIC_MODE, ACVP_DETERMINISTIC_BOTH);
         CHECK_ENABLE_CAP_RV(rv);
@@ -99,7 +99,7 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
         rv = acvp_cap_ml_dsa_set_domain(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_CONTEXT_LEN, 0, 2040, 8);
         CHECK_ENABLE_CAP_RV(rv);
 
-        rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_SIGVER, &app_ml_dsa_handler);
+        rv = acvp_enable_algorithm(ctx, ACVP_ML_DSA_SIGVER, &app_ml_dsa_handler);
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_SIG_INTERFACE, ACVP_SIG_INTERFACE_BOTH);
         CHECK_ENABLE_CAP_RV(rv);

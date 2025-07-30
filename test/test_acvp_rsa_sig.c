@@ -21,7 +21,7 @@ static char cvalue[] = "same";
 static void setup_siggen(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
@@ -52,7 +52,7 @@ static void setup_siggen(void) {
 static void setup_siggen_fail(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_SIGGEN, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
@@ -86,7 +86,7 @@ static void setup_sigver(void) {
     char *expo_str = calloc(7, sizeof(char));
     strncpy(expo_str, "010001", 7); // RSA_F4
     
-    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_SIGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
@@ -126,7 +126,7 @@ static void setup_sigver_fail(void) {
     char *expo_str = calloc(7, sizeof(char));
     strncpy(expo_str, "010001", 7); // RSA_F4
     
-    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_SIGVER, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
@@ -171,7 +171,7 @@ static void teardown(void) {
 Test(RSA_SIGGEN_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGGEN, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -449,7 +449,7 @@ Test(RSA_SIGVER_CAPABILITY, good) {
     char *expo_str = calloc(7, sizeof(char));
     strncpy(expo_str, "010001", 7); // RSA_F4
     
-    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_SIGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);

@@ -21,7 +21,7 @@ static char cvalue[] = "same";
 static void setup(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kda_enable(ctx, ACVP_KDA_HKDF, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDA_HKDF, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDA_HKDF, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -59,7 +59,7 @@ static void setup(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     // kdf onestep
-    rv = acvp_cap_kda_enable(ctx, ACVP_KDA_ONESTEP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDA_ONESTEP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDA_ONESTEP, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -116,7 +116,7 @@ Test(KDA_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
 
-    rv = acvp_cap_kda_enable(ctx, ACVP_KDA_HKDF, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDA_HKDF, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDA_HKDF, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -154,7 +154,7 @@ Test(KDA_CAPABILITY, good) {
     cr_assert(rv == ACVP_SUCCESS);
 
     // kdf onestep
-    rv = acvp_cap_kda_enable(ctx, ACVP_KDA_ONESTEP, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KDA_ONESTEP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDA_ONESTEP, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

@@ -3091,7 +3091,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
      */
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
-        ACVP_LOG_ERR("Cap entry not found, use acvp_cap_sym_cipher_enable() first.");
+        ACVP_LOG_ERR("Cap entry not found, use acvp_enable_algorithm() first.");
         return ACVP_NO_CAP;
     }
 
@@ -3448,7 +3448,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm_string(ACVP_CTX *ctx,
      */
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
-        ACVP_LOG_ERR("Cap entry not found, use acvp_cap_sym_cipher_enable() first.");
+        ACVP_LOG_ERR("Cap entry not found, use acvp_enable_algorithm() first.");
         return ACVP_NO_CAP;
     }
 
@@ -3641,7 +3641,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_iv_modes(ACVP_CTX *ctx,
      */
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
-        ACVP_LOG_ERR("Cap entry not found, use acvp_cap_sym_cipher_enable() first.");
+        ACVP_LOG_ERR("Cap entry not found, use acvp_enable_algorithm() first.");
         return ACVP_NO_CAP;
     }
 
@@ -3667,23 +3667,9 @@ ACVP_RESULT acvp_cap_sym_cipher_set_iv_modes(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-/*
- * This function is called by the application to register a crypto
- * capability for symmetric ciphers, along with a handler that the
- * application implements when that particular crypto operation is
- * needed by libacvp.
- *
- * This function should be called one or more times for each crypto
- * capability supported by the crypto module being validated.  This
- * needs to be called after acvp_create_test_session() and prior to
- * calling acvp_register().
- *
- */
-ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
-                                       ACVP_CIPHER cipher,
-                                       int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
+ACVP_RESULT acvp_enable_algorithm(ACVP_CTX *ctx, ACVP_CIPHER cipher, int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_RESULT result = ACVP_UNSUPPORTED_OP;
+    ACVP_CAP_TYPE type = 0;
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -3726,8 +3712,8 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_TDES_CFBP64:
     case ACVP_TDES_CTR:
     case ACVP_TDES_KW:
+        type = ACVP_SYM_TYPE;
         break;
-    case ACVP_CIPHER_START:
     case ACVP_HASH_SHA1:
     case ACVP_HASH_SHA224:
     case ACVP_HASH_SHA256:
@@ -3741,9 +3727,13 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_HASH_SHA3_512:
     case ACVP_HASH_SHAKE_128:
     case ACVP_HASH_SHAKE_256:
+        type = ACVP_HASH_TYPE;
+        break;
     case ACVP_HASHDRBG:
     case ACVP_HMACDRBG:
     case ACVP_CTRDRBG:
+        type = ACVP_DRBG_TYPE;
+        break;
     case ACVP_HMAC_SHA1:
     case ACVP_HMAC_SHA2_224:
     case ACVP_HMAC_SHA2_256:
@@ -3755,122 +3745,178 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_HMAC_SHA3_256:
     case ACVP_HMAC_SHA3_384:
     case ACVP_HMAC_SHA3_512:
+        type = ACVP_HMAC_TYPE;
+        break;
     case ACVP_CMAC_AES:
     case ACVP_CMAC_TDES:
+        type = ACVP_CMAC_TYPE;
+        break;
     case ACVP_KMAC_128:
     case ACVP_KMAC_256:
+        type = ACVP_KMAC_TYPE;
+        break;
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
     case ACVP_DSA_PQGVER:
     case ACVP_DSA_SIGGEN:
     case ACVP_DSA_SIGVER:
+        type = ACVP_DSA_TYPE;
+        break;
     case ACVP_RSA_KEYGEN:
+        type = ACVP_RSA_KEYGEN_TYPE;
+        break;
     case ACVP_RSA_SIGGEN:
+        type = ACVP_RSA_SIGGEN_TYPE;
+        break;
     case ACVP_RSA_SIGVER:
+        type = ACVP_RSA_SIGVER_TYPE;
+        break;
     case ACVP_RSA_SIGPRIM:
     case ACVP_RSA_DECPRIM:
+        type = ACVP_RSA_PRIM_TYPE;
+        break;
     case ACVP_ECDSA_KEYGEN:
+        type = ACVP_ECDSA_KEYGEN_TYPE;
+        break;
     case ACVP_ECDSA_KEYVER:
+        type = ACVP_ECDSA_KEYVER_TYPE;
+        break;
     case ACVP_ECDSA_SIGGEN:
+        type = ACVP_ECDSA_SIGGEN_TYPE;
+        break;
     case ACVP_ECDSA_SIGVER:
+        type = ACVP_ECDSA_SIGVER_TYPE;
+        break;
     case ACVP_DET_ECDSA_SIGGEN:
+        type = ACVP_DET_ECDSA_SIGGEN_TYPE;
+        break;
     case ACVP_EDDSA_KEYGEN:
+        type = ACVP_EDDSA_KEYGEN_TYPE;
+        break;
     case ACVP_EDDSA_KEYVER:
+        type = ACVP_EDDSA_KEYVER_TYPE;
+        break;
     case ACVP_EDDSA_SIGGEN:
+        type = ACVP_EDDSA_SIGGEN_TYPE;
+        break;
     case ACVP_EDDSA_SIGVER:
+        type = ACVP_EDDSA_SIGVER_TYPE;
+        break;
     case ACVP_KDF135_SNMP:
+        type = ACVP_KDF135_SNMP_TYPE;
+        break;
     case ACVP_KDF135_SSH:
+        type = ACVP_KDF135_SSH_TYPE;
+        break;
     case ACVP_KDF135_SRTP:
+        type = ACVP_KDF135_SRTP_TYPE;
+        break;
     case ACVP_KDF135_IKEV2:
+        type = ACVP_KDF135_IKEV2_TYPE;
+        break;
     case ACVP_KDF135_IKEV1:
+        type = ACVP_KDF135_IKEV1_TYPE;
+        break;
     case ACVP_KDF135_X942:
+        type = ACVP_KDF135_X942_TYPE;
+        break;
     case ACVP_KDF135_X963:
+        type = ACVP_KDF135_X963_TYPE;
+        break;
     case ACVP_KDF108:
+        type = ACVP_KDF108_TYPE;
+        break;
     case ACVP_PBKDF:
+        type = ACVP_PBKDF_TYPE;
+        break;
     case ACVP_KDF_TLS12:
+        type = ACVP_KDF_TLS12_TYPE;
+        break;
     case ACVP_KDF_TLS13:
+        type = ACVP_KDF_TLS13_TYPE;
+        break;
     case ACVP_KAS_ECC_CDH:
+        type = ACVP_KAS_ECC_CDH_TYPE;
+        break;
     case ACVP_KAS_ECC_COMP:
+        type = ACVP_KAS_ECC_COMP_TYPE;
+        break;
     case ACVP_KAS_ECC_NOCOMP:
+        type = ACVP_KAS_ECC_NOCOMP_TYPE;
+        break;
     case ACVP_KAS_ECC_SSC:
+        type = ACVP_KAS_ECC_SSC_TYPE;
+        break;
     case ACVP_KAS_FFC_COMP:
-    case ACVP_KAS_FFC_NOCOMP:
-    case ACVP_KDA_ONESTEP:
-    case ACVP_KDA_TWOSTEP:
-    case ACVP_KDA_HKDF:
+        type = ACVP_KAS_FFC_COMP_TYPE;
+        break;
     case ACVP_KAS_FFC_SSC:
+        type = ACVP_KAS_FFC_SSC_TYPE;
+        break;
+    case ACVP_KAS_FFC_NOCOMP:
+        type = ACVP_KAS_FFC_NOCOMP_TYPE;
+        break;
     case ACVP_KAS_IFC_SSC:
+        type = ACVP_KAS_IFC_TYPE;
+        break;
+    case ACVP_KDA_ONESTEP:
+        type = ACVP_KDA_ONESTEP_TYPE;
+        break;
+    case ACVP_KDA_TWOSTEP:
+        type = ACVP_KDA_TWOSTEP_TYPE;
+        break;
+    case ACVP_KDA_HKDF:
+        type = ACVP_KDA_HKDF_TYPE;
+        break;
     case ACVP_KTS_IFC:
+        type = ACVP_KTS_IFC_TYPE;
+        break;
     case ACVP_SAFE_PRIMES_KEYGEN:
+        type = ACVP_SAFE_PRIMES_KEYGEN_TYPE;
+        break;
     case ACVP_SAFE_PRIMES_KEYVER:
-    case ACVP_LMS_SIGGEN:
-    case ACVP_LMS_SIGVER:
+        type = ACVP_SAFE_PRIMES_KEYVER_TYPE;
+        break;
     case ACVP_LMS_KEYGEN:
+        type = ACVP_LMS_KEYGEN_TYPE;
+        break;
+    case ACVP_LMS_SIGGEN:
+        type = ACVP_LMS_SIGGEN_TYPE;
+        break;
+    case ACVP_LMS_SIGVER:
+        type = ACVP_LMS_SIGVER_TYPE;
+        break;
     case ACVP_ML_DSA_KEYGEN:
+        type = ACVP_ML_DSA_KEYGEN_TYPE;
+        break;
     case ACVP_ML_DSA_SIGGEN:
+        type = ACVP_ML_DSA_SIGGEN_TYPE;
+        break;
     case ACVP_ML_DSA_SIGVER:
+        type = ACVP_ML_DSA_SIGVER_TYPE;
+        break;
     case ACVP_ML_KEM_KEYGEN:
+        type = ACVP_ML_KEM_KEYGEN_TYPE;
+        break;
     case ACVP_ML_KEM_XCAP:
+        type = ACVP_ML_KEM_XCAP_TYPE;
+        break;
     case ACVP_SLH_DSA_KEYGEN:
+        type = ACVP_SLH_DSA_KEYGEN_TYPE;
+        break;
     case ACVP_SLH_DSA_SIGGEN:
+        type = ACVP_SLH_DSA_SIGGEN_TYPE;
+        break;
     case ACVP_SLH_DSA_SIGVER:
+        type = ACVP_SLH_DSA_SIGVER_TYPE;
+        break;
+    case ACVP_CIPHER_START:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
     }
 
-    result = acvp_cap_list_append(ctx, ACVP_SYM_TYPE, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
-ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
-                                 ACVP_CIPHER cipher,
-                                 int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-    ACVP_SUB_HASH alg;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_hash_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-
-    switch (alg) {
-    case ACVP_SUB_HASH_SHA1:
-    case ACVP_SUB_HASH_SHA2_224:
-    case ACVP_SUB_HASH_SHA2_256:
-    case ACVP_SUB_HASH_SHA2_384:
-    case ACVP_SUB_HASH_SHA2_512:
-    case ACVP_SUB_HASH_SHA2_512_224:
-    case ACVP_SUB_HASH_SHA2_512_256:
-    case ACVP_SUB_HASH_SHA3_224:
-    case ACVP_SUB_HASH_SHA3_256:
-    case ACVP_SUB_HASH_SHA3_384:
-    case ACVP_SUB_HASH_SHA3_512:
-    case ACVP_SUB_HASH_SHAKE_128:
-    case ACVP_SUB_HASH_SHAKE_256:
-        break;
-    default:
-        ACVP_LOG_ERR("Invalid parameter 'cipher'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_HASH_TYPE, cipher, crypto_handler);
+    result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
 
     if (result == ACVP_DUP_CIPHER) {
         ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
@@ -4180,54 +4226,6 @@ static ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
     return retval;
 }
 
-ACVP_RESULT acvp_cap_hmac_enable(ACVP_CTX *ctx,
-                                 ACVP_CIPHER cipher,
-                                 int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-    ACVP_SUB_HMAC alg;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_hmac_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_HMAC_SHA1:
-    case ACVP_SUB_HMAC_SHA2_224:
-    case ACVP_SUB_HMAC_SHA2_256:
-    case ACVP_SUB_HMAC_SHA2_384:
-    case ACVP_SUB_HMAC_SHA2_512:
-    case ACVP_SUB_HMAC_SHA2_512_224:
-    case ACVP_SUB_HMAC_SHA2_512_256:
-    case ACVP_SUB_HMAC_SHA3_224:
-    case ACVP_SUB_HMAC_SHA3_256:
-    case ACVP_SUB_HMAC_SHA3_384:
-    case ACVP_SUB_HMAC_SHA3_512:
-        break;
-    default:
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_HMAC_TYPE, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
 ACVP_RESULT acvp_cap_hmac_set_domain(ACVP_CTX *ctx,
                                      ACVP_CIPHER cipher,
                                      ACVP_HMAC_PARM parm,
@@ -4367,44 +4365,6 @@ static ACVP_RESULT acvp_validate_cmac_parm_value(ACVP_CMAC_PARM parm, int value)
     return retval;
 }
 
-ACVP_RESULT acvp_cap_cmac_enable(ACVP_CTX *ctx,
-                                 ACVP_CIPHER cipher,
-                                 int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-    ACVP_SUB_CMAC alg;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_cmac_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_CMAC_AES:
-    case ACVP_SUB_CMAC_TDES:
-        break;
-    default:
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_CMAC_TYPE, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
 ACVP_RESULT acvp_cap_cmac_set_domain(ACVP_CTX *ctx,
                                      ACVP_CIPHER cipher,
                                      ACVP_CMAC_PARM parm,
@@ -4517,44 +4477,6 @@ ACVP_RESULT acvp_cap_cmac_set_parm(ACVP_CTX *ctx,
     }
 
     return ACVP_SUCCESS;
-}
-
-ACVP_RESULT acvp_cap_kmac_enable(ACVP_CTX *ctx,
-                                 ACVP_CIPHER cipher,
-                                 int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-    ACVP_SUB_KMAC alg;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_kmac_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_KMAC_128:
-    case ACVP_SUB_KMAC_256:
-        break;
-    default:
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_KMAC_TYPE, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
 }
 
 ACVP_RESULT acvp_cap_kmac_set_parm(ACVP_CTX *ctx,
@@ -4968,30 +4890,6 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_cap_drbg_enable(ACVP_CTX *ctx,
-                                 ACVP_CIPHER cipher,
-                                 int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_DRBG_TYPE, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
 /*
  * The user should call this after invoking acvp_enable_rsa_keygen_cap().
  */
@@ -5088,36 +4986,6 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_parm(ACVP_CTX *ctx,
         break;
     }
     return rv;
-}
-
-ACVP_RESULT acvp_cap_rsa_keygen_enable(ACVP_CTX *ctx,
-                                       ACVP_CIPHER cipher,
-                                       int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    if (cipher != ACVP_RSA_KEYGEN) {
-        ACVP_LOG_ERR("Invalid parameter 'cipher'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_RSA_KEYGEN_TYPE, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
 }
 
 /*
@@ -5921,125 +5789,6 @@ ACVP_RESULT acvp_cap_rsa_siggen_set_mod_parm(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT internal_cap_rsa_sig_enable(ACVP_CTX *ctx,
-                                               ACVP_CIPHER cipher,
-                                               int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_CAP_TYPE type = 0;
-    ACVP_RESULT result = ACVP_SUCCESS;
-    ACVP_SUB_RSA alg;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_rsa_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_RSA_SIGGEN:
-        type = ACVP_RSA_SIGGEN_TYPE;
-        break;
-    case ACVP_SUB_RSA_SIGVER:
-        type = ACVP_RSA_SIGVER_TYPE;
-        break;
-    case ACVP_SUB_RSA_SIGPRIM:
-    case ACVP_SUB_RSA_DECPRIM:
-        type = ACVP_RSA_PRIM_TYPE;
-        break;
-    case ACVP_SUB_RSA_KEYGEN:
-    default:
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
-
-    return result;
-}
-
-ACVP_RESULT acvp_cap_rsa_sig_enable(ACVP_CTX *ctx,
-                                    ACVP_CIPHER cipher,
-                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-    const char *cap_message_str = NULL;
-    ACVP_SUB_RSA alg;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_rsa_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_RSA_SIGGEN:
-        cap_message_str = "ACVP_RSA_SIGGEN";
-        break;
-    case ACVP_SUB_RSA_SIGVER:
-        cap_message_str = "ACVP_RSA_SIGVER";
-        break;
-    case ACVP_SUB_RSA_KEYGEN:
-    case ACVP_SUB_RSA_DECPRIM:
-    case ACVP_SUB_RSA_SIGPRIM:
-    default:
-        ACVP_LOG_ERR("Invalid parameter 'cipher'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = internal_cap_rsa_sig_enable(ctx, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability (%s) previously enabled. Duplicate not allowed.",
-                     cap_message_str);
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate (%s) capability object",
-                     cap_message_str);
-    }
-
-    return result;
-}
-ACVP_RESULT acvp_cap_rsa_prim_enable(ACVP_CTX *ctx,
-                                     ACVP_CIPHER cipher,
-                                     int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    if ((cipher != ACVP_RSA_SIGPRIM) && (cipher != ACVP_RSA_DECPRIM)) {
-        ACVP_LOG_ERR("Invalid parameter 'cipher'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_RSA_PRIM_TYPE, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
 /*
  * The user should call this after invoking acvp_enable_rsa_prim_cap().
  */
@@ -6367,59 +6116,6 @@ ACVP_RESULT acvp_cap_ecdsa_set_curve_hash_alg(ACVP_CTX *ctx, ACVP_CIPHER cipher,
     return ACVP_UNSUPPORTED_OP;
 }
 
-ACVP_RESULT acvp_cap_ecdsa_enable(ACVP_CTX *ctx,
-                                  ACVP_CIPHER cipher,
-                                  int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_CAP_TYPE type = 0;
-    ACVP_RESULT result = ACVP_SUCCESS;
-    ACVP_SUB_ECDSA alg;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_ecdsa_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_ECDSA_KEYGEN:
-        type = ACVP_ECDSA_KEYGEN_TYPE;
-        break;
-    case ACVP_SUB_ECDSA_KEYVER:
-        type = ACVP_ECDSA_KEYVER_TYPE;
-        break;
-    case ACVP_SUB_ECDSA_SIGGEN:
-        type = ACVP_ECDSA_SIGGEN_TYPE;
-        break;
-    case ACVP_SUB_ECDSA_SIGVER:
-        type = ACVP_ECDSA_SIGVER_TYPE;
-        break;
-    case ACVP_SUB_DET_ECDSA_SIGGEN:
-        type = ACVP_DET_ECDSA_SIGGEN_TYPE;
-        break;
-    default:
-        ACVP_LOG_ERR("Invalid parameter 'cipher'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
 /*
  * The user should call this after invoking acvp_enable_eddsa_cap().
  */
@@ -6576,57 +6272,6 @@ ACVP_RESULT acvp_cap_eddsa_set_domain(ACVP_CTX *ctx,
     return result;
 }
 
-ACVP_RESULT acvp_cap_eddsa_enable(ACVP_CTX *ctx,
-                                  ACVP_CIPHER cipher,
-                                  int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_CAP_TYPE type = 0;
-    ACVP_RESULT result = ACVP_SUCCESS;
-    ACVP_SUB_EDDSA alg;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_eddsa_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-
-    switch (alg) {
-    case ACVP_SUB_EDDSA_KEYGEN:
-        type = ACVP_EDDSA_KEYGEN_TYPE;
-        break;
-    case ACVP_SUB_EDDSA_KEYVER:
-        type = ACVP_EDDSA_KEYVER_TYPE;
-        break;
-    case ACVP_SUB_EDDSA_SIGGEN:
-        type = ACVP_EDDSA_SIGGEN_TYPE;
-        break;
-    case ACVP_SUB_EDDSA_SIGVER:
-        type = ACVP_EDDSA_SIGVER_TYPE;
-        break;
-    default:
-        ACVP_LOG_ERR("Invalid parameter 'cipher'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
 /*
  * The user should call this after invoking acvp_enable_dsa_cap().
  */
@@ -6766,218 +6411,6 @@ ACVP_RESULT acvp_cap_kdf135_snmp_set_engid(ACVP_CTX *ctx,
     }
 
     result = acvp_append_name_list(&kdf135_snmp_cap->eng_ids, engid);
-
-    return result;
-}
-
-ACVP_RESULT acvp_cap_kdf135_srtp_enable(ACVP_CTX *ctx,
-                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_KDF135_SRTP_TYPE, ACVP_KDF135_SRTP, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
-ACVP_RESULT acvp_cap_kdf135_ikev2_enable(ACVP_CTX *ctx,
-                                         int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_KDF135_IKEV2_TYPE, ACVP_KDF135_IKEV2, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
-
-ACVP_RESULT acvp_cap_kdf135_x942_enable(ACVP_CTX *ctx,
-                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_KDF135_X942_TYPE, ACVP_KDF135_X942, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
-
-ACVP_RESULT acvp_cap_kdf135_x963_enable(ACVP_CTX *ctx,
-                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_KDF135_X963_TYPE, ACVP_KDF135_X963, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
-ACVP_RESULT acvp_cap_kdf135_ikev1_enable(ACVP_CTX *ctx,
-                                         int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_KDF135_IKEV1_TYPE, ACVP_KDF135_IKEV1, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
-ACVP_RESULT acvp_cap_kdf108_enable(ACVP_CTX *ctx,
-                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_KDF108_TYPE, ACVP_KDF108, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
-ACVP_RESULT acvp_cap_kdf135_snmp_enable(ACVP_CTX *ctx,
-                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_KDF135_SNMP_TYPE, ACVP_KDF135_SNMP, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
-ACVP_RESULT acvp_cap_kdf135_ssh_enable(ACVP_CTX *ctx,
-                                       int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_KDF135_SSH_TYPE, ACVP_KDF135_SSH, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
-ACVP_RESULT acvp_cap_pbkdf_enable(ACVP_CTX *ctx,
-                                  int (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_PBKDF_TYPE, ACVP_PBKDF, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
 
     return result;
 }
@@ -7402,30 +6835,6 @@ ACVP_RESULT acvp_cap_kdf135_srtp_set_parm(ACVP_CTX *ctx,
     }
 
     return ACVP_SUCCESS;
-}
-
-ACVP_RESULT acvp_cap_dsa_enable(ACVP_CTX *ctx,
-                                ACVP_CIPHER cipher,
-                                int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_DSA_TYPE, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
 }
 
 ACVP_RESULT acvp_cap_kdf135_ikev2_set_parm(ACVP_CTX *ctx,
@@ -7994,32 +7403,8 @@ ACVP_RESULT acvp_cap_kdf108_set_domain(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_cap_kdf_tls12_enable(ACVP_CTX *ctx,
-                                       int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        return ACVP_INVALID_ARG;
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_KDF_TLS12_TYPE, ACVP_KDF_TLS12, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
 /*
- * The user should call this after invoking acvp_cap_kdf_tls12_enable()
+ * The user should call this after invoking acvp_enable_algorithm
  * to specify the kdf parameters.
  */
 ACVP_RESULT acvp_cap_kdf_tls12_set_parm(ACVP_CTX *ctx,
@@ -8062,32 +7447,6 @@ ACVP_RESULT acvp_cap_kdf_tls12_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF_TLS12_PARAM_MIN:
     default:
         return ACVP_INVALID_ARG;
-    }
-
-    return result;
-}
-
-
-
-ACVP_RESULT acvp_cap_kdf_tls13_enable(ACVP_CTX *ctx,
-                                      int (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_KDF_TLS13_TYPE, ACVP_KDF_TLS13, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
     }
 
     return result;
@@ -8223,65 +7582,6 @@ ACVP_RESULT acvp_cap_kas_ecc_set_prereq(ACVP_CTX *ctx,
      * Add the value to the cap
      */
     return acvp_add_kas_ecc_prereq_val(kas_ecc_mode, pre_req, value);
-}
-
-ACVP_RESULT acvp_cap_kas_ecc_enable(ACVP_CTX *ctx,
-                                    ACVP_CIPHER cipher,
-                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_CAP_TYPE type = 0;
-    ACVP_RESULT result = ACVP_SUCCESS;
-    ACVP_SUB_KAS alg;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_kas_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_KAS_ECC_CDH:
-        type = ACVP_KAS_ECC_CDH_TYPE;
-        break;
-    case ACVP_SUB_KAS_ECC_COMP:
-        type = ACVP_KAS_ECC_COMP_TYPE;
-        break;
-    case ACVP_SUB_KAS_ECC_NOCOMP:
-        type = ACVP_KAS_ECC_NOCOMP_TYPE;
-        break;
-    case ACVP_SUB_KAS_ECC_SSC:
-        type = ACVP_KAS_ECC_SSC_TYPE;
-        break;
-    case ACVP_SUB_KAS_FFC_COMP:
-    case ACVP_SUB_KAS_FFC_NOCOMP:
-    case ACVP_SUB_KAS_FFC_SSC: 
-    case ACVP_SUB_KAS_IFC_SSC: 
-    case ACVP_SUB_KTS_IFC: 
-    case ACVP_SUB_KDA_ONESTEP:
-    case ACVP_SUB_KDA_TWOSTEP:
-    case ACVP_SUB_KDA_HKDF:
-    case ACVP_SUB_SAFE_PRIMES_KEYGEN:
-    case ACVP_SUB_SAFE_PRIMES_KEYVER:
-    default:
-        ACVP_LOG_ERR("Invalid parameter 'cipher'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
 }
 
 ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
@@ -8660,63 +7960,6 @@ ACVP_RESULT acvp_cap_kas_ffc_set_prereq(ACVP_CTX *ctx,
     return acvp_add_kas_ffc_prereq_val(kas_ffc_mode, pre_req, value);
 }
 
-ACVP_RESULT acvp_cap_kas_ffc_enable(ACVP_CTX *ctx,
-                                    ACVP_CIPHER cipher,
-                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_CAP_TYPE type = 0;
-    ACVP_RESULT result = ACVP_SUCCESS;
-    ACVP_SUB_KAS alg;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_kas_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_KAS_FFC_SSC:
-        type = ACVP_KAS_FFC_SSC_TYPE;
-        break;
-    case ACVP_SUB_KAS_FFC_COMP:
-        type = ACVP_KAS_FFC_COMP_TYPE;
-        break;
-    case ACVP_SUB_KAS_FFC_NOCOMP:
-        type = ACVP_KAS_FFC_NOCOMP_TYPE;
-        break;
-    case ACVP_SUB_KAS_ECC_CDH:
-    case ACVP_SUB_KAS_ECC_COMP:
-    case ACVP_SUB_KAS_ECC_NOCOMP:
-    case ACVP_SUB_KAS_ECC_SSC:
-    case ACVP_SUB_KAS_IFC_SSC: 
-    case ACVP_SUB_KTS_IFC: 
-    case ACVP_SUB_SAFE_PRIMES_KEYGEN:
-    case ACVP_SUB_SAFE_PRIMES_KEYVER:
-    case ACVP_SUB_KDA_ONESTEP:
-    case ACVP_SUB_KDA_TWOSTEP:
-    case ACVP_SUB_KDA_HKDF:
-    default:
-        ACVP_LOG_ERR("Invalid parameter 'cipher'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
 ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
                                       ACVP_CIPHER cipher,
                                       ACVP_KAS_FFC_MODE mode,
@@ -8966,31 +8209,6 @@ ACVP_RESULT acvp_cap_kas_ffc_set_scheme(ACVP_CTX *ctx,
     return result;
 }
 
-ACVP_RESULT acvp_cap_kas_ifc_enable(ACVP_CTX *ctx,
-                                    ACVP_CIPHER cipher,
-                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_CAP_TYPE type = 0;
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-    type = ACVP_KAS_IFC_TYPE;
-    result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
 ACVP_RESULT acvp_cap_kas_ifc_set_parm(ACVP_CTX *ctx,
                                       ACVP_CIPHER cipher,
                                       ACVP_KAS_IFC_PARAM param,
@@ -9079,63 +8297,6 @@ ACVP_RESULT acvp_cap_kas_ifc_set_exponent(ACVP_CTX *ctx,
     kas_ifc_cap->fixed_pub_exp = calloc(len + 1, sizeof(char));
     strcpy_s(kas_ifc_cap->fixed_pub_exp, len + 1, value);
     return ACVP_SUCCESS;
-}
-
-ACVP_RESULT acvp_cap_kda_enable(ACVP_CTX *ctx,
-                                    ACVP_CIPHER cipher,
-                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_CAP_TYPE type = 0;
-    ACVP_RESULT result = ACVP_SUCCESS;
-    ACVP_SUB_KAS alg;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_kas_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_KDA_ONESTEP:
-        type = ACVP_KDA_ONESTEP_TYPE;
-        break;
-    case ACVP_SUB_KDA_TWOSTEP:
-        type = ACVP_KDA_TWOSTEP_TYPE;
-        break;
-    case ACVP_SUB_KDA_HKDF:
-        type = ACVP_KDA_HKDF_TYPE;
-        break;
-    case ACVP_SUB_KAS_ECC_CDH:
-    case ACVP_SUB_KAS_ECC_COMP:
-    case ACVP_SUB_KAS_ECC_NOCOMP:
-    case ACVP_SUB_KAS_ECC_SSC:
-    case ACVP_SUB_KAS_FFC_COMP:
-    case ACVP_SUB_KAS_FFC_NOCOMP:
-    case ACVP_SUB_KAS_FFC_SSC:
-    case ACVP_SUB_KAS_IFC_SSC:
-    case ACVP_SUB_KTS_IFC:
-    case ACVP_SUB_SAFE_PRIMES_KEYGEN:
-    case ACVP_SUB_SAFE_PRIMES_KEYVER:
-    default:
-        ACVP_LOG_ERR("Invalid parameter 'cipher'");
-        return ACVP_INVALID_ARG;
-    }
-
-    result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
 }
 
 ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PARM param,
@@ -9910,33 +9071,6 @@ ACVP_RESULT acvp_cap_kda_set_domain(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_
     return result;
 }
 
-ACVP_RESULT acvp_cap_kts_ifc_enable(ACVP_CTX *ctx,
-                                    ACVP_CIPHER cipher,
-                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_CAP_TYPE type = 0;
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    type = ACVP_KTS_IFC_TYPE;
-
-    result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    return result;
-}
-
 ACVP_RESULT acvp_cap_kts_ifc_set_parm(ACVP_CTX *ctx,
                                       ACVP_CIPHER cipher,
                                       ACVP_KTS_IFC_PARAM param,
@@ -10184,36 +9318,6 @@ ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_cap_safe_primes_enable(ACVP_CTX *ctx,
-                                        ACVP_CIPHER cipher,
-                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_NO_CAP;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    if (cipher == ACVP_SAFE_PRIMES_KEYGEN) {
-        result = acvp_cap_list_append(ctx, ACVP_SAFE_PRIMES_KEYGEN_TYPE, cipher, crypto_handler);
-    } else if (cipher == ACVP_SAFE_PRIMES_KEYVER) {
-        result = acvp_cap_list_append(ctx, ACVP_SAFE_PRIMES_KEYVER_TYPE, cipher, crypto_handler);
-    } 
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    } else if (result == ACVP_NO_CAP) {
-        ACVP_LOG_ERR("Invalid capability");
-        return ACVP_NO_CAP;
-    }
-
-    return result;
-}
-
 ACVP_RESULT acvp_cap_safe_primes_set_parm(ACVP_CTX *ctx,
                                           ACVP_CIPHER cipher,
                                           ACVP_SAFE_PRIMES_PARAM param,
@@ -10293,46 +9397,6 @@ ACVP_RESULT acvp_cap_safe_primes_set_parm(ACVP_CTX *ctx,
     default:
         break;
     }
-    return result;
-}
-
-ACVP_RESULT acvp_cap_lms_enable(ACVP_CTX *ctx,
-                                ACVP_CIPHER cipher,
-                                int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_NO_CAP;
-    ACVP_SUB_LMS alg;
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_lms_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_LMS_KEYGEN:
-        result = acvp_cap_list_append(ctx, ACVP_LMS_KEYGEN_TYPE, cipher, crypto_handler);
-        break;
-    case ACVP_SUB_LMS_SIGGEN:
-        result = acvp_cap_list_append(ctx, ACVP_LMS_SIGGEN_TYPE, cipher, crypto_handler);
-        break;
-    case ACVP_SUB_LMS_SIGVER:
-        result = acvp_cap_list_append(ctx, ACVP_LMS_SIGVER_TYPE, cipher, crypto_handler);
-        break;
-    default:
-        ACVP_LOG_ERR("Invalid cipher provided to acvp_cap_lms_enable()");
-        break;
-    }
-
-    if (result != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Error occured while enabling LMS algorithm. rv: %d", result);
-    }
-
     return result;
 }
 
@@ -10453,46 +9517,6 @@ ACVP_RESULT acvp_cap_lms_set_mode_compatability_pair(ACVP_CTX *ctx,
     }
 
     return ACVP_SUCCESS;
-}
-
-ACVP_RESULT acvp_cap_ml_dsa_enable(ACVP_CTX *ctx,
-                                ACVP_CIPHER cipher,
-                                int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_NO_CAP;
-    ACVP_SUB_ML_DSA alg;
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_ml_dsa_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_ML_DSA_KEYGEN:
-        result = acvp_cap_list_append(ctx, ACVP_ML_DSA_KEYGEN_TYPE, cipher, crypto_handler);
-        break;
-    case ACVP_SUB_ML_DSA_SIGGEN:
-        result = acvp_cap_list_append(ctx, ACVP_ML_DSA_SIGGEN_TYPE, cipher, crypto_handler);
-        break;
-    case ACVP_SUB_ML_DSA_SIGVER:
-        result = acvp_cap_list_append(ctx, ACVP_ML_DSA_SIGVER_TYPE, cipher, crypto_handler);
-        break;
-    default:
-        ACVP_LOG_ERR("Invalid cipher provided to acvp_cap_ml_dsa_enable()");
-        break;
-    }
-
-    if (result != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Error occured while enabling ML-DSA algorithm. rv: %d", result);
-    }
-
-    return result;
 }
 
 ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
@@ -10774,43 +9798,6 @@ ACVP_RESULT acvp_cap_ml_dsa_set_domain(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_cap_ml_kem_enable(ACVP_CTX *ctx,
-                                ACVP_CIPHER cipher,
-                                int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_NO_CAP;
-    ACVP_SUB_ML_KEM alg;
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_ml_kem_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_ML_KEM_KEYGEN:
-        result = acvp_cap_list_append(ctx, ACVP_ML_KEM_KEYGEN_TYPE, cipher, crypto_handler);
-        break;
-    case ACVP_SUB_ML_KEM_XCAP:
-        result = acvp_cap_list_append(ctx, ACVP_ML_KEM_XCAP_TYPE, cipher, crypto_handler);
-        break;
-    default:
-        ACVP_LOG_ERR("Invalid cipher provided to acvp_cap_ml_kem_enable()");
-        break;
-    }
-
-    if (result != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Error occured while enabling ML-KEM algorithm. rv: %d", result);
-    }
-
-    return result;
-}
-
 ACVP_RESULT acvp_cap_ml_kem_set_parm(ACVP_CTX *ctx,
                                   ACVP_CIPHER cipher,
                                   ACVP_ML_KEM_PARAM param, int value) {
@@ -10862,46 +9849,6 @@ ACVP_RESULT acvp_cap_ml_kem_set_parm(ACVP_CTX *ctx,
     }
 
     return ACVP_SUCCESS;
-}
-
-ACVP_RESULT acvp_cap_slh_dsa_enable(ACVP_CTX *ctx,
-                                ACVP_CIPHER cipher,
-                                int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_NO_CAP;
-    ACVP_SUB_SLH_DSA alg;
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-        return ACVP_INVALID_ARG;
-    }
-
-    alg = acvp_get_slh_dsa_alg(cipher);
-    if (alg == 0) {
-        ACVP_LOG_ERR("Invalid cipher value");
-        return ACVP_INVALID_ARG;
-    }
-    switch (alg) {
-    case ACVP_SUB_SLH_DSA_KEYGEN:
-        result = acvp_cap_list_append(ctx, ACVP_SLH_DSA_KEYGEN_TYPE, cipher, crypto_handler);
-        break;
-    case ACVP_SUB_SLH_DSA_SIGGEN:
-        result = acvp_cap_list_append(ctx, ACVP_SLH_DSA_SIGGEN_TYPE, cipher, crypto_handler);
-        break;
-    case ACVP_SUB_SLH_DSA_SIGVER:
-        result = acvp_cap_list_append(ctx, ACVP_SLH_DSA_SIGVER_TYPE, cipher, crypto_handler);
-        break;
-    default:
-        ACVP_LOG_ERR("Invalid cipher provided to acvp_cap_slh_dsa_enable()");
-        break;
-    }
-
-    if (result != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Error occurred while enabling SLH-DSA algorithm. rv: %d", result);
-    }
-
-    return result;
 }
 
 ACVP_RESULT acvp_cap_slh_dsa_set_parm(ACVP_CTX *ctx,

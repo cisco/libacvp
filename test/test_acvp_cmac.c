@@ -21,12 +21,12 @@ static char cvalue[] = "same";
 static void setup(void) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_CMAC_AES, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_TDES, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_CMAC_TDES, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -36,12 +36,12 @@ static void setup(void) {
 static void setup_fail(void) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_CMAC_AES, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_TDES, &dummy_handler_failure);
+    rv = acvp_enable_algorithm(ctx, ACVP_CMAC_TDES, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -58,7 +58,7 @@ static void teardown(void) {
 Test(CMAC_AES_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_CMAC_AES, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -84,7 +84,7 @@ Test(CMAC_AES_CAPABILITY, good) {
 Test(CMAC_TDES_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
     
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_TDES, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_CMAC_TDES, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);

@@ -19,9 +19,9 @@ static JSON_Value *val = NULL;
 
 static void setup(void) {
     setup_empty_ctx(&ctx);
-    rv = acvp_cap_kmac_enable(ctx, ACVP_KMAC_128, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KMAC_128, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kmac_enable(ctx, ACVP_KMAC_256, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KMAC_256, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
 }
@@ -36,7 +36,7 @@ static void teardown(void) {
 Test(KMAC_128_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kmac_enable(ctx, ACVP_KMAC_128, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KMAC_128, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_128, ACVP_KMAC_MSGLEN, 0, 65536, 8);
     cr_assert(rv == ACVP_SUCCESS);
@@ -58,7 +58,7 @@ Test(KMAC_128_CAPABILITY, good) {
 Test(KMAC_256_CAPABILITY, good) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_kmac_enable(ctx, ACVP_KMAC_256, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_KMAC_256, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_256, ACVP_KMAC_MSGLEN, 0, 65536, 8);
     cr_assert(rv == ACVP_SUCCESS);

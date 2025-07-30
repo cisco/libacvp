@@ -85,12 +85,12 @@ static void test_setup_session_parameters(void)
 
 #ifdef TEST_TRANSPORT
 static void add_hash_details_good(void) {
-    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
     
-    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA512, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_HASH_SHA512, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA512, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);

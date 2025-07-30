@@ -27,7 +27,7 @@ static void setup(void) {
     /*
      * Enable Decryption Primitive
      */
-    rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_DECPRIM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_DECPRIM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
     cr_assert(rv == ACVP_SUCCESS);
@@ -39,7 +39,7 @@ static void setup(void) {
     /*
      * Enable Signature Primitive
      */
-    rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_SIGPRIM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_SIGPRIM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
     cr_assert(rv == ACVP_SUCCESS);
@@ -72,7 +72,7 @@ Test(RSA_PRIM_CAPABILITY, good) {
     /*
      * Enable Decryption Primitive
      */
-    rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_DECPRIM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_DECPRIM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
     cr_assert(rv == ACVP_SUCCESS);
@@ -84,7 +84,7 @@ Test(RSA_PRIM_CAPABILITY, good) {
     /*
      * Enable Signature Primitive
      */
-    rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_SIGPRIM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_SIGPRIM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
     cr_assert(rv == ACVP_SUCCESS);
@@ -207,7 +207,7 @@ Test(RSA_DECPRIM_API, error_paths) {
     /*
      * Enable Decryption Primitive
      */
-    rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_DECPRIM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_DECPRIM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
     cr_assert(rv == ACVP_SUCCESS);
@@ -323,7 +323,7 @@ Test(RSA_SIGPRIM_API, error_paths) {
     /*
      * Enable Signature Primitive
      */
-    rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_SIGPRIM, &dummy_handler_success);
+    rv = acvp_enable_algorithm(ctx, ACVP_RSA_SIGPRIM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
     cr_assert(rv == ACVP_SUCCESS);
