@@ -2780,6 +2780,8 @@ typedef enum acvp_ml_kem_fuction {
     ACVP_ML_KEM_FUNCTION_NONE = 0,
     ACVP_ML_KEM_FUNCTION_ENCAPSULATE,
     ACVP_ML_KEM_FUNCTION_DECAPSULATE,
+    ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK,
+    ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK,
     ACVP_ML_KEM_FUNCTION_MAX
 } ACVP_ML_KEM_FUNCTION;
 
@@ -2825,6 +2827,7 @@ typedef struct acvp_ml_kem_tc_t {
     int c_len;
     int k_len;
 
+    ACVP_TEST_DISPOSITION keycheck_disposition;
 } ACVP_ML_KEM_TC;
 
 /** @enum ACVP_SLH_DSA_PARAM */
