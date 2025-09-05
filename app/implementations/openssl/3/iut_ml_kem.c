@@ -252,7 +252,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
 
             ossl_ret = EVP_PKEY_fromdata(pkey_ctx, &pkey, EVP_PKEY_PRIVATE_KEY, params);
             if (ossl_ret != 1 && tc->function != ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK) {
-                printf("Error generating pkey from private key data in ML-KEM encap\n");
+                printf("Error generating pkey from private key data in ML-KEM decap\n");
                 goto end;
             }
 
