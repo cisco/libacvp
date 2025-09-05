@@ -216,6 +216,8 @@ typedef enum acvp_cipher {
     ACVP_CMAC_TDES,
     ACVP_KMAC_128,
     ACVP_KMAC_256,
+    ACVP_CSHAKE_128,
+    ACVP_CSHAKE_256,
     ACVP_DSA_KEYGEN,
     ACVP_DSA_PQGGEN,
     ACVP_DSA_PQGVER,
@@ -337,6 +339,12 @@ typedef enum acvp_alg_type_kmac {
     ACVP_SUB_KMAC_128 = ACVP_KMAC_128,
     ACVP_SUB_KMAC_256
 } ACVP_SUB_KMAC;
+
+/** @enum ACVP_SUB_CSHAKE */
+typedef enum acvp_alg_type_cshake {
+    ACVP_SUB_CSHAKE_128 = ACVP_CSHAKE_128,
+    ACVP_SUB_CSHAKE_256
+} ACVP_SUB_CSHAKE;
 
 /** @enum ACVP_SUB_HMAC */
 typedef enum acvp_alg_type_hmac {
@@ -1137,6 +1145,13 @@ typedef enum acvp_kmac_testtype {
     ACVP_KMAC_TEST_TYPE_MVT
 } ACVP_KMAC_TESTTYPE;
 
+/** @enum ACVP_CSHAKE_TESTTYPE */
+typedef enum acvp_cshake_testtype {
+    ACVP_CSHAKE_TEST_TYPE_NONE = 0,
+    ACVP_CSHAKE_TEST_TYPE_AFT,
+    ACVP_CSHAKE_TEST_TYPE_MCT
+} ACVP_CSHAKE_TESTTYPE;
+
 /** @enum ACVP_PBKDF_TESTTYPE */
 typedef enum acvp_pbkdf_testtype {
     ACVP_PBKDF_TEST_TYPE_NONE = 0,
@@ -1181,6 +1196,13 @@ typedef enum acvp_kmac_parameter {
     ACVP_KMAC_XOF_SUPPORT,
     ACVP_KMAC_HEX_CUSTOM_SUPPORT
 } ACVP_KMAC_PARM;
+
+/** @enum ACVP_CSHAKE_PARM */
+typedef enum acvp_cshake_parameter {
+    ACVP_CSHAKE_OUTLEN,
+    ACVP_CSHAKE_MSGLEN,
+    ACVP_CSHAKE_HEX_CUSTOM_SUPPORT
+} ACVP_CSHAKE_PARM;
 
 /** @enum ACVP_CMAC_KEY_ATTR */
 typedef enum acvp_cmac_keylen {
@@ -1690,6 +1712,30 @@ typedef struct acvp_kmac_tc_t {
     int key_len;
     int custom_len;
 } ACVP_KMAC_TC;
+
+/**
+ * @struct ACVP_CSHAKE_TC
+ * @brief This struct holds data that represents a single test case for cSHAKE testing. This data is
+ *        passed between libacvp and the crypto module.
+ */
+typedef struct acvp_cshake_tc_t {
+    ACVP_CIPHER cipher;
+    ACVP_CSHAKE_TESTTYPE test_type;
+    ACVP_TEST_DISPOSITION disposition; /**< Indicates pass/fail when running verification */
+    int tc_id; /**< Test case id */
+    int hex_customization;
+
+    unsigned char *msg;
+    unsigned char *md; /**< The resulting digest calculated for the test case */
+    unsigned char *custom_hex;
+    char *custom;
+    char *function_name;
+
+    int msg_len;
+    int md_len;
+    int custom_len;
+    int function_name_len;
+} ACVP_CSHAKE_TC;
 
 /**
  * @struct ACVP_RSA_KEYGEN_TC
@@ -2922,6 +2968,7 @@ typedef struct acvp_test_case_t {
         ACVP_HMAC_TC *hmac;
         ACVP_CMAC_TC *cmac;
         ACVP_KMAC_TC *kmac;
+        ACVP_CSHAKE_TC *cshake;
         ACVP_RSA_KEYGEN_TC *rsa_keygen;
         ACVP_RSA_SIG_TC *rsa_sig;
         ACVP_RSA_PRIM_TC *rsa_prim;
@@ -4099,6 +4146,66 @@ ACVP_RESULT acvp_cap_kmac_set_domain(ACVP_CTX *ctx,
                                      int max,
                                      int increment);
 
+/**
+ * @brief acvp_cap_cshake_enable() allows an application to specify a cSHAKE capability to be tested
+ *         by the ACVP server. This function should be called to enable crypto capabilities for
+ *         cSHAKE algorithms that will be tested by the ACVP server. This includes cSHAKE-128 and
+ *         cSHAKE-256. This function may be called multiple times to specify
+ *         more than one crypto capability.
+ *
+ *         When the application enables a crypto capability, such as cSHAKE-128, it also needs to
+ *         specify a callback function that will be used by libacvp when that crypto capability is
+ *         needed during a test session.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_cshake_enable(ACVP_CTX *ctx,
+                                   ACVP_CIPHER cipher,
+                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+/**
+ * @brief acvp_cap_cshake_set_parm() allows an application to specify operational parameters for
+ *        use during a test session with the ACVP server. This function allows the application to
+ *        specify parameters for use when registering cSHAKE capability with the server.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param parm ACVP_CSHAKE_PARM enum value specifying parameter
+ * @param value Supported value for the corresponding parameter
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_cshake_set_parm(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_CSHAKE_PARM parm,
+                                     int value);
+
+/**
+ * @brief acvp_cap_cshake_set_domain() allows an application to specify operational parameters for
+ *        use during a test session with the ACVP server. This function allows the application to
+ *        specify parameters for use when registering cSHAKE capability with the server.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param parm ACVP_CSHAKE_PARM enum value specifying parameter
+ * @param min Minumum supported value for the corresponding parameter
+ * @param max Maximum supported value for the corresponding parameter
+ * @param increment Increment value supported
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_cshake_set_domain(ACVP_CTX *ctx,
+                                       ACVP_CIPHER cipher,
+                                       ACVP_CSHAKE_PARM parm,
+                                       int min,
+                                       int max,
+                                       int increment);
 
 /**
  * @brief acvp_cap_kdf135_*_enable() allows an application to specify a kdf cipher capability to be
@@ -5291,6 +5398,7 @@ const char *acvp_protocol_version(void);
 
 ACVP_SUB_CMAC acvp_get_cmac_alg(ACVP_CIPHER cipher);
 ACVP_SUB_KMAC acvp_get_kmac_alg(ACVP_CIPHER cipher);
+ACVP_SUB_CSHAKE acvp_get_cshake_alg(ACVP_CIPHER cipher);
 ACVP_SUB_HASH acvp_get_hash_alg(ACVP_CIPHER cipher);
 ACVP_SUB_AES acvp_get_aes_alg(ACVP_CIPHER cipher);
 ACVP_SUB_TDES acvp_get_tdes_alg(ACVP_CIPHER cipher);

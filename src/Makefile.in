@@ -139,15 +139,15 @@ am_libacvp_la_OBJECTS = acvp.lo acvp_build_register.lo \
 	acvp_capabilities.lo acvp_operating_env.lo acvp_aes.lo \
 	acvp_des.lo acvp_hash.lo acvp_drbg.lo acvp_transport.lo \
 	acvp_util.lo parson.lo acvp_hmac.lo acvp_cmac.lo acvp_kmac.lo \
-	acvp_rsa_keygen.lo acvp_rsa_sig.lo acvp_rsa_prim.lo \
-	acvp_dsa.lo acvp_kdf135_snmp.lo acvp_kdf135_ssh.lo \
-	acvp_kdf135_srtp.lo acvp_kdf135_ikev2.lo acvp_kdf135_ikev1.lo \
-	acvp_kdf135_x942.lo acvp_kdf135_x963.lo acvp_kdf108.lo \
-	acvp_pbkdf.lo acvp_kdf_tls12.lo acvp_kdf_tls13.lo \
-	acvp_kas_ecc.lo acvp_kas_ffc.lo acvp_kas_ifc.lo acvp_kda.lo \
-	acvp_kts_ifc.lo acvp_safe_primes.lo acvp_ecdsa.lo \
-	acvp_eddsa.lo acvp_lms.lo acvp_ml_dsa.lo acvp_ml_kem.lo \
-	acvp_slh_dsa.lo
+	acvp_cshake.lo acvp_rsa_keygen.lo acvp_rsa_sig.lo \
+	acvp_rsa_prim.lo acvp_dsa.lo acvp_kdf135_snmp.lo \
+	acvp_kdf135_ssh.lo acvp_kdf135_srtp.lo acvp_kdf135_ikev2.lo \
+	acvp_kdf135_ikev1.lo acvp_kdf135_x942.lo acvp_kdf135_x963.lo \
+	acvp_kdf108.lo acvp_pbkdf.lo acvp_kdf_tls12.lo \
+	acvp_kdf_tls13.lo acvp_kas_ecc.lo acvp_kas_ffc.lo \
+	acvp_kas_ifc.lo acvp_kda.lo acvp_kts_ifc.lo \
+	acvp_safe_primes.lo acvp_ecdsa.lo acvp_eddsa.lo acvp_lms.lo \
+	acvp_ml_dsa.lo acvp_ml_kem.lo acvp_slh_dsa.lo
 libacvp_la_OBJECTS = $(am_libacvp_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -171,13 +171,13 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/acvp.Plo ./$(DEPDIR)/acvp_aes.Plo \
 	./$(DEPDIR)/acvp_build_register.Plo \
 	./$(DEPDIR)/acvp_capabilities.Plo ./$(DEPDIR)/acvp_cmac.Plo \
-	./$(DEPDIR)/acvp_des.Plo ./$(DEPDIR)/acvp_drbg.Plo \
-	./$(DEPDIR)/acvp_dsa.Plo ./$(DEPDIR)/acvp_ecdsa.Plo \
-	./$(DEPDIR)/acvp_eddsa.Plo ./$(DEPDIR)/acvp_hash.Plo \
-	./$(DEPDIR)/acvp_hmac.Plo ./$(DEPDIR)/acvp_kas_ecc.Plo \
-	./$(DEPDIR)/acvp_kas_ffc.Plo ./$(DEPDIR)/acvp_kas_ifc.Plo \
-	./$(DEPDIR)/acvp_kda.Plo ./$(DEPDIR)/acvp_kdf108.Plo \
-	./$(DEPDIR)/acvp_kdf135_ikev1.Plo \
+	./$(DEPDIR)/acvp_cshake.Plo ./$(DEPDIR)/acvp_des.Plo \
+	./$(DEPDIR)/acvp_drbg.Plo ./$(DEPDIR)/acvp_dsa.Plo \
+	./$(DEPDIR)/acvp_ecdsa.Plo ./$(DEPDIR)/acvp_eddsa.Plo \
+	./$(DEPDIR)/acvp_hash.Plo ./$(DEPDIR)/acvp_hmac.Plo \
+	./$(DEPDIR)/acvp_kas_ecc.Plo ./$(DEPDIR)/acvp_kas_ffc.Plo \
+	./$(DEPDIR)/acvp_kas_ifc.Plo ./$(DEPDIR)/acvp_kda.Plo \
+	./$(DEPDIR)/acvp_kdf108.Plo ./$(DEPDIR)/acvp_kdf135_ikev1.Plo \
 	./$(DEPDIR)/acvp_kdf135_ikev2.Plo \
 	./$(DEPDIR)/acvp_kdf135_snmp.Plo \
 	./$(DEPDIR)/acvp_kdf135_srtp.Plo \
@@ -391,6 +391,7 @@ libacvp_la_SOURCES = acvp.c \
                     acvp_hmac.c \
                     acvp_cmac.c \
                     acvp_kmac.c \
+                    acvp_cshake.c \
                     acvp_rsa_keygen.c \
                     acvp_rsa_sig.c \
                     acvp_rsa_prim.c \
@@ -508,6 +509,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_build_register.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_capabilities.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_cmac.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_cshake.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_des.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_drbg.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_dsa.Plo@am__quote@ # am--include-marker
@@ -735,6 +737,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/acvp_build_register.Plo
 	-rm -f ./$(DEPDIR)/acvp_capabilities.Plo
 	-rm -f ./$(DEPDIR)/acvp_cmac.Plo
+	-rm -f ./$(DEPDIR)/acvp_cshake.Plo
 	-rm -f ./$(DEPDIR)/acvp_des.Plo
 	-rm -f ./$(DEPDIR)/acvp_drbg.Plo
 	-rm -f ./$(DEPDIR)/acvp_dsa.Plo
@@ -821,6 +824,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/acvp_build_register.Plo
 	-rm -f ./$(DEPDIR)/acvp_capabilities.Plo
 	-rm -f ./$(DEPDIR)/acvp_cmac.Plo
+	-rm -f ./$(DEPDIR)/acvp_cshake.Plo
 	-rm -f ./$(DEPDIR)/acvp_des.Plo
 	-rm -f ./$(DEPDIR)/acvp_drbg.Plo
 	-rm -f ./$(DEPDIR)/acvp_dsa.Plo

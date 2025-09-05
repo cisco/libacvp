@@ -187,6 +187,14 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         }
         break;
 
+    case ACVP_CSHAKE_TYPE:
+        cap_entry->cap.cshake_cap = calloc(1, sizeof(ACVP_CSHAKE_CAP));
+        if (!cap_entry->cap.cshake_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
     case ACVP_DRBG_TYPE:
         cap_entry->cap.drbg_cap = calloc(1, sizeof(ACVP_DRBG_CAP));
         if (!cap_entry->cap.drbg_cap) {
@@ -1133,6 +1141,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_CMAC_TDES:
         case ACVP_KMAC_128:
         case ACVP_KMAC_256:
+        case ACVP_CSHAKE_128:
+        case ACVP_CSHAKE_256:
         case ACVP_DSA_KEYGEN:
         case ACVP_DSA_PQGGEN:
         case ACVP_DSA_PQGVER:
@@ -1268,6 +1278,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_CMAC_TDES:
         case ACVP_KMAC_128:
         case ACVP_KMAC_256:
+        case ACVP_CSHAKE_128:
+        case ACVP_CSHAKE_256:
         case ACVP_DSA_KEYGEN:
         case ACVP_DSA_PQGGEN:
         case ACVP_DSA_PQGVER:
@@ -1399,6 +1411,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_CMAC_TDES:
         case ACVP_KMAC_128:
         case ACVP_KMAC_256:
+        case ACVP_CSHAKE_128:
+        case ACVP_CSHAKE_256:
         case ACVP_DSA_KEYGEN:
         case ACVP_DSA_PQGGEN:
         case ACVP_DSA_PQGVER:
@@ -1530,6 +1544,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_CMAC_TDES:
         case ACVP_KMAC_128:
         case ACVP_KMAC_256:
+        case ACVP_CSHAKE_128:
+        case ACVP_CSHAKE_256:
         case ACVP_DSA_KEYGEN:
         case ACVP_DSA_PQGGEN:
         case ACVP_DSA_PQGVER:
@@ -1671,6 +1687,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_CMAC_TDES:
         case ACVP_KMAC_128:
         case ACVP_KMAC_256:
+        case ACVP_CSHAKE_128:
+        case ACVP_CSHAKE_256:
         case ACVP_DSA_KEYGEN:
         case ACVP_DSA_PQGGEN:
         case ACVP_DSA_PQGVER:
@@ -1799,6 +1817,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_CMAC_TDES:
         case ACVP_KMAC_128:
         case ACVP_KMAC_256:
+        case ACVP_CSHAKE_128:
+        case ACVP_CSHAKE_256:
         case ACVP_DSA_KEYGEN:
         case ACVP_DSA_PQGGEN:
         case ACVP_DSA_PQGVER:
@@ -2230,6 +2250,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_CMAC_TDES:
     case ACVP_KMAC_128:
     case ACVP_KMAC_256:
+    case ACVP_CSHAKE_128:
+    case ACVP_CSHAKE_256:
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
     case ACVP_DSA_PQGVER:
@@ -2344,6 +2366,8 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_HASH_SHA3_512:
     case ACVP_HASH_SHAKE_128:
     case ACVP_HASH_SHAKE_256:
+    case ACVP_CSHAKE_128:
+    case ACVP_CSHAKE_256:
         return ACVP_INVALID_ARG;
 
         break;
@@ -2756,6 +2780,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
     case ACVP_CMAC_TDES:
     case ACVP_KMAC_128:
     case ACVP_KMAC_256:
+    case ACVP_CSHAKE_128:
+    case ACVP_CSHAKE_256:
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
     case ACVP_DSA_PQGVER:
@@ -3026,6 +3052,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_CMAC_TDES:
     case ACVP_KMAC_128:
     case ACVP_KMAC_256:
+    case ACVP_CSHAKE_128:
+    case ACVP_CSHAKE_256:
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
     case ACVP_DSA_PQGVER:
@@ -3383,6 +3411,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm_string(ACVP_CTX *ctx,
     case ACVP_CMAC_TDES:
     case ACVP_KMAC_128:
     case ACVP_KMAC_256:
+    case ACVP_CSHAKE_128:
+    case ACVP_CSHAKE_256:
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
     case ACVP_DSA_PQGVER:
@@ -3575,6 +3605,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_iv_modes(ACVP_CTX *ctx,
     case ACVP_CMAC_TDES:
     case ACVP_KMAC_128:
     case ACVP_KMAC_256:
+    case ACVP_CSHAKE_128:
+    case ACVP_CSHAKE_256:
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
     case ACVP_DSA_PQGVER:
@@ -3759,6 +3791,8 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_CMAC_TDES:
     case ACVP_KMAC_128:
     case ACVP_KMAC_256:
+    case ACVP_CSHAKE_128:
+    case ACVP_CSHAKE_256:
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
     case ACVP_DSA_PQGVER:
@@ -4667,7 +4701,151 @@ ACVP_RESULT acvp_cap_kmac_set_domain(ACVP_CTX *ctx,
     }
 
     return ACVP_SUCCESS;
+}
 
+ACVP_RESULT acvp_cap_cshake_enable(ACVP_CTX *ctx,
+                                   ACVP_CIPHER cipher,
+                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_RESULT result = ACVP_SUCCESS;
+    ACVP_SUB_CSHAKE alg;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+        return ACVP_INVALID_ARG;
+    }
+
+    alg = acvp_get_cshake_alg(cipher);
+    if (alg == 0) {
+        ACVP_LOG_ERR("Invalid cipher value");
+        return ACVP_INVALID_ARG;
+    }
+    switch (alg) {
+    case ACVP_SUB_CSHAKE_128:
+    case ACVP_SUB_CSHAKE_256:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    result = acvp_cap_list_append(ctx, ACVP_CSHAKE_TYPE, cipher, crypto_handler);
+
+    if (result == ACVP_DUP_CIPHER) {
+        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
+    } else if (result == ACVP_MALLOC_FAIL) {
+        ACVP_LOG_ERR("Failed to allocate capability object");
+    }
+
+    return result;
+}
+
+ACVP_RESULT acvp_cap_cshake_set_parm(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_CSHAKE_PARM parm,
+                                     int value) {
+    ACVP_CAPS_LIST *cap = NULL;
+    ACVP_CSHAKE_CAP *cshake_cap = NULL;
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        ACVP_LOG_ERR("Cap entry not found, use acvp_cap_cshake_enable() first.");
+        return ACVP_NO_CAP;
+    }
+    cshake_cap = cap->cap.cshake_cap;
+
+    switch (parm) {
+    case ACVP_CSHAKE_HEX_CUSTOM_SUPPORT:
+        if (is_valid_tf_param(value) == ACVP_SUCCESS) {
+            cshake_cap->hex_customization = value;
+        } else {
+            ACVP_LOG_ERR("Invalid param 'value' for ACVP_CSHAKE_HEX_CUSTOM_SUPPORT. "
+                         "Must be 1 or 0");
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    case ACVP_CSHAKE_OUTLEN:
+        if (value < 16 || value > 65536 || (value % 8) != 0) {
+            ACVP_LOG_ERR("Invalid output length value for cSHAKE. Must be 16-65536 bits and multiple of 8");
+            return ACVP_INVALID_ARG;
+        }
+        if (acvp_append_sl_list(&cshake_cap->output_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding output length value to cSHAKE capability");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_CSHAKE_MSGLEN:
+        if (value < 0 || value > 65536 || (value % 8) != 0) {
+            ACVP_LOG_ERR("Invalid message length value for cSHAKE. Must be 0-65536 bits and multiple of 8");
+            return ACVP_INVALID_ARG;
+        }
+        if (acvp_append_sl_list(&cshake_cap->msg_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding message length value to cSHAKE capability");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cSHAKE parameter given");
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_cshake_set_domain(ACVP_CTX *ctx,
+                                       ACVP_CIPHER cipher,
+                                       ACVP_CSHAKE_PARM parm,
+                                       int min,
+                                       int max,
+                                       int increment) {
+    ACVP_CAPS_LIST *cap = NULL;
+    ACVP_CSHAKE_CAP *cshake_cap = NULL;
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        ACVP_LOG_ERR("Cap entry not found, use acvp_cap_cshake_enable() first.");
+        return ACVP_NO_CAP;
+    }
+    cshake_cap = cap->cap.cshake_cap;
+
+    if (validate_domain_range(min, max, increment) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Invalid domain given for cSHAKE");
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (parm) {
+    case ACVP_CSHAKE_OUTLEN:
+        if (max > 65536 || min < 16 || increment != 8) {
+            ACVP_LOG_ERR("Out of bounds output length given for cSHAKE");
+            return ACVP_INVALID_ARG;
+        }
+        cshake_cap->output_len.min = min;
+        cshake_cap->output_len.max = max;
+        cshake_cap->output_len.increment = increment;
+        break;
+    case ACVP_CSHAKE_MSGLEN:
+        if (max > 65536) {
+            ACVP_LOG_ERR("Out of bounds msglen given for cSHAKE");
+            return ACVP_INVALID_ARG;
+        }
+        cshake_cap->msg_len.min = min;
+        cshake_cap->msg_len.max = max;
+        cshake_cap->msg_len.increment = increment;
+        break;
+    case ACVP_CSHAKE_HEX_CUSTOM_SUPPORT:
+    default:
+        ACVP_LOG_ERR("Invalid cSHAKE parameter given");
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
 }
 
 /*
