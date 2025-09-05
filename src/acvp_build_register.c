@@ -5354,6 +5354,12 @@ static ACVP_RESULT acvp_build_ml_kem_register_cap(ACVP_CTX *ctx,
                 case ACVP_ML_KEM_FUNCTION_DECAPSULATE:
                     json_array_append_string(temp_arr, "decapsulation");
                     break;
+                case ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK:
+                    json_array_append_string(temp_arr, "encapsulationKeyCheck");
+                    break;
+                case ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK:
+                    json_array_append_string(temp_arr, "decapsulationKeyCheck");
+                    break;
                 case ACVP_ML_KEM_FUNCTION_NONE:
                 case ACVP_ML_KEM_FUNCTION_MAX:
                 default:

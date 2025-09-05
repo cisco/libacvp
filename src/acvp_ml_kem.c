@@ -59,7 +59,8 @@ static ACVP_RESULT acvp_ml_kem_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         json_object_set_string(tc_rsp, "dk", tmp);
         break;
     case ACVP_SUB_ML_KEM_XCAP:
-        if (stc->type == ACVP_ML_KEM_TESTTYPE_AFT) {
+        switch (stc->function) {
+            case ACVP_ML_KEM_FUNCTION_ENCAPSULATE:
             memzero_s(tmp, ACVP_ML_KEM_TMP_STR_MAX);
             rv = acvp_bin_to_hexstr(stc->c, stc->c_len, tmp, ACVP_ML_KEM_TMP_STR_MAX);
             if (rv != ACVP_SUCCESS) {
@@ -67,14 +68,25 @@ static ACVP_RESULT acvp_ml_kem_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
                 goto end;
             }
             json_object_set_string(tc_rsp, "c", tmp);
+            /* fallthru */
+        case ACVP_ML_KEM_FUNCTION_DECAPSULATE:
+		    memzero_s(tmp, ACVP_ML_KEM_TMP_STR_MAX);
+		    rv = acvp_bin_to_hexstr(stc->k, stc->k_len, tmp, ACVP_ML_KEM_TMP_STR_MAX);
+		    if (rv != ACVP_SUCCESS) {
+		        ACVP_LOG_ERR("Hex conversion failure (k)");
+		        goto end;
+		    }
+		    json_object_set_string(tc_rsp, "k", tmp);
+            break;
+        case ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK:
+        case ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK:
+            json_object_set_boolean(tc_rsp, "testPassed", stc->keycheck_disposition);
+            rv = ACVP_SUCCESS;
+            break;
+        default:
+            rv = ACVP_INTERNAL_ERR;
+            break;
         }
-        memzero_s(tmp, ACVP_ML_KEM_TMP_STR_MAX);
-        rv = acvp_bin_to_hexstr(stc->k, stc->k_len, tmp, ACVP_ML_KEM_TMP_STR_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (k)");
-            goto end;
-        }
-        json_object_set_string(tc_rsp, "k", tmp);
         break;
     default:
         rv = ACVP_INTERNAL_ERR;
@@ -141,8 +153,7 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
     }
 
     /**
-     * For Keygen, we have d and z values. for encap/decap, AFT has ek and m values, while VAL
-     * has dk and c values. dk is constant across a test group, but we include it in every case
+     * Load additional values by operation type
      */
     if (cipher == ACVP_ML_KEM_KEYGEN) {
         stc->d = calloc(ACVP_ML_KEM_TMP_BYTE_MAX, sizeof(unsigned char));
@@ -174,13 +185,8 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
             goto err;
         }
 
-        if (type == ACVP_ML_KEM_TESTTYPE_AFT) {
-            rv = acvp_hexstr_to_bin(ek, stc->ek, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->ek_len));
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (ek)");
-                return rv;
-            }
-
+        switch (function) {
+        case ACVP_ML_KEM_FUNCTION_ENCAPSULATE:
             stc->m = calloc(ACVP_ML_KEM_TMP_BYTE_MAX, sizeof(unsigned char));
             if (!stc->m) {
                 goto err;
@@ -190,18 +196,31 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Hex conversion failure (m)");
                 return rv;
             }
-        } else {
-            rv = acvp_hexstr_to_bin(dk, stc->dk, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->dk_len));
+            /* fallthru */
+        case ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK:
+            rv = acvp_hexstr_to_bin(ek, stc->ek, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->ek_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (dk)");
+                ACVP_LOG_ERR("Hex conversion failure (ek)");
                 return rv;
             }
-
+            break;
+        case ACVP_ML_KEM_FUNCTION_DECAPSULATE:
             rv = acvp_hexstr_to_bin(c, stc->c, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->c_len));
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (c)");
                 return rv;
             }
+            /* fallthru */
+        case ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK:
+            rv = acvp_hexstr_to_bin(dk, stc->dk, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->dk_len));
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex conversion failure (dk)");
+                return rv;
+            }
+            break;
+        default:
+            ACVP_LOG_ERR("Bad function type (%d)", function);
+            return rv;       
         }
     }
 
@@ -222,11 +241,17 @@ static ACVP_ML_KEM_TESTTYPE read_test_type(const char *str) {
     strcmp_s("VAL", 3, str, &diff);
     if (!diff) return ACVP_ML_KEM_TESTTYPE_VAL;
 
-    return 0;
+    return ACVP_ML_KEM_TESTTYPE_NONE;
 }
 
 static ACVP_ML_KEM_FUNCTION read_function(const char *str) {
     int diff = 1;
+
+    strcmp_s("encapsulationKeyCheck", 21, str, &diff);
+    if (!diff) return ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK;
+
+    strcmp_s("decapsulationKeyCheck", 21, str, &diff);
+    if (!diff) return ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK;
 
     strcmp_s("encapsulation", 13, str, &diff);
     if (!diff) return ACVP_ML_KEM_FUNCTION_ENCAPSULATE;
@@ -234,7 +259,7 @@ static ACVP_ML_KEM_FUNCTION read_function(const char *str) {
     strcmp_s("decapsulation", 13, str, &diff);
     if (!diff) return ACVP_ML_KEM_FUNCTION_DECAPSULATE;
 
-    return 0;
+    return ACVP_ML_KEM_FUNCTION_NONE;
 }
 
 ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
@@ -430,35 +455,44 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
-            } else { /* else is encap/decap */
-                if (type == ACVP_ML_KEM_TESTTYPE_AFT) {
+            } else { /* else is encap/decap/keycheck */
+                switch (function) {
+                case ACVP_ML_KEM_FUNCTION_ENCAPSULATE:
+                    m_str = json_object_get_string(testobj, "m");
+                    if (!m_str) {
+                        ACVP_LOG_ERR("Server JSON missing 'm'");
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
+                    }                        
+                    /* fallthru */
+                case ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK:
                     ek_str = json_object_get_string(testobj, "ek");
                     if (!ek_str) {
                         ACVP_LOG_ERR("Server JSON missing 'ek'");
                         rv = ACVP_MISSING_ARG;
                         goto err;
                     }
-
-                    m_str = json_object_get_string(testobj, "m");
-                    if (!m_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'm'");
-                        rv = ACVP_MISSING_ARG;
-                        goto err;
-                    }
-                } else {
-                    dk_str = json_object_get_string(testobj, "dk");
-                    if (!dk_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'dk'");
-                        rv = ACVP_MISSING_ARG;
-                        goto err;
-                    }
-
+                    break;
+                case ACVP_ML_KEM_FUNCTION_DECAPSULATE:
                     c_str = json_object_get_string(testobj, "c");
                     if (!c_str) {
                         ACVP_LOG_ERR("Server JSON missing 'c'");
                         rv = ACVP_MISSING_ARG;
                         goto err;
                     }
+                    /* fallthru */
+                case ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK:
+                    dk_str = json_object_get_string(testobj, "dk");
+                    if (!dk_str) {
+                        ACVP_LOG_ERR("Server JSON missing 'dk'");
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
+                    }
+                    break;
+                default:
+                    ACVP_LOG_ERR("Invalid ML-KEM Function (%d)", function);
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
                 }
             }
 
