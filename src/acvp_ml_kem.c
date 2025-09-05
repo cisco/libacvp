@@ -205,10 +205,6 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
             }
             break;
         case ACVP_ML_KEM_FUNCTION_DECAPSULATE:
-            stc->c = calloc(ACVP_ML_KEM_TMP_BYTE_MAX, sizeof(unsigned char));
-            if (!stc->c) {
-                goto err;
-            }
             rv = acvp_hexstr_to_bin(c, stc->c, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->c_len));
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (c)");
