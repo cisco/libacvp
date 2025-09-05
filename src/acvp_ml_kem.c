@@ -83,6 +83,8 @@ static ACVP_RESULT acvp_ml_kem_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
             json_object_set_boolean(tc_rsp, "testPassed", stc->keycheck_disposition);
             rv = ACVP_SUCCESS;
             break;
+        case ACVP_ML_KEM_FUNCTION_NONE:
+        case ACVP_ML_KEM_FUNCTION_MAX:
         default:
             rv = ACVP_INTERNAL_ERR;
             break;
@@ -218,9 +220,11 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
                 return rv;
             }
             break;
+        case ACVP_ML_KEM_FUNCTION_NONE:
+        case ACVP_ML_KEM_FUNCTION_MAX:
         default:
             ACVP_LOG_ERR("Bad function type (%d)", function);
-            return rv;       
+            return rv;
         }
     }
 
@@ -489,6 +493,8 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                         goto err;
                     }
                     break;
+                case ACVP_ML_KEM_FUNCTION_NONE:
+                case ACVP_ML_KEM_FUNCTION_MAX:
                 default:
                     ACVP_LOG_ERR("Invalid ML-KEM Function (%d)", function);
                         rv = ACVP_MISSING_ARG;

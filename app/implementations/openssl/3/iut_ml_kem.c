@@ -41,7 +41,7 @@ unsigned char *seed_concatenation(unsigned char *d, int d_len, unsigned char *z,
 int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
     ACVP_ML_KEM_TC *tc = NULL;
     ACVP_SUB_ML_KEM alg = 0;
-    int rv = 1, seed_len = 0;
+    int rv = 1, seed_len = 0, ossl_ret = 0;
     size_t out_len = 0, out_len_2 = 0;
     EVP_PKEY_CTX *pkey_ctx = NULL;
     EVP_PKEY *pkey = NULL;
@@ -153,7 +153,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
     } else if (tc->cipher == ACVP_ML_KEM_XCAP) {
-        if (tc->function == ACVP_ML_KEM_FUNCTION_ENCAPSULATE) {
+        if (tc->function == ACVP_ML_KEM_FUNCTION_ENCAPSULATE || tc->function == ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK) {
             /* First, create the pkey containing the sk we are given */
             pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, param_set, NULL);
             if (!pkey_ctx) {
@@ -175,8 +175,17 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error initializing fromdata in ML-KEM encap\n");
                 goto end;
             }
-            if (EVP_PKEY_fromdata(pkey_ctx, &pkey, EVP_PKEY_PUBLIC_KEY, params) != 1) {
+
+            ossl_ret = EVP_PKEY_fromdata(pkey_ctx, &pkey, EVP_PKEY_PUBLIC_KEY, params);
+            if (ossl_ret != 1 && tc->function != ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK) {
                 printf("Error generating pkey from private key data in ML-KEM encap\n");
+                goto end;
+            }
+
+            if (tc->function == ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK) {
+                /* if fromdata returns 1, the check was successful, otherwise fail */
+                tc->keycheck_disposition = ossl_ret == 1 ? ACVP_TEST_DISPOSITION_PASS : ACVP_TEST_DISPOSITION_FAIL;
+                rv = 0;
                 goto end;
             }
 
@@ -219,7 +228,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
             memcpy_s(tc->c, ML_KEM_MAX_BUF_SIZE, out, out_len);
             tc->c_len = (int)out_len;
             tc->k_len = (int)out_len_2;
-        } else if (tc->function == ACVP_ML_KEM_FUNCTION_DECAPSULATE) {
+        } else if (tc->function == ACVP_ML_KEM_FUNCTION_DECAPSULATE || tc->function == ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK) {
             pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, param_set, NULL);
             if (!pkey_ctx) {
                 printf("Error initializing pkey CTX in ML-KEM decap\n");
@@ -240,10 +249,20 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error initializing fromdata in ML-KEM decap\n");
                 goto end;
             }
-            if (EVP_PKEY_fromdata(pkey_ctx, &pkey, EVP_PKEY_PRIVATE_KEY, params) != 1) {
-                printf("Error generating pkey from private key data in ML-KEM decap\n");
+
+            ossl_ret = EVP_PKEY_fromdata(pkey_ctx, &pkey, EVP_PKEY_PRIVATE_KEY, params);
+            if (ossl_ret != 1 && tc->function != ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK) {
+                printf("Error generating pkey from private key data in ML-KEM encap\n");
                 goto end;
             }
+
+            if (tc->function == ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK) {
+                /* if fromdata returns 1, the check was successful, otherwise fail */
+                tc->keycheck_disposition = ossl_ret == 1 ? ACVP_TEST_DISPOSITION_PASS : ACVP_TEST_DISPOSITION_FAIL;
+                rv = 0;
+                goto end;
+            }
+
 
             if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
             pkey_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
