@@ -81,7 +81,8 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
     int rv = 1;
     size_t seed_len = 0, sig_len = 0;
     const char *md = NULL;
-    unsigned char *sig = NULL, *sig_iter = NULL;
+    unsigned char *sig = NULL;
+    const unsigned char *sig_iter = NULL;
     ACVP_DSA_TC *tc;
     BIGNUM *x = NULL, *y = NULL;
     BIGNUM *q = NULL, *p = NULL, *g = NULL, *r = NULL, *s = NULL, *pub_key = NULL;
@@ -363,7 +364,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
 
         /* Need to extract R and S from signature */
         sig_iter = sig; /* d2i functions alter pointer */
-        sig_obj = d2i_DSA_SIG(NULL, (const unsigned char **)&sig_iter, (long)sig_len);
+        sig_obj = d2i_DSA_SIG(NULL, &sig_iter, (long)sig_len);
         if (!sig_obj) {
             printf("Error creating signature object needed to retrieve output in ECDSA siggen\n");
             goto err;
