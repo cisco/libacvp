@@ -23,6 +23,7 @@
 #define OPENSSL_FIPS_312 3010002
 #define OPENSSL_FIPS_340 3040000
 #define OPENSSL_FIPS_350 3050000
+#define OPENSSL_FIPS_360 3060000
 
 #define ENGID1 "800002B805123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456"
 #define ENGID2 "000002b87766554433221100"
@@ -49,6 +50,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case);
 int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 int app_des_handler(ACVP_TEST_CASE *test_case);
 int app_sha_handler(ACVP_TEST_CASE *test_case);
+int app_cshake_handler(ACVP_TEST_CASE *test_case);
 int app_hmac_handler(ACVP_TEST_CASE *test_case);
 int app_cmac_handler(ACVP_TEST_CASE *test_case);
 int app_kmac_handler(ACVP_TEST_CASE *test_case);
@@ -93,6 +95,7 @@ ACVP_RESULT register_capabilities_fp_312(ACVP_CTX *ctx, APP_CONFIG *cfg);
 ACVP_RESULT register_capabilities_non_fips(ACVP_CTX *ctx, APP_CONFIG *cfg);
 ACVP_RESULT register_capabilities_fp_340(ACVP_CTX *ctx, APP_CONFIG *cfg);
 ACVP_RESULT register_capabilities_fp_350(ACVP_CTX *ctx, APP_CONFIG *cfg);
+ACVP_RESULT register_capabilities_fp_4x(ACVP_CTX *ctx, APP_CONFIG *cfg);
 
 /**
  * Here, we conditionally add defines for core names added in new versions of OpenSSL

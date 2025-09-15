@@ -18,6 +18,7 @@ tmp_sources += implementations/openssl/3/iut.c \
                implementations/openssl/3/registrations/non_fips.c \
                implementations/openssl/3/registrations/fp_340.c \
                implementations/openssl/3/registrations/fp_350.c \
+               implementations/openssl/3/registrations/fp_4X.c \
                implementations/openssl/3/iut_aes.c \
                implementations/openssl/3/iut_cmac.c \
                implementations/openssl/3/iut_des.c \
@@ -30,6 +31,7 @@ tmp_sources += implementations/openssl/3/iut.c \
                implementations/openssl/3/iut_kdf.c \
                implementations/openssl/3/iut_kda.c \
                implementations/openssl/3/iut_kmac.c \
+               implementations/openssl/3/iut_cshake.c \
                implementations/openssl/3/iut_rsa.c \
                implementations/openssl/3/iut_hash.c \
                implementations/openssl/3/iut_ml_dsa.c \

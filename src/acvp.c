@@ -60,7 +60,7 @@ static ACVP_RESULT acvp_put_data_from_ctx(ACVP_CTX *ctx);
  * ACVP operation.
  *
  * WARNING:
- * This table is not sparse, it must contain ACVP_OP_MAX entries.
+ * This table is not sparse, it must contain ACVP_ALG_MAX entries.
  */
 ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_AES_GCM,           &acvp_aes_kat_handler,              ACVP_ALG_AES_GCM,           NULL, ACVP_REV_AES_GCM, {ACVP_SUB_AES_GCM}},
@@ -127,6 +127,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_CMAC_TDES,         &acvp_cmac_kat_handler,             ACVP_ALG_CMAC_TDES,         NULL, ACVP_REV_CMAC_TDES, {ACVP_SUB_CMAC_TDES}},
     { ACVP_KMAC_128,          &acvp_kmac_kat_handler,             ACVP_ALG_KMAC_128,          NULL, ACVP_REV_KMAC_128, {ACVP_SUB_KMAC_128}},
     { ACVP_KMAC_256,          &acvp_kmac_kat_handler,             ACVP_ALG_KMAC_256,          NULL, ACVP_REV_KMAC_256, {ACVP_SUB_KMAC_256}},
+    { ACVP_CSHAKE_128,        &acvp_cshake_kat_handler,           ACVP_ALG_CSHAKE_128,        NULL, ACVP_REV_CSHAKE_128, {ACVP_SUB_CSHAKE_128}},
+    { ACVP_CSHAKE_256,        &acvp_cshake_kat_handler,           ACVP_ALG_CSHAKE_256,        NULL, ACVP_REV_CSHAKE_256, {ACVP_SUB_CSHAKE_256}},
     { ACVP_DSA_KEYGEN,        &acvp_dsa_kat_handler,              ACVP_ALG_DSA,               ACVP_ALG_DSA_KEYGEN, ACVP_REV_DSA, {ACVP_SUB_DSA_KEYGEN}},
     { ACVP_DSA_PQGGEN,        &acvp_dsa_kat_handler,              ACVP_ALG_DSA,               ACVP_ALG_DSA_PQGGEN, ACVP_REV_DSA, {ACVP_SUB_DSA_PQGGEN}},
     { ACVP_DSA_PQGVER,        &acvp_dsa_kat_handler,              ACVP_ALG_DSA,               ACVP_ALG_DSA_PQGVER, ACVP_REV_DSA, {ACVP_SUB_DSA_PQGVER}},
@@ -752,6 +754,11 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_domain(&cap_entry->cap.kmac_cap->msg_len);
                 acvp_cap_free_domain(&cap_entry->cap.kmac_cap->mac_len);
                 free(cap_entry->cap.kmac_cap);
+                break;
+            case ACVP_CSHAKE_TYPE:
+                acvp_cap_free_domain(&cap_entry->cap.cshake_cap->output_len);
+                acvp_cap_free_domain(&cap_entry->cap.cshake_cap->msg_len);
+                free(cap_entry->cap.cshake_cap);
                 break;
             case ACVP_DSA_TYPE:
                 acvp_cap_free_dsa_attrs(cap_entry);
@@ -4195,6 +4202,13 @@ ACVP_SUB_KMAC acvp_get_kmac_alg(ACVP_CIPHER cipher)
     return (alg_tbl[cipher-1].alg.kmac);
 }
 
+ACVP_SUB_CSHAKE acvp_get_cshake_alg(ACVP_CIPHER cipher)
+{
+    if ((cipher == ACVP_CIPHER_START) || (cipher >= ACVP_CIPHER_END)) {
+        return 0;
+    }
+    return (alg_tbl[cipher-1].alg.cshake);
+}
 
 ACVP_SUB_RSA acvp_get_rsa_alg(ACVP_CIPHER cipher)
 {

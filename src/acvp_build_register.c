@@ -469,6 +469,67 @@ static ACVP_RESULT acvp_build_kmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_cshake_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_arr = NULL;
+    JSON_Value *msg_len_val = NULL, *output_len_val = NULL;
+    JSON_Object *msg_len_obj = NULL, *output_len_obj = NULL;
+    ACVP_RESULT result;
+    ACVP_CSHAKE_CAP *cshake_cap = cap_entry->cap.cshake_cap;
+    ACVP_SL_LIST *list = NULL;
+    const char *revision = NULL;
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "revision", revision);
+
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+
+    json_object_set_boolean(cap_obj, "hexCustomization", cshake_cap->hex_customization);
+
+    /* Set the supported message lengths */
+    json_object_set_value(cap_obj, "msgLen", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "msgLen");
+
+    if (cshake_cap->msg_len.increment != 0) {
+        msg_len_val = json_value_init_object();
+        msg_len_obj = json_value_get_object(msg_len_val);
+        json_object_set_number(msg_len_obj, "min", cshake_cap->msg_len.min);
+        json_object_set_number(msg_len_obj, "max", cshake_cap->msg_len.max);
+        json_object_set_number(msg_len_obj, "increment", cshake_cap->msg_len.increment);
+        json_array_append_value(temp_arr, msg_len_val);
+    }
+
+    list = cshake_cap->msg_len.values;
+    while (list) {
+        json_array_append_number(temp_arr, list->length);
+        list = list->next;
+    }
+
+    /* Set the supported output lengths */
+    json_object_set_value(cap_obj, "outputLen", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "outputLen");
+
+    if (cshake_cap->output_len.increment != 0) {
+        output_len_val = json_value_init_object();
+        output_len_obj = json_value_get_object(output_len_val);
+        json_object_set_number(output_len_obj, "min", cshake_cap->output_len.min);
+        json_object_set_number(output_len_obj, "max", cshake_cap->output_len.max);
+        json_object_set_number(output_len_obj, "increment", cshake_cap->output_len.increment);
+        json_array_append_value(temp_arr, output_len_val);
+    }
+
+    list = cshake_cap->output_len.values;
+    while (list) {
+        json_array_append_number(temp_arr, list->length);
+        list = list->next;
+    }
+
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *kwc_arr = NULL;
     JSON_Array *mode_arr = NULL;
@@ -745,6 +806,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_CMAC_TDES:
     case ACVP_KMAC_128:
     case ACVP_KMAC_256:
+    case ACVP_CSHAKE_128:
+    case ACVP_CSHAKE_256:
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
     case ACVP_DSA_PQGVER:
@@ -5745,6 +5808,10 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_KMAC_128:
             case ACVP_KMAC_256:
                 rv = acvp_build_kmac_register_cap(cap_obj, cap_entry);
+                break;
+            case ACVP_CSHAKE_128:
+            case ACVP_CSHAKE_256:
+                rv = acvp_build_cshake_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_DSA_KEYGEN:
                 rv = acvp_build_dsa_register_cap(cap_obj, cap_entry, ACVP_DSA_MODE_KEYGEN);
