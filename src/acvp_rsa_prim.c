@@ -678,7 +678,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                        pass = stc.pass;
                        do {
                            if ((cap->crypto_handler)(&tc)) {
-		                       ACVP_LOG_ERR("Crypto module failed the operation");
+                               ACVP_LOG_ERR("Crypto module failed the operation");
                                rv = ACVP_CRYPTO_MODULE_FAIL;
                                json_value_free(r_tval);
                                json_value_free(r_cval);
@@ -695,7 +695,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                      */
                     rv = acvp_rsa_decprim_output_tc_rev_1(ctx, &stc, r_cobj);
                     if (rv != ACVP_SUCCESS) {
-		                ACVP_LOG_ERR("JSON output failure recording test response");
+                        ACVP_LOG_ERR("JSON output failure recording test response");
                         json_value_free(r_tval);
                         json_value_free(r_cval);
                         goto err;
