@@ -12853,13 +12853,6 @@ else $as_nop
   with_libcurldir=no
 fi
 
-
-    if test "x$libcurldir" = "x" && test "x$offline" = "x" ; then
-        { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "libcurl or libmurl directory must be set if building library for online use
-See \`config.log' for more details" "$LINENO" 5; }
-    fi
 fi
 
 # Use much more strict compile flags
