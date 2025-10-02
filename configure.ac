@@ -115,10 +115,6 @@ if test "x$enable_offline" = "xfalse" && test "x$disable_lib" != "xyes" ; then
         [enable support for client proxy using libcurl])],
         [libcurldir="$withval"],
         [with_libcurldir=no])
-
-    if test "x$libcurldir" = "x" && test "x$offline" = "x" ; then
-        AC_MSG_FAILURE([libcurl or libmurl directory must be set if building library for online use])
-    fi
 fi
 
 # Use much more strict compile flags
