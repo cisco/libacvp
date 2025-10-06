@@ -39,7 +39,8 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
     size_t sig_len = 0;
     const char *curve = NULL, *md = NULL;
     char *pub_key = NULL;
-    unsigned char *sig = NULL, *sig_iter = NULL;
+    unsigned char *sig = NULL;
+    const unsigned char *sig_iter = NULL;
     ACVP_CIPHER mode;
     ACVP_SUB_ECDSA alg;
     ACVP_ECDSA_TC *tc = NULL;
@@ -275,7 +276,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             }
         }
         /* Finally, extract R and S from signature */
-        sig_obj = d2i_ECDSA_SIG(NULL, (const unsigned char **)&sig_iter, (long)sig_len);
+        sig_obj = d2i_ECDSA_SIG(NULL, &sig_iter, (long)sig_len);
         if (!sig_obj) {
             printf("Error creating signature object needed to retrieve output in ECDSA siggen\n");
             goto err;
