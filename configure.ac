@@ -15,7 +15,7 @@
 m4_define([libacvp_major_version], [2])
 m4_define([libacvp_minor_version], [2])
 m4_define([libacvp_micro_version], [0])
-AC_INIT([libacvp], [libacvp_major_version.libacvp_minor_version.libacvp_micro_version], [https://github.com/cisco/libacvp/issues])
+AC_INIT([libacvp],[libacvp_major_version.libacvp_minor_version.libacvp_micro_version],[https://github.com/cisco/libacvp/issues])
 
 # Safety checks in case user overwritten --srcdir
 SUBDIRS=src
@@ -35,8 +35,15 @@ AM_INIT_AUTOMAKE([subdir-objects -Wall -Werror foreign])
 
 # Check for C compiler
 AC_PROG_CC
+# Require C99 or newer standard support
+AS_IF([test "x$ac_cv_prog_cc_c99" = "xno"],
+      [AC_MSG_ERROR([C99 or newer compiler support is required])])
+
+# Helper to test if compiler accepts -c and -o together
 AM_PROG_CC_C_O
+# Required macro for using archiver
 AM_PROG_AR
+# Initiate libtool - runs many host identification checks, etc
 LT_INIT
 # We can add more checks in this section
 AC_CANONICAL_HOST
@@ -211,9 +218,7 @@ fi
 # End reading arguments. Begin testing presence of libs and setting certain make vars. #
 ########################################################################################
 
-##
 # Set the CFLAGS
-##
 CFLAGS="$CFLAGS -Wall -D_FORTIFY_SOURCE=2"
 
 # Hold onto the LIBS variable before AC_SEARCH_LIBS modifies it
@@ -420,6 +425,10 @@ fi
 
 if test "x$enable_cflags" != "xfalse" ; then
     CFLAGS="$CFLAGS -Wcast-align -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels  -Wformat -Wformat-extra-args  -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Wimport -Winvalid-pch -Wmain -Wmissing-braces  -Wmissing-format-attribute -Wmissing-noreturn  -Wmultichar -Wnested-externs -Wnonnull -Wparentheses -Wpointer-arith -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wstrict-prototypes -Wswitch -Wswitch-default -Wtrigraphs  -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable -Wwrite-strings -Wno-pointer-sign  -Wcast-qual -Wfloat-equal  -Wuninitialized -Winline -Wno-error=cast-align -Wbad-function-cast  -Wswitch-enum -Wsystem-headers -Wunused-but-set-variable -Wextra"
+    # Disable GCC-specific warning caused by "suggest-attribute=format" since we use many different compilers and GCC is being presumptuous
+    if test "x$GCC" = "xyes"; then
+        CFLAGS="$CFLAGS -Wno-suggest-attribute=format"
+    fi
 fi
 
 if test "x$enable_gcov" != "xfalse" ; then

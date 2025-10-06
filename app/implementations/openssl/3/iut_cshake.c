@@ -84,8 +84,8 @@ int app_cshake_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_DIGEST_PARAM_N, tc->function_name, tc->function_name_len);
-    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_DIGEST_PARAM_S, tc->custom, tc->custom_len);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_DIGEST_PARAM_FUNCTION_NAME, tc->function_name, tc->function_name_len);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_DIGEST_PARAM_CUSTOMIZATION, tc->custom, tc->custom_len);
     params = OSSL_PARAM_BLD_to_param(pbld);
     if (!params) {
         printf("Error generating params for cSHAKE\n");
