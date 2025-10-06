@@ -540,6 +540,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     JSON_Object *tmp_obj = NULL;
     JSON_Value *tmp_val = NULL;
     const char *revision = NULL;
+    ACVP_SUB_AES aes_alg;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
@@ -553,6 +554,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     }
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
+
+    aes_alg = acvp_get_aes_alg(cap_entry->cipher);
 
     /*
      * If we have a non-default conformance, set the array
@@ -697,34 +700,9 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
             json_array_append_number(opts_arr, sl_list->length);
             sl_list = sl_list->next;
         }
-    } else {
+    } else if (aes_alg) {
         //If cipher is AES, we need keylengths. If TDES, we do not. 
-        ACVP_SUB_AES checkAes = acvp_get_aes_alg(cap_entry->cipher);
-        switch (checkAes) {
-        case ACVP_SUB_AES_ECB:
-        case ACVP_SUB_AES_CBC:
-        case ACVP_SUB_AES_OFB:
-        case ACVP_SUB_AES_CFB128:
-        case ACVP_SUB_AES_CFB8:
-        case ACVP_SUB_AES_CFB1:
-        case ACVP_SUB_AES_CBC_CS1:
-        case ACVP_SUB_AES_CBC_CS2:
-        case ACVP_SUB_AES_CBC_CS3:
-        case ACVP_SUB_AES_CCM:
-        case ACVP_SUB_AES_GCM:
-        case ACVP_SUB_AES_GCM_SIV:
-        case ACVP_SUB_AES_CTR:
-        case ACVP_SUB_AES_XTS:
-        case ACVP_SUB_AES_XPN:
-        case ACVP_SUB_AES_KW:
-        case ACVP_SUB_AES_KWP:
-        case ACVP_SUB_AES_GMAC:
-        case ACVP_SUB_AES_FF1:
-        case ACVP_SUB_AES_FF3:
-            return ACVP_MISSING_ARG;
-        default:
-            break;
-        }
+        return ACVP_MISSING_ARG;
     }
 
     /*
@@ -744,132 +722,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the supported IV lengths
      */
-    switch (cap_entry->cipher) {
-    case ACVP_CIPHER_START:
-    case ACVP_TDES_ECB:
-    case ACVP_TDES_CBC:
-    case ACVP_TDES_CBCI:
-    case ACVP_TDES_OFB:
-    case ACVP_TDES_OFBI:
-    case ACVP_TDES_CFB1:
-    case ACVP_TDES_CFB8:
-    case ACVP_TDES_CFB64:
-    case ACVP_TDES_CFBP1:
-    case ACVP_TDES_CFBP8:
-    case ACVP_TDES_CFBP64:
-    case ACVP_TDES_CTR:
-    case ACVP_TDES_KW:
-    case ACVP_AES_ECB:
-    case ACVP_AES_CFB1:
-    case ACVP_AES_CFB8:
-    case ACVP_AES_CFB128:
-    case ACVP_AES_CTR:
-    case ACVP_AES_OFB:
-    case ACVP_AES_CBC:
-    case ACVP_AES_CBC_CS1:
-    case ACVP_AES_CBC_CS2:
-    case ACVP_AES_CBC_CS3:
-    case ACVP_AES_KW:
-    case ACVP_AES_KWP:
-    case ACVP_AES_XTS:
-    case ACVP_AES_XPN:
-    case ACVP_AES_FF1:
-    case ACVP_AES_FF3:
-    case ACVP_HASH_SHA1:
-    case ACVP_HASH_SHA224:
-    case ACVP_HASH_SHA256:
-    case ACVP_HASH_SHA384:
-    case ACVP_HASH_SHA512:
-    case ACVP_HASH_SHA512_224:
-    case ACVP_HASH_SHA512_256:
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HASH_SHAKE_128:
-    case ACVP_HASH_SHAKE_256:
-    case ACVP_HASHDRBG:
-    case ACVP_HMACDRBG:
-    case ACVP_CTRDRBG:
-    case ACVP_HMAC_SHA1:
-    case ACVP_HMAC_SHA2_224:
-    case ACVP_HMAC_SHA2_256:
-    case ACVP_HMAC_SHA2_384:
-    case ACVP_HMAC_SHA2_512:
-    case ACVP_HMAC_SHA2_512_224:
-    case ACVP_HMAC_SHA2_512_256:
-    case ACVP_HMAC_SHA3_224:
-    case ACVP_HMAC_SHA3_256:
-    case ACVP_HMAC_SHA3_384:
-    case ACVP_HMAC_SHA3_512:
-    case ACVP_CMAC_AES:
-    case ACVP_CMAC_TDES:
-    case ACVP_KMAC_128:
-    case ACVP_KMAC_256:
-    case ACVP_CSHAKE_128:
-    case ACVP_CSHAKE_256:
-    case ACVP_DSA_KEYGEN:
-    case ACVP_DSA_PQGGEN:
-    case ACVP_DSA_PQGVER:
-    case ACVP_DSA_SIGGEN:
-    case ACVP_DSA_SIGVER:
-    case ACVP_RSA_KEYGEN:
-    case ACVP_RSA_SIGGEN:
-    case ACVP_RSA_SIGVER:
-    case ACVP_ECDSA_KEYGEN:
-    case ACVP_ECDSA_KEYVER:
-    case ACVP_ECDSA_SIGGEN:
-    case ACVP_ECDSA_SIGVER:
-    case ACVP_DET_ECDSA_SIGGEN:
-    case ACVP_EDDSA_KEYGEN:
-    case ACVP_EDDSA_KEYVER:
-    case ACVP_EDDSA_SIGGEN:
-    case ACVP_EDDSA_SIGVER:
-    case ACVP_KDF135_SNMP:
-    case ACVP_KDF135_SSH:
-    case ACVP_KDF135_SRTP:
-    case ACVP_KDF135_IKEV2:
-    case ACVP_KDF135_IKEV1:
-    case ACVP_KDF135_X942:
-    case ACVP_KDF135_X963:
-    case ACVP_KDF108:
-    case ACVP_PBKDF:
-    case ACVP_KDF_TLS12:
-    case ACVP_KDF_TLS13:
-    case ACVP_KAS_ECC_CDH:
-    case ACVP_KAS_ECC_COMP:
-    case ACVP_KAS_ECC_NOCOMP:
-    case ACVP_KAS_ECC_SSC:
-    case ACVP_KAS_FFC_COMP:
-    case ACVP_KAS_FFC_NOCOMP:
-    case ACVP_KDA_ONESTEP:
-    case ACVP_KDA_TWOSTEP:
-    case ACVP_KDA_HKDF:
-    case ACVP_RSA_DECPRIM:
-    case ACVP_RSA_SIGPRIM:
-    case ACVP_KAS_FFC_SSC:
-    case ACVP_KAS_IFC_SSC:
-    case ACVP_KTS_IFC:
-    case ACVP_SAFE_PRIMES_KEYGEN:
-    case ACVP_SAFE_PRIMES_KEYVER:
-    case ACVP_LMS_SIGGEN:
-    case ACVP_LMS_SIGVER:
-    case ACVP_LMS_KEYGEN:
-    case ACVP_ML_DSA_KEYGEN:
-    case ACVP_ML_DSA_SIGGEN:
-    case ACVP_ML_DSA_SIGVER:
-    case ACVP_ML_KEM_KEYGEN:
-    case ACVP_ML_KEM_XCAP:
-    case ACVP_SLH_DSA_KEYGEN:
-    case ACVP_SLH_DSA_SIGGEN:
-    case ACVP_SLH_DSA_SIGVER:
-    case ACVP_CIPHER_END:
-        break;
-    case ACVP_AES_GCM:
-    case ACVP_AES_GCM_SIV:
-    case ACVP_AES_CCM:
-    case ACVP_AES_GMAC:
-    default:
+    if (aes_alg == ACVP_SUB_AES_GCM || aes_alg == ACVP_SUB_AES_GCM_SIV ||
+        aes_alg == ACVP_SUB_AES_CCM || aes_alg == ACVP_SUB_AES_GMAC) {
         json_object_set_value(cap_obj, "ivLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "ivLen");
         if (sym_cap->ivlen) {
@@ -913,9 +767,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
 		    json_array_append_value(opts_arr, tmp_val);
         }
     } else {
-        //For most AES ciphers, we need payload lengths. If TDES, we do not. 
-        ACVP_SUB_AES checkAes = acvp_get_aes_alg(cap_entry->cipher);
-        switch (checkAes) {
+        //For most AES ciphers, we need payload lengths. If TDES, we do not.
+        switch (aes_alg) {
         case ACVP_SUB_AES_CBC_CS1:
         case ACVP_SUB_AES_CBC_CS2:
         case ACVP_SUB_AES_CBC_CS3:
@@ -1625,7 +1478,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
             json_object_set_boolean(cap_obj, "componentTest", 0);
         }
         current_curve = ecdsa_cap->curves;
-        //add "universally" set hash algs here instead of later to be resliant to different combos of API calls
+        //add "universally" set hash algs here instead of later to be resilient to different combos of API calls
         while (current_curve) {
             for (i = 0; i < ACVP_HASH_ALG_MAX; i++) {
                 if (ecdsa_cap->hash_algs[i]) {
@@ -1649,7 +1502,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
             json_object_set_boolean(cap_obj, "componentTest", 0);
         }
         current_curve = ecdsa_cap->curves;
-        //add "universally" set hash algs here instead of later to be resliant to different combos of API calls
+        //add "universally" set hash algs here instead of later to be resilient to different combos of API calls
         while (current_curve) {
             for (i = 0; i < ACVP_HASH_ALG_MAX; i++) {
                 if (ecdsa_cap->hash_algs[i]) {
@@ -1668,7 +1521,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
             return ACVP_NO_CAP;
         }
         current_curve = ecdsa_cap->curves;
-        //add "universally" set hash algs here instead of later to be resliant to different combos of API calls
+        //add "universally" set hash algs here instead of later to be resilient to different combos of API calls
         while (current_curve) {
             for (i = 0; i < ACVP_HASH_ALG_MAX; i++) {
                 if (cap_entry->cap.ecdsa_sigver_cap->hash_algs[i]) {
@@ -1782,7 +1635,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
             //Track that we have already dealt with this curve
             track[current_curve->curve] = 1;
 
-            //Now, check every curve on the list aftetwards, and memcmp to see if it has the same hashAlgs,
+            //Now, check every curve on the list afterwards, and memcmp to see if it has the same hashAlgs,
             //appending it to the same obj when applicable
             iter = current_curve->next;
             while (iter) {
@@ -5120,7 +4973,7 @@ static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
 
     return ACVP_SUCCESS;
 err:
-    ACVP_LOG_ERR("Error occured when building LMS JSON");
+    ACVP_LOG_ERR("Error occurred when building LMS JSON");
     return ACVP_INTERNAL_ERR;
 }
 

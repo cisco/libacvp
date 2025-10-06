@@ -103,6 +103,15 @@ ACVP_RESULT register_capabilities_fp_4x(ACVP_CTX *ctx, APP_CONFIG *cfg);
  * strings to avoid this, but using core names makes libacvp a more useful reference.
  */
 
+ /* added in 4.0 */
+#ifndef OSSL_DIGEST_PARAM_FUNCTION_NAME
+#define OSSL_DIGEST_PARAM_FUNCTION_NAME "function-name"
+#endif
+
+#ifndef OSSL_DIGEST_PARAM_CUSTOMIZATION
+#define OSSL_DIGEST_PARAM_CUSTOMIZATION "customization"
+#endif
+
 /* Added in 3.5.0 for PQC */
 #ifndef OSSL_PKEY_PARAM_ML_DSA_SEED
 #define OSSL_PKEY_PARAM_ML_DSA_SEED "seed"

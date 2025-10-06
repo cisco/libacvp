@@ -4488,7 +4488,15 @@ else
 fi
 
 
+# Require C99 or newer standard support
+if test "x$ac_cv_prog_cc_c99" = "xno"
+then :
+  as_fn_error $? "C99 or newer compiler support is required" "$LINENO" 5
+fi
 
+# Helper to test if compiler accepts -c and -o together
+
+# Required macro for using archiver
 
 
   if test -n "$ac_tool_prefix"; then
@@ -4674,6 +4682,7 @@ unknown)
   ;;
 esac
 
+# Initiate libtool - runs many host identification checks, etc
 case `pwd` in
   *\ * | *\	*)
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Libtool does not cope well with whitespace in \`pwd\`" >&5
@@ -12984,9 +12993,7 @@ fi
 # End reading arguments. Begin testing presence of libs and setting certain make vars. #
 ########################################################################################
 
-##
 # Set the CFLAGS
-##
 CFLAGS="$CFLAGS -Wall -D_FORTIFY_SOURCE=2"
 
 # Hold onto the LIBS variable before AC_SEARCH_LIBS modifies it
@@ -13563,6 +13570,10 @@ fi
 
 if test "x$enable_cflags" != "xfalse" ; then
     CFLAGS="$CFLAGS -Wcast-align -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels  -Wformat -Wformat-extra-args  -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Wimport -Winvalid-pch -Wmain -Wmissing-braces  -Wmissing-format-attribute -Wmissing-noreturn  -Wmultichar -Wnested-externs -Wnonnull -Wparentheses -Wpointer-arith -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wstrict-prototypes -Wswitch -Wswitch-default -Wtrigraphs  -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable -Wwrite-strings -Wno-pointer-sign  -Wcast-qual -Wfloat-equal  -Wuninitialized -Winline -Wno-error=cast-align -Wbad-function-cast  -Wswitch-enum -Wsystem-headers -Wunused-but-set-variable -Wextra"
+    # Disable GCC-specific warning caused by "suggest-attribute=format" since we use many different compilers and GCC is being presumptuous
+    if test "x$GCC" = "xyes"; then
+        CFLAGS="$CFLAGS -Wno-suggest-attribute=format"
+    fi
 fi
 
 if test "x$enable_gcov" != "xfalse" ; then
