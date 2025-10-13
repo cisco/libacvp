@@ -19,10 +19,10 @@
 
 
 /* Keeps track of what to use the next Dependency ID */
-static unsigned int glb_dependency_id = 1; 
-static unsigned int glb_vendor_id = 1; 
-static unsigned int glb_module_id = 1; 
-static unsigned int glb_oe_id = 1; 
+static unsigned int glb_dependency_id = 1;
+static unsigned int glb_vendor_id = 1;
+static unsigned int glb_module_id = 1;
+static unsigned int glb_oe_id = 1;
 
 static ACVP_RESULT copy_oe_string(char **dest, const char *src) {
     if (dest == NULL) {
@@ -35,7 +35,7 @@ static ACVP_RESULT copy_oe_string(char **dest, const char *src) {
         return ACVP_INVALID_ARG;
     }
 
-    if (*dest) { 
+    if (*dest) {
         memzero_s(*dest, ACVP_OE_STR_MAX + 1);
     } else {
         *dest = calloc(ACVP_OE_STR_MAX + 1, sizeof(char));
@@ -174,7 +174,7 @@ static ACVP_RESULT acvp_oe_dependency_set_field(ACVP_CTX *ctx,
         return rv;
     }
 
-    return ACVP_SUCCESS; 
+    return ACVP_SUCCESS;
 }
 
 /**
@@ -182,7 +182,7 @@ static ACVP_RESULT acvp_oe_dependency_set_field(ACVP_CTX *ctx,
  *
  * @param ctx ACVP_CTX
  * @param id ID that will be assigned to this OE (user defined)
- * @param name String representing "name" 
+ * @param name String representing "name"
  *
  * @return ACVP_RESULT
  */
@@ -573,7 +573,7 @@ ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
     if (!type && !version && !description) {
         ACVP_LOG_ERR("Need at least 1 of the parameters to be non-NULL");
         return ACVP_INVALID_ARG;
-    } 
+    }
 
     module = find_module(ctx, id);
     if (!module) return ACVP_INVALID_ARG;
@@ -726,7 +726,7 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
         goto end;
     }
 
-    data_array = json_object_get_array(obj, "data"); 
+    data_array = json_object_get_array(obj, "data");
     data_count = json_array_get_count(data_array);
 
     for (i = 0; i < data_count; i++) {
@@ -775,7 +775,7 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
             }
             ACVP_LOG_INFO("Found a matching dependency! Url: %s", url);
             strcpy_s(dep->url, ACVP_ATTR_URL_MAX + 1, url);
-            *match = 1; 
+            *match = 1;
             goto end;
         }
         free(tmp_dep.type);
@@ -796,7 +796,7 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
         free(*next_endpoint);
         *next_endpoint = NULL;
     }
-    
+
     next = json_object_get_string(links_obj, "next");
     if (next) {
         // Copy the next page endpoint
@@ -1101,12 +1101,12 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
         rv = ACVP_JSON_ERR;
         goto end;
     }
-    
+
     if (*next_endpoint) {
         free(*next_endpoint);
         *next_endpoint = NULL;
     }
-    
+
     next = json_object_get_string(links_obj, "next");
     if (next) {
         // Copy the next page endpoint
@@ -1205,7 +1205,7 @@ static ACVP_RESULT query_oe(ACVP_CTX *ctx,
         if (rv != ACVP_SUCCESS || match) {
             break;
         }
-        
+
         endpoint = next_endpoint;
         ACVP_LOG_INFO("No matching OE on this page, moving to next page...");
     } while (endpoint);
@@ -1873,7 +1873,7 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
         rv = ACVP_JSON_ERR;
         goto end;
     }
-    
+
     if (*next_endpoint) {
         free(*next_endpoint);
         *next_endpoint = NULL;
@@ -1958,7 +1958,7 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
                 goto end;
             }
         }
-        
+
         /* Query using the first email in the list */
         if (vendor->emails) {
             rv = acvp_kv_list_append(&parameters, "email[0]=eq:", vendor->emails->string);
@@ -2008,8 +2008,8 @@ end:
 /**
  * @brief Compare two modules to see if they are equal.
  *
- * @param a First module 
- * @param b Second module 
+ * @param a First module
+ * @param b Second module
  *
  * @return 1 for equal, 0 for not-equal
  */
@@ -2138,7 +2138,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
             goto end;
         }
 
-        // Soft copy 
+        // Soft copy
         type = json_object_get_string(module_obj, "type");
         name = json_object_get_string(module_obj, "name");
         version = json_object_get_string(module_obj, "version");
@@ -2222,7 +2222,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
 
             strcpy_s(module->url, ACVP_ATTR_URL_MAX + 1, url);
             ACVP_LOG_INFO("Found a matching module! Url: %s", url);
-            *match = 1; 
+            *match = 1;
             goto end;
         }
     }
@@ -2237,7 +2237,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
         free (*next_endpoint);
         *next_endpoint = NULL;
     }
-    
+
     next = json_object_get_string(links_obj, "nextPage");
     if (next) {
         // Copy the next page endpoint
@@ -2393,11 +2393,11 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
         if (rv != ACVP_SUCCESS || match) {
            break;
         }
-        
+
         endpoint = next_endpoint;
         ACVP_LOG_INFO("No matching module on this page, moving to next page...");
     } while (endpoint);
-    
+
 end:
     if (first_endpoint) free(first_endpoint);
     if (next_endpoint) free(next_endpoint);
@@ -2943,7 +2943,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
     if (!obj) {
         ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
-    } 
+    }
 
     id = glb_vendor_id;
     glb_vendor_id++;
@@ -3053,7 +3053,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj
     if (!obj) {
         ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
-    } 
+    }
 
     module_id = glb_module_id;
     glb_module_id++;
@@ -3103,11 +3103,11 @@ static ACVP_RESULT acvp_oe_metadata_parse_modules(ACVP_CTX *ctx, JSON_Object *ob
     }
 
     modules_count = json_array_get_count(modules_array);
-    /* 
+    /*
      * Not required to be in the metadata file.
      * The user can specify modules via libacvp API.
      */
-    if (modules_count == 0) return ACVP_SUCCESS; 
+    if (modules_count == 0) return ACVP_SUCCESS;
 
     for (i = 0; i < modules_count; i++) {
         JSON_Object *module_obj = json_array_get_object(modules_array, i);
@@ -3316,7 +3316,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe(ACVP_CTX *ctx, JSON_Object *obj) {
     if (!obj) {
         ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
-    } 
+    }
 
     oe_id = glb_oe_id;
     glb_oe_id++;
@@ -3366,11 +3366,11 @@ static ACVP_RESULT acvp_oe_metadata_parse_oes(ACVP_CTX *ctx, JSON_Object *obj) {
     }
 
     oes_count = json_array_get_count(oes_array);
-    /* 
+    /*
      * Not required to be in the metadata file.
      * The user can specify oes via libacvp API.
      */
-    if (oes_count == 0) return ACVP_SUCCESS; 
+    if (oes_count == 0) return ACVP_SUCCESS;
 
     for (i = 0; i < oes_count; i++) {
         JSON_Object *oe_obj = json_array_get_object(oes_array, i);

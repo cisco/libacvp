@@ -182,7 +182,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
 
     switch (alg) {
     case ACVP_SUB_ML_DSA_KEYGEN:
-        /** 
+        /**
          * We need to specify seed value that ML-DSA keygen uses. We cannot do that directly.
          * However, we can specify a custom RNG function. For testing's sake, we set a RNG function
          * that really just returns bytes for the seed value the server specifies. This is not

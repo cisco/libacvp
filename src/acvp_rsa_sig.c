@@ -460,7 +460,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
                     goto err;
                 }
 
-                signature = calloc(mod/4 +1, sizeof(char));                    
+                signature = calloc(mod/4 +1, sizeof(char));
                 if (!signature) {
                     ACVP_LOG_ERR("Unable to malloc for signature");
                     rv = ACVP_MALLOC_FAIL;

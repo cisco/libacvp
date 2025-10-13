@@ -158,7 +158,7 @@ json_parse_cleanup:
 
 /*
  * Performs a simple HTTP POST operation.
- * 
+ *
  * returns 0 on success, non-zero on failure.
  */
 #define TEST_POST_VALUE1 "value1=1,value2=two"
@@ -168,7 +168,7 @@ static int test_murl_simple_post ()
     int rv = 1;
 
     printf("Starting simple HTTP POST test...\n");
-    
+
     http_resp = test_murl_post_http_post("https://httpbin.org/post", TEST_POST_VALUE1);
 
     if (http_resp != 200) {
@@ -193,7 +193,7 @@ static int test_murl_simple_post ()
 
 /*
  * Performs a HTTP POST operation with large data.
- * 
+ *
  * returns 0 on success, non-zero on failure.
  */
 //httpbin.org appears to support large POST, we'll limit to 1MB for now to avoid
@@ -228,9 +228,9 @@ static int test_murl_large_post ()
 
     if (http_resp != 200) {
 	printf("HTTP post failed with response %d\n", http_resp);
-	goto large_post_cleanup; 
+	goto large_post_cleanup;
     }
- 
+
     /*
      * JSON parse the response from the server and extract the POST data.
      * It should match what we originally sent to the server.

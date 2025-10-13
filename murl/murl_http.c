@@ -64,7 +64,7 @@
 #define MAX_BODY_SIZE 64*1024*1024
 
 /*
- * Using this global variable to track when all the HTTP data has been 
+ * Using this global variable to track when all the HTTP data has been
  * parsed.  This will need to be addressed if/when thread-safety is
  * desired.
  */
@@ -347,7 +347,7 @@ int murl_http_parse_response (SessionHandle *ctx, const char *buf)
 
     len = msg->body_size;
     if (ctx->recv_buf) {
-	free(ctx->recv_buf); 
+	free(ctx->recv_buf);
 	ctx->recv_buf = NULL;
 	ctx->recv_ctr = 0;
     }

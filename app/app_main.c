@@ -359,12 +359,12 @@ int main(int argc, char **argv) {
             goto end;
         }
     }
-    
+
     if (cfg.get_results) {
         rv = acvp_get_results_from_server(ctx, cfg.session_file);
         goto end;
     }
-    
+
     if (cfg.resume_session) {
         rv = acvp_resume_test_session(ctx, cfg.session_file, cfg.fips_validation);
         goto end;
@@ -387,7 +387,7 @@ int main(int argc, char **argv) {
         }
         goto end;
     }
-    
+
     /*
      * Run the test session.
      * Perform a FIPS validation on this test session if specified.

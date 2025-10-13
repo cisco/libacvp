@@ -224,7 +224,7 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             const char *ch_rnd = NULL;
             const char *s_fin_rnd = NULL;
             const char *c_fin_rnd = NULL;
-            
+
             ACVP_LOG_VERBOSE("Found new TLS 1.3 test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
@@ -377,7 +377,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
         return ACVP_MALLOC_FAIL;
     }
 
-    //append client early traffic secret 
+    //append client early traffic secret
     if (stc->cets_len > ACVP_KDF_TLS13_DATA_LEN_BYTE_MAX) {
         ACVP_LOG_ERR("Provided length for test case output too long: cets_len");
         rv = ACVP_INVALID_ARG;

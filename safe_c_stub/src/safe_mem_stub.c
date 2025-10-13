@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------
  * safe_mem_stub.c - Replacements for Safe C Library Memory Functions
- * 
+ *
  * Contains code derived from https://sourceforge.net/projects/safeclib/
  * license reproduced below
- * 
+ *
  * October 2008, Bo Berry
  *
  * Copyright (c) 2008-2011 by Cisco Systems, Inc
@@ -150,14 +150,14 @@ errno_t memset_s (void *s, rsize_t smax, int c, rsize_t n)
         return (ESNULLP);
     }
 
-    if (smax > RSIZE_MAX_MEM) { 
+    if (smax > RSIZE_MAX_MEM) {
         return (ESLEMAX);
     }
     if (n > RSIZE_MAX_MEM) {
         memset(s, c, smax);
         return (ESLEMAX);
     }
-    
+
     if (n > smax) {
         memset(s, c, smax);
         return (ESLEMAX);

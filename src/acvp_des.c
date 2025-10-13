@@ -95,7 +95,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Invalid cipher value");
         return ACVP_INVALID_ARG;
     }
-    
+
     switch (alg) {
     case ACVP_SUB_TDES_CBC:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
@@ -409,7 +409,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
         free(tmp);
         return ACVP_INVALID_ARG;
     }
-    
+
     switch (alg) {
     case ACVP_SUB_TDES_CBC:
     case ACVP_SUB_TDES_OFB:
@@ -800,7 +800,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             unsigned int ivlen = 0, ptlen = 0, ctlen = 0, tmp_key_len = 0;
             char *key = NULL;
 
-            
+
             ACVP_LOG_VERBOSE("Found new 3DES test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);

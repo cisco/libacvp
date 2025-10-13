@@ -359,7 +359,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                    goto err;
                 }
                 pr_input_obj = json_value_get_object(pr_input_val);
-            
+
                 if (pr_input_count != 3) {
                    ACVP_LOG_ERR("Server JSON, invalid number of entries, %d", pr_input_count);
                    rv = ACVP_INVALID_ARG;
@@ -454,7 +454,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
-            pr1_len = pr1_len/2; 
+            pr1_len = pr1_len/2;
             index++;
             /*
              * Get 2nd or 3rd element from the array
@@ -502,7 +502,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
-            pr2_len = pr2_len/2; 
+            pr2_len = pr2_len/2;
             /*
              * Create a new test case in the response
              */

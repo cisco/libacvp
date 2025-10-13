@@ -100,8 +100,8 @@ static int test_murl_http_get(char *url)
      * Add the test arguments to the URL
      */
     for (i=0; i<TEST_ARG_CNT; i++) {
-	sprintf(tmp, "%s=%s&", test_args[i].arg_name, test_args[i].arg_val); 
-	new_url = strcat(new_url, tmp);  
+	sprintf(tmp, "%s=%s&", test_args[i].arg_name, test_args[i].arg_val);
+	new_url = strcat(new_url, tmp);
     }
 
     printf("\tGET URL: %s\n", new_url);
@@ -202,7 +202,7 @@ json_parse_cleanup:
 
 /*
  * Performs a simple HTTP GET operation.
- * 
+ *
  * returns 0 on success, non-zero on failure.
  */
 static int test_murl_simple_get ()
@@ -211,7 +211,7 @@ static int test_murl_simple_get ()
     int rv = 1;
 
     printf("Starting simple HTTP GET test...\n");
-    
+
     http_resp = test_murl_http_get("https://httpbin.org/get");
 
     if (http_resp != 200) {
@@ -241,7 +241,7 @@ static int test_murl_simple_get ()
 /*
  * Performs a simple HTTP GET operation with
  * custom headers.
- * 
+ *
  * returns 0 on success, non-zero on failure.
  */
 static int test_murl_headers_get()
@@ -327,9 +327,9 @@ static int test_murl_headers_get()
 }
 
 /*
- * This function performs an HTTP GET using httpbin.org 
+ * This function performs an HTTP GET using httpbin.org
  * while omitting the trailing slash on the URL.
- * This improves code coverage of the URL parser in libmurl. 
+ * This improves code coverage of the URL parser in libmurl.
  *
  * Returns zero on success, non-zero on failure
  */

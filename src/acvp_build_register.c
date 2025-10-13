@@ -701,7 +701,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
             sl_list = sl_list->next;
         }
     } else if (aes_alg) {
-        //If cipher is AES, we need keylengths. If TDES, we do not. 
+        //If cipher is AES, we need keylengths. If TDES, we do not.
         return ACVP_MISSING_ARG;
     }
 
@@ -4010,7 +4010,7 @@ static ACVP_RESULT acvp_build_kas_ifc_register_cap(ACVP_CTX *ctx,
             }
             current_param = current_param->next;
         }
-    }    
+    }
     if (kas_ifc_cap->kas2_roles) {
         json_object_set_value(sch_obj, "KAS2", role_val);
     }
@@ -4127,7 +4127,7 @@ static ACVP_RESULT acvp_build_kda_onestep_register_cap(ACVP_CTX *ctx,
         }
 
         if (tmp_param_list->next) {
-            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "||", 2); 
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "||", 2);
         }
         tmp_param_list = tmp_param_list->next;
     }
@@ -4356,7 +4356,7 @@ static ACVP_RESULT acvp_build_kda_twostep_register_cap(ACVP_CTX *ctx,
         }
 
         if (tmp_param_list->next) {
-            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "||", 2); 
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "||", 2);
         }
         tmp_param_list = tmp_param_list->next;
     }
@@ -4529,7 +4529,7 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
         }
 
         if (tmp_param_list->next) {
-            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "||", 2); 
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "||", 2);
         }
         tmp_param_list = tmp_param_list->next;
     }
@@ -4776,7 +4776,7 @@ static ACVP_RESULT acvp_build_kts_ifc_register_cap(ACVP_CTX *ctx,
         json_array_append_string(temp_arr, current_scheme->encodings);
         json_object_set_value(guts_obj, "ktsMethod", meth_val);
         json_object_set_value(sch_obj, "KTS-OAEP-basic", guts_val);
-        
+
         current_scheme = current_scheme->next;
     }
 
@@ -5772,7 +5772,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                         break;
                     }
                     /* Another also enabled? */
-                    if (cap_entry->cap.kdf108_cap->counter_mode.kdf_mode || 
+                    if (cap_entry->cap.kdf108_cap->counter_mode.kdf_mode ||
                         cap_entry->cap.kdf108_cap->feedback_mode.kdf_mode ||
                         cap_entry->cap.kdf108_cap->dpi_mode.kdf_mode) {
                         json_array_append_value(caps_arr, cap_val);

@@ -123,7 +123,7 @@ static struct curl_slist *acvp_add_auth_hdr(ACVP_CTX *ctx, struct curl_slist *sl
 
 end:
     if (ctx->use_tmp_jwt) {
-        /* 
+        /*
          * This was a single-use token.
          * Turn it off now... the library might turn it back on later.
          */
@@ -631,8 +631,8 @@ static ACVP_RESULT acvp_send_with_path_seg(ACVP_CTX *ctx,
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx,
                                                 char *reg,
                                                 int len) {
-#ifdef ACVP_OFFLINE 
-    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+#ifdef ACVP_OFFLINE
+    ACVP_LOG_ERR("Curl not linked, exiting function");
     return ACVP_TRANSPORT_FAIL;
 #else
     return acvp_send_with_path_seg(ctx, ACVP_NET_POST_REG,
@@ -651,8 +651,8 @@ ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx,
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx,
                             char *login,
                             int len) {
-#ifdef ACVP_OFFLINE 
-    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+#ifdef ACVP_OFFLINE
+    ACVP_LOG_ERR("Curl not linked, exiting function");
     return ACVP_TRANSPORT_FAIL;
 #else
     return acvp_send_with_path_seg(ctx, ACVP_NET_POST_LOGIN,
@@ -665,8 +665,8 @@ ACVP_RESULT acvp_send_login(ACVP_CTX *ctx,
  * to the ACV server.
  */
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx, char *vsid_url) {
-#ifdef ACVP_OFFLINE 
-    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+#ifdef ACVP_OFFLINE
+    ACVP_LOG_ERR("Curl not linked, exiting function");
     return ACVP_TRANSPORT_FAIL;
 #else
     ACVP_RESULT rv = 0;
@@ -692,8 +692,8 @@ ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx,
                                 const char *uri,
                                 char *data,
                                 int data_len) {
-#ifdef ACVP_OFFLINE 
-    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+#ifdef ACVP_OFFLINE
+    ACVP_LOG_ERR("Curl not linked, exiting function");
     return ACVP_TRANSPORT_FAIL;
 #else
     ACVP_RESULT rv = 0;
@@ -720,8 +720,8 @@ ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx,
  * the health status from the ACVP server.
  */
 ACVP_RESULT acvp_retrieve_health_status(ACVP_CTX *ctx) {
-#ifdef ACVP_OFFLINE 
-    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+#ifdef ACVP_OFFLINE
+    ACVP_LOG_ERR("Curl not linked, exiting function");
     return ACVP_TRANSPORT_FAIL;
 #else
     ACVP_RESULT rv = 0;
@@ -743,8 +743,8 @@ ACVP_RESULT acvp_retrieve_health_status(ACVP_CTX *ctx) {
  * a KAT vector set from the ACVP server.
  */
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
-#ifdef ACVP_OFFLINE 
-    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+#ifdef ACVP_OFFLINE
+    ACVP_LOG_ERR("Curl not linked, exiting function");
     return ACVP_TRANSPORT_FAIL;
 #else
     ACVP_RESULT rv = 0;
@@ -772,8 +772,8 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
  * more specifically for a vectorSet
  */
 ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, const char *api_url) {
-#ifdef ACVP_OFFLINE 
-    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+#ifdef ACVP_OFFLINE
+    ACVP_LOG_ERR("Curl not linked, exiting function");
     return ACVP_TRANSPORT_FAIL;
 #else
     ACVP_RESULT rv = 0;
@@ -796,8 +796,8 @@ ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, const char *api_url) 
 }
 
 ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, const char *api_url) {
-#ifdef ACVP_OFFLINE 
-    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+#ifdef ACVP_OFFLINE
+    ACVP_LOG_ERR("Curl not linked, exiting function");
     return ACVP_TRANSPORT_FAIL;
 #else
     ACVP_RESULT rv = 0;
@@ -823,8 +823,8 @@ ACVP_RESULT acvp_transport_put(ACVP_CTX *ctx,
                                const char *endpoint,
                                const char *data,
                                int data_len) {
-#ifdef ACVP_OFFLINE 
-    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+#ifdef ACVP_OFFLINE
+    ACVP_LOG_ERR("Curl not linked, exiting function");
     return ACVP_TRANSPORT_FAIL;
 #else
     ACVP_RESULT rv = 0;
@@ -883,8 +883,8 @@ ACVP_RESULT acvp_transport_put_validation(ACVP_CTX *ctx,
 ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
                                const char *url,
                                const ACVP_KV_LIST *parameters) {
-#ifdef ACVP_OFFLINE 
-    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+#ifdef ACVP_OFFLINE
+    ACVP_LOG_ERR("Curl not linked, exiting function");
     return ACVP_TRANSPORT_FAIL;
 #else
     ACVP_RESULT rv = 0;
@@ -1599,8 +1599,8 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
                 free(buildLabBuffer);
             }
         }
-    } 
-    
+    }
+
     SYSTEM_INFO sysInfo;
     GetNativeSystemInfo(&sysInfo);
     if (!sysInfo.dwOemId) {
@@ -1612,7 +1612,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
         switch(sysInfo.wProcessorArchitecture) {
         case PROCESSOR_ARCHITECTURE_AMD64:
             strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "x86_64", ACVP_USER_AGENT_ARCH_STR_MAX);
-             //get CPU model string 
+             //get CPU model string
             __cpuid(brandString_resp, 0x80000002);
             memcpy_s(brandString, 16, &brandString_resp, 16);
             __cpuid(brandString_resp, 0x80000003);
@@ -1623,7 +1623,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
             break;
         case PROCESSOR_ARCHITECTURE_INTEL:
             strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "x86", ACVP_USER_AGENT_ARCH_STR_MAX);
-            //get CPU model string 
+            //get CPU model string
             __cpuid(brandString_resp, 0x80000002);
             memcpy_s(brandString, 16, &brandString_resp, 16);
             __cpuid(brandString_resp, 0x80000003);
@@ -1652,7 +1652,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
             acvp_http_user_agent_check_env_for_var(ctx, arch, ACVP_USER_AGENT_ARCH);
             acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
             break;
-        }     
+        }
     }
 
     //gets compiler version

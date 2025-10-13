@@ -225,7 +225,7 @@ int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
             printf("Error generating signature in EDDSA siggen\n");
             goto err;
         }
-   
+
         /* and copy our values to the TC response */
         tc->q_len = (int)group_q_len;
         memcpy_s(tc->q, 8192, eddsa_group_q, group_q_len);

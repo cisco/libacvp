@@ -75,8 +75,8 @@ static ACVP_RESULT acvp_kts_ifc_init_tc(ACVP_CTX *ctx,
                                             const char *dmp1,
                                             const char *dmq1,
                                             const char *iqmp,
-                                            int modulo, 
-                                            int llen, 
+                                            int modulo,
+                                            int llen,
                                             ACVP_KTS_IFC_TEST_TYPE test_type) {
     ACVP_RESULT rv;
 
@@ -565,7 +565,7 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
                 }
 
             }
-            
+
             ACVP_LOG_VERBOSE("           tcId: %d", tc_id);
             ACVP_LOG_VERBOSE("              p: %s", p);
             ACVP_LOG_VERBOSE("              q: %s", q);
@@ -585,7 +585,7 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_kts_ifc_init_tc(ctx, stc, key_gen, hash_alg, role, ct, 
+            rv = acvp_kts_ifc_init_tc(ctx, stc, key_gen, hash_alg, role, ct,
                                       p, q, d, n, e, dmp1, dmq1, iqmp, modulo, llen, test_type);
             if (rv != ACVP_SUCCESS) {
                 acvp_kts_ifc_release_tc(stc);

@@ -652,9 +652,9 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_kdf108_init_tc(&stc, tc_id, kdf_mode, mac_mode, ctr_loc, 
+            rv = acvp_kdf108_init_tc(&stc, tc_id, kdf_mode, mac_mode, ctr_loc,
                                      key_in_str, iv_str, context_str, label_str,
-                                     key_in_len, key_out_len, iv_len, context_len, 
+                                     key_in_len, key_out_len, iv_len, context_len,
                                      label_len, ctr_len, deferred);
             if (rv != ACVP_SUCCESS) {
                 acvp_kdf108_release_tc(&stc);

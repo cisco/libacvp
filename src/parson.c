@@ -2253,7 +2253,7 @@ int json_value_equals(const JSON_Value *a, const JSON_Value *b) {
             if (a_string == NULL || b_string == NULL) {
                 return 0; /* shouldn't happen */
             }
-            memcmp_s(a_string->chars, a_string->length, 
+            memcmp_s(a_string->chars, a_string->length,
                      b_string->chars, b_string->length, &diff); /* SAFEC */
             return a_string->length == b_string->length && diff == 0;
         case JSONBoolean:

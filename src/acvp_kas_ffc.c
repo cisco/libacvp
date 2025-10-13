@@ -495,7 +495,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_kas_ffc_init_comp_tc(ctx, stc, hash_alg, pms, 
+            rv = acvp_kas_ffc_init_comp_tc(ctx, stc, hash_alg, pms,
                                            p, q, g, eps, epri, epui, z, test_type);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ffc_release_tc(stc);
@@ -612,7 +612,7 @@ ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         rv = ACVP_INVALID_ARG;
         goto err;
     }
-    
+
     switch (alg) {
     case ACVP_SUB_KAS_FFC_COMP:
         cap = acvp_locate_cap_entry(ctx, ACVP_KAS_FFC_COMP);
@@ -878,7 +878,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
                 z = json_object_get_string(testobj, "hashZ");
                 if (!z) {
                     //Assume user did not specify hash function if we don't have capability info for some reason
-                    if (!cap || !cap->cap.kas_ffc_cap || !cap->cap.kas_ffc_cap->kas_ffc_mode || 
+                    if (!cap || !cap->cap.kas_ffc_cap || !cap->cap.kas_ffc_cap->kas_ffc_mode ||
                             cap->cap.kas_ffc_cap->kas_ffc_mode->hash == ACVP_NO_SHA) {
                         z = json_object_get_string(testobj, "z");
                         if (!z) {

@@ -72,7 +72,7 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XP1, xp1);
     OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XP2, xp2);
     OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XQ, xq);
-    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XQ1, xq1); 
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XQ1, xq1);
     OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XQ2, xq2);
     params = OSSL_PARAM_BLD_to_param(pkey_pbld);
     if (!params) {
@@ -482,7 +482,7 @@ int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
     sign_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
-    if (!sign_ctx) { 
+    if (!sign_ctx) {
         printf("Error generating signing CTX from pkey in RSA\n");
         goto err;
     }

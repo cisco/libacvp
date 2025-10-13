@@ -670,7 +670,7 @@ static ACVP_DSA_GEN_PARM read_gen_pq(const char *str) {
     return 0;
 }
 
-static 
+static
 ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
                                     ACVP_TEST_CASE tc,
                                     ACVP_CAPS_LIST *cap,
