@@ -113,7 +113,7 @@ enum http_parser_type { HTTP_REQUEST, HTTP_RESPONSE, HTTP_BOTH };
 
 
 struct http_parser {
-  /** PRIVATE **/
+  // PRIVATE
   unsigned char type : 2;
   unsigned char flags : 6;
   unsigned char state;
@@ -123,20 +123,21 @@ struct http_parser {
   uint32_t nread;
   int64_t content_length;
 
-  /** READ-ONLY **/
+  // READ-ONLY
   unsigned short http_major;
   unsigned short http_minor;
   unsigned short status_code; // responses only
   unsigned char method;    // requests only
 
-  /* 1 = Upgrade header was present and the parser has exited because of that.
+  /*
+   * 1 = Upgrade header was present and the parser has exited because of that.
    * 0 = No upgrade header present.
    * Should be checked when http_parser_execute() returns in addition to
    * error checking.
    */
   char upgrade;
 
-  /** PUBLIC **/
+  // PUBLIC
   void *data; // A pointer to get hook to the "connection" or "socket" object
 };
 

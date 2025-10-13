@@ -870,8 +870,7 @@ CURLcode curl_easy_perform(CURL *curl)
             default:
                 ossl_err = ERR_get_error();
                 if ((rv < 0) || ossl_err) {
-                    fprintf(stderr, "SSL_read failed, rv=%d ssl_err=%d ossl_err=%d.\n",
-                            rv, ssl_err, (int)ossl_err);
+                    fprintf(stderr, "SSL_read failed, rv=%d ssl_err=%d ossl_err=%d.\n", rv, ssl_err, (int)ossl_err);
                     ERR_print_errors_fp(stderr);
                     crv = CURLE_USE_SSL_FAILED;
 	            goto easy_perform_cleanup;

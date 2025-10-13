@@ -100,39 +100,39 @@ typedef struct acvp_ctx_t ACVP_CTX;
  */
 typedef enum acvp_result {
     ACVP_SUCCESS = 0,
-    ACVP_MALLOC_FAIL,        /**< Error allocating memory */
-    ACVP_NO_CTX,             /**< An initalized context was expected but not present */
-    ACVP_TRANSPORT_FAIL,     /**< Error exchanging data with server */
-    ACVP_NO_DATA,            /**< Required data for operation is missing */
+    ACVP_MALLOC_FAIL,        //!< Error allocating memory
+    ACVP_NO_CTX,             //!< An initalized context was expected but not present
+    ACVP_TRANSPORT_FAIL,     //!< Error exchanging data with server
+    ACVP_NO_DATA,            //!< Required data for operation is missing
     ACVP_UNSUPPORTED_OP,     /**< An operation has been requested that is not supported. This can
                                   either be because parameters are not valid or because the library
                                   does not support something at the time */
-    ACVP_CLEANUP_FAIL,       /**< Failure when cleaning up (e.g. freeing memory) after operations */
+    ACVP_CLEANUP_FAIL,       //!< Failure when cleaning up (e.g. freeing memory) after operations
     ACVP_KAT_DOWNLOAD_RETRY, /**< Does not necessarily indicate an error, but that data requested
                                   from server is not yet ready to be accessed */
-    ACVP_INVALID_ARG,        /**< A provided argument or parameter is not valid for the given operation */
-    ACVP_MISSING_ARG,        /**< A required argument or parameter is not provided/null/0 */
-    ACVP_CRYPTO_MODULE_FAIL, /**< A non-zero return code was provided by the application callback 
+    ACVP_INVALID_ARG,        //!< A provided argument or parameter is not valid for the given operation
+    ACVP_MISSING_ARG,        //!< A required argument or parameter is not provided/null/0
+    ACVP_CRYPTO_MODULE_FAIL, /**< A non-zero return code was provided by the application callback
                                   for test case processing; this should indicate that the application
-                                  failed to process the test case*/
+                                  failed to process the test case */
     ACVP_NO_CAP,             /**< A registered capability object for the given algorithm does not exist. This
                                   usually means an operation is being requested for an algorithm that is not yet
                                   registered */
-    ACVP_MALFORMED_JSON,     /**< The given JSON is not properly formatted/readable JSON */
-    ACVP_JSON_ERR,           /**< Error occurred attempting to parse JSON into data stuctures */
-    ACVP_TC_MISSING_DATA,    /**< Data is missing from test case JSON */
+    ACVP_MALFORMED_JSON,     //!< The given JSON is not properly formatted/readable JSON
+    ACVP_JSON_ERR,           //!< Error occurred attempting to parse JSON into data stuctures
+    ACVP_TC_MISSING_DATA,    //!< Data is missing from test case JSON
     ACVP_TC_INVALID_DATA,    /**< Test case JSON is formatted properly, but the data is bad, does not
                                   match the registration, or does not match the spec */
     ACVP_DATA_TOO_LARGE,     /**< The given parameter larger than the library allows. This can apply to strings,
                                   server responses, files, etc */
-    ACVP_CONVERT_DATA_ERR,   /**< Error converting data between hexidecimal and binary (either direction) */
-    ACVP_DUP_CIPHER,         /**< The client is attempting to register an algorithm that has already been registered */
-    ACVP_TOTP_FAIL,          /**< A failure occurred attempting to generate a TOTP */
-    ACVP_CTX_NOT_EMPTY,      /**< Occurs specifically when an attempt is made to initialize a CTX that is already initialized */
-    ACVP_JWT_MISSING,        /**< A JSON web token is missing from a file or from memory but was expected */
-    ACVP_JWT_EXPIRED,        /**< The provided JWT was not accepted by the server because it is expired */
-    ACVP_JWT_INVALID,        /**< A provided JSON web token is invalid due to its size, encoding, or contents */
-    ACVP_INTERNAL_ERR,       /**< An unexpected error occurring internally to libacvp */
+    ACVP_CONVERT_DATA_ERR,   //!< Error converting data between hexidecimal and binary (either direction)
+    ACVP_DUP_CIPHER,         //!< The client is attempting to register an algorithm that has already been registered
+    ACVP_TOTP_FAIL,          //!< A failure occurred attempting to generate a TOTP
+    ACVP_CTX_NOT_EMPTY,      //!< Occurs specifically when an attempt is made to initialize a CTX that is already initialized
+    ACVP_JWT_MISSING,        //!< A JSON web token is missing from a file or from memory but was expected
+    ACVP_JWT_EXPIRED,        //!< The provided JWT was not accepted by the server because it is expired
+    ACVP_JWT_INVALID,        //!< A provided JSON web token is invalid due to its size, encoding, or contents
+    ACVP_INTERNAL_ERR,       //!< An unexpected error occurring internally to libacvp
     ACVP_RESULT_MAX
 } ACVP_RESULT;
 
@@ -593,8 +593,8 @@ typedef enum acvp_kdf135_srtp_param {
     ACVP_SRTP_KDF_EXPONENT
 } ACVP_KDF135_SRTP_PARAM;
 
-#define ACVP_KDF108_KEYOUT_MAX 64     /**< SHA2-512 */
-#define ACVP_KDF108_FIXED_DATA_MAX 64 /**< SHA2-512 */
+#define ACVP_KDF108_KEYOUT_MAX 64     //!< SHA2-512
+#define ACVP_KDF108_FIXED_DATA_MAX 64 //!< SHA2-512
 
 /** @enum ACVP_KDF108_MODE */
 typedef enum acvp_kdf108_mode {
@@ -642,7 +642,7 @@ typedef enum acvp_kdf108_fixed_data_order_val {
 typedef enum acvp_sym_cipher_keying_option {
     ACVP_SYM_CIPH_KO_NA = 0,
     ACVP_SYM_CIPH_KO_ONE,
-    ACVP_SYM_CIPH_KO_THREE, /**< This is outdated and will eventually be removed */
+    ACVP_SYM_CIPH_KO_THREE, //!< This is outdated and will eventually be removed
     ACVP_SYM_CIPH_KO_TWO,
     ACVP_SYM_CIPH_KO_BOTH,
     ACVP_SYM_CIPH_KO_MAX
@@ -719,8 +719,8 @@ typedef enum acvp_kdf135_snmp_param {
 typedef enum acvp_hash_param {
     ACVP_HASH_IN_BIT = 1,
     ACVP_HASH_IN_EMPTY,
-    ACVP_HASH_OUT_BIT, /**< Used for ACVP_HASH_SHAKE_128, ACVP_HASH_SHAKE_256 */
-    ACVP_HASH_OUT_LENGTH, /**< Used for ACVP_HASH_SHAKE_128, ACVP_HASH_SHAKE_256 */
+    ACVP_HASH_OUT_BIT, //!< Used for ACVP_HASH_SHAKE_128, ACVP_HASH_SHAKE_256
+    ACVP_HASH_OUT_LENGTH, //!< Used for ACVP_HASH_SHAKE_128, ACVP_HASH_SHAKE_256
     ACVP_HASH_MESSAGE_LEN,
     ACVP_HASH_LARGE_DATA
 } ACVP_HASH_PARM;
@@ -913,10 +913,10 @@ typedef enum acvp_kdf108_param {
     ACVP_KDF108_COUNTER_LEN,
     ACVP_KDF108_SUPPORTS_EMPTY_IV,
     ACVP_KDF108_REQUIRES_EMPTY_IV,
-    ACVP_KDF108_DERIVATION_KEYLEN, /**< KDF108-KMAC only */
-    ACVP_KDF108_DERIVED_KEYLEN,    /**< KDF108-KMAC only */
-    ACVP_KDF108_CONTEXT_LEN,       /**< KDF108-KMAC only */
-    ACVP_KDF108_LABEL_LEN,         /**< KDF108-KMAC only */
+    ACVP_KDF108_DERIVATION_KEYLEN, //!< KDF108-KMAC only
+    ACVP_KDF108_DERIVED_KEYLEN,    //!< KDF108-KMAC only
+    ACVP_KDF108_CONTEXT_LEN,       //!< KDF108-KMAC only
+    ACVP_KDF108_LABEL_LEN,         //!< KDF108-KMAC only
     ACVP_KDF108_PARAM_MAX
 } ACVP_KDF108_PARM;
 
@@ -933,7 +933,7 @@ typedef enum acvp_pbkdf_param {
 /** @enum ACVP_KDF_TLS12_PARM */
 typedef enum acvp_kdf_tls12_param {
     ACVP_KDF_TLS12_PARAM_MIN,
-    ACVP_KDF_TLS12_HASH_ALG /**< HMAC algorithms supported by TLS 1.2 implementation */
+    ACVP_KDF_TLS12_HASH_ALG //!< HMAC algorithms supported by TLS 1.2 implementation
 } ACVP_KDF_TLS12_PARM;
 
 /** @enum ACVP_KDF_TLS13_RUN_MODE */
@@ -954,15 +954,15 @@ typedef enum acvp_kdf_tls13_param {
 
 /** @enum ACVP_RSA_TESTTYPE */
 typedef enum acvp_rsa_test_type {
-    ACVP_RSA_TESTTYPE_KAT = 1, /**< Known Answer Test */
-    ACVP_RSA_TESTTYPE_AFT,     /**< Algorithm Functional Test */
-    ACVP_RSA_TESTTYPE_GDT      /**< Generated Data Test */
+    ACVP_RSA_TESTTYPE_KAT = 1, //!< Known Answer Test
+    ACVP_RSA_TESTTYPE_AFT,     //!< Algorithm Functional Test
+    ACVP_RSA_TESTTYPE_GDT      //!< Generated Data Test
 } ACVP_RSA_TESTTYPE;
 
 /** @enum ACVP_RSA_KEY_FORMAT */
 typedef enum acvp_rsa_key_format {
-    ACVP_RSA_KEY_FORMAT_STANDARD = 1, /**< Standard */
-    ACVP_RSA_KEY_FORMAT_CRT           /**< Chinese Remainder Theorem */
+    ACVP_RSA_KEY_FORMAT_STANDARD = 1, //!< Standard
+    ACVP_RSA_KEY_FORMAT_CRT           //!< Chinese Remainder Theorem
 } ACVP_RSA_KEY_FORMAT;
 
 /** @enum ACVP_RSA_PUB_EXP_MODE */
@@ -1031,7 +1031,7 @@ typedef enum acvp_rsa_prim_keyformat {
 
  */
 typedef struct acvp_rsa_prim_tc_t {
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
     unsigned char *cipher;
     ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
     int cipher_len;
@@ -1263,21 +1263,21 @@ typedef enum acvp_hash_mct_version {
 typedef struct acvp_sym_cipher_tc_t {
     ACVP_CIPHER cipher;
     ACVP_CONFORMANCE conformance;
-    ACVP_SYM_CIPH_TESTTYPE test_type; /**< KAT or MCT */
-    ACVP_SYM_CIPH_DIR direction;      /**< encrypt or decrypt */
+    ACVP_SYM_CIPH_TESTTYPE test_type; //!< KAT or MCT
+    ACVP_SYM_CIPH_DIR direction;      //!< encrypt or decrypt
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
-    ACVP_SYM_CIPH_SALT_SRC salt_source; /**< for AES-XPN */
-    unsigned int tc_id;          /**< Test case id */
-    unsigned char *key;          /**< Aes symmetric key */
-    unsigned char *pt;           /**< Plaintext */
-    unsigned char *aad;          /**< Additional Authenticated Data */
-    unsigned char *iv;           /**< Initialization Vector */
-    unsigned char *ct;           /**< Ciphertext */
-    unsigned char *tag;          /**< Aead tag */
-    unsigned char *iv_ret;       /**< updated IV used for TDES MCT */
-    unsigned char *iv_ret_after; /**< updated IV used for TDES MCT */
-    unsigned char *salt;         /**< For use with AES-XPN */
+    ACVP_SYM_CIPH_SALT_SRC salt_source; //!< for AES-XPN
+    unsigned int tc_id;          //!< Test case id
+    unsigned char *key;          //!< Aes symmetric key
+    unsigned char *pt;           //!< Plaintext
+    unsigned char *aad;          //!< Additional Authenticated Data
+    unsigned char *iv;           //!< Initialization Vector
+    unsigned char *ct;           //!< Ciphertext
+    unsigned char *tag;          //!< Aead tag
+    unsigned char *iv_ret;       //!< updated IV used for TDES MCT
+    unsigned char *iv_ret_after; //!< updated IV used for TDES MCT
+    unsigned char *salt;         //!< For use with AES-XPN
     ACVP_SYM_KW_MODE kwcipher;
     ACVP_SYM_CIPH_TWEAK_MODE tw_mode;
     unsigned int seq_num;
@@ -1289,10 +1289,10 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int ct_len;
     unsigned int tag_len;
     unsigned int salt_len;
-    unsigned int mct_index;  /**< used to identify init vs. update */
+    unsigned int mct_index;  //!< used to identify init vs. update
     unsigned int incr_ctr;
     unsigned int ovrflw_ctr;
-    unsigned int keyingOption; /**< For some TDES, indicates keyingOption. 
+    unsigned int keyingOption; /**< For some TDES, indicates keyingOption.
                                  * 1 is 3 key TDES. 2 is 2-key TDES, supported
                                  * for decrypt only. 0 indicates is not applicable */
     unsigned int data_unit_len; /**< for AES-XTS rev 2.0, the amount of data that can be
@@ -1302,7 +1302,7 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int fpe_len;
     char* fpe_in;
     char* fpe_out;
-    char *alphabet; /**< For FPE, the alphabet used for the input and output */
+    char *alphabet; //!< For FPE, the alphabet used for the input and output
 } ACVP_SYM_CIPHER_TC;
 
 /**
@@ -1312,12 +1312,12 @@ typedef struct acvp_sym_cipher_tc_t {
  */
 typedef struct acvp_hash_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;           /**< Test case id */
-    ACVP_HASH_TESTTYPE test_type; /**< KAT, MCT, VOT, or LDT */
-    ACVP_HASH_EXPANSION_METHOD exp_method;  /**< LDT Expansion Technique  */
-    ACVP_HASH_MCT_VERSION mct_version; /**< MCT version, standard, alternate, or 0 for N/A */
+    unsigned int tc_id;           //!< Test case id
+    ACVP_HASH_TESTTYPE test_type; //!< KAT, MCT, VOT, or LDT
+    ACVP_HASH_EXPANSION_METHOD exp_method;  //!< LDT Expansion Technique
+    ACVP_HASH_MCT_VERSION mct_version; //!< MCT version, standard, alternate, or 0 for N/A
 
-    unsigned char *msg; /**< Message input */
+    unsigned char *msg; //!< Message input
 
     unsigned int m1_len; /**< Length (in bytes) of \ref ACVP_HASH_TC.m1
                                Provided when \ref ACVP_HASH_TC.test_type is MCT */
@@ -1355,7 +1355,7 @@ typedef struct acvp_hash_tc_t {
  */
 typedef struct acvp_kdf135_ikev2_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
     ACVP_HASH_ALG hash_alg;
     int init_nonce_len;
     int resp_nonce_len;
@@ -1364,7 +1364,7 @@ typedef struct acvp_kdf135_ikev2_tc_t {
     int init_spi_len;
     int resp_spi_len;
     int dh_secret_len;
-    int keying_material_len; /**< Keying material length (in bytes) */
+    int keying_material_len; //!< Keying material length (in bytes)
     unsigned char *init_nonce;
     unsigned char *resp_nonce;
     unsigned char *init_spi;
@@ -1386,13 +1386,13 @@ typedef struct acvp_kdf135_ikev2_tc_t {
  */
 typedef struct acvp_kdf135_ikev1_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id; /**< Test case id */
+    unsigned int tc_id; //!< Test case id
     ACVP_HASH_ALG hash_alg;
     ACVP_KDF135_IKEV1_AUTH_METHOD auth_method;
-    int init_nonce_len; /**< Initiator nonce length (in bytes) */
-    int resp_nonce_len; /**< Responder nonce length (in bytes) */
-    int dh_secret_len;  /**< Diffie-Hellman Secret length (in bytes) */
-    int psk_len;        /**< Preshared Key length (in bytes) */
+    int init_nonce_len; //!< Initiator nonce length (in bytes)
+    int resp_nonce_len; //!< Responder nonce length (in bytes)
+    int dh_secret_len;  //!< Diffie-Hellman Secret length (in bytes)
+    int psk_len;        //!< Preshared Key length (in bytes)
     unsigned char *init_nonce;
     unsigned char *resp_nonce;
     unsigned char *init_ckey;
@@ -1417,7 +1417,7 @@ typedef struct acvp_kdf135_ikev1_tc_t {
  */
 typedef struct acvp_kdf135_snmp_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
     unsigned char *engine_id;
     unsigned int engine_id_len;
     const char *password;
@@ -1434,7 +1434,7 @@ typedef struct acvp_kdf135_snmp_tc_t {
  */
 typedef struct acvp_kdf135_x942_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
     ACVP_HASH_ALG hash_alg;
     ACVP_KDF_X942_TYPE type;
 
@@ -1445,7 +1445,7 @@ typedef struct acvp_kdf135_x942_tc_t {
     unsigned char *party_v_info;
     unsigned char *supp_pub_info;
     unsigned char *supp_priv_info;
-    unsigned char *dkm; /**< Buffer for the output DKM */
+    unsigned char *dkm; //!< Buffer for the output DKM
 
     int key_len;
     int oid_len;
@@ -1465,7 +1465,7 @@ typedef struct acvp_kdf135_x942_tc_t {
  */
 typedef struct acvp_kdf135_x963_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
     ACVP_HASH_ALG hash_alg;
     int field_size;
     int key_data_len;
@@ -1483,21 +1483,21 @@ typedef struct acvp_kdf135_x963_tc_t {
  */
 typedef struct acvp_kdf108_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
     ACVP_KDF108_MODE mode;
     ACVP_KDF108_MAC_MODE_VAL mac_mode;
     ACVP_KDF108_FIXED_DATA_ORDER_VAL counter_location;
-    unsigned char *key_in;      /**< KDF108-KMAC: KeyDerivationKey */
-    unsigned char *key_out;     /**< KDF108-KMAC: Generated Key (output) */
+    unsigned char *key_in;      //!< KDF108-KMAC: KeyDerivationKey
+    unsigned char *key_out;     //!< KDF108-KMAC: Generated Key (output)
     unsigned char *fixed_data;
     unsigned char *iv;
-    unsigned char *context;     /**< KDF108-KMAC: Context */
-    unsigned char *label;       /**< KDF108-KMAC: Label */
-    int key_in_len;             /**< Length of key_in (in bytes) */
-    int key_out_len;            /**< Length of key_out (in bytes) */
-    int iv_len;                 /**< Length of iv (in bytes) */
-    int context_len;            /**< Length of context (KMAC-only, in bytes) */
-    int label_len;              /**< Length of label (KMAC-only, in bytes) */
+    unsigned char *context;     //!< KDF108-KMAC: Context
+    unsigned char *label;       //!< KDF108-KMAC: Label
+    int key_in_len;             //!< Length of key_in (in bytes)
+    int key_out_len;            //!< Length of key_out (in bytes)
+    int iv_len;                 //!< Length of iv (in bytes)
+    int context_len;            //!< Length of context (KMAC-only, in bytes)
+    int label_len;              //!< Length of label (KMAC-only, in bytes)
     int fixed_data_len;         /**< Length of fixed_data (in bytes).
                                      --- User supplied ---
                                      Must be <= ACVP_KDF108_FIXED_DATA_MAX */
@@ -1512,7 +1512,7 @@ typedef struct acvp_kdf108_tc_t {
  */
 typedef struct acvp_kdf135_srtp_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
     unsigned char *kdr;
     int kdr_len;
     int aes_keylen;
@@ -1536,17 +1536,17 @@ typedef struct acvp_kdf135_srtp_tc_t {
  */
 typedef struct acvp_kdf135_ssh_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;              /**< Test case id */
-    ACVP_HASH_ALG sha_type;          /**< SHA algorithm type */
-    unsigned int shared_secret_len;  /**< Length of shared_secret (in bytes) */
-    unsigned int hash_len;           /**< Length of hash (in bytes) */
-    unsigned int session_id_len;     /**< Length of session_id (in bytes) */
-    unsigned int e_key_len;          /**< Expected length of encrypt keys (in bytes) */
-    unsigned int i_key_len;          /**< Expected length of integrity keys (in bytes) */
-    unsigned int iv_len;             /**< Expected length of initial IV (in bytes) */
-    char *shared_secret_k;           /**< Shared secret (K) */
-    char *hash_h;                    /**< Provided hash (H) */
-    char *session_id;                /**< Session ID */
+    unsigned int tc_id;              //!< Test case id
+    ACVP_HASH_ALG sha_type;          //!< SHA algorithm type
+    unsigned int shared_secret_len;  //!< Length of shared_secret (in bytes)
+    unsigned int hash_len;           //!< Length of hash (in bytes)
+    unsigned int session_id_len;     //!< Length of session_id (in bytes)
+    unsigned int e_key_len;          //!< Expected length of encrypt keys (in bytes)
+    unsigned int i_key_len;          //!< Expected length of integrity keys (in bytes)
+    unsigned int iv_len;             //!< Expected length of initial IV (in bytes)
+    char *shared_secret_k;           //!< Shared secret (K)
+    char *hash_h;                    //!< Provided hash (H)
+    char *session_id;                //!< Session ID
     unsigned char *cs_init_iv;       /**< Initial IV, client to server
                                           ---User supplied--- */
     unsigned char *sc_init_iv;       /**< Initial IV, server to client,
@@ -1568,14 +1568,14 @@ typedef struct acvp_kdf135_ssh_tc_t {
  */
 typedef struct acvp_pbkdf_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;              /**< Test case id */
-    ACVP_HASH_ALG hmac_type;         /**< HMAC algorithm type */
-    ACVP_PBKDF_TESTTYPE test_type;   /**< Test type */
-    unsigned int key_len;            /**< Length of key to be generated (in bytes) */
+    unsigned int tc_id;              //!< Test case id
+    ACVP_HASH_ALG hmac_type;         //!< HMAC algorithm type
+    ACVP_PBKDF_TESTTYPE test_type;   //!< Test type
+    unsigned int key_len;            //!< Length of key to be generated (in bytes)
     unsigned char *salt;
-    unsigned int salt_len;           /**< the length of the given salt (in bytes) */
+    unsigned int salt_len;           //!< the length of the given salt (in bytes)
     char *password;
-    unsigned int pw_len;            /**< The length of the given password (in chars) */
+    unsigned int pw_len;            //!< The length of the given password (in chars)
     unsigned int iterationCount;
     unsigned char *key;       /**< The output derived key
                                            ---User supplied--- */
@@ -1588,7 +1588,7 @@ typedef struct acvp_pbkdf_tc_t {
  */
 typedef struct acvp_kdf_tls12_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
     ACVP_HASH_ALG md;
     unsigned int pm_len;
     unsigned int kb_len;
@@ -1596,8 +1596,8 @@ typedef struct acvp_kdf_tls12_tc_t {
     unsigned char *session_hash;
     unsigned char *s_rnd;
     unsigned char *c_rnd;
-    unsigned char *msecret; /**< The resulting data calculated for the test case */
-    unsigned char *kblock;  /**< The resulting data calculated for the test case */
+    unsigned char *msecret; //!< The resulting data calculated for the test case
+    unsigned char *kblock;  //!< The resulting data calculated for the test case
     int session_hash_len;
     int s_rnd_len;
     int c_rnd_len;
@@ -1610,18 +1610,18 @@ typedef struct acvp_kdf_tls12_tc_t {
  */
 typedef struct acvp_kdf_tls13_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;              /**< Test case id */
+    unsigned int tc_id;              //!< Test case id
 
     //test params:
-    ACVP_KDF_TLS13_TESTTYPE test_type;   /**< Test type */
-    ACVP_HASH_ALG hmac_alg;         /**< HMAC algorithm type */
-    ACVP_KDF_TLS13_RUN_MODE running_mode; /**< DHE, PSK, or PSK-DHE */
-    unsigned char *psk; /**< pre shared key, populated for PSK or PSK-DHE */
-    unsigned char *dhe; /**< diffie hellman secret, populated for DHE or PSK-DHE */
-    unsigned char *s_hello_rand; /**< server hello random value */
-    unsigned char *c_hello_rand; /**< client hello random value */
-    unsigned char *fin_s_hello_rand; /**< finished server hello random value */
-    unsigned char *fin_c_hello_rand; /**< finished client hello random value */
+    ACVP_KDF_TLS13_TESTTYPE test_type;   //!< Test type
+    ACVP_HASH_ALG hmac_alg;         //!< HMAC algorithm type
+    ACVP_KDF_TLS13_RUN_MODE running_mode; //!< DHE, PSK, or PSK-DHE
+    unsigned char *psk; //!< pre shared key, populated for PSK or PSK-DHE
+    unsigned char *dhe; //!< diffie hellman secret, populated for DHE or PSK-DHE
+    unsigned char *s_hello_rand; //!< server hello random value
+    unsigned char *c_hello_rand; //!< client hello random value
+    unsigned char *fin_s_hello_rand; //!< finished server hello random value
+    unsigned char *fin_c_hello_rand; //!< finished client hello random value
     //test param lengths:
     int psk_len;
     int dhe_len;
@@ -1658,10 +1658,10 @@ typedef struct acvp_kdf_tls13_tc_t {
  */
 typedef struct acvp_hmac_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
     unsigned char *msg;
     unsigned int msg_len;
-    unsigned char *mac; /**< The resulting digest calculated for the test case */
+    unsigned char *mac; //!< The resulting digest calculated for the test case
     unsigned int mac_len;
     unsigned int key_len;
     unsigned char *key;
@@ -1675,17 +1675,17 @@ typedef struct acvp_hmac_tc_t {
 typedef struct acvp_cmac_tc_t {
     ACVP_CIPHER cipher;
     ACVP_CMAC_TESTTYPE test_type;
-    int verify;                            /**< 1 indicates verify. 0 indicates generate. */
-    ACVP_TEST_DISPOSITION ver_disposition; /**< Indicates pass/fail (only in "verify" direction)*/
-    unsigned int tc_id;                    /**< Test case id */
+    int verify;                            //!< 1 indicates verify. 0 indicates generate.
+    ACVP_TEST_DISPOSITION ver_disposition; //!< Indicates pass/fail (only in "verify" direction)
+    unsigned int tc_id;                    //!< Test case id
     unsigned char *msg;
     unsigned int msg_len;
-    unsigned char *mac; /**< The resulting digest calculated for the test case */
+    unsigned char *mac; //!< The resulting digest calculated for the test case
     unsigned int mac_len;
     unsigned int key_len;
-    unsigned char *key; /**< for CMAC-AES */
-    unsigned char *key2; /**< for CMAC-TDES */
-    unsigned char *key3; /**< for CMAC-TDES */
+    unsigned char *key; //!< for CMAC-AES
+    unsigned char *key2; //!< for CMAC-TDES
+    unsigned char *key3; //!< for CMAC-TDES
 } ACVP_CMAC_TC;
 
 /**
@@ -1696,13 +1696,13 @@ typedef struct acvp_cmac_tc_t {
 typedef struct acvp_kmac_tc_t {
     ACVP_CIPHER cipher;
     ACVP_KMAC_TESTTYPE test_type;
-    ACVP_TEST_DISPOSITION disposition; /**< Indicates pass/fail when running verification */
-    int tc_id; /**< Test case id */
+    ACVP_TEST_DISPOSITION disposition; //!< Indicates pass/fail when running verification
+    int tc_id; //!< Test case id
     int xof;
     int hex_customization;
 
     unsigned char *msg;
-    unsigned char *mac; /**< The resulting digest calculated for the test case, or provided when verifying */
+    unsigned char *mac; //!< The resulting digest calculated for the test case, or provided when verifying
     unsigned char *key;
     unsigned char *custom_hex;
     char *custom;
@@ -1721,12 +1721,12 @@ typedef struct acvp_kmac_tc_t {
 typedef struct acvp_cshake_tc_t {
     ACVP_CIPHER cipher;
     ACVP_CSHAKE_TESTTYPE test_type;
-    ACVP_TEST_DISPOSITION disposition; /**< Indicates pass/fail when running verification */
-    int tc_id; /**< Test case id */
+    ACVP_TEST_DISPOSITION disposition; //!< Indicates pass/fail when running verification
+    int tc_id; //!< Test case id
     int hex_customization;
 
     unsigned char *msg;
-    unsigned char *md; /**< The resulting digest calculated for the test case */
+    unsigned char *md; //!< The resulting digest calculated for the test case
     unsigned char *custom_hex;
     char *custom;
     char *function_name;
@@ -1744,7 +1744,7 @@ typedef struct acvp_cshake_tc_t {
  *        libacvp and the crypto module.
  */
 typedef struct acvp_rsa_keygen_tc_t {
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
     ACVP_HASH_ALG hash_alg;
     ACVP_RSA_TESTTYPE test_type;
     ACVP_REVISION revision;
@@ -1806,7 +1806,7 @@ typedef struct acvp_rsa_keygen_tc_t {
  *        passed between libacvp and the crypto module.
  */
 typedef struct acvp_ecdsa_tc_t {
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
     int tg_id;
     int is_component;
     ACVP_HASH_ALG hash_alg;
@@ -1828,7 +1828,7 @@ typedef struct acvp_ecdsa_tc_t {
     unsigned char *s;
     int s_len;
 
-    ACVP_TEST_DISPOSITION ver_disposition; /**< Indicates pass/fail (only in "verify" direction)*/
+    ACVP_TEST_DISPOSITION ver_disposition; //!< Indicates pass/fail (only in "verify" direction)
     unsigned char *message;
     int msg_len;
 } ACVP_ECDSA_TC;
@@ -1839,17 +1839,17 @@ typedef struct acvp_ecdsa_tc_t {
  *        passed between libacvp and the crypto module.
  */
 typedef struct acvp_eddsa_tc_t {
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
     int tg_id;
     ACVP_CIPHER cipher;
     ACVP_ED_CURVE curve;
     int use_prehash;
 
-    unsigned char *d; /**< Output for KeyGen */
-    unsigned char *q; /**< Output for KeyGen/SigGen, input for KeyVer/SigVer. Outputs at group level for SigGen */
-    unsigned char *message; /**< Input for SigGen/SigVer */
-    unsigned char *context; /**< Input (only sometimes) for SigGen */
-    unsigned char *signature; /**< Output for SigGen, input for SigVer */
+    unsigned char *d; //!< Output for KeyGen
+    unsigned char *q; //!< Output for KeyGen/SigGen, input for KeyVer/SigVer. Outputs at group level for SigGen
+    unsigned char *message; //!< Input for SigGen/SigVer
+    unsigned char *context; //!< Input (only sometimes) for SigGen
+    unsigned char *signature; //!< Output for SigGen, input for SigVer
 
     int d_len;
     int q_len;
@@ -1857,7 +1857,7 @@ typedef struct acvp_eddsa_tc_t {
     int context_len;
     int signature_len;
 
-    ACVP_TEST_DISPOSITION ver_disposition; /**< Indicates pass/fail output for verification */
+    ACVP_TEST_DISPOSITION ver_disposition; //!< Indicates pass/fail output for verification
 
 } ACVP_EDDSA_TC;
 
@@ -1868,8 +1868,8 @@ typedef struct acvp_eddsa_tc_t {
  *        and the crypto module.
  */
 typedef struct acvp_rsa_sig_tc_t {
-    unsigned int tc_id; /**< Test case id */
-    int tg_id;          /**< needed to keep e,n state */
+    unsigned int tc_id; //!< Test case id
+    int tg_id;          //!< needed to keep e,n state
     ACVP_REVISION revision;
     char *group_e;
     char *group_n;
@@ -1888,7 +1888,7 @@ typedef struct acvp_rsa_sig_tc_t {
     unsigned char *signature;
     int sig_len;
     ACVP_CIPHER sig_mode;
-    ACVP_TEST_DISPOSITION ver_disposition; /**< Indicates pass/fail (only in "verify" direction)*/
+    ACVP_TEST_DISPOSITION ver_disposition; //!< Indicates pass/fail (only in "verify" direction)
 } ACVP_RSA_SIG_TC;
 
 /** @enum ACVP_DSA_MODE */
@@ -1927,7 +1927,7 @@ typedef struct acvp_dsa_tc_t {
     int tg_id;
     int tc_id;
     ACVP_CIPHER cipher;
-    ACVP_DSA_MODE mode; /**< "pqgGen", "pqgVer", etc. */
+    ACVP_DSA_MODE mode; //!< "pqgGen", "pqgVer", etc.
     ACVP_HASH_ALG sha;
     int l;
     int n;
@@ -2264,8 +2264,8 @@ typedef struct acvp_kas_ifc_tc_t {
 
     unsigned char *iut_pt_z;
     unsigned char *iut_ct_z;
-    unsigned char *provided_pt_z; /**< For VAL tests. Could either be plain Z or hashZ */
-    unsigned char *provided_ct_z; /**< for VAL tests */
+    unsigned char *provided_pt_z; //!< For VAL tests. Could either be plain Z or hashZ
+    unsigned char *provided_ct_z; //!< for VAL tests
     unsigned char *server_pt_z;
     unsigned char *server_ct_z;
     unsigned char *provided_kas2_z; // The server-provided combined Z for KAS2 cases
@@ -2398,7 +2398,7 @@ typedef struct acvp_kda_twostep_tc_t {
     ACVP_KDA_PATTERN_CANDIDATE fixedInfoPattern[ACVP_KDA_PATTERN_MAX];
     ACVP_KDA_ENCODING encoding;
     ACVP_KDF108_MODE kdfMode;
-    ACVP_KDF108_MAC_MODE_VAL macFunction; /**< we re-use the SP800-108 KDF MAC list here, since its part of twostep. */
+    ACVP_KDF108_MAC_MODE_VAL macFunction; //!< we re-use the SP800-108 KDF MAC list here, since its part of twostep.
     ACVP_KDF108_FIXED_DATA_ORDER_VAL counterLocation;
     ACVP_KDA_MAC_SALT_METHOD saltMethod;
     unsigned int tc_id;
@@ -2577,7 +2577,7 @@ typedef struct acvp_kts_ifc_tc_t {
 typedef struct acvp_drbg_tc_t {
     ACVP_CIPHER cipher;
     ACVP_DRBG_MODE mode;
-    unsigned int tc_id;    /**< Test case id */
+    unsigned int tc_id;    //!< Test case id
 
     unsigned char *additional_input_0;
     unsigned char *entropy_input_pr_0;
@@ -2590,16 +2590,16 @@ typedef struct acvp_drbg_tc_t {
     unsigned char *perso_string;
     unsigned char *entropy;
     unsigned char *nonce;
-    unsigned char *drb; /**< The resulting pseudo random generated for the test case */
+    unsigned char *drb; //!< The resulting pseudo random generated for the test case
 
     unsigned int der_func_enabled;
     unsigned int pred_resist_enabled;
     unsigned int reseed;
-    unsigned int additional_input_len; /**< Additional Input length (in bytes) */
-    unsigned int perso_string_len;     /**< Personalization String length (in bytes) */
-    unsigned int entropy_len;          /**< Entropy length (in bytes) */
-    unsigned int nonce_len;            /**< Nonce length (in bytes) */
-    unsigned int drb_len;              /**< Expected drb length (in bytes) */
+    unsigned int additional_input_len; //!< Additional Input length (in bytes)
+    unsigned int perso_string_len;     //!< Personalization String length (in bytes)
+    unsigned int entropy_len;          //!< Entropy length (in bytes)
+    unsigned int nonce_len;            //!< Nonce length (in bytes)
+    unsigned int drb_len;              //!< Expected drb length (in bytes)
 } ACVP_DRBG_TC;
 
 /** @enum ACVP_LMS_PARAM */
@@ -2656,7 +2656,7 @@ typedef enum acvp_lmots_mode {
     ACVP_LMOTS_MODE_MAX
 } ACVP_LMOTS_MODE;
 
-/** enum ACVP_LMS_TESTTYPE */
+/** @enum ACVP_LMS_TESTTYPE */
 typedef enum acvp_lms_testtype {
     ACVP_LMS_TESTTYPE_NONE = 0,
     ACVP_LMS_TESTTYPE_AFT
@@ -2668,8 +2668,8 @@ typedef enum acvp_lms_testtype {
  *        passed between libacvp and the crypto module.
  */
 typedef struct acvp_lms_tc_t {
-    unsigned int tc_id;    /**< Test case id */
-    unsigned int tg_id; /**< Test group id; needed by sigver */
+    unsigned int tc_id;    //!< Test case id
+    unsigned int tg_id; //!< Test group id; needed by sigver
 
     ACVP_CIPHER cipher;
     ACVP_LMS_TESTTYPE type;
@@ -2730,18 +2730,18 @@ typedef enum ACVP_SIG_INTERFACE {
 
 /** @enum ACVP_SIG_PREHASH - only applies when SIG_INTERFACE = EXTERNAL */
 typedef enum ACVP_SIG_PREHASH {
-    ACVP_SIG_PREHASH_NOT_SET = 0, /**< Not set */
-    ACVP_SIG_PREHASH_NO,          /**< No pre-hashing, AKA "pure" */
-    ACVP_SIG_PREHASH_YES,         /**< Pre-hashing enabled */
-    ACVP_SIG_PREHASH_BOTH         /**< Both pre-hashed and pure tests */
+    ACVP_SIG_PREHASH_NOT_SET = 0, //!< Not set
+    ACVP_SIG_PREHASH_NO,          //!< No pre-hashing, AKA "pure"
+    ACVP_SIG_PREHASH_YES,         //!< Pre-hashing enabled
+    ACVP_SIG_PREHASH_BOTH         //!< Both pre-hashed and pure tests
 } ACVP_SIG_PREHASH;
 
 /** @enum ACVP_ML_DSA_MU - only applies when SIG_INTERFACE = INTERNAL or BOTH */
 typedef enum acvp_ml_dsa_mu {
-    ACVP_ML_DSA_MU_NOT_SET = 0,      /**< Not set */
-    ACVP_ML_DSA_MU_INTERNAL,         /**< Internal mu value */
-    ACVP_ML_DSA_MU_EXTERNAL,         /**< External mu value */
-    ACVP_ML_DSA_MU_BOTH              /**< Supports both internal and external mu values */
+    ACVP_ML_DSA_MU_NOT_SET = 0,      //!< Not set
+    ACVP_ML_DSA_MU_INTERNAL,         //!< Internal mu value
+    ACVP_ML_DSA_MU_EXTERNAL,         //!< External mu value
+    ACVP_ML_DSA_MU_BOTH              //!< Supports both internal and external mu values
 } ACVP_ML_DSA_MU;
 
 /** @enum ACVP_DETERMINISTIC_MODE */
@@ -2764,8 +2764,8 @@ typedef enum acvp_ml_dsa_testtype {
  *        passed between libacvp and the crypto module.
  */
 typedef struct acvp_ml_dsa_tc_t {
-    unsigned int tc_id;    /**< Test case id */
-    unsigned int tg_id; /**< Test group id */
+    unsigned int tc_id;    //!< Test case id
+    unsigned int tg_id; //!< Test group id
 
     ACVP_CIPHER cipher;
     ACVP_ML_DSA_TESTTYPE type;
@@ -2831,7 +2831,7 @@ typedef enum acvp_ml_kem_fuction {
     ACVP_ML_KEM_FUNCTION_MAX
 } ACVP_ML_KEM_FUNCTION;
 
-/** enum ACVP_ML_KEM_TESTTYPE */
+/** @enum ACVP_ML_KEM_TESTTYPE */
 typedef enum acvp_ml_kem_testtype {
     ACVP_ML_KEM_TESTTYPE_NONE = 0,
     ACVP_ML_KEM_TESTTYPE_AFT,
@@ -2845,15 +2845,15 @@ typedef enum acvp_ml_kem_testtype {
  *        passed between libacvp and the crypto module.
  */
 typedef struct acvp_ml_kem_tc_t {
-    unsigned int tc_id;    /**< Test case id */
-    unsigned int tg_id; /**< Test group id */
+    unsigned int tc_id;    //!< Test case id
+    unsigned int tg_id; //!< Test group id
 
     ACVP_CIPHER cipher;
     ACVP_ML_KEM_TESTTYPE type;
     ACVP_ML_KEM_PARAM_SET param_set;
     ACVP_ML_KEM_FUNCTION function;
 
-    /* All modes*/
+    // All modes
     unsigned char *dk; // Decap key
     unsigned char *ek; // Encap key
     int dk_len;
@@ -2915,8 +2915,8 @@ typedef enum acvp_slh_dsa_param_set {
  *        passed between libacvp and the crypto module.
  */
 typedef struct acvp_slh_dsa_tc_t {
-    unsigned int tc_id;    /**< Test case id */
-    unsigned int tg_id; /**< Test group id */
+    unsigned int tc_id;    //!< Test case id
+    unsigned int tg_id; //!< Test group id
 
     ACVP_CIPHER cipher;
     ACVP_SLH_DSA_PARAM_SET param_set;
@@ -2997,7 +2997,7 @@ typedef struct acvp_test_case_t {
         ACVP_ML_DSA_TC *ml_dsa;
         ACVP_ML_KEM_TC *ml_kem;
         ACVP_SLH_DSA_TC *slh_dsa;
-    } tc; /**< the union abstracting the test case for passing to the user application */
+    } tc; //!< the union abstracting the test case for passing to the user application
 } ACVP_TEST_CASE;
 
 
@@ -3066,7 +3066,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
  *        server.
  *
  *        This function should be called to enable crypto capabilities for symmetric ciphers that
- *        will be tested by the ACVP server. This includes AES and 3DES.  
+ *        will be tested by the ACVP server. This includes AES and 3DES.
  *
  *        This function may be called multiple times to specify more than one crypto parameter
  *        value for the cipher. The ACVP_CIPHER value passed to this function should already have
@@ -3768,10 +3768,10 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx,
  *
  * @return ACVP_RESULT
  */
-ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, 
+ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx,
                                           ACVP_KDA_PARM param,
-                                          int value, 
-                                          int kdf_mode, 
+                                          int value,
+                                          int kdf_mode,
                                           const char* string);
 
 /**
@@ -4751,14 +4751,14 @@ ACVP_RESULT acvp_cap_lms_set_parm(ACVP_CTX *ctx,
 
 /**
  * @brief acvp_cap_lms_set_mode_compatability pair allows an application to specify specific compatible pairs
- * of LMS and LMOTS modes, in the case where a IuT does not support an LMS or LMOTS mode universally. 
+ * of LMS and LMOTS modes, in the case where a IuT does not support an LMS or LMOTS mode universally.
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param lms_mode ACVP_LMS_MODE for the LMS mode of the pair
  * @param lmots_mode ACVP_LMOTS_MODE for the LMOTS mode of the pair
  *
- * @return ACVP_RESULT 
+ * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_cap_lms_set_mode_compatability_pair(ACVP_CTX *ctx,
                                                      ACVP_CIPHER cipher,
@@ -4993,8 +4993,7 @@ ACVP_RESULT acvp_cap_set_prereq(ACVP_CTX *ctx,
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
-                                     ACVP_RESULT (*progress_cb)(char *msg, ACVP_LOG_LVL level),
-                                     ACVP_LOG_LVL level);
+                                     ACVP_RESULT (*progress_cb)(char *msg, ACVP_LOG_LVL level), ACVP_LOG_LVL level);
 
 /**
  * @brief acvp_free_test_session() releases the memory associated with an ACVP_CTX. This function

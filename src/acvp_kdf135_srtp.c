@@ -152,8 +152,7 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc(ACVP_CTX *ctx,
 
     stc->idx = calloc(ACVP_KDF135_SRTP_INDEX_MAX, sizeof(char));
     if (!stc->idx) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(idx, (unsigned char *)stc->idx, ACVP_KDF135_SRTP_INDEX_MAX,
-                            NULL);
+    rv = acvp_hexstr_to_bin(idx, (unsigned char *)stc->idx, ACVP_KDF135_SRTP_INDEX_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (idx)");
         return rv;

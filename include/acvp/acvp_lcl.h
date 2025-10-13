@@ -53,7 +53,7 @@
 #define ACVP_LOG_TRUNCATED_STR_LEN 14
 #define ACVP_LOG_MAX_MSG_LEN 2048
 
-#define ACVP_BIT2BYTE(x) ((x + 7) >> 3) /**< Convert bit length (x, of type integer) into byte length */
+#define ACVP_BIT2BYTE(x) ((x + 7) >> 3) //!< Convert bit length (x, of type integer) into byte length
 
 #define ACVP_ALG_MAX ACVP_CIPHER_END - 1  // Used by alg_tbl[]
 
@@ -227,8 +227,8 @@
  * ******************************************************
  ********************************************************
  */
-#define ACVP_ALG_NAME_MAX 18 /**< Always make sure this is >= the length of ACVP_ALG* strings */
-#define ACVP_ALG_MODE_MAX 26 /**< Always make sure this is >= the length of ACVP_MODE* strings */
+#define ACVP_ALG_NAME_MAX 18 //!< Always make sure this is >= the length of ACVP_ALG* strings
+#define ACVP_ALG_MODE_MAX 26 //!< Always make sure this is >= the length of ACVP_MODE* strings
 
 #define ACVP_ALG_AES_ECB             "ACVP-AES-ECB"
 #define ACVP_ALG_AES_CBC             "ACVP-AES-CBC"
@@ -458,7 +458,7 @@
 #define ACVP_STR_HASH_MCT_STANDARD "standard"
 #define ACVP_STR_HASH_MCT_ALTERNATE "alternate"
 
-#define ACVP_CAPABILITY_STR_MAX 512 /**< Arbitrary string length limit */
+#define ACVP_CAPABILITY_STR_MAX 512 //!< Arbitrary string length limit
 
 #define ACVP_HEXSTR_MAX (ACVP_DRBG_ENTPY_IN_BIT_MAX >> 2) /**< Represents the largest hexstr that the client will accept.
                                                                Should always be set the the highest hexstr (i.e. bit length)
@@ -473,9 +473,9 @@
 #define ACVP_KEY_LEN_AES192 24
 #define ACVP_KEY_LEN_AES256 32
 #define ACVP_BLOCK_LEN_TDES 8
-#define ACVP_BLOCK_LEN_AES128 16 /**< 16 byte block size regardless of mode */
-#define ACVP_BLOCK_LEN_AES192 16 /**< 16 byte block size regardless of mode */
-#define ACVP_BLOCK_LEN_AES256 16 /**< 16 byte block size regardless of mode */
+#define ACVP_BLOCK_LEN_AES128 16 //!< 16 byte block size regardless of mode
+#define ACVP_BLOCK_LEN_AES192 16 //!< 16 byte block size regardless of mode
+#define ACVP_BLOCK_LEN_AES256 16 //!< 16 byte block size regardless of mode
 
 /*
  * Hash algorithm output lengths (in bytes).
@@ -497,40 +497,40 @@
  * an ACVP interaction.
  */
 #define ACVP_SYM_KEY_MAX_STR 128
-#define ACVP_SYM_KEY_MAX_BYTES 64       /**< 256 bits, 64 characters */
+#define ACVP_SYM_KEY_MAX_BYTES 64       //!< 256 bits, 64 characters
 #define ACVP_SYM_KEY_MAX_BITS 256
 
-#define ACVP_SYM_PT_BIT_MAX 131072                      /**< 131072 bits */
-#define ACVP_SYM_PT_MAX (ACVP_SYM_PT_BIT_MAX >> 2)      /**< 32768 characters */
-#define ACVP_SYM_PT_BYTE_MAX (ACVP_SYM_PT_BIT_MAX >> 3) /**< 16384 bytes */
+#define ACVP_SYM_PT_BIT_MAX 131072                      //!< 131072 bits
+#define ACVP_SYM_PT_MAX (ACVP_SYM_PT_BIT_MAX >> 2)      //!< 32768 characters
+#define ACVP_SYM_PT_BYTE_MAX (ACVP_SYM_PT_BIT_MAX >> 3) //!< 16384 bytes
 
-#define ACVP_SYM_CT_BIT_MAX 131072                      /**< 131072 bits */
-#define ACVP_SYM_CT_MAX (ACVP_SYM_CT_BIT_MAX >> 2)      /**< 32768 characters */
-#define ACVP_SYM_CT_BYTE_MAX (ACVP_SYM_CT_BIT_MAX >> 3) /**< 16384 bytes */
+#define ACVP_SYM_CT_BIT_MAX 131072                      //!< 131072 bits
+#define ACVP_SYM_CT_MAX (ACVP_SYM_CT_BIT_MAX >> 2)      //!< 32768 characters
+#define ACVP_SYM_CT_BYTE_MAX (ACVP_SYM_CT_BIT_MAX >> 3) //!< 16384 bytes
 
-#define ACVP_SYM_IV_BIT_MAX 1024                        /**< 1024 bits */
-#define ACVP_SYM_IV_MAX (ACVP_SYM_IV_BIT_MAX >> 2)      /**< 256 characters */
-#define ACVP_SYM_IV_BYTE_MAX (ACVP_SYM_IV_BIT_MAX >> 3) /**< 128 bytes */
+#define ACVP_SYM_IV_BIT_MAX 1024                        //!< 1024 bits
+#define ACVP_SYM_IV_MAX (ACVP_SYM_IV_BIT_MAX >> 2)      //!< 256 characters
+#define ACVP_SYM_IV_BYTE_MAX (ACVP_SYM_IV_BIT_MAX >> 3) //!< 128 bytes
 #define ACVP_AES_GCM_SIV_IVLEN 96
 #define ACVP_AES_XPN_IVLEN 96
 
-#define ACVP_SYM_TAG_BIT_MIN 4                            /**< 128 bits */
-#define ACVP_SYM_TAG_BIT_MAX 128                          /**< 128 bits */
-#define ACVP_SYM_TAG_MAX (ACVP_SYM_TAG_BIT_MAX >> 2)      /**< 32 characters */
-#define ACVP_SYM_TAG_BYTE_MAX (ACVP_SYM_TAG_BIT_MAX >> 3) /**< 16 bytes */
+#define ACVP_SYM_TAG_BIT_MIN 4                            //!< 128 bits
+#define ACVP_SYM_TAG_BIT_MAX 128                          //!< 128 bits
+#define ACVP_SYM_TAG_MAX (ACVP_SYM_TAG_BIT_MAX >> 2)      //!< 32 characters
+#define ACVP_SYM_TAG_BYTE_MAX (ACVP_SYM_TAG_BIT_MAX >> 3) //!< 16 bytes
 #define ACVP_AES_GCM_SIV_TAGLEN 128
 
-#define ACVP_SYM_AAD_BIT_MAX 65536                        /**< 65536 bits */
-#define ACVP_SYM_AAD_MAX (ACVP_SYM_AAD_BIT_MAX >> 2)      /**< 16384 characters */
-#define ACVP_SYM_AAD_BYTE_MAX (ACVP_SYM_AAD_BIT_MAX >> 3) /**< 8192 bytes */
+#define ACVP_SYM_AAD_BIT_MAX 65536                        //!< 65536 bits
+#define ACVP_SYM_AAD_MAX (ACVP_SYM_AAD_BIT_MAX >> 2)      //!< 16384 characters
+#define ACVP_SYM_AAD_BYTE_MAX (ACVP_SYM_AAD_BIT_MAX >> 3) //!< 8192 bytes
 
 #define ACVP_AES_FPE_ALPHABET_MAX 64
 #define ACVP_AES_XPN_SALTLEN 96
 
-#define ACVP_AES_CCM_IV_BIT_MIN 56   /**< 56 bits */
-#define ACVP_AES_CCM_IV_BIT_MAX 104  /**< 104 bits */
-#define ACVP_AES_GCM_IV_BIT_MIN 8    /**< 8 bits */
-#define ACVP_AES_GCM_IV_BIT_MAX 1024 /**< 1024 bits */
+#define ACVP_AES_CCM_IV_BIT_MIN 56   //!< 56 bits
+#define ACVP_AES_CCM_IV_BIT_MAX 104  //!< 104 bits
+#define ACVP_AES_GCM_IV_BIT_MIN 8    //!< 8 bits
+#define ACVP_AES_GCM_IV_BIT_MAX 1024 //!< 1024 bits
 
 #define ACVP_AES_IVGEN_STR "ivGen"
 #define ACVP_AES_RFC3686_IVGEN_STR "ivGenMode"
@@ -538,10 +538,10 @@
 
 #define ACVP_AES_FPE_RADIX_MIN 2
 #define ACVP_AES_FPE_RADIX_MAX 64
-#define ACVP_AES_FPE_PT_BIT_MIN 16                              /**< 16 bits */
-#define ACVP_AES_FPE_PT_MIN (ACVP_AES_FPE_PT_BIT_MIN >> 2)      /**< 4 characters */
-#define ACVP_AES_FPE_PT_BYTE_MIN (ACVP_AES_FPE_PT_BIT_MIN >> 3) /**< 2 bytes */
-#define ACVP_AES_FPE_PT_BYTE_MAX 65535  /**< Arbitrary, 2^32 for FF1, based on radix for FF3 */
+#define ACVP_AES_FPE_PT_BIT_MIN 16                              //!< 16 bits
+#define ACVP_AES_FPE_PT_MIN (ACVP_AES_FPE_PT_BIT_MIN >> 2)      //!< 4 characters
+#define ACVP_AES_FPE_PT_BYTE_MIN (ACVP_AES_FPE_PT_BIT_MIN >> 3) //!< 2 bytes
+#define ACVP_AES_FPE_PT_BYTE_MAX 65535  //!< Arbitrary, 2^32 for FF1, based on radix for FF3
 #define ACVP_AES_FPE_TWEAK_MIN 0
 #define ACVP_AES_FPE_TWEAK_MAX 128
 #define ACVP_AES_FPE_TWEAK_INC 8
@@ -555,7 +555,7 @@
 #define ACVP_DRB_STR_MAX (ACVP_DRB_BIT_MAX >> 2)
 
 #define ACVP_DRBG_ENTPY_IN_BIT_MIN 80
-#define ACVP_DRBG_ENTPY_IN_BIT_MAX 1048576 /**< 2^20 library limit. Spec allows 2^35 */
+#define ACVP_DRBG_ENTPY_IN_BIT_MAX 1048576 //!< 2^20 library limit. Spec allows 2^35
 #define ACVP_DRBG_ENTPY_IN_BYTE_MAX (ACVP_DRBG_ENTPY_IN_BIT_MAX >> 3)
 #define ACVP_DRBG_ENTPY_IN_STR_MAX (ACVP_DRBG_ENTPY_IN_BIT_MAX >> 2)
 
@@ -564,38 +564,38 @@
 #define ACVP_DRBG_NONCE_BYTE_MAX (ACVP_DRBG_NONCE_BIT_MAX >> 3)
 #define ACVP_DRBG_NONCE_STR_MAX (ACVP_DRBG_NONCE_BIT_MAX >> 2)
 
-#define ACVP_DRBG_PER_SO_BIT_MAX 1048576 /**< 2^20 library limit. Spec allows 2^35 */
+#define ACVP_DRBG_PER_SO_BIT_MAX 1048576 //!< 2^20 library limit. Spec allows 2^35
 #define ACVP_DRBG_PER_SO_BYTE_MAX (ACVP_DRBG_PER_SO_BIT_MAX >> 3)
 #define ACVP_DRBG_PER_SO_STR_MAX (ACVP_DRBG_PER_SO_BIT_MAX >> 2)
 
-#define ACVP_DRBG_ADDI_IN_BIT_MAX 1048576 /**< 2^20 library limit. Spec allows 2^35 */
+#define ACVP_DRBG_ADDI_IN_BIT_MAX 1048576 //!< 2^20 library limit. Spec allows 2^35
 #define ACVP_DRBG_ADDI_IN_BYTE_MAX (ACVP_DRBG_ADDI_IN_BIT_MAX >> 3)
 #define ACVP_DRBG_ADDI_IN_STR_MAX (ACVP_DRBG_ADDI_IN_BIT_MAX >> 2)
 /*
  * END DRBG
  */
 
-#define ACVP_HASH_MSG_BIT_MIN 0                             /**< 0 bits */
-#define ACVP_HASH_MSG_BIT_MAX 65536                         /**< 65536 bits */
-#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  /**< 16384 characters */
-#define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) /**< 8192 bytes */
-#define ACVP_HASH_MD_BIT_MAX 512                            /**< 512 bits */
-#define ACVP_HASH_MD_STR_MAX (ACVP_HASH_MD_BIT_MAX >> 2)    /**< 128 characters */
-#define ACVP_HASH_MD_BYTE_MAX (ACVP_HASH_MD_BIT_MAX >> 3)   /**< 64 bytes */
+#define ACVP_HASH_MSG_BIT_MIN 0                             //!< 0 bits
+#define ACVP_HASH_MSG_BIT_MAX 65536                         //!< 65536 bits
+#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  //!< 16384 characters
+#define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) //!< 8192 bytes
+#define ACVP_HASH_MD_BIT_MAX 512                            //!< 512 bits
+#define ACVP_HASH_MD_STR_MAX (ACVP_HASH_MD_BIT_MAX >> 2)    //!< 128 characters
+#define ACVP_HASH_MD_BYTE_MAX (ACVP_HASH_MD_BIT_MAX >> 3)   //!< 64 bytes
 
 //SHAKE does not define a maximum message length, but we want it to be sane still
-#define ACVP_SHAKE_MSG_BIT_MAX 131072                         /**< 131072 bits */
-#define ACVP_SHAKE_MSG_STR_MAX (ACVP_SHAKE_MSG_BIT_MAX >> 2)  /**< 32768 characters */
-#define ACVP_SHAKE_MSG_BYTE_MAX (ACVP_SHAKE_MSG_BIT_MAX >> 3) /**< 16384 bytes */
+#define ACVP_SHAKE_MSG_BIT_MAX 131072                         //!< 131072 bits
+#define ACVP_SHAKE_MSG_STR_MAX (ACVP_SHAKE_MSG_BIT_MAX >> 2)  //!< 32768 characters
+#define ACVP_SHAKE_MSG_BYTE_MAX (ACVP_SHAKE_MSG_BIT_MAX >> 3) //!< 16384 bytes
 
-#define ACVP_HASH_XOF_MD_BIT_MIN 16 /**< XOF (extendable output format) outLength minimum (in bits) */
-#define ACVP_HASH_XOF_MD_BIT_MAX 65536 /**< XOF (extendable output format) outLength maximum (in bits) */
-#define ACVP_HASH_XOF_MD_STR_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 2) /**< 16,384 characters */
-#define ACVP_HASH_XOF_MD_BYTE_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 3) /**< 8,192 bytes */
+#define ACVP_HASH_XOF_MD_BIT_MIN 16 //!< XOF (extendable output format) outLength minimum (in bits)
+#define ACVP_HASH_XOF_MD_BIT_MAX 65536 //!< XOF (extendable output format) outLength maximum (in bits)
+#define ACVP_HASH_XOF_MD_STR_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 2) //!< 16,384 characters
+#define ACVP_HASH_XOF_MD_BYTE_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 3) //!< 8,192 bytes
 
-#define ACVP_TDES_KEY_BIT_LEN 192                           /**< 192 bits */
-#define ACVP_TDES_KEY_STR_LEN (ACVP_TDES_KEY_BIT_LEN >> 2)  /**< 48 characters */
-#define ACVP_TDES_KEY_BYTE_LEN (ACVP_TDES_KEY_BIT_LEN >> 3) /**< 24 bytes */
+#define ACVP_TDES_KEY_BIT_LEN 192                           //!< 192 bits
+#define ACVP_TDES_KEY_STR_LEN (ACVP_TDES_KEY_BIT_LEN >> 2)  //!< 48 characters
+#define ACVP_TDES_KEY_BYTE_LEN (ACVP_TDES_KEY_BIT_LEN >> 3) //!< 24 bytes
 
 #define ACVP_KDF135_SSH_EKEY_MAX (ACVP_SHA512_BYTE_LEN)            /**< Encryption Key max.
                                                                         Be able to hold largest sha size, although
@@ -607,8 +607,8 @@
                                                                         Be able to hold largest sha size, although
                                                                         actual IV is a subset (up to 16 bytes).
                                                                         512 bits, 64 bytes */
-#define ACVP_KDF135_SSH_STR_OUT_MAX (ACVP_KDF135_SSH_IKEY_MAX * 2) /**< 128 characters */
-#define ACVP_KDF135_SSH_STR_IN_MAX 4096                            /**< 4096 characters, needs to accommodate large shared_secret (K) */
+#define ACVP_KDF135_SSH_STR_OUT_MAX (ACVP_KDF135_SSH_IKEY_MAX * 2) //!< 128 characters
+#define ACVP_KDF135_SSH_STR_IN_MAX 4096                            //!< 4096 characters, needs to accommodate large shared_secret (K)
 
 /**
  * Accepted length ranges for KDF135_SRTP.
@@ -665,8 +665,8 @@
 #define ACVP_KDF135_IKEV1_COOKIE_STR_MAX 32
 #define ACVP_KDF135_IKEV1_COOKIE_BYTE_MAX (ACVP_KDF135_IKEV1_COOKIE_STR_MAX / 2)
 
-#define ACVP_KDF135_IKEV1_SKEY_BYTE_MAX 64 /**< SHA512 byte length */
-#define ACVP_KDF135_IKEV1_SKEY_STR_MAX 128 /**< SHA512 hex length */
+#define ACVP_KDF135_IKEV1_SKEY_BYTE_MAX 64 //!< SHA512 byte length
+#define ACVP_KDF135_IKEV1_SKEY_STR_MAX 128 //!< SHA512 hex length
 
 #define ACVP_KDF135_IKEV1_INIT_NONCE_BIT_MIN 64
 #define ACVP_KDF135_IKEV1_INIT_NONCE_BIT_MAX 2048
@@ -698,8 +698,8 @@
 #define ACVP_KDF135_IKEV2_SPI_STR_MAX 32
 #define ACVP_KDF135_IKEV2_SPI_BYTE_MAX (ACVP_KDF135_IKEV2_SPI_STR_MAX / 2)
 
-#define ACVP_KDF135_IKEV2_SKEY_SEED_BYTE_MAX 64 /**< SHA512 byte length */
-#define ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX 128 /**< SHA512 hex length */
+#define ACVP_KDF135_IKEV2_SKEY_SEED_BYTE_MAX 64 //!< SHA512 byte length
+#define ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX 128 //!< SHA512 hex length
 
 #define ACVP_KDF135_IKEV2_INIT_NONCE_BIT_MIN 64
 #define ACVP_KDF135_IKEV2_INIT_NONCE_BIT_MAX 2048
@@ -728,28 +728,28 @@
  * Accepted length ranges for KDF108.
  * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf108.txt
  */
-#define ACVP_KDF108_KEYOUT_BIT_MIN 160 /**< SHA-1 */
-#define ACVP_KDF108_KEYOUT_BIT_MAX 4096 /**< SHA2-512 */
+#define ACVP_KDF108_KEYOUT_BIT_MIN 160 //!< SHA-1
+#define ACVP_KDF108_KEYOUT_BIT_MAX 4096 //!< SHA2-512
 #define ACVP_KDF108_KEYOUT_BYTE_MAX (ACVP_KDF108_KEYOUT_BIT_MAX >> 3)
 #define ACVP_KDF108_KEYOUT_STR_MAX (ACVP_KDF108_KEYOUT_BIT_MAX >> 2)
 
-#define ACVP_KDF108_KEYIN_BIT_MAX 4096 /**< Based on supportedLengths */
+#define ACVP_KDF108_KEYIN_BIT_MAX 4096 //!< Based on supportedLengths
 #define ACVP_KDF108_KEYIN_BYTE_MAX (ACVP_KDF108_KEYIN_BIT_MAX >> 3)
 #define ACVP_KDF108_KEYIN_STR_MAX (ACVP_KDF108_KEYIN_BIT_MAX >> 2)
 
-#define ACVP_KDF108_IV_BIT_MAX 512 /**< SHA2-512 */
+#define ACVP_KDF108_IV_BIT_MAX 512 //!< SHA2-512
 #define ACVP_KDF108_IV_BYTE_MAX (ACVP_KDF108_IV_BIT_MAX >> 3)
 #define ACVP_KDF108_IV_STR_MAX (ACVP_KDF108_IV_BIT_MAX >> 2)
 
-#define ACVP_KDF108_FIXED_DATA_BIT_MAX 512 /**< Arbitrary */
+#define ACVP_KDF108_FIXED_DATA_BIT_MAX 512 //!< Arbitrary
 #define ACVP_KDF108_FIXED_DATA_BYTE_MAX (ACVP_KDF108_FIXED_DATA_BIT_MAX >> 3)
 #define ACVP_KDF108_FIXED_DATA_STR_MAX (ACVP_KDF108_FIXED_DATA_BIT_MAX >> 2)
 
-#define ACVP_KDF108_CONTEXT_BIT_MAX 4096 /**< Based on supportedLengths */
+#define ACVP_KDF108_CONTEXT_BIT_MAX 4096 //!< Based on supportedLengths
 #define ACVP_KDF108_CONTEXT_BYTE_MAX (ACVP_KDF108_CONTEXT_BIT_MAX >> 3)
 #define ACVP_KDF108_CONTEXT_STR_MAX (ACVP_KDF108_CONTEXT_BIT_MAX >> 2)
 
-#define ACVP_KDF108_LABEL_BIT_MAX 4096 /**< Based on supportedLengths */
+#define ACVP_KDF108_LABEL_BIT_MAX 4096 //!< Based on supportedLengths
 #define ACVP_KDF108_LABEL_BYTE_MAX (ACVP_KDF108_LABEL_BIT_MAX >> 3)
 #define ACVP_KDF108_LABEL_STR_MAX (ACVP_KDF108_LABEL_BIT_MAX >> 2)
 /*
@@ -781,7 +781,7 @@
 /*
  * END PBKDF
  */
- 
+
  /**
  * Accepted length ranges for TLS 1.2 KDF
  */
@@ -803,22 +803,22 @@
 
 #define ACVP_HMAC_MSG_MAX       1024
 
-#define ACVP_HMAC_MAC_BIT_MIN 32  /**< 32 bits */
-#define ACVP_HMAC_MAC_BIT_MAX 512 /**< 512 bits */
+#define ACVP_HMAC_MAC_BIT_MIN 32  //!< 32 bits
+#define ACVP_HMAC_MAC_BIT_MAX 512 //!< 512 bits
 #define ACVP_HMAC_MAC_BYTE_MAX (ACVP_HMAC_MAC_BIT_MAX >> 3)
 #define ACVP_HMAC_MAC_STR_MAX (ACVP_HMAC_MAC_BIT_MAX >> 2)
 
-#define ACVP_HMAC_KEY_BIT_MIN 8      /**< 8 bits */
-#define ACVP_HMAC_KEY_BIT_MAX 524288 /**< 524288 bits */
+#define ACVP_HMAC_KEY_BIT_MIN 8      //!< 8 bits
+#define ACVP_HMAC_KEY_BIT_MAX 524288 //!< 524288 bits
 #define ACVP_HMAC_KEY_BYTE_MAX (ACVP_HMAC_KEY_BIT_MAX >> 3)
 #define ACVP_HMAC_KEY_STR_MAX (ACVP_HMAC_KEY_BIT_MAX >> 2)
 
-#define ACVP_CMAC_MSGLEN_MAX_STR       131072    /**< 524288 bits, 131072 characters */
+#define ACVP_CMAC_MSGLEN_MAX_STR       131072    //!< 524288 bits, 131072 characters
 #define ACVP_CMAC_MSGLEN_MAX       524288
 #define ACVP_CMAC_MSGLEN_MIN       0
-#define ACVP_CMAC_MACLEN_MAX       128       /**< 512 bits, 128 characters */
-#define ACVP_CMAC_MACLEN_MIN       1		/** >= 1 byte, per ACVP spec */
-#define ACVP_CMAC_KEY_MAX       64        /**< 256 bits, 64 characters */
+#define ACVP_CMAC_MACLEN_MAX       128       //!< 512 bits, 128 characters
+#define ACVP_CMAC_MACLEN_MIN       1		//!< >= 1 byte, per ACVP spec
+#define ACVP_CMAC_KEY_MAX       64        //!< 256 bits, 64 characters
 
 #define ACVP_KMAC_MSG_BIT_MAX 65536
 #define ACVP_KMAC_MSG_BYTE_MAX (ACVP_KMAC_MSG_BIT_MAX >> 3)
@@ -852,11 +852,11 @@
 
 #define ACVP_CSHAKE_FUNCTION_STR_MAX 161
 
-#define ACVP_DSA_PQG_MAX        3072     /**< 3072 bits, 768 characters */
+#define ACVP_DSA_PQG_MAX        3072     //!< 3072 bits, 768 characters
 #define ACVP_DSA_PQG_MAX_BYTES  (ACVP_DSA_PQG_MAX / 2)
 #define ACVP_DSA_SEED_MAX       1024
 #define ACVP_DSA_SEED_MAX_BYTES (ACVP_DSA_SEED_MAX / 2)
-#define ACVP_DSA_MAX_STRING     3072     /**< 3072 bytes */
+#define ACVP_DSA_MAX_STRING     3072     //!< 3072 bytes
 
 #define ACVP_ECDSA_EXP_LEN_MAX       512
 #define ACVP_ECDSA_MSGLEN_MAX 8192
@@ -992,7 +992,7 @@
 #define ACVP_SLH_DSA_KEY_STR_MAX (ACVP_SLH_DSA_KEY_BIT_MAX >> 2)
 #define ACVP_SLH_DSA_KEY_BYTE_MAX (ACVP_SLH_DSA_KEY_BIT_MAX >> 3)
 
-#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 64) /**< 64 MB */
+#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 64) //!< 64 MB
 #define ACVP_RETRY_TIME_MIN     5 // seconds
 #define ACVP_RETRY_TIME_MAX     300 // 5 minutes
 #define ACVP_MAX_WAIT_TIME      10800 // 3 hours
@@ -1007,7 +1007,7 @@
 #define ACVP_PATH_SEGMENT_DEFAULT ""
 #define ACVP_JSON_FILENAME_MAX 1024
 
-/* 
+/*
  * This should NOT be made longer than ACVP_JSON_FILENAME_MAX - 15
  * (accounting for _ character, ".json", and 9 digits for testSession ID)
  */
@@ -1279,10 +1279,8 @@ typedef struct acvp_sym_cipher_capability {
 typedef struct acvp_hash_capability {
     int in_bit;   // defaults to false
     int in_empty; // defaults to false
-    int out_bit; /**< 1 for true, 0 for false
-                      Defaults to false.
-                      Only for ACVP_HASH_SHAKE_* */
-    ACVP_JSON_DOMAIN_OBJ out_len; /**< Required for ACVP_HASH_SHAKE_* */
+    int out_bit; //!< 1 for true, 0 for false. Defaults to false. Only for ACVP_HASH_SHAKE_*
+    ACVP_JSON_DOMAIN_OBJ out_len; //!< Required for ACVP_HASH_SHAKE_*
     ACVP_JSON_DOMAIN_OBJ msg_length;
     ACVP_SL_LIST *large_lens;
 } ACVP_HASH_CAP;
@@ -1731,21 +1729,21 @@ typedef struct acvp_lms_capability_t {
 } ACVP_LMS_CAP;
 
 typedef struct acvp_ml_dsa_cap_group_t {
-    unsigned int group_id;                 /**< the value used to identify this set of capabilities */
-    ACVP_PARAM_LIST *param_sets;           /**< KeyGen doesn't have multiple groups; but avoid duplicate code */
-    ACVP_JSON_DOMAIN_OBJ msg_len;          /**< Message length supported for signatures */
-    ACVP_PARAM_LIST *hash_algs;            /**< SigGen/SigVer hash algorithms supported if prehash enabled */
-    ACVP_JSON_DOMAIN_OBJ context_len;      /**< SigGen/SigVer context length for external interfaces */
-    struct acvp_ml_dsa_cap_group_t *next;  /**< Pointer to the next group of capabilities */
+    unsigned int group_id;                 //!< the value used to identify this set of capabilities
+    ACVP_PARAM_LIST *param_sets;           //!< KeyGen doesn't have multiple groups; but avoid duplicate code
+    ACVP_JSON_DOMAIN_OBJ msg_len;          //!< Message length supported for signatures
+    ACVP_PARAM_LIST *hash_algs;            //!< SigGen/SigVer hash algorithms supported if prehash enabled
+    ACVP_JSON_DOMAIN_OBJ context_len;      //!< SigGen/SigVer context length for external interfaces
+    struct acvp_ml_dsa_cap_group_t *next;  //!< Pointer to the next group of capabilities
 } ACVP_ML_DSA_CAP_GROUP;
 
 typedef struct acvp_ml_dsa_capability_t {
     ACVP_CIPHER cipher;
-    ACVP_DETERMINISTIC_MODE deterministic;   /**< For siggen only */
-    ACVP_ML_DSA_MU mu;                       /**< SigGen/SigVer mu mode */
-    ACVP_SIG_INTERFACE sig_interface;        /**< SigGen/SigVer interface */
-    ACVP_SIG_PREHASH prehash;                /**< SigGen/SigVer prehash support */
-    ACVP_ML_DSA_CAP_GROUP *cap_group;        /**< Pointer to the first group of capabilities */
+    ACVP_DETERMINISTIC_MODE deterministic;   //!< For siggen only
+    ACVP_ML_DSA_MU mu;                       //!< SigGen/SigVer mu mode
+    ACVP_SIG_INTERFACE sig_interface;        //!< SigGen/SigVer interface
+    ACVP_SIG_PREHASH prehash;                //!< SigGen/SigVer prehash support
+    ACVP_ML_DSA_CAP_GROUP *cap_group;        //!< Pointer to the first group of capabilities
 } ACVP_ML_DSA_CAP;
 
 typedef struct acvp_ml_kem_capability_t {
@@ -1845,7 +1843,7 @@ typedef struct acvp_vendor_address_t {
     char *region;
     char *country;
     char *postal_code;
-    char *url; /**< ID URL returned from the server */
+    char *url; //!< ID URL returned from the server
 } ACVP_VENDOR_ADDRESS;
 
 typedef struct acvp_oe_phone_list_t {
@@ -1855,7 +1853,7 @@ typedef struct acvp_oe_phone_list_t {
 } ACVP_OE_PHONE_LIST;
 
 typedef struct acvp_person_t {
-    char *url; /**< ID URL returned from the server */
+    char *url; //!< ID URL returned from the server
     char *full_name;
     ACVP_OE_PHONE_LIST *phone_numbers;
     ACVP_STRING_LIST *emails;
@@ -1868,8 +1866,8 @@ typedef struct acvp_persons_t {
 } ACVP_PERSONS;
 
 typedef struct acvp_vendor_t {
-    unsigned int id; /**< For library tracking purposes */
-    char *url; /**< ID URL returned from the server */
+    unsigned int id; //!< For library tracking purposes
+    char *url; //!< ID URL returned from the server
     char *name;
     char *website;
     ACVP_OE_PHONE_LIST *phone_numbers;
@@ -1885,13 +1883,13 @@ typedef struct acvp_vendors_t {
 } ACVP_VENDORS;
 
 typedef struct acvp_module_t {
-    unsigned int id; /**< For library tracking purposes */
+    unsigned int id; //!< For library tracking purposes
     char *name;
     char *type;
     char *version;
     char *description;
-    char *url; /**< ID URL returned from the server */
-    ACVP_VENDOR *vendor; /**< Pointer to the Vendor to use */
+    char *url; //!< ID URL returned from the server
+    ACVP_VENDOR *vendor; //!< Pointer to the Vendor to use
 } ACVP_MODULE;
 
 #define LIBACVP_MODULES_MAX 32
@@ -1901,8 +1899,8 @@ typedef struct acvp_modules_t {
 } ACVP_MODULES;
 
 typedef struct acvp_dependency_t {
-    unsigned int id; /**< For library tracking purposes */
-    char *url; /**< Returned from the server */
+    unsigned int id; //!< For library tracking purposes
+    char *url; //!< Returned from the server
     char *name;
     char *type;
     char *description;
@@ -1937,10 +1935,10 @@ typedef struct acvp_oe_dependencies_t {
 } ACVP_OE_DEPENDENCIES;
 
 typedef struct acvp_oe_t {
-    unsigned int id; /**< For library tracking purposes */
-    char *name; /**< Name of the Operating Environment */
-    char *url; /**< ID URL returned from the server */
-    ACVP_OE_DEPENDENCIES dependencies; /**< Pointers to attached dependencies */
+    unsigned int id; //!< For library tracking purposes
+    char *name; //!< Name of the Operating Environment
+    char *url; //!< ID URL returned from the server
+    ACVP_OE_DEPENDENCIES dependencies; //!< Pointers to attached dependencies
 } ACVP_OE;
 
 #define LIBACVP_OES_MAX 8
@@ -1950,10 +1948,10 @@ typedef struct acvp_oes_t {
 } ACVP_OES;
 
 typedef struct acvp_operating_env_t {
-    ACVP_VENDORS vendors; /**< Vendors */
-    ACVP_MODULES modules; /**< Modules */
-    ACVP_DEPENDENCIES dependencies; /**< Dependencies */
-    ACVP_OES oes; /**< Operating Environments */
+    ACVP_VENDORS vendors; //!< Vendors
+    ACVP_MODULES modules; //!< Modules
+    ACVP_DEPENDENCIES dependencies; //!< Dependencies
+    ACVP_OES oes; //!< Operating Environments
 } ACVP_OPERATING_ENV;
 
 typedef struct acvp_fips_t {
@@ -1988,8 +1986,8 @@ struct acvp_ctx_t {
 
     char *http_user_agent;   // String containing info to be sent with HTTP requests, currently OE info
     char *session_file_path; // String containing the path of the testSession file after it is created when applicable
-    
-    ACVP_OPERATING_ENV op_env; /**< The Operating Environment resources available */
+
+    ACVP_OPERATING_ENV op_env; //!< The Operating Environment resources available
     ACVP_STRING_LIST *vsid_url_list;
     char *session_url;
     int session_passed;
@@ -2004,7 +2002,7 @@ struct acvp_ctx_t {
     char *get_string;       // string used for get request
     int post;               // flag to indicate we are only posting metadata
     char *post_filename;    // string used for post
-    int put;                /* flag to indicate we are only putting metadata  for post test validation*/
+    int put;                // flag to indicate we are only putting metadata for post test validation
     char *put_filename;     // string used for put
     int delete;             // flag to indicate we are only requesting deleting a resource
     char *delete_string;    // string used for delete request
@@ -2033,8 +2031,8 @@ struct acvp_ctx_t {
 
     JSON_Value *kat_resp; // holds the current set of vector responses
 
-    char *curl_buf;       /**< Data buffer for inbound Curl messages */
-    int curl_read_ctr;    /**< Total number of bytes written to the curl_buf */
+    char *curl_buf;       //!< Data buffer for inbound Curl messages
+    int curl_read_ctr;    //!< Total number of bytes written to the curl_buf
     int post_size_constraint;  /**< The number of bytes that the body of an HTTP POST may contain
                                     without requiring the use of the /large endpoint. If the POST body
                                     is larger than this value, then use of the /large endpoint is necessary */

@@ -97,7 +97,7 @@ ACVP_RESULT register_capabilities_fp_340(ACVP_CTX *ctx, APP_CONFIG *cfg);
 ACVP_RESULT register_capabilities_fp_350(ACVP_CTX *ctx, APP_CONFIG *cfg);
 ACVP_RESULT register_capabilities_fp_4x(ACVP_CTX *ctx, APP_CONFIG *cfg);
 
-/**
+/*
  * Here, we conditionally add defines for core names added in new versions of OpenSSL
  * for the sake of backward compatibility. We could opt to not use core names and use hard coded
  * strings to avoid this, but using core names makes libacvp a more useful reference.
