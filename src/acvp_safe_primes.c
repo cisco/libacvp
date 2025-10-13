@@ -159,7 +159,7 @@ static ACVP_RESULT acvp_safe_primes_init_tc(ACVP_CTX *ctx,
 ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;
@@ -169,8 +169,8 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Object *testobj = NULL;
     JSON_Array *groups;
     JSON_Array *tests, *r_tarr = NULL;
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_TEST_CASE tc;
     ACVP_SAFE_PRIMES_TC stc;
@@ -338,7 +338,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                /* Process the current KAT test vector... */
+                // Process the current KAT test vector...
                 if ((cap->crypto_handler)(&tc)) {
                     acvp_safe_primes_release_tc(&stc);
                     ACVP_LOG_ERR("Crypto module failed the operation");
@@ -363,7 +363,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                  */
                 acvp_safe_primes_release_tc(&stc);
 
-                /* Append the test response value to array */
+                // Append the test response value to array
                 json_array_append_value(r_tarr, r_tval);
             }
             break;
@@ -435,7 +435,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                /* Process the current KAT test vector... */
+                // Process the current KAT test vector...
                 if ((cap->crypto_handler)(&tc)) {
                     acvp_safe_primes_release_tc(&stc);
                     ACVP_LOG_ERR("Crypto module failed the operation");
@@ -460,7 +460,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                  */
                 acvp_safe_primes_release_tc(&stc);
 
-                /* Append the test response value to array */
+                // Append the test response value to array
                 json_array_append_value(r_tarr, r_tval);
             }
             break;

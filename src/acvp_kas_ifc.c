@@ -55,13 +55,13 @@ static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
         } else {
             json_object_set_string(tc_rsp, "iutHashZ", tmp);
         }
-        /* for KAS1, z is just iutZ. For KAS2, its the combined z. */
+        // for KAS1, z is just iutZ. For KAS2, its the combined z.
         if (stc->md == ACVP_NO_SHA) {
             json_object_set_string(tc_rsp, "z", tmp);
         } else {
             json_object_set_string(tc_rsp, "hashZ", tmp);
         }
-    } else { /* if role = responder */
+    } else { // if role = responder
         if (stc->scheme == ACVP_KAS_IFC_KAS2) {
             rv = acvp_bin_to_hexstr(stc->iut_ct_z, stc->iut_ct_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
             if (rv != ACVP_SUCCESS) {
@@ -133,7 +133,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
     rv = 0;
     int diff = 1, len = 0;
     unsigned char *merge = NULL;
-    /* For initiator tests, check the encapsulated Z. For responder tests, check the decapsulated Z. */
+    // For initiator tests, check the encapsulated Z. For responder tests, check the decapsulated Z.
     if (stc->kas_role == ACVP_KAS_IFC_INITIATOR) {
         if (stc->iut_ct_z_len == stc->provided_ct_z_len) {
             memcmp_s(stc->iut_ct_z, stc->iut_ct_z_len, stc->provided_ct_z, stc->provided_ct_z_len, &diff);
@@ -450,9 +450,9 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
     JSON_Array *tests, *r_tarr = NULL;
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
-    /* KAS key vals */
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
+    // KAS key vals
     const char *p = NULL, *q = NULL, *n = NULL, *d = NULL, *e = NULL, *dmp1 = NULL, *dmq1 = NULL, *iqmp = NULL;
     const char *server_n = NULL, *server_e = NULL;
     const char *pub_exp = NULL, *kas_role = NULL, *scheme_str = NULL, *hash = NULL;
@@ -534,7 +534,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
         if (!diff) scheme = ACVP_KAS_IFC_KAS2;
 
 
-        //If the user doesn't specify a hash function, neither does the server
+        // If the user doesn't specify a hash function, neither does the server
         if (cap && cap->cap.kas_ifc_cap && cap->cap.kas_ifc_cap->hash != ACVP_NO_SHA) {
             hash = json_object_get_string(groupobj, "hashFunctionZ");
             if (!hash) {
@@ -883,7 +883,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                 goto err;
             }
 
-            /* Process the current KAT test vector... */
+            // Process the current KAT test vector...
             if ((cap->crypto_handler)(tc)) {
                 acvp_kas_ifc_release_tc(stc);
                 ACVP_LOG_ERR("Crypto module failed the operation");
@@ -912,7 +912,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
              */
             acvp_kas_ifc_release_tc(stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);
@@ -929,7 +929,7 @@ err:
 ACVP_RESULT acvp_kas_ifc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;

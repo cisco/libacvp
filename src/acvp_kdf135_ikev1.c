@@ -142,7 +142,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_init_tc(ACVP_CTX *ctx,
     }
 
     if (psk != NULL) {
-        /* Only for PSK authentication method */
+        // Only for PSK authentication method
         stc->psk = calloc(ACVP_KDF135_IKEV1_PSK_BYTE_MAX,
                           sizeof(unsigned char));
         if (!stc->psk) { return ACVP_MALLOC_FAIL; }
@@ -217,9 +217,9 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_IKEV1_TC stc;
     ACVP_TEST_CASE tc;
@@ -364,7 +364,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         if (auth_method == ACVP_KDF135_IKEV1_AMETH_PSK) {
-            /* Only for PSK authentication method */
+            // Only for PSK authentication method
             psk_len = json_object_get_number(groupobj, "preSharedKeyLength");
             if (!(psk_len >= ACVP_KDF135_IKEV1_PSK_BIT_MIN &&
                   psk_len <= ACVP_KDF135_IKEV1_PSK_BIT_MAX)) {
@@ -467,7 +467,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
 
             if (auth_method == ACVP_KDF135_IKEV1_AMETH_PSK) {
-                /* Only for PSK authentication method */
+                // Only for PSK authentication method
                 psk = json_object_get_string(testobj, "preSharedKey");
                 if (!psk) {
                     ACVP_LOG_ERR("Failed to include preSharedKey");
@@ -510,7 +510,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("Crypto module failed the KDF IKEv1 operation");
                 acvp_kdf135_ikev1_release_tc(&stc);
@@ -534,7 +534,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             acvp_kdf135_ikev1_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

@@ -32,12 +32,12 @@ extern "C"
 
 #define xstr_2(x) #x
 #define xstr(x) xstr_2(x)
-/* e.g. 1.0 */
+// e.g. 1.0
 #define ACVP_PROTOCOL_VERSION xstr(ACVP_PROTOCOL_VERSION_MAJOR) "." xstr(ACVP_PROTOCOL_VERSION_MINOR)
-/* e.g. 1.0.0 */
+// e.g. 1.0.0
 #define ACVP_LIBRARY_VERSION_NUMBER xstr(ACVP_LIBRARY_VERSION_MAJOR) "." \
         xstr(ACVP_LIBRARY_VERSION_MINOR) "." xstr(ACVP_LIBRARY_VERSION_PATCH)
-/* e.g. libacvp_oss-1.0.0 */
+// e.g. libacvp_oss-1.0.0
 #define ACVP_LIBRARY_VERSION    "libacvp_oss-" ACVP_LIBRARY_VERSION_NUMBER
 
 #define ACVP_TOTP_LENGTH 8
@@ -161,7 +161,7 @@ typedef enum acvp_cipher {
     ACVP_AES_CBC_CS2,
     ACVP_AES_CBC_CS3,
     ACVP_AES_CFB1,
-    ACVP_AES_CFB8,     /* 10 */
+    ACVP_AES_CFB8,     // 10
     ACVP_AES_CFB128,
     ACVP_AES_OFB,
     ACVP_AES_CTR,
@@ -171,7 +171,7 @@ typedef enum acvp_cipher {
     ACVP_AES_GMAC,
     ACVP_AES_XPN,
     ACVP_AES_FF1,
-    ACVP_AES_FF3,     /* 20 */
+    ACVP_AES_FF3,     // 20
     ACVP_TDES_ECB,
     ACVP_TDES_CBC,
     ACVP_TDES_CBCI,
@@ -181,7 +181,7 @@ typedef enum acvp_cipher {
     ACVP_TDES_CFB8,
     ACVP_TDES_CFB64,
     ACVP_TDES_CFBP1,
-    ACVP_TDES_CFBP8,    /* 30 */
+    ACVP_TDES_CFBP8,    // 30
     ACVP_TDES_CFBP64,
     ACVP_TDES_CTR,
     ACVP_TDES_KW,
@@ -191,7 +191,7 @@ typedef enum acvp_cipher {
     ACVP_HASH_SHA384,
     ACVP_HASH_SHA512,
     ACVP_HASH_SHA512_224,
-    ACVP_HASH_SHA512_256,  /* 40 */
+    ACVP_HASH_SHA512_256,  // 40
     ACVP_HASH_SHA3_224,
     ACVP_HASH_SHA3_256,
     ACVP_HASH_SHA3_384,
@@ -201,7 +201,7 @@ typedef enum acvp_cipher {
     ACVP_HASHDRBG,
     ACVP_HMACDRBG,
     ACVP_CTRDRBG,
-    ACVP_HMAC_SHA1,         /* 50 */
+    ACVP_HMAC_SHA1,         // 50
     ACVP_HMAC_SHA2_224,
     ACVP_HMAC_SHA2_256,
     ACVP_HMAC_SHA2_384,
@@ -211,7 +211,7 @@ typedef enum acvp_cipher {
     ACVP_HMAC_SHA3_224,
     ACVP_HMAC_SHA3_256,
     ACVP_HMAC_SHA3_384,
-    ACVP_HMAC_SHA3_512,    /* 60 */
+    ACVP_HMAC_SHA3_512,    // 60
     ACVP_CMAC_AES,
     ACVP_CMAC_TDES,
     ACVP_KMAC_128,
@@ -223,7 +223,7 @@ typedef enum acvp_cipher {
     ACVP_DSA_PQGVER,
     ACVP_DSA_SIGGEN,
     ACVP_DSA_SIGVER,
-    ACVP_RSA_KEYGEN,     /* 70 */
+    ACVP_RSA_KEYGEN,     // 70
     ACVP_RSA_SIGGEN,
     ACVP_RSA_SIGVER,
     ACVP_RSA_DECPRIM,
@@ -233,7 +233,7 @@ typedef enum acvp_cipher {
     ACVP_ECDSA_SIGGEN,
     ACVP_ECDSA_SIGVER,
     ACVP_DET_ECDSA_SIGGEN,
-    ACVP_EDDSA_KEYGEN,    /* 80 */
+    ACVP_EDDSA_KEYGEN,    // 80
     ACVP_EDDSA_KEYVER,
     ACVP_EDDSA_SIGGEN,
     ACVP_EDDSA_SIGVER,
@@ -243,7 +243,7 @@ typedef enum acvp_cipher {
     ACVP_KDF135_IKEV2,
     ACVP_KDF135_IKEV1,
     ACVP_KDF135_X942,
-    ACVP_KDF135_X963,    /* 90 */
+    ACVP_KDF135_X963,    // 90
     ACVP_KDF108,
     ACVP_PBKDF,
     ACVP_KDF_TLS12,
@@ -253,7 +253,7 @@ typedef enum acvp_cipher {
     ACVP_KAS_ECC_NOCOMP,
     ACVP_KAS_ECC_SSC,
     ACVP_KAS_FFC_COMP,
-    ACVP_KAS_FFC_NOCOMP,   /* 100 */
+    ACVP_KAS_FFC_NOCOMP,   // 100
     ACVP_KAS_FFC_SSC,
     ACVP_KAS_IFC_SSC,
     ACVP_KDA_ONESTEP,
@@ -263,7 +263,7 @@ typedef enum acvp_cipher {
     ACVP_SAFE_PRIMES_KEYGEN,
     ACVP_SAFE_PRIMES_KEYVER,
     ACVP_LMS_KEYGEN,
-    ACVP_LMS_SIGGEN,      /* 110 */
+    ACVP_LMS_SIGGEN,      // 110
     ACVP_LMS_SIGVER,
     ACVP_ML_DSA_KEYGEN,
     ACVP_ML_DSA_SIGGEN,
@@ -975,7 +975,7 @@ typedef enum acvp_rsa_pub_exp_mode {
 typedef enum acvp_rsa_prime_test_type {
     ACVP_RSA_PRIME_TEST_TBLC2 = 1,
     ACVP_RSA_PRIME_TEST_TBLC3,
-    /* FIPS 186-5 */
+    // FIPS 186-5
     ACVP_RSA_PRIME_TEST_2POW100,
     ACVP_RSA_PRIME_TEST_2POW_SEC_STR
 } ACVP_RSA_PRIME_TEST_TYPE;
@@ -988,7 +988,7 @@ typedef enum acvp_rsa_keygen_mode_t {
     ACVP_RSA_KEYGEN_B34,
     ACVP_RSA_KEYGEN_B35,
     ACVP_RSA_KEYGEN_B36,
-    /* These generally match the above ones, but the terminology has changed for FIPS 186-5 */
+    // These generally match the above ones, but the terminology has changed for FIPS 186-5
     ACVP_RSA_KEYGEN_PROVABLE,         // B.3.2
     ACVP_RSA_KEYGEN_PROBABLE,         // B.3.3
     ACVP_RSA_KEYGEN_PROV_W_PROV_AUX,  // B.3.4
@@ -2249,7 +2249,7 @@ typedef struct acvp_kas_ifc_tc_t {
     ACVP_KAS_IFC_PARAM scheme;
     ACVP_KAS_IFC_ROLES kas_role;
 
-    /* Key parameters */
+    // Key parameters
     unsigned char *server_n;
     unsigned char *server_e;
     unsigned char *p;
@@ -2257,7 +2257,7 @@ typedef struct acvp_kas_ifc_tc_t {
     unsigned char *d;
     unsigned char *n;
     unsigned char *e;
-    /* CRT parameters */
+    // CRT parameters
     unsigned char *dmp1;
     unsigned char *dmq1;
     unsigned char *iqmp;
@@ -2268,7 +2268,7 @@ typedef struct acvp_kas_ifc_tc_t {
     unsigned char *provided_ct_z; /**< for VAL tests */
     unsigned char *server_pt_z;
     unsigned char *server_ct_z;
-    unsigned char *provided_kas2_z; /* The server-provided combined Z for KAS2 cases */
+    unsigned char *provided_kas2_z; // The server-provided combined Z for KAS2 cases
     int server_nlen;
     int server_elen;
     int plen;
@@ -2680,13 +2680,13 @@ typedef struct acvp_lms_tc_t {
     unsigned char *pub_key;
     int pub_key_len;
 
-    /* Keygen values */
+    // Keygen values
     unsigned char *i;
     unsigned char *seed;
     int i_len;
     int seed_len;
 
-    /* Signature values */
+    // Signature values
     unsigned char *msg;
     unsigned char *sig;
     int msg_len;
@@ -2720,7 +2720,7 @@ typedef enum acvp_ml_dsa_param_set {
     ACVP_ML_DSA_PARAM_SET_MAX
 } ACVP_ML_DSA_PARAM_SET;
 
-/* @enum ACVP_SIG_INTERFACE */
+// @enum ACVP_SIG_INTERFACE
 typedef enum ACVP_SIG_INTERFACE {
     ACVP_SIG_INTERFACE_NOT_SET = 0,
     ACVP_SIG_INTERFACE_INTERNAL,
@@ -2772,17 +2772,17 @@ typedef struct acvp_ml_dsa_tc_t {
     ACVP_ML_DSA_PARAM_SET param_set;
     ACVP_HASH_ALG hash_alg;
 
-    /* Both keys and sigs */
+    // Both keys and sigs
     unsigned char *pub_key;
     unsigned char *secret_key;
     int pub_key_len;
     int secret_key_len;
 
-    /* Keygen */
+    // Keygen
     unsigned char *seed;
     int seed_len;
 
-    /* Signature values */
+    // Signature values
     int is_deterministic;
     ACVP_SIG_INTERFACE sig_interface;
     int is_prehash;
@@ -2854,21 +2854,21 @@ typedef struct acvp_ml_kem_tc_t {
     ACVP_ML_KEM_FUNCTION function;
 
     /* All modes*/
-    unsigned char *dk; /* Decap key */
-    unsigned char *ek; /* Encap key */
+    unsigned char *dk; // Decap key
+    unsigned char *ek; // Encap key
     int dk_len;
     int ek_len;
 
-    /* Keygen */
-    unsigned char *d; /* Seed */
-    unsigned char *z; /* Seed */
+    // Keygen
+    unsigned char *d; // Seed
+    unsigned char *z; // Seed
     int d_len;
     int z_len;
 
-    /* Encap/decap */
-    unsigned char *m; /* Random value */
-    unsigned char *c; /* Ciphertext */
-    unsigned char *k; /* Shared secret */
+    // Encap/decap
+    unsigned char *m; // Random value
+    unsigned char *c; // Ciphertext
+    unsigned char *k; // Shared secret
     int m_len;
     int c_len;
     int k_len;
@@ -2923,13 +2923,13 @@ typedef struct acvp_slh_dsa_tc_t {
     ACVP_SIG_INTERFACE sig_interface;
     ACVP_HASH_ALG hash_alg;
 
-    /* Both keygen and signatures */
+    // Both keygen and signatures
     unsigned char *pub_key;
     unsigned char *secret_key;
     int pub_key_len;
     int secret_key_len;
 
-    /* Keygen */
+    // Keygen
     unsigned char *secret_seed;
     unsigned char *secret_prf;
     unsigned char *pub_seed;
@@ -2937,10 +2937,10 @@ typedef struct acvp_slh_dsa_tc_t {
     int secret_prf_len;
     int pub_seed_len;
 
-    /* Signatures */
+    // Signatures
     int is_deterministic;
     int is_prehash;
-    unsigned char *rnd; /* only if not deterministic */
+    unsigned char *rnd; // only if not deterministic
     unsigned char *msg;
     unsigned char *sig;
     unsigned char *context;

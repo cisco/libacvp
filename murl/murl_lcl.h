@@ -32,9 +32,9 @@ extern "C" {
 #include <openssl/ssl.h>
 #include "murl.h"
 
-/* Maximum size of data that can be in HTTP POST */
+// Maximum size of data that can be in HTTP POST
 #define MURL_POST_MAX	64*1024*1024
-/* Maximum size of HTTP request, minus the POST data */
+// Maximum size of HTTP request, minus the POST data
 #define MURL_HDR_MAX	64*1024
 #define MURL_RCV_MAX	MURL_POST_MAX
 
@@ -47,25 +47,25 @@ typedef struct SessionHandle_ {
     char		    *url;
     int                     use_ipv6;
     char		    *user_agent;
-    int			    http_post; /* 1 to do POST, zero for GET */
+    int			    http_post; // 1 to do POST, zero for GET
     char		    *post_fields;
     int			    post_field_size;
     char		    *ca_file;
-    int			    ssl_verify_peer; /* 1 to verify, zero to skip verification at SSL layer */
-    int			    ssl_verify_hostname; /* 1 to verify server hostname against certfication */
-    int			    ssl_certinfo; /* 1 to collect TLS peer certificate info */
+    int			    ssl_verify_peer; // 1 to verify, zero to skip verification at SSL layer
+    int			    ssl_verify_hostname; // 1 to verify server hostname against certfication
+    int			    ssl_certinfo; // 1 to collect TLS peer certificate info
     char		    *ssl_cert_file;
-    char		    *ssl_cert_type;  /* "PEM" and "DER" are valid values */
+    char		    *ssl_cert_type;  // "PEM" and "DER" are valid values
     char		    *ssl_key_file;
-    char		    *ssl_key_type;  /* "PEM" and "DER" are valid values */
+    char		    *ssl_key_type;  // "PEM" and "DER" are valid values
     void		    *write_ctx;
     struct curl_slist	    *headers;
     curl_write_callback	    write_func;
 
     SSL	*ssl;
 
-    /* The following members are for HTTP parsing */
-    int			http_status_code;  /* HTTP response from server */
+    // The following members are for HTTP parsing
+    int			http_status_code;  // HTTP response from server
     char		*recv_buf;
     int			recv_ctr;
     char		path_segment[256]; //FIXME: use a pointer

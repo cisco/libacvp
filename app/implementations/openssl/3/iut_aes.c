@@ -18,7 +18,7 @@
 #include <openssl/err.h>
 
 
-static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
+static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; // need to maintain across calls for MCT
 
 void app_aes_cleanup(void) {
     if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
@@ -52,7 +52,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         }
     }
 
-    /* Begin encrypt code section */
+    // Begin encrypt code section
     cipher_ctx = glb_cipher_ctx;
     if ((tc->test_type != ACVP_SYM_TEST_TYPE_MCT)) {
         EVP_CIPHER_CTX_init(cipher_ctx);
@@ -285,7 +285,7 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
         return rv;
     }
 
-    /* Begin encrypt code section */
+    // Begin encrypt code section
     cipher_ctx = EVP_CIPHER_CTX_new();
     if (!cipher_ctx) {
         printf("Error creating CTX in AES keywrap\n");
@@ -370,7 +370,7 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
     } else if (tc->direction == ACVP_SYM_CIPH_DIR_DECRYPT) {
         EVP_CipherInit_ex2(cipher_ctx, cipher, tc->key, NULL, 0, NULL);
         if (EVP_CipherUpdate(cipher_ctx, tc->pt, &out_len, tc->ct, tc->ct_len) != 1) {
-            goto err; /* return failure, some are expected for decrypt */
+            goto err; // return failure, some are expected for decrypt
         }
         tc->pt_len = out_len;
         EVP_CipherFinal_ex(cipher_ctx, tc->pt, &out_len);
@@ -380,7 +380,7 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
     }
     rv = 0;
 err:
-    /* Cleanup */
+    // Cleanup
     if (cipher_ctx) EVP_CIPHER_CTX_free(cipher_ctx);
     if (cipher) EVP_CIPHER_free(cipher);
     return rv;
@@ -406,7 +406,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
         return 1;
     }
 
-    /* Begin encrypt code section */
+    // Begin encrypt code section
     cipher_ctx = EVP_CIPHER_CTX_new();
     if (!cipher_ctx) {
         printf("Error initializing cipher CTX\n");
@@ -414,7 +414,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     }
     EVP_CIPHER_CTX_init(cipher_ctx);
 
-    /* Validate key length and assign OpenSSL EVP cipher */
+    // Validate key length and assign OpenSSL EVP cipher
     alg = acvp_get_aes_alg(tc->cipher);
     if (alg == 0) {
         printf("Invalid cipher value");
@@ -536,7 +536,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             }
         }
         break;
-    case ACVP_SUB_AES_GMAC: /* Has its own APIs */
+    case ACVP_SUB_AES_GMAC: // Has its own APIs
     case ACVP_SUB_AES_GCM_SIV:
     case ACVP_SUB_AES_ECB:
     case ACVP_SUB_AES_CBC:
@@ -562,7 +562,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     rv = 0;
 err:
     if (rv != 0) ERR_print_errors_fp(stderr);
-    /* Cleanup */
+    // Cleanup
     if (cipher_ctx) EVP_CIPHER_CTX_free(cipher_ctx);
     if (cipher) EVP_CIPHER_free(cipher);
     return rv;
@@ -636,7 +636,7 @@ int app_aes_handler_gmac(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* Don't capture the output length; manually truncate for shorter tags */
+    // Don't capture the output length; manually truncate for shorter tags
     if (tc->direction == ACVP_SYM_CIPH_DIR_DECRYPT) {
         out = calloc(GMAC_BUF_MAX, sizeof(unsigned char));
         if (!out) {

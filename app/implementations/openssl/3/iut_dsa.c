@@ -22,7 +22,7 @@
 
 #define DSA_MAX_SEED 1024
 
-/* Re-use these when possible to speed up test cases */
+// Re-use these when possible to speed up test cases
 static EVP_PKEY_CTX *group_param_ctx = NULL;
 static EVP_PKEY_CTX *group_pctx = NULL;
 static EVP_PKEY *group_param_key = NULL;
@@ -362,8 +362,8 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
 
-        /* Need to extract R and S from signature */
-        sig_iter = sig; /* d2i functions alter pointer */
+        // Need to extract R and S from signature
+        sig_iter = sig; // d2i functions alter pointer
         sig_obj = d2i_DSA_SIG(NULL, &sig_iter, (long)sig_len);
         if (!sig_obj) {
             printf("Error creating signature object needed to retrieve output in ECDSA siggen\n");
@@ -503,7 +503,7 @@ err:
     if (p) BN_free(p);
     if (g) BN_free(g);
     if (pub_key) BN_free(pub_key);
-    if (sig_obj) DSA_SIG_free(sig_obj); /* Also frees R and S */
+    if (sig_obj) DSA_SIG_free(sig_obj); // Also frees R and S
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (param_ctx) EVP_PKEY_CTX_free(param_ctx);

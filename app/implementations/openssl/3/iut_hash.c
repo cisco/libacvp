@@ -19,7 +19,7 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
     ACVP_HASH_TC    *tc;
     const EVP_MD    *md;
     EVP_MD_CTX *md_ctx = NULL;
-    /* assume fail */
+    // assume fail
     int rv = 1;
     int sha3 = 0, shake = 0;
     ACVP_SUB_HASH alg;
@@ -111,7 +111,7 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
             printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
         }
 
-        /* We can either use this helper function, or concatenate m1/m2/m3 ourselves */
+        // We can either use this helper function, or concatenate m1/m2/m3 ourselves
         mct_msg = acvp_hash_create_mct_msg(tc, &mct_msg_len);
         if (!mct_msg) {
             printf("Library failed to generate mct message for test when asked\n");
@@ -179,7 +179,7 @@ int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md) {
         return 1;
     }
 
-    /* We have to copy the message into the buffer many times. Assume concatenation as it is the only mode currently */
+    // We have to copy the message into the buffer many times. Assume concatenation as it is the only mode currently
     numcopies = tc->exp_len / tc->msg_len;
     iter = large_data;
     for (i = 0; i < numcopies; i++) {
@@ -194,7 +194,7 @@ int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md) {
         goto end;
     }
 
-    /* Update MUST only be called once */
+    // Update MUST only be called once
     if (!EVP_DigestUpdate(md_ctx, large_data, tc->exp_len)) {
         printf("\nCrypto module error, EVP_DigestUpdate failed\n");
         goto end;

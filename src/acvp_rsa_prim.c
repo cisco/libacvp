@@ -440,9 +440,9 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL, *r_carr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL, *r_cval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL, *r_cobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL, *r_carr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL, *r_cval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL, *r_cobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_RSA_PRIM_TC stc;
     ACVP_TEST_CASE tc;
@@ -592,7 +592,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Even if fixed, we don't need to parse the pubExp value, its included in each test case as e */
+            // Even if fixed, we don't need to parse the pubExp value, its included in each test case as e
             pub_exp_mode = acvp_lookup_rsa_pub_exp_mode(pub_exp_mode_str);
             if (!pub_exp_mode) {
                 ACVP_LOG_ERR("Server JSON invalid 'pubExpMode'");
@@ -632,7 +632,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             json_object_set_number(r_tobj, "tcId", tc_id);
 
             if (old_rev) {
-                /* Retrieve values from JSON and initialize the tc */
+                // Retrieve values from JSON and initialize the tc
                 deferred = json_object_get_boolean(testobj, "deferred");
                 if (deferred == -1) {
                     ACVP_LOG_ERR("Server JSON missing 'deferred'");
@@ -702,7 +702,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     }
                     json_array_append_value(r_carr, r_cval);
 
-                    /* Release all the memory associated with the test case */
+                    // Release all the memory associated with the test case
                     acvp_rsa_decprim_release_tc(&stc);
                 }
             } else {
@@ -764,7 +764,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     }
                 }
 
-                /* Output the test case results using JSON */
+                // Output the test case results using JSON
                 rv = acvp_rsa_decprim_output_tc_rev_56br2(ctx, &stc, r_tobj);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure recording test response");
@@ -772,11 +772,11 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                /* Release all the memory associated with the test case */
+                // Release all the memory associated with the test case
                 acvp_rsa_decprim_release_tc(&stc);
             }
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);
@@ -814,9 +814,9 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_RSA_PRIM_TC stc;
     ACVP_TEST_CASE tc;
@@ -857,7 +857,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_INVALID_ARG;
     }
 
-    /* Assume alternate revision is 1.0, need to handle a few things differently */
+    // Assume alternate revision is 1.0, need to handle a few things differently
     rev_str = json_object_get_string(obj, "revision");
     if (!rev_str) {
         ACVP_LOG_ERR("Missing 'revision' from server json");
@@ -1061,7 +1061,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_rsa_sigprim_init_tc(ctx, &stc, mod, keyformat, d_str, e_str, n_str, p_str,
                                           q_str, dmp1_str, dmq1_str, iqmp_str, msg);
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
                     ACVP_LOG_ERR("Crypto module failed the operation");
@@ -1086,7 +1086,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             acvp_rsa_sigprim_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

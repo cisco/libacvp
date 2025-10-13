@@ -34,9 +34,9 @@ void app_rsa_cleanup(void) {
 int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     ACVP_RSA_KEYGEN_TC *tc = NULL;
     int rv = 1;
-    /** storage for BN inputs */
+    // storage for BN inputs
     BIGNUM *xp1 = NULL, *xp2 = NULL, *xp = NULL, *xq1 = NULL, *xq2 = NULL, *xq = NULL;
-    /** storage for output values before converting to binary */
+    // storage for output values before converting to binary
     BIGNUM *p = NULL, *q = NULL, *n = NULL, *d = NULL, *e = NULL;
     EVP_PKEY *pkey = NULL;
     EVP_PKEY_CTX *pkey_ctx = NULL;
@@ -186,7 +186,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* Set the padding mode and digest MD */
+    // Set the padding mode and digest MD
     switch (tc->sig_type) {
     case ACVP_RSA_SIG_TYPE_X931:
         padding = "x931";
@@ -256,7 +256,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
 
-        //now we have the pkey, setup the digest ctx
+        // now we have the pkey, setup the digest ctx
         sig_pbld = OSSL_PARAM_BLD_new();
         if (!sig_pbld) {
             printf("Error creating param_bld in RSA sigver\n");
@@ -350,7 +350,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         }
     }
 
-    /* Success */
+    // Success
     rv = 0;
 
 err:
@@ -429,7 +429,7 @@ int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
             printf("Failed to convert CRT components to bignum in RSA sigprim\n");
             goto err;
         }
-        /* d should be provided as part of a CRT key, but it is not, so calculate ourselves */
+        // d should be provided as part of a CRT key, but it is not, so calculate ourselves
         bctx = BN_CTX_new();
         d = BN_dup(n);
         if (!bctx || !d) {
@@ -540,7 +540,7 @@ int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* Handle common key components, then ones specific to CRT or standard key formats */
+    // Handle common key components, then ones specific to CRT or standard key formats
     if (!tc->p || !tc->q || !tc->e || !tc->n || !tc->d) {
         printf("Missing TC key components for RSA decprim\n");
         goto err;

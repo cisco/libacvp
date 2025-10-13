@@ -54,7 +54,7 @@
 #include "murl_lcl.h"
 #include "http_parser.h"
 
-//FIXME: these are arbitrary values for now.  we're wasting memory since
+// FIXME: these are arbitrary values for now.  we're wasting memory since
 //       the query string, request path, etc. doesn't need to be this large.
 //       but the body size may need to be this large for ACVP, if not larger.
 //       we'll need to rethink how to allocate this memory for the various

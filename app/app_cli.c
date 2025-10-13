@@ -252,7 +252,7 @@ static ko_longopt_t longopts[] = {
 
 static void default_config(APP_CONFIG *cfg) {
     cfg->level = ACVP_LOG_LVL_STATUS;
-    cfg->max_ldt_size = 8; /* Max in spec is 8 right now, do all by default */
+    cfg->max_ldt_size = 8; // Max in spec is 8 right now, do all by default
 }
 
 static const char* lookup_arg_name(int c) {
@@ -266,7 +266,7 @@ static const char* lookup_arg_name(int c) {
     return NULL;
 }
 
-//return 0 if fails check, 1 if passes
+// return 0 if fails check, 1 if passes
 static int check_option_length(const char *opt, int c, int maxAllowed) {
     if ((int)strnlen_s(opt, maxAllowed + 1) > maxAllowed) {
         const char *argName = lookup_arg_name(c);
@@ -285,7 +285,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
     cfg->empty_alg = 1;
 
-    /* Set the default configuration values */
+    // Set the default configuration values
     default_config(cfg);
 
     while ((c = ketopt(&opt, argc, argv, 1, "vhas:u:r:p:", longopts)) >= 0) {
@@ -294,7 +294,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         switch (c) {
         case 'v':
         case 301:
-            /* Print version info AFTER other args are read, so we can see module runtime info better */
+            // Print version info AFTER other args are read, so we can see module runtime info better
             cfg->output_version = 1;
             break;
         case 'h':
@@ -608,7 +608,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
     }
 
-    //If there are still arguments that were not permuted, they are invalid
+    // If there are still arguments that were not permuted, they are invalid
     if (opt.ind < argc) {
         for (c = opt.ind; c < argc; c++) {
             printf(ANSI_COLOR_RED "unknown option: %s\n" ANSI_COLOR_RESET, argv[c]);
@@ -628,12 +628,12 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         return 1;
     }
 
-    //Many args do not need an alg specified. Todo: make cleaner
+    // Many args do not need an alg specified. Todo: make cleaner
     if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put && !cfg->get_results
             && !cfg->get_expected && !cfg->manual_reg && !cfg->vector_upload
             && !cfg->delete && !cfg->cancel_session && !(cfg->resume_session &&
             cfg->vector_req) && !cfg->output_version) {
-        /* The user needs to select at least 1 algorithm */
+        // The user needs to select at least 1 algorithm
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
         printf("%s\n", ACVP_APP_HELP_MSG);
         return 1;

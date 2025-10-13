@@ -285,9 +285,9 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap = NULL;
     ACVP_SLH_DSA_TC stc;
     ACVP_TEST_CASE tc;
@@ -337,14 +337,14 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     ACVP_LOG_VERBOSE("    SLH-DSA mode: %s", mode_str);
 
-    /* Create ACVP array for response */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
         return rv;
     }
 
-    /* Start to build the JSON response */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -579,7 +579,7 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_VERBOSE("          context: %s", context_str);
             }
 
-            /* Create a new test case in the response */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -589,7 +589,7 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                       is_prehash, hash_alg, pub_str, secret_str, secret_seed_str, secret_prf_str,
                                       pub_seed_str, rnd_str, msg_str, sig_str, context_str);
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
                     ACVP_LOG_ERR("Crypto module failed the operation");
@@ -603,7 +603,7 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Output the test case results using JSON */
+            // Output the test case results using JSON
             rv = acvp_slh_dsa_output_tc(ctx, alg_id, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure recording test response");
@@ -611,10 +611,10 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
 
-            /* Release all the memory associated with the test case */
+            // Release all the memory associated with the test case
             acvp_slh_dsa_release_tc(&stc);
         }
         json_array_append_value(r_garr, r_gval);

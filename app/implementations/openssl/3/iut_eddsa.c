@@ -48,7 +48,7 @@ int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
         return 1;
     }
     tc = test_case->tc.eddsa;
-    /* Todo: expand these checks and UTs */
+    // Todo: expand these checks and UTs
     if (!tc || !tc->q) {
         printf("Error: test case not found in EDDSA handler\n");
         return 1;
@@ -61,7 +61,7 @@ int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
         return 1;
     }
 
-    /* Key operations and signature operations for OpenSSL EDDSA use different string identifiers */
+    // Key operations and signature operations for OpenSSL EDDSA use different string identifiers
     instance = get_ed_instance_param(tc->curve, tc->use_prehash, tc->context ? 1 : 0);
     if (!instance) {
         printf("Error getting instance param for EDDSA\n");
@@ -158,7 +158,7 @@ int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SUB_EDDSA_SIGGEN:
         if (eddsa_current_tg != tc->tg_id) {
             eddsa_current_tg = tc->tg_id;
-            /* First, generate key for every test group */
+            // First, generate key for every test group
             pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, curve, NULL);
             if (!pkey_ctx) {
                 printf("Error creating pkey CTX in EDDSA siggen\n");
@@ -189,7 +189,7 @@ int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
             }
         }
 
-        /* Then, for each test case, generate a signature */
+        // Then, for each test case, generate a signature
         sig_ctx = EVP_MD_CTX_new();
         if (!sig_ctx) {
             printf("Error initializing sign CTX for EDDSA siggen\n");
@@ -226,7 +226,7 @@ int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
 
-        /* and copy our values to the TC response */
+        // and copy our values to the TC response
         tc->q_len = (int)group_q_len;
         memcpy_s(tc->q, 8192, eddsa_group_q, group_q_len);
         tc->signature_len = (int)sig_len;

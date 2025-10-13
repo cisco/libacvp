@@ -12,19 +12,19 @@ structure meant to help keep IUT logic separate from usage and protocol logic. E
 will be expected to provide these functions:
 
 ```
-/* Perform any setup needed to initialize the given IUT */
+// Perform any setup needed to initialize the given IUT
 ACVP_RESULT iut_setup(APP_CONFIG *cfg);
 ```
 ```
-/* Register the capabilities of the given IUT */
+// Register the capabilities of the given IUT
 ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg);
 ```
 ```
-/** Frees any memory associated with the harness AFTER all tests are complete */
+// Frees any memory associated with the harness AFTER all tests are complete
 ACVP_RESULT iut_cleanup(void);
 ```
 ```
-/* prints all relevant IuT version information to stdout */
+// prints all relevant IuT version information to stdout
 void iut_print_version(APP_CONFIG *cfg);
 ```
 

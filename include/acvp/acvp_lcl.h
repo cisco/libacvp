@@ -55,7 +55,7 @@
 
 #define ACVP_BIT2BYTE(x) ((x + 7) >> 3) /**< Convert bit length (x, of type integer) into byte length */
 
-#define ACVP_ALG_MAX ACVP_CIPHER_END - 1  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX ACVP_CIPHER_END - 1  // Used by alg_tbl[]
 
 #define ACVP_CAP_MAX ACVP_ALG_MAX * 3 /* Arbitrary limit to the number of capability objects that
                                          can be registered via file */
@@ -81,7 +81,7 @@
 #define ACVP_REV_STR_FIPS204 "FIPS204"
 #define ACVP_REV_STR_FIPS205 "FIPS205"
 
-/* AES */
+// AES
 #define ACVP_REV_AES_ECB             ACVP_REV_STR_1_0
 #define ACVP_REV_AES_CBC             ACVP_REV_STR_1_0
 #define ACVP_REV_AES_CBC_CS1         ACVP_REV_STR_1_0
@@ -103,7 +103,7 @@
 #define ACVP_REV_AES_FF1             ACVP_REV_STR_1_0
 #define ACVP_REV_AES_FF3             ACVP_REV_STR_1_0
 
-/* TDES */
+// TDES
 #define ACVP_REV_TDES_OFB            ACVP_REV_STR_1_0
 #define ACVP_REV_TDES_OFBI           ACVP_REV_STR_1_0
 #define ACVP_REV_TDES_CFB1           ACVP_REV_STR_1_0
@@ -118,7 +118,7 @@
 #define ACVP_REV_TDES_CTR            ACVP_REV_STR_1_0
 #define ACVP_REV_TDES_KW             ACVP_REV_STR_1_0
 
-/* SHA */
+// SHA
 #define ACVP_REV_HASH_SHA1           ACVP_REV_STR_1_0
 #define ACVP_REV_HASH_SHA224         ACVP_REV_STR_1_0
 #define ACVP_REV_HASH_SHA256         ACVP_REV_STR_1_0
@@ -133,12 +133,12 @@
 #define ACVP_REV_HASH_SHAKE_128      ACVP_REV_STR_1_0
 #define ACVP_REV_HASH_SHAKE_256      ACVP_REV_STR_1_0
 
-/* DRBG */
+// DRBG
 #define ACVP_REV_HASHDRBG            ACVP_REV_STR_1_0
 #define ACVP_REV_HMACDRBG            ACVP_REV_STR_1_0
 #define ACVP_REV_CTRDRBG             ACVP_REV_STR_1_0
 
-/* HMAC */
+// HMAC
 #define ACVP_REV_HMAC_SHA1           ACVP_REV_STR_1_0
 #define ACVP_REV_HMAC_SHA2_224       ACVP_REV_STR_1_0
 #define ACVP_REV_HMAC_SHA2_256       ACVP_REV_STR_1_0
@@ -151,50 +151,50 @@
 #define ACVP_REV_HMAC_SHA3_384       ACVP_REV_STR_1_0
 #define ACVP_REV_HMAC_SHA3_512       ACVP_REV_STR_1_0
 
-/* CMAC */
+// CMAC
 #define ACVP_REV_CMAC_AES            ACVP_REV_STR_1_0
 #define ACVP_REV_CMAC_TDES           ACVP_REV_STR_1_0
 
-/* KMAC */
+// KMAC
 #define ACVP_REV_KMAC_128            ACVP_REV_STR_1_0
 #define ACVP_REV_KMAC_256            ACVP_REV_STR_1_0
 #define ACVP_REV_CSHAKE_128          ACVP_REV_STR_1_0
 #define ACVP_REV_CSHAKE_256          ACVP_REV_STR_1_0
 
-/* DSA */
+// DSA
 #define ACVP_REV_DSA                 ACVP_REV_STR_1_0
 
-/* RSA */
+// RSA
 #define ACVP_REV_RSA                 ACVP_REV_STR_FIPS186_5
 #define ACVP_REV_RSA_DECPRIM         ACVP_REV_STR_SP800_56BR2
 #define ACVP_REV_RSA_SIGPRIM         ACVP_REV_STR_2_0
 
-/* ECDSA */
+// ECDSA
 #define ACVP_REV_ECDSA               ACVP_REV_STR_FIPS186_5
 
-/* EDDSA */
+// EDDSA
 #define ACVP_REV_EDDSA               ACVP_REV_STR_1_0
 
-/* KAS_ECC */
+// KAS_ECC
 #define ACVP_REV_KAS_ECC             ACVP_REV_STR_1_0
 #define ACVP_REV_KAS_ECC_SSC         ACVP_REV_STR_SP800_56AR3
 
-/* KAS_FFC */
+// KAS_FFC
 #define ACVP_REV_KAS_FFC             ACVP_REV_STR_1_0
 #define ACVP_REV_KAS_FFC_SSC         ACVP_REV_STR_SP800_56AR3
 
-/* KAS_IFC */
+// KAS_IFC
 #define ACVP_REV_KAS_IFC_SSC         ACVP_REV_STR_SP800_56BR2
 
-/* KDA */
+// KDA
 #define ACVP_REV_KDA_ONESTEP         ACVP_REV_STR_SP800_56CR2
 #define ACVP_REV_KDA_TWOSTEP         ACVP_REV_STR_SP800_56CR2
 #define ACVP_REV_KDA_HKDF            ACVP_REV_STR_SP800_56CR2
 
-/* KTS_IFC */
+// KTS_IFC
 #define ACVP_REV_KTS_IFC             ACVP_REV_STR_SP800_56BR2
 
-/* KDF */
+// KDF
 #define ACVP_REV_KDF135_SNMP         ACVP_REV_STR_1_0
 #define ACVP_REV_KDF135_SSH          ACVP_REV_STR_1_0
 #define ACVP_REV_KDF135_SRTP         ACVP_REV_STR_1_0
@@ -209,16 +209,16 @@
 #define ACVP_REV_KDF_TLS12           ACVP_REV_STR_RFC7627
 #define ACVP_REV_KDF_TLS13           ACVP_REV_STR_RFC8446
 
-/* LMS */
+// LMS
 #define ACVP_REV_LMS                 ACVP_REV_STR_1_0
 
-/* ML-DSA */
+// ML-DSA
 #define ACVP_REV_ML_DSA              ACVP_REV_STR_FIPS204
 
-/* ML-KEM */
+// ML-KEM
 #define ACVP_REV_ML_KEM              ACVP_REV_STR_FIPS203
 
-/* SLH-DSA */
+// SLH-DSA
 #define ACVP_REV_SLH_DSA             ACVP_REV_STR_FIPS205
 
 /********************************************************
@@ -861,8 +861,8 @@
 #define ACVP_ECDSA_EXP_LEN_MAX       512
 #define ACVP_ECDSA_MSGLEN_MAX 8192
 
-#define ACVP_EDDSA_MSG_LEN_MAX 8192 /* arbitrary */
-#define ACVP_EDDSA_POINT_LEN_MAX 8192 /* arbitrary */
+#define ACVP_EDDSA_MSG_LEN_MAX 8192 // arbitrary
+#define ACVP_EDDSA_POINT_LEN_MAX 8192 // arbitrary
 #define ACVP_EDDSA_CONTEXT_LEN_MAX 255
 
 #define ACVP_KAS_IFC_BIT_MAX 4096*4
@@ -900,13 +900,13 @@
 #define ACVP_RSA_KEY_FORMAT_STD_STR_LEN 9
 #define ACVP_RSA_KEY_FORMAT_CRT_STR "crt"
 #define ACVP_RSA_KEY_FORMAT_CRT_STR_LEN 3
-/* Rand PQ for FIPS186-4 */
+// Rand PQ for FIPS186-4
 #define ACVP_RSA_RANDPQ_STR_B32   "B.3.2"
 #define ACVP_RSA_RANDPQ_STR_B33   "B.3.3"
 #define ACVP_RSA_RANDPQ_STR_B34   "B.3.4"
 #define ACVP_RSA_RANDPQ_STR_B35   "B.3.5"
 #define ACVP_RSA_RANDPQ_STR_B36   "B.3.6"
-/* RandPQ for FIPS186-5 */
+// RandPQ for FIPS186-5
 #define ACVP_RSA_RANDPQ_STR_PROVABLE "provable"
 #define ACVP_RSA_RANDPQ_STR_PROBABLE "probable"
 #define ACVP_RSA_RANDPQ_STR_PROV_W_PROV_AUX "provableWithProvableAux"
@@ -993,13 +993,13 @@
 #define ACVP_SLH_DSA_KEY_BYTE_MAX (ACVP_SLH_DSA_KEY_BIT_MAX >> 3)
 
 #define ACVP_CURL_BUF_MAX       (1024 * 1024 * 64) /**< 64 MB */
-#define ACVP_RETRY_TIME_MIN     5 /* seconds */
-#define ACVP_RETRY_TIME_MAX     300 /* 5 minutes */
-#define ACVP_MAX_WAIT_TIME      10800 /* 3 hours */
+#define ACVP_RETRY_TIME_MIN     5 // seconds
+#define ACVP_RETRY_TIME_MAX     300 // 5 minutes
+#define ACVP_MAX_WAIT_TIME      10800 // 3 hours
 #define ACVP_RETRY_TIME         30
 #define ACVP_RETRY_MODIFIER_MAX 10
-#define ACVP_JWT_TOKEN_MAX      4096 /* arbitrary, but 2048 too low in some cases */
-#define ACVP_ATTR_URL_MAX       2083 /* MS IE's limit - arbitrary */
+#define ACVP_JWT_TOKEN_MAX      4096 // arbitrary, but 2048 too low in some cases
+#define ACVP_ATTR_URL_MAX       2083 // MS IE's limit - arbitrary
 
 #define ACVP_SESSION_PARAMS_STR_LEN_MAX 256
 #define ACVP_REQUEST_STR_LEN_MAX 128
@@ -1095,7 +1095,7 @@ struct acvp_ec_curve_info {
     const char *name;
 };
 
-/* This is used when we need a table of acceptable ciphers for specific situations */
+// This is used when we need a table of acceptable ciphers for specific situations
 struct acvp_function_info {
     ACVP_CIPHER cipher;
     const char *name;
@@ -1106,7 +1106,7 @@ struct acvp_alt_revision_info {
     const char *name;
 };
 
-/* A generic struct that can match an enum with a string */
+// A generic struct that can match an enum with a string
 struct acvp_enum_string_pair {
     unsigned int enum_value;
     const char *string;
@@ -1243,7 +1243,7 @@ typedef struct acvp_sym_cipher_capability {
     ACVP_SYM_CIPH_DIR direction;
     ACVP_SYM_CIPH_KO keying_option;
 
-    /* The first row indicates a 0 or 1 for if that IVGEN_MODE is supported. The second row stores the IV_SRC value */
+    // The first row indicates a 0 or 1 for if that IVGEN_MODE is supported. The second row stores the IV_SRC value
     unsigned int iv_mode_matrix[ACVP_SYM_CIPH_IVGEN_MODE_MAX][2];
 
     /* These flags are to temporarily store a given mode and src while building one vector set's registration, since they
@@ -1277,8 +1277,8 @@ typedef struct acvp_sym_cipher_capability {
 } ACVP_SYM_CIPHER_CAP;
 
 typedef struct acvp_hash_capability {
-    int in_bit;   /* defaults to false */
-    int in_empty; /* defaults to false */
+    int in_bit;   // defaults to false
+    int in_empty; // defaults to false
     int out_bit; /**< 1 for true, 0 for false
                       Defaults to false.
                       Only for ACVP_HASH_SHAKE_* */
@@ -1463,7 +1463,7 @@ typedef struct acvp_rsa_mode_caps_list {
     ACVP_PARAM_LIST *hash_algs;
     ACVP_RSA_HASH_PAIR_LIST *hash_pair;
     ACVP_PARAM_LIST *prime_tests;
-    ACVP_PARAM_LIST *mask_functions; /* Only for PSS sig */
+    ACVP_PARAM_LIST *mask_functions; // Only for PSS sig
     int pMod8;
     int qMod8;
     struct acvp_rsa_mode_caps_list *next;
@@ -1512,7 +1512,7 @@ typedef struct acvp_ecdsa_capability_t {
     //For backwards compatibility, this contains hash algs that will be used with ALL registered curves (HASH_ALG = array index)
     int hash_algs[ACVP_HASH_ALG_MAX + 1];
     ACVP_ECDSA_COMPONENT_MODE component;
-    ACVP_REVISION revision; /* Empty if default is used */
+    ACVP_REVISION revision; // Empty if default is used
 } ACVP_ECDSA_CAP;
 
 typedef struct acvp_eddsa_capability_t {
@@ -1573,11 +1573,11 @@ typedef struct acvp_kas_ecc_scheme {
 typedef struct acvp_kas_ecc_cap_mode_t {
     ACVP_KAS_ECC_MODE cap_mode;
     ACVP_PREREQ_LIST *prereq_vals;
-    ACVP_PARAM_LIST *curve;    /* CDH mode only */
-    ACVP_REVISION revision; /* Empty if default is used */
+    ACVP_PARAM_LIST *curve;    // CDH mode only
+    ACVP_REVISION revision; // Empty if default is used
     ACVP_PARAM_LIST *function;
-    ACVP_KAS_ECC_SCHEME *scheme; /* other modes use schemes */
-    int hash;     /* only a single sha for KAS-ECC-SSC */
+    ACVP_KAS_ECC_SCHEME *scheme; // other modes use schemes
+    int hash;     // only a single sha for KAS-ECC-SSC
 } ACVP_KAS_ECC_CAP_MODE;
 
 typedef struct acvp_kas_ecc_capability_t {
@@ -1616,7 +1616,7 @@ typedef struct acvp_kas_ffc_cap_mode_t {
     ACVP_PARAM_LIST *function;
     ACVP_PARAM_LIST *genmeth;
     int hash;
-    ACVP_KAS_FFC_SCHEME *scheme; /* other modes use schemes */
+    ACVP_KAS_FFC_SCHEME *scheme; // other modes use schemes
 } ACVP_KAS_FFC_CAP_MODE;
 
 typedef struct acvp_kas_ffc_capability_t {
@@ -1666,10 +1666,10 @@ typedef struct acvp_kda_twostep_capability_t {
     ACVP_PARAM_LIST *encodings;
     ACVP_JSON_DOMAIN_OBJ z;
     int l;
-    int perform_multi_expansion_tests; /* 56Cr2 only */
-    int use_hybrid_shared_secret; /* 56Cr2 only */
-    ACVP_JSON_DOMAIN_OBJ aux_secret_len; /* 56Cr2 only */
-    ACVP_KDF108_CAP kdf_params; /* All of the KDF108 params get stored in here to avoid duplicate code */
+    int perform_multi_expansion_tests; // 56Cr2 only
+    int use_hybrid_shared_secret; // 56Cr2 only
+    ACVP_JSON_DOMAIN_OBJ aux_secret_len; // 56Cr2 only
+    ACVP_KDF108_CAP kdf_params; // All of the KDF108 params get stored in here to avoid duplicate code
 } ACVP_KDA_TWOSTEP_CAP;
 
 typedef struct acvp_kda_hkdf_t {
@@ -1682,9 +1682,9 @@ typedef struct acvp_kda_hkdf_t {
     ACVP_NAME_LIST *mac_salt_methods;
     ACVP_JSON_DOMAIN_OBJ z;
     int l;
-    int perform_multi_expansion_tests; /* 56Cr2 only */
-    int use_hybrid_shared_secret; /* 56Cr2 only */
-    ACVP_JSON_DOMAIN_OBJ aux_secret_len; /* 56Cr2 only */
+    int perform_multi_expansion_tests; // 56Cr2 only
+    int use_hybrid_shared_secret; // 56Cr2 only
+    ACVP_JSON_DOMAIN_OBJ aux_secret_len; // 56Cr2 only
 } ACVP_KDA_HKDF_CAP;
 
 typedef struct acvp_kts_ifc_macs_t {
@@ -1698,11 +1698,11 @@ typedef struct acvp_kts_ifc_schemes_t {
     ACVP_KTS_IFC_SCHEME_TYPE scheme;
     int l;
     ACVP_PARAM_LIST *roles;
-    ACVP_KTS_IFC_MACS *macs;  /* not yet supported */
+    ACVP_KTS_IFC_MACS *macs;  // not yet supported
     ACVP_PARAM_LIST *hash;
     int null_assoc_data;
     char *assoc_data_pattern;
-    char *encodings;      /* may need to change to SL_LIST */
+    char *encodings;      // may need to change to SL_LIST
     struct acvp_kts_ifc_schemes_t *next;
 } ACVP_KTS_IFC_SCHEMES;
 
@@ -1763,19 +1763,19 @@ typedef struct acvp_slh_dsa_cap_group_t {
     struct acvp_slh_dsa_cap_group_t *next;
 } ACVP_SLH_DSA_CAP_GROUP;
 
-/* KeyGen doesn't support groups of capabilities, but SigGen/SigVer do. Force user to use group 0 for keygen. */
+// KeyGen doesn't support groups of capabilities, but SigGen/SigVer do. Force user to use group 0 for keygen.
 typedef struct acvp_slh_dsa_capability_t {
     ACVP_CIPHER cipher;
     ACVP_SLH_DSA_CAP_GROUP *cap_group;
-    ACVP_DETERMINISTIC_MODE deterministic; /* For siggen only */
-    ACVP_SIG_INTERFACE sig_interface; /* SigGen/SigVer interface */
-    ACVP_SIG_PREHASH prehash; /* SigGen/SigVer prehash support */
+    ACVP_DETERMINISTIC_MODE deterministic; // For siggen only
+    ACVP_SIG_INTERFACE sig_interface; // SigGen/SigVer interface
+    ACVP_SIG_PREHASH prehash; // SigGen/SigVer prehash support
 } ACVP_SLH_DSA_CAP;
 
 typedef struct acvp_caps_list_t {
     ACVP_CIPHER cipher;
     ACVP_CAP_TYPE cap_type;
-    int has_prereq;    /* used to indicate algorithm can have prereqs */
+    int has_prereq;    // used to indicate algorithm can have prereqs
     ACVP_PREREQ_LIST *prereq_vals;
     union {
         ACVP_SYM_CIPHER_CAP *sym_cap;
@@ -1930,7 +1930,7 @@ typedef enum acvp_waiting_status {
 } ACVP_WAITING_STATUS;
 
 typedef struct acvp_oe_dependencies_t {
-    ACVP_DEPENDENCY *deps[LIBACVP_DEPENDENCIES_MAX]; /* Array to pointers of linked dependencies */
+    ACVP_DEPENDENCY *deps[LIBACVP_DEPENDENCIES_MAX]; // Array to pointers of linked dependencies
     unsigned int count;
     ACVP_RESOURCE_STATUS status; /**< PARTIAL indicates that at least one of the linked Dependencies does not
                                       exist. INCOMPLETE indicates all of the 'url' are missing */
@@ -1952,7 +1952,7 @@ typedef struct acvp_oes_t {
 typedef struct acvp_operating_env_t {
     ACVP_VENDORS vendors; /**< Vendors */
     ACVP_MODULES modules; /**< Modules */
-    ACVP_DEPENDENCIES dependencies; /** Dependencies */
+    ACVP_DEPENDENCIES dependencies; /**< Dependencies */
     ACVP_OES oes; /**< Operating Environments */
 } ACVP_OPERATING_ENV;
 
@@ -1963,8 +1963,8 @@ typedef struct acvp_fips_t {
                            a FIPS validation was successfully loaded into memory. 1 for yes */
     int metadata_ready; /* Flag indicating whether the metadata necessary for
                            a FIPS validation has passed all stages (loaded and verified). 1 for yes */
-    ACVP_MODULE *module; /* Pointer to the Module to use for this validation */
-    ACVP_OE *oe; /* Pointer to the Operating Environment to use for this validation */
+    ACVP_MODULE *module; // Pointer to the Module to use for this validation
+    ACVP_OE *oe; // Pointer to the Operating Environment to use for this validation
 } ACVP_FIPS;
 
 /*
@@ -1974,64 +1974,64 @@ typedef struct acvp_fips_t {
  * vector processing logic.
  */
 struct acvp_ctx_t {
-    /* Global config values for the session */
+    // Global config values for the session
     ACVP_LOG_LVL log_lvl;
-    int debug;              /* Indicates if the ctx is set to run in "debug" mode for extra output */
+    int debug;              // Indicates if the ctx is set to run in "debug" mode for extra output
     char *server_name;
     char *path_segment;
     char *api_context;
     int server_port;
-    char *cacerts_file;     /* Location of CA certificates Curl will use to verify peer */
-    int verify_peer;        /* enables TLS peer verification via Curl */
-    char *tls_cert;         /* Location of PEM encoded X509 cert to use for TLS client auth */
-    char *tls_key;          /* Location of PEM encoded priv key to use for TLS client auth */
+    char *cacerts_file;     // Location of CA certificates Curl will use to verify peer
+    int verify_peer;        // enables TLS peer verification via Curl
+    char *tls_cert;         // Location of PEM encoded X509 cert to use for TLS client auth
+    char *tls_key;          // Location of PEM encoded priv key to use for TLS client auth
 
-    char *http_user_agent;   /* String containing info to be sent with HTTP requests, currently OE info */
-    char *session_file_path; /* String containing the path of the testSession file after it is created when applicable */
+    char *http_user_agent;   // String containing info to be sent with HTTP requests, currently OE info
+    char *session_file_path; // String containing the path of the testSession file after it is created when applicable
     
     ACVP_OPERATING_ENV op_env; /**< The Operating Environment resources available */
     ACVP_STRING_LIST *vsid_url_list;
     char *session_url;
     int session_passed;
 
-    char *json_filename;    /* filename of registration JSON */
-    int use_json;           /* flag to indicate a JSON file is being used for registration */
-    int is_sample;          /* flag to indicate that we are requesting sample vector responses */
-    char *vector_req_file;  /* filename to use to store vector request JSON */
-    int vector_req;         /* flag to indicate we are storing vector request JSON in a file */
-    int vector_rsp;         /* flag to indicate we are storing vector responses JSON in a file */
-    int get;                /* flag to indicate we are only getting status or metadata */
-    char *get_string;       /* string used for get request */
-    int post;               /* flag to indicate we are only posting metadata */
-    char *post_filename;    /* string used for post */
+    char *json_filename;    // filename of registration JSON
+    int use_json;           // flag to indicate a JSON file is being used for registration
+    int is_sample;          // flag to indicate that we are requesting sample vector responses
+    char *vector_req_file;  // filename to use to store vector request JSON
+    int vector_req;         // flag to indicate we are storing vector request JSON in a file
+    int vector_rsp;         // flag to indicate we are storing vector responses JSON in a file
+    int get;                // flag to indicate we are only getting status or metadata
+    char *get_string;       // string used for get request
+    int post;               // flag to indicate we are only posting metadata
+    char *post_filename;    // string used for post
     int put;                /* flag to indicate we are only putting metadata  for post test validation*/
-    char *put_filename;     /* string used for put */
-    int delete;             /* flag to indicate we are only requesting deleting a resource */
-    char *delete_string;    /* string used for delete request */
-    char *save_filename;    /* string used for file to save certain HTTP requests to */
+    char *put_filename;     // string used for put
+    int delete;             // flag to indicate we are only requesting deleting a resource
+    char *delete_string;    // string used for delete request
+    char *save_filename;    // string used for file to save certain HTTP requests to
 
-    ACVP_FIPS fips; /* Information related to a FIPS validation */
+    ACVP_FIPS fips; // Information related to a FIPS validation
 
-    /* test session data */
+    // test session data
     ACVP_VS_LIST *vs_list;
-    char *jwt_token; /* access_token provided by server for authenticating REST calls */
-    char *tmp_jwt; /* access_token provided by server for authenticating a single REST call */
-    int use_tmp_jwt; /* 1 if the tmp_jwt should be used */
-    JSON_Value *registration; /* The capability registration string sent when creating a test session */
+    char *jwt_token; // access_token provided by server for authenticating REST calls
+    char *tmp_jwt; // access_token provided by server for authenticating a single REST call
+    int use_tmp_jwt; // 1 if the tmp_jwt should be used
+    JSON_Value *registration; // The capability registration string sent when creating a test session
 
-    /* crypto module capabilities list */
+    // crypto module capabilities list
     ACVP_CAPS_LIST *caps_list;
 
-    /* application callbacks */
+    // application callbacks
     ACVP_RESULT (*test_progress_cb) (char *msg, ACVP_LOG_LVL level);
 
-    /* Two-factor authentication callback */
+    // Two-factor authentication callback
     ACVP_RESULT (*totp_cb) (char **token, int token_max);
 
-    /* Transitory values */
-    int vs_id;      /* vs_id currently being processed */
+    // Transitory values
+    int vs_id;      // vs_id currently being processed
 
-    JSON_Value *kat_resp; /* holds the current set of vector responses */
+    JSON_Value *kat_resp; // holds the current set of vector responses
 
     char *curl_buf;       /**< Data buffer for inbound Curl messages */
     int curl_read_ctr;    /**< Total number of bytes written to the curl_buf */
@@ -2173,7 +2173,7 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-/* ACVP build registration functions used internally */
+// ACVP build registration functions used internally
 ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg);
 
 ACVP_RESULT acvp_build_full_registration(ACVP_CTX *ctx, char **out, int *out_len);
@@ -2294,7 +2294,7 @@ const char *acvp_lookup_rsa_format_str(ACVP_RSA_KEY_FORMAT format);
 ACVP_RSA_PUB_EXP_MODE acvp_lookup_rsa_pub_exp_mode(const char *str);
 int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain);
 
-/* These functions are used for KDF108, but twostep uses KDF108 so we share them */
+// These functions are used for KDF108, but twostep uses KDF108 so we share them
 ACVP_KDF108_MAC_MODE_VAL read_mac_mode(const char *str);
 ACVP_KDF108_FIXED_DATA_ORDER_VAL read_ctr_location(const char *str);
 ACVP_KDF108_MODE read_mode(const char *str);

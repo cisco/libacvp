@@ -33,7 +33,7 @@
 
 #elif defined __APPLE__
 #include <TargetConditionals.h>
-//TARGET_OS_MAC is set to 1 on both iOS and Mac OS
+// TARGET_OS_MAC is set to 1 on both iOS and Mac OS
 #if TARGET_OS_MAC == 1 && TARGET_OS_IPHONE == 0 && !defined(__aarch64__)
 #include <cpuid.h>
 #endif
@@ -48,7 +48,7 @@
 #define HTTP_UNAUTH    401
 #define HTTP_BAD_REQ 400
 
-//Used for knowing which environment variable is being looked for in case of HTTP user-agent.
+// Used for knowing which environment variable is being looked for in case of HTTP user-agent.
 typedef enum acvp_user_agent_env_type {
     ACVP_USER_AGENT_OSNAME = 1,
     ACVP_USER_AGENT_OSVER,
@@ -191,7 +191,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
 
     ctx->curl_read_ctr = 0;
 
-    //Setup Curl
+    // Setup Curl
     hnd = curl_easy_init();
     if (!hnd) { ACVP_LOG_ERR("Error initializing Curl structure, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_URL, url);
@@ -208,7 +208,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
         crv = curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_HTTPHEADER, stopping"); goto end; }
     }
-    //Always verify the server
+    // Always verify the server
     crv = curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSL_VERIFYPEER, stopping"); goto end; }
     if (ctx->cacerts_file) {
@@ -217,7 +217,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
         crv = curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CERTINFO, stopping"); goto end; }
     }
-    //Mutual-auth
+    // Mutual-auth
     if (ctx->tls_cert && ctx->tls_key) {
         crv = curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLCERTTYPE, stopping"); goto end; }
@@ -229,14 +229,14 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEY, stopping"); goto end; }
     }
 
-    //To record the HTTP data received from the server, set the callback function.
+    // To record the HTTP data received from the server, set the callback function.
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEDATA, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEFUNCTION, stopping"); goto end; }
 
     if (ctx->curl_buf) {
-        /* Clear the HTTP buffer for next server response */
+        // Clear the HTTP buffer for next server response
         memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
     }
 
@@ -292,7 +292,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
 
     ctx->curl_read_ctr = 0;
 
-   //Setup Curl
+   // Setup Curl
     hnd = curl_easy_init();
     if (!hnd) { ACVP_LOG_ERR("Error initializing Curl structure, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_URL, url);
@@ -315,7 +315,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_TCP_KEEPALIVE, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSL_VERSION, stopping"); goto end; }
-    //Always verify the server
+    // Always verify the server
     crv = curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSL_VERIFYPEER, stopping"); goto end; }
     if (ctx->cacerts_file) {
@@ -324,7 +324,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
         crv = curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CERTINFO, stopping"); goto end; }
     }
-    //Mutual-auth
+    // Mutual-auth
     if (ctx->tls_cert && ctx->tls_key) {
         crv = curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLCERTTYPE, stopping"); goto end; }
@@ -342,7 +342,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEFUNCTION, stopping"); goto end; }
 
     if (ctx->curl_buf) {
-        /* Clear the HTTP buffer for next server response */
+        // Clear the HTTP buffer for next server response
         memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
     }
 
@@ -399,7 +399,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
      */
     slist = acvp_add_auth_hdr(ctx, slist);
 
-    //Setup Curl
+    // Setup Curl
     hnd = curl_easy_init();
     if (!hnd) { ACVP_LOG_ERR("Error initializing Curl structure, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_URL, url);
@@ -420,7 +420,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_TCP_KEEPALIVE, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLVERSION, stopping"); goto end; }
-    //Always verify the server
+    // Always verify the server
     crv = curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSL_VERIFYPEER, stopping"); goto end; }
     if (ctx->cacerts_file) {
@@ -429,7 +429,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
         crv = curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CERTINFO, stopping"); goto end; }
     }
-    //Mutual-auth
+    // Mutual-auth
     if (ctx->tls_cert && ctx->tls_key) {
         crv = curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLCERTTYPE, stopping"); goto end; }
@@ -440,14 +440,14 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
         crv = curl_easy_setopt(hnd, CURLOPT_SSLKEY, ctx->tls_key);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEY, stopping"); goto end; }
     }
-    //To record the HTTP data received from the server, set the callback function.
+    // To record the HTTP data received from the server, set the callback function.
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEDATA, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEFUNCTION, stopping"); goto end; }
 
     if (ctx->curl_buf) {
-        /* Clear the HTTP buffer for next server response */
+        // Clear the HTTP buffer for next server response
         memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
     }
 
@@ -508,7 +508,7 @@ static long acvp_curl_http_delete(ACVP_CTX *ctx, const char *url) {
      */
     slist = acvp_add_auth_hdr(ctx, slist);
 
-    //Setup Curl
+    // Setup Curl
     hnd = curl_easy_init();
     if (!hnd) { ACVP_LOG_ERR("Error initializing Curl structure, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_URL, url);
@@ -525,7 +525,7 @@ static long acvp_curl_http_delete(ACVP_CTX *ctx, const char *url) {
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_TCP_KEEPALIVE, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLVERSION, stopping"); goto end; }
-    //Always verify the server
+    // Always verify the server
     crv = curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSL_VERIFYPEER, stopping"); goto end; }
     if (ctx->cacerts_file) {
@@ -534,7 +534,7 @@ static long acvp_curl_http_delete(ACVP_CTX *ctx, const char *url) {
         crv = curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CERTINFO, stopping"); goto end; }
     }
-    //Mutual-auth
+    // Mutual-auth
     if (ctx->tls_cert && ctx->tls_key) {
         crv = curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLCERTTYPE, stopping"); goto end; }
@@ -545,14 +545,14 @@ static long acvp_curl_http_delete(ACVP_CTX *ctx, const char *url) {
         crv = curl_easy_setopt(hnd, CURLOPT_SSLKEY, ctx->tls_key);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEY, stopping"); goto end; }
     }
-    //To record the HTTP data received from the server, set the callback function.
+    // To record the HTTP data received from the server, set the callback function.
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEDATA, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEFUNCTION, stopping"); goto end; }
 
     if (ctx->curl_buf) {
-        /* Clear the HTTP buffer for next server response */
+        // Clear the HTTP buffer for next server response
         memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
     }
 
@@ -950,7 +950,7 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
             param = param->next;
         }
 #endif
-        /* Don't need these anymore */
+        // Don't need these anymore
         curl_easy_cleanup(curl_hnd); curl_hnd = NULL;
     }
 
@@ -969,7 +969,7 @@ end:
 #define JWT_INVALID_STR "JWT signature does not match"
 #define JWT_INVALID_STR_LEN 28
 static ACVP_RESULT inspect_http_code(ACVP_CTX *ctx, int code) {
-    ACVP_RESULT result = ACVP_TRANSPORT_FAIL; /* Generic failure */
+    ACVP_RESULT result = ACVP_TRANSPORT_FAIL; // Generic failure
     JSON_Value *root_value = NULL;
     const JSON_Object *obj = NULL;
     const JSON_Array *arr = NULL;
@@ -977,7 +977,7 @@ static ACVP_RESULT inspect_http_code(ACVP_CTX *ctx, int code) {
     char *tmp_err_str = NULL;
 
     if (code == HTTP_OK) {
-        /* 200 */
+        // 200
         return ACVP_SUCCESS;
     }
 
@@ -1081,7 +1081,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
 
 #ifdef ACVP_DEPRECATED
         if (ctx->post_size_constraint && resp_len > ctx->post_size_constraint) {
-            /* Determine if this POST body goes over the "constraint" */
+            // Determine if this POST body goes over the "constraint"
             large_submission = 1;
         }
 
@@ -1097,7 +1097,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
         } else {
 #endif
             rc = acvp_curl_http_post(ctx, url, resp, resp_len);
-            //Check for code 400, which means we are reuploading a resp and must use PUT instead
+            // Check for code 400, which means we are reuploading a resp and must use PUT instead
             result = inspect_http_code(ctx, rc);
             if (result == ACVP_UNSUPPORTED_OP) {
                 rc = acvp_curl_http_put(ctx, url, resp, resp_len);
@@ -1114,7 +1114,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* Peek at the HTTP code */
+    // Peek at the HTTP code
     result = inspect_http_code(ctx, rc);
 
     if (result != ACVP_SUCCESS) {
@@ -1136,7 +1136,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                 ACVP_LOG_STATUS("Refresh successful, attempting to continue...");
             }
 
-            /* Try action again after the refresh */
+            // Try action again after the refresh
             switch(action) {
             case ACVP_NET_GET:
             case ACVP_NET_GET_VS:
@@ -1162,7 +1162,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                 } else {
 #endif
                     rc = acvp_curl_http_post(ctx, url, resp, resp_len);
-                    //Check for code 400, which means we are reuploading a resp and must use PUT instead
+                    // Check for code 400, which means we are reuploading a resp and must use PUT instead
                     result = inspect_http_code(ctx, rc);
                     if (result == ACVP_UNSUPPORTED_OP) {
                         rc = acvp_curl_http_put(ctx, url, resp, resp_len);
@@ -1193,7 +1193,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
             goto end;
         }
 
-        /* Generic error */
+        // Generic error
         goto end;
     }
 
@@ -1312,7 +1312,7 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
         break;
 
     case ACVP_NET_POST_LOGIN:
-        /* Clear jwt if logging in */
+        // Clear jwt if logging in
         if (ctx->jwt_token) free(ctx->jwt_token);
         ctx->jwt_token = NULL;
         check_data = 1;
@@ -1344,7 +1344,7 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
     rv = execute_network_action(ctx, generic_action, url,
                                 data, data_len, &curl_code);
 
-    /* Log to the console */
+    // Log to the console
     log_network_status(ctx, action, curl_code, url);
 
     return rv;
@@ -1387,7 +1387,7 @@ static void acvp_http_user_agent_check_env_for_var(ACVP_CTX *ctx, char *var_stri
         return;
     }
 
-    //Check presence and length of variable's value, concatenate if valid, warn and ignore if not
+    // Check presence and length of variable's value, concatenate if valid, warn and ignore if not
     char *envVal = getenv(var);
     if (envVal) {
         if (strnlen_s(envVal, maxLength + 1) > maxLength) {
@@ -1443,7 +1443,7 @@ static void acvp_http_user_agent_string_clean(char *str) {
     if (len <= 0) {
         return;
     }
-    //remove any leading or trailing whitespace
+    // remove any leading or trailing whitespace
     strremovews_s(str, len);
     len = strnlen_s(str, ACVP_USER_AGENT_STR_MAX);
 
@@ -1453,7 +1453,7 @@ static void acvp_http_user_agent_string_clean(char *str) {
         }
     }
 }
-#endif //for ifndef ACVP_OFFLINE
+#endif // for ifndef ACVP_OFFLINE
 
 void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
 #ifdef ACVP_OFFLINE
@@ -1488,20 +1488,20 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
 
 #if defined __linux__ || defined __APPLE__
 
-    //collects basic OS/hardware info
+    // collects basic OS/hardware info
     struct utsname info;
     if (uname(&info) != 0) {
         acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
         acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
         acvp_http_user_agent_check_env_for_var(ctx, arch, ACVP_USER_AGENT_ARCH);
     } else {
-        //usually Linux/Darwin
+        // usually Linux/Darwin
         strncpy_s(osname, ACVP_USER_AGENT_OSNAME_STR_MAX + 1, info.sysname, ACVP_USER_AGENT_OSNAME_STR_MAX);
 
-        //usually linux kernel version/darwin version
+        // usually linux kernel version/darwin version
         strncpy_s(osver, ACVP_USER_AGENT_OSVER_STR_MAX + 1, info.release, ACVP_USER_AGENT_OSVER_STR_MAX);
 
-        //hardware architecture
+        // hardware architecture
         strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, info.machine, ACVP_USER_AGENT_ARCH_STR_MAX);
     }
 
@@ -1532,7 +1532,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
     acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
 #endif
 
-    //gets compiler version, or checks environment for it
+    // gets compiler version, or checks environment for it
     acvp_http_user_agent_check_compiler_ver(comp);
 
 #elif defined WIN32
@@ -1544,13 +1544,13 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
         acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
         acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
     } else {
-        //product name string, containing general version of windows
+        // product name string, containing general version of windows
         DWORD bufferLength;
         if (RegQueryValueExW(key, L"ProductName", NULL, NULL, NULL, &bufferLength) != ERROR_SUCCESS) {
             ACVP_LOG_WARN("Unable to access Windows OS name, checking environment or omitting from HTTP user-agent...\n");
             acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
         } else {
-            //get string - registry strings not guaranteed to be null terminated
+            // get string - registry strings not guaranteed to be null terminated
             wchar_t *productNameBuffer = calloc(bufferLength + 1, sizeof(wchar_t));
             if (!productNameBuffer) {
                 ACVP_LOG_ERR("Unable to allocate memory while generating windows OS name, skipping...\n");
@@ -1559,7 +1559,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
                 free(productNameBuffer);
                 acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
             } else {
-                //Windows uses UTF16, and everyone else uses UTF8
+                // Windows uses UTF16, and everyone else uses UTF8
                 char *utf8String = calloc(bufferLength + 1, sizeof(char));
                 if (!utf8String || !WideCharToMultiByte(CP_UTF8, 0, productNameBuffer, -1, utf8String, bufferLength + 1, NULL, NULL)) {
                     ACVP_LOG_ERR("Error converting Windows version to UTF8, checking environment or omitting from HTTP user-agent...\n");
@@ -1573,12 +1573,12 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
 
         }
 
-        //get the "BuildLab" string, which contains more specific windows build information
+        // get the "BuildLab" string, which contains more specific windows build information
         if (RegQueryValueExW(key, L"BuildLab", NULL, NULL, NULL, &bufferLength) != ERROR_SUCCESS) {
             ACVP_LOG_WARN("Unable to access Windows version, checking environment or omitting from HTTP user-agent...\n");
             acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
         } else {
-            //get string - registry strings not guaranteed to be null terminated
+            // get string - registry strings not guaranteed to be null terminated
             wchar_t *buildLabBuffer = calloc(bufferLength + 1, sizeof(wchar_t));
             if (!buildLabBuffer) {
                 ACVP_LOG_ERR("Unable to allocate memory while generating windows OS version, skipping...\n");
@@ -1587,7 +1587,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
                 acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
                 free(buildLabBuffer);
             } else {
-                //Windows uses UTF16, and everyone else uses UTF8
+                // Windows uses UTF16, and everyone else uses UTF8
                 char *utf8String = calloc(bufferLength + 1, sizeof(char));
                 if (!utf8String || !WideCharToMultiByte(CP_UTF8, 0, buildLabBuffer, -1, utf8String, bufferLength + 1, NULL, NULL)) {
                     ACVP_LOG_ERR("Error converting Windows build info to UTF8, checking environment or omitting from HTTP user-agent...\n");
@@ -1612,7 +1612,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
         switch(sysInfo.wProcessorArchitecture) {
         case PROCESSOR_ARCHITECTURE_AMD64:
             strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "x86_64", ACVP_USER_AGENT_ARCH_STR_MAX);
-             //get CPU model string
+             // get CPU model string
             __cpuid(brandString_resp, 0x80000002);
             memcpy_s(brandString, 16, &brandString_resp, 16);
             __cpuid(brandString_resp, 0x80000003);
@@ -1623,7 +1623,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
             break;
         case PROCESSOR_ARCHITECTURE_INTEL:
             strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "x86", ACVP_USER_AGENT_ARCH_STR_MAX);
-            //get CPU model string
+            // get CPU model string
             __cpuid(brandString_resp, 0x80000002);
             memcpy_s(brandString, 16, &brandString_resp, 16);
             __cpuid(brandString_resp, 0x80000003);
@@ -1655,7 +1655,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
         }
     }
 
-    //gets compiler version
+    // gets compiler version
     acvp_http_user_agent_check_compiler_ver(comp);
 
 #else

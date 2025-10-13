@@ -56,19 +56,19 @@ static void shiftin(unsigned char *dst, int dst_max, unsigned char *src, int nbi
     int n = 0, move_bytes = 0, copy_bytes = 0;
     unsigned char *dst_pos = NULL, *src_pos = NULL;
 
-    /* move the bytes... */
+    // move the bytes...
     dst_pos = dst;
     src_pos = dst + nbits / 8;
     move_bytes = (3 * 8) - (nbits / 8);
     memmove_s(dst_pos, dst_max, src_pos, move_bytes);
 
-    /* append new data */
+    // append new data
     dst_pos = dst + move_bytes;
     src_pos = src;
     copy_bytes = (nbits + 7) / 8;
     memcpy_s(dst_pos, dst_max, src_pos, copy_bytes);
 
-    /* left shift the bits */
+    // left shift the bits
     if (nbits % 8) {
         for (n = 0; n < 3 * 8; ++n) {
             dst[n] = (dst[n] << (nbits % 8)) | (dst[n + 1] >> (8 - nbits % 8));
@@ -390,10 +390,10 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
                                    JSON_Array *res_array) {
     int i, j, n, bit_len;
     ACVP_RESULT rv;
-    JSON_Value *r_tval = NULL;  /* Response testval */
-    JSON_Object *r_tobj = NULL; /* Response testobj */
+    JSON_Value *r_tval = NULL;  // Response testval
+    JSON_Object *r_tobj = NULL; // Response testobj
     char *tmp = NULL;
-#define NK_LEN 32 /* Longest key + 8 */
+#define NK_LEN 32 // Longest key + 8
     unsigned char nk[NK_LEN];
     ACVP_SUB_TDES alg;
 
@@ -459,8 +459,8 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
             if (j == 0) {
                 memcpy_s(old_iv, OLD_IV_LEN, stc->iv, stc->iv_len);
             }
-            stc->mct_index = j;    /* indicates init vs. update */
-            /* Process the current DES encrypt test vector... */
+            stc->mct_index = j;    // indicates init vs. update
+            // Process the current DES encrypt test vector...
             if ((cap->crypto_handler)(tc)) {
                 ACVP_LOG_ERR("Crypto module failed the operation");
                 free(tmp);
@@ -501,7 +501,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
         }
 
         acvp_des_set_odd_parity(stc->key);
-        memcpy_s(stc->iv, ACVP_SYM_IV_BYTE_MAX, stc->iv_ret_after, 8); /* only on encrypt */
+        memcpy_s(stc->iv, ACVP_SYM_IV_BYTE_MAX, stc->iv_ret_after, 8); // only on encrypt
 
         if (stc->cipher == ACVP_TDES_OFB) {
             if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
@@ -557,7 +557,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
             }
             json_object_set_string(r_tobj, "pt", tmp);
         }
-        /* Append the test response value to array */
+        // Append the test response value to array
         json_array_append_value(res_array, r_tval);
     }
 
@@ -632,7 +632,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Object *testobj = NULL;
     JSON_Array *groups;
     JSON_Array *tests;
-    JSON_Array *res_tarr = NULL; /* Response resultsArray */
+    JSON_Array *res_tarr = NULL; // Response resultsArray
 
     JSON_Value *reg_arry_val = NULL;
     JSON_Object *reg_obj = NULL;
@@ -642,9 +642,9 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     int j, t_cnt;
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_SYM_CIPHER_TC stc;
     ACVP_TEST_CASE tc;
@@ -657,7 +657,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result = NULL;
     const char *test_type_str = NULL, *dir_str = NULL;
     unsigned int tc_id = 0, keylen = 0, keyingOption = 0;
-    unsigned int ovrflw_ctr = 0, incr_ctr = 0;  /* assume false */
+    unsigned int ovrflw_ctr = 0, incr_ctr = 0;  // assume false
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -774,7 +774,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         // keyLen will always be the same for TDES
         keylen = ACVP_TDES_KEY_BIT_LEN;
 
-        //get keyingOption if it exists. Otherwise it remains set to 0, which means not applicable.
+        // get keyingOption if it exists. Otherwise it remains set to 0, which means not applicable.
         if (json_object_get_value(groupobj, "keyingOption")) {
             keyingOption = json_object_get_number(groupobj, "keyingOption");
             if (keyingOption > 2 || keyingOption < 1) {
@@ -975,7 +975,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             // Key has been copied, we can free here
             free(key);
 
-            /* If Monte Carlo start that here */
+            // If Monte Carlo start that here
             if (stc.test_type == ACVP_SYM_TEST_TYPE_MCT) {
                 json_object_set_value(r_tobj, "resultsArray", json_value_init_array());
                 res_tarr = json_object_get_array(r_tobj, "resultsArray");
@@ -988,7 +988,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
             } else {
-                /* Process the current DES encrypt test vector... */
+                // Process the current DES encrypt test vector...
                 int t_rv = (cap->crypto_handler)(&tc);
                 if (t_rv) {
                     ACVP_LOG_ERR("Crypto module failed the operation");
@@ -1014,7 +1014,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             acvp_des_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

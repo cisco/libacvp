@@ -93,7 +93,7 @@ static ACVP_RESULT acvp_kts_ifc_init_tc(ACVP_CTX *ctx,
     stc->pt = calloc(1, ACVP_KTS_IFC_BYTE_MAX);
     if (!stc->pt) { return ACVP_MALLOC_FAIL; }
 
-    /* Both test types responder needs these */
+    // Both test types responder needs these
     if (stc->kts_role == ACVP_KTS_IFC_RESPONDER) {
         rv = acvp_hexstr_to_bin(ct, stc->ct, ACVP_KTS_IFC_BYTE_MAX, &(stc->ct_len));
         if (rv != ACVP_SUCCESS) {
@@ -154,7 +154,7 @@ static ACVP_RESULT acvp_kts_ifc_init_tc(ACVP_CTX *ctx,
         }
     }
 
-    /* Both test types both roles needs these */
+    // Both test types both roles needs these
     stc->n = calloc(1, ACVP_KTS_IFC_BYTE_MAX);
     if (!stc->n) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(n, stc->n, ACVP_KTS_IFC_BYTE_MAX, &(stc->nlen));
@@ -237,8 +237,8 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
     JSON_Array *tests, *r_tarr = NULL;
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     const char *p = NULL, *q = NULL, *n = NULL, *d = NULL, *e = NULL, *dmp1 = NULL, *dmq1 = NULL, *iqmp = NULL;
     const char *kts_role = NULL, *scheme = NULL, *hash = NULL;
     const char *ct = NULL;
@@ -593,7 +593,7 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
                 goto err;
             }
 
-            /* Process the current KAT test vector... */
+            // Process the current KAT test vector...
             if ((cap->crypto_handler)(tc)) {
                 acvp_kts_ifc_release_tc(stc);
                 ACVP_LOG_ERR("Crypto module failed the operation");
@@ -618,7 +618,7 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
              */
             acvp_kts_ifc_release_tc(stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);
@@ -635,7 +635,7 @@ err:
 ACVP_RESULT acvp_kts_ifc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;

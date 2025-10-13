@@ -67,7 +67,7 @@ end:
 static int enable_aes(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    /* Enable AES_GCM */
+    // Enable AES_GCM
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, &app_aes_handler_aead);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_GCM, ACVP_PREREQ_AES, value);
@@ -110,7 +110,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_821);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable AES-ECB 128,192,256 bit key */
+    // Enable AES-ECB 128,192,256 bit key
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_ECB, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
@@ -128,7 +128,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable AES-CBC 128 bit key */
+    // Enable AES-CBC 128 bit key
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
@@ -146,7 +146,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable AES-CBC-CS1, CS2, and CS3 */
+    // Enable AES-CBC-CS1, CS2, and CS3
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS1, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -186,7 +186,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_DOMAIN_PTLEN, 136, 512, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable AES-CFB1 128,192,256 bit key */
+    // Enable AES-CFB1 128,192,256 bit key
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB1, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
@@ -204,7 +204,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable AES-CFB8 128,192,256 bit key */
+    // Enable AES-CFB8 128,192,256 bit key
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB8, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
@@ -222,7 +222,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable AES-CFB128 128,192,256 bit key */
+    // Enable AES-CFB128 128,192,256 bit key
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB128, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
@@ -240,7 +240,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable AES-OFB 128, 192, 256 bit key */
+    // Enable AES-OFB 128, 192, 256 bit key
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_OFB, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
@@ -258,7 +258,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Register AES CCM capabilities */
+    // Register AES CCM capabilities
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CCM, &app_aes_handler_aead);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_CCM, ACVP_PREREQ_AES, value);
@@ -298,7 +298,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_DOMAIN_AADLEN, 0, 524288, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* AES-KW */
+    // AES-KW
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_KW, &app_aes_keywrap_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -338,7 +338,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_DOMAIN_PTLEN, 8, 524288, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable AES-XTS 128 and 256 bit key */
+    // Enable AES-XTS 128 and 256 bit key
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_XTS, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
@@ -353,14 +353,14 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 65536, 128);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable AES-CTR 128, 192, 256 bit key */
+    // Enable AES-CTR 128, 192, 256 bit key
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CTR, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     CHECK_ENABLE_CAP_RV(rv);
 
-    //CTR_INCR and CTR_OVRFLW are ignored by server if PERFORM_CTR is false - can remove those calls if so
+    // CTR_INCR and CTR_OVRFLW are ignored by server if PERFORM_CTR is false - can remove those calls if so
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PARM_PERFORM_CTR, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PARM_CTR_INCR, 1);
@@ -377,7 +377,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_DOMAIN_PTLEN, 8, 128, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
-    //GMAC
+    // GMAC
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GMAC, &app_aes_handler_gmac);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_GMAC, ACVP_PREREQ_AES, value);
@@ -425,7 +425,7 @@ end:
 static int enable_tdes(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    /* Enable 3DES-ECB */
+    // Enable 3DES-ECB
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_ECB, &app_des_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -433,7 +433,7 @@ static int enable_tdes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable 3DES-CBC */
+    // Enable 3DES-CBC
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &app_des_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -449,7 +449,7 @@ static int enable_hash(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     int i = 0;
 
-    /* Enable SHA-1 and SHA-2 */
+    // Enable SHA-1 and SHA-2
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN, 0, 65536, 8);
@@ -543,7 +543,7 @@ static int enable_hash(ACVP_CTX *ctx) {
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHAKE_256, ACVP_HASH_OUT_LENGTH, 16, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Run large data tests for SHA3 for 3.0.8 and greater */
+    // Run large data tests for SHA3 for 3.0.8 and greater
     if (fips_ver >= OPENSSL_FIPS_308) {
         for (i = 1; i <= max_ldt_size; i *= 2) {
             rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_LARGE_DATA, i);
@@ -563,7 +563,7 @@ end:
 static int enable_cmac(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    /* Enable CMAC */
+    // Enable CMAC
     rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &app_cmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_domain(ctx, ACVP_CMAC_AES, ACVP_CMAC_MSGLEN, 0, 524288, 8);
@@ -591,7 +591,7 @@ end:
 static int enable_kmac(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    /* Enable KMAC */
+    // Enable KMAC
     rv = acvp_cap_kmac_enable(ctx, ACVP_KMAC_128, &app_kmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_128, ACVP_KMAC_MSGLEN, 0, 65536, 8);
@@ -602,7 +602,7 @@ static int enable_kmac(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kmac_set_parm(ctx, ACVP_KMAC_128, ACVP_KMAC_XOF_SUPPORT, ACVP_XOF_SUPPORT_BOTH);
     CHECK_ENABLE_CAP_RV(rv);
-    /* OpenSSL 3.X supports hex customization strings, but they are not on the FIPS cert, so leaving disabled */
+    // OpenSSL 3.X supports hex customization strings, but they are not on the FIPS cert, so leaving disabled
     rv = acvp_cap_kmac_set_parm(ctx, ACVP_KMAC_128, ACVP_KMAC_HEX_CUSTOM_SUPPORT, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
@@ -616,7 +616,7 @@ static int enable_kmac(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kmac_set_parm(ctx, ACVP_KMAC_256, ACVP_KMAC_XOF_SUPPORT, ACVP_XOF_SUPPORT_BOTH);
     CHECK_ENABLE_CAP_RV(rv);
-    /* OpenSSL 3.X supports hex customization strings, but they are not on the FIPS cert, so leaving disabled */
+    // OpenSSL 3.X supports hex customization strings, but they are not on the FIPS cert, so leaving disabled
     rv = acvp_cap_kmac_set_parm(ctx, ACVP_KMAC_256, ACVP_KMAC_HEX_CUSTOM_SUPPORT, 0);
     CHECK_ENABLE_CAP_RV(rv);
 end:
@@ -755,7 +755,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, value);
     CHECK_ENABLE_CAP_RV(rv);
 
-    //Bit flags for kdf135_ssh sha capabilities
+    // Bit flags for kdf135_ssh sha capabilities
     flags = ACVP_SHA1 | ACVP_SHA224 | ACVP_SHA256
             | ACVP_SHA384 | ACVP_SHA512;
 
@@ -836,7 +836,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     rv = acvp_cap_kdf135_x963_set_parm(ctx, ACVP_KDF_X963_SHARED_INFO_LEN, 1024);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* KDF108 Counter Mode */
+    // KDF108 Counter Mode
     rv = acvp_cap_kdf108_enable(ctx, &app_kdf108_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF108, ACVP_PREREQ_HMAC, value);
@@ -876,7 +876,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_BEFORE);
     CHECK_ENABLE_CAP_RV(rv);
-    /* KDF108 Feedback Mode */
+    // KDF108 Feedback Mode
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_SUPPORTED_LEN, 8);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_SUPPORTED_LEN, 72);
@@ -915,7 +915,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_BEFORE);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* PBKDF */
+    // PBKDF
     rv = acvp_cap_pbkdf_enable(ctx, &app_pbkdf_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_PBKDF, ACVP_PREREQ_HMAC, value);
@@ -967,7 +967,7 @@ end:
 static int enable_kas_ecc(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    /* Enable KAS-ECC.... */
+    // Enable KAS-ECC....
     rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_CDH, &app_kas_ecc_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_PREREQ_ECDSA, value);
@@ -1337,7 +1337,7 @@ static int enable_kda(ACVP_CTX *ctx) {
     rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_SALT, ACVP_KDA_MAC_SALT_METHOD_RANDOM, ACVP_KDF108_MODE_FEEDBACK, NULL);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Most parameters are set in groups based on the KDF108 mode */
+    // Most parameters are set in groups based on the KDF108 mode
     rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA1, ACVP_KDF108_MODE_FEEDBACK, NULL);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA224, ACVP_KDF108_MODE_FEEDBACK, NULL);
@@ -1379,7 +1379,7 @@ end:
 static int enable_dsa(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-        /* Enable DSA.... */
+        // Enable DSA....
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGGEN, &app_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGGEN, ACVP_PREREQ_SHA, value);
@@ -1614,7 +1614,7 @@ static int enable_rsa(ACVP_CTX *ctx) {
     expo_str = BN_bn2hex(expo);
     BN_free(expo);
 
-    /* Enable RSA keygen... */
+    // Enable RSA keygen...
     rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &app_rsa_keygen_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_SHA, value);
@@ -1639,7 +1639,7 @@ static int enable_rsa(ACVP_CTX *ctx) {
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT, ACVP_RSA_KEY_FORMAT_STANDARD);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable siggen */
+    // Enable siggen
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &app_rsa_sig_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGGEN, ACVP_PREREQ_SHA, value);
@@ -1735,7 +1735,7 @@ static int enable_rsa(ACVP_CTX *ctx) {
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512_256, 32);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable sigver */
+    // Enable sigver
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &app_rsa_sig_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_SHA, value);
@@ -1889,7 +1889,7 @@ static int enable_rsa(ACVP_CTX *ctx) {
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 4096, ACVP_SHA512_256, 32);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable Signature Primitive */
+    // Enable Signature Primitive
     rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_SIGPRIM, &app_rsa_sigprim_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGPRIM, ACVP_PREREQ_SHA, value);
@@ -1915,7 +1915,7 @@ end:
 static int enable_ecdsa(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    /* Enable ECDSA keyGen... */
+    // Enable ECDSA keyGen...
     rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYGEN, &app_ecdsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_KEYGEN, ACVP_PREREQ_SHA, value);
@@ -1951,7 +1951,7 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_SECRET_GEN, ACVP_ECDSA_SECRET_GEN_TEST_CAND);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable ECDSA keyVer... */
+    // Enable ECDSA keyVer...
     rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYVER, &app_ecdsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_KEYVER, ACVP_PREREQ_SHA, value);
@@ -1991,7 +1991,7 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P521);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable ECDSA sigGen... */
+    // Enable ECDSA sigGen...
     rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_SIGGEN, &app_ecdsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_SIGGEN, ACVP_PREREQ_SHA, value);
@@ -2039,7 +2039,7 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Enable ECDSA sigVer... */
+    // Enable ECDSA sigVer...
     rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_SIGVER, &app_ecdsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_SIGVER, ACVP_PREREQ_SHA, value);
@@ -2101,7 +2101,7 @@ end:
 static int enable_drbg(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    /* Hash DRBG */
+    // Hash DRBG
     rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
@@ -2190,7 +2190,7 @@ static int enable_drbg(ACVP_CTX *ctx) {
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256, 0, ACVP_DRBG_RET_BITS_LEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* HMAC DRBG */
+    // HMAC DRBG
     rv = acvp_cap_drbg_enable(ctx, ACVP_HMACDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, ACVP_PREREQ_SHA, value);
@@ -2202,7 +2202,7 @@ static int enable_drbg(ACVP_CTX *ctx) {
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_RESEED_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Group number for these should be 0 */
+    // Group number for these should be 0
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_RET_BITS_LEN, 160);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_ENTROPY_LEN, 160, 32, 256);
@@ -2280,13 +2280,13 @@ static int enable_drbg(ACVP_CTX *ctx) {
     rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* CTR DRBG */
+    // CTR DRBG
     rv = acvp_cap_drbg_enable(ctx, ACVP_CTRDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_CTRDRBG, ACVP_PREREQ_AES, value);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Group number for these should be 0 */
+    // Group number for these should be 0
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0, ACVP_DRBG_DER_FUNC_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0, ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
@@ -2381,7 +2381,7 @@ end:
 static int enable_safe_primes(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    /* Register Safe Prime Key Generation testing */
+    // Register Safe Prime Key Generation testing
     rv = acvp_cap_safe_primes_enable(ctx, ACVP_SAFE_PRIMES_KEYGEN, &app_safe_primes_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_SAFE_PRIMES_KEYGEN, ACVP_PREREQ_DRBG, value);
@@ -2399,7 +2399,7 @@ static int enable_safe_primes(ACVP_CTX *ctx) {
     rv = acvp_cap_safe_primes_set_parm(ctx, ACVP_SAFE_PRIMES_KEYGEN, ACVP_SAFE_PRIMES_GENMETH, ACVP_SAFE_PRIMES_FFDHE8192);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /* Register Safe Prime Key Verify testing */
+    // Register Safe Prime Key Verify testing
     rv = acvp_cap_safe_primes_enable(ctx, ACVP_SAFE_PRIMES_KEYVER, &app_safe_primes_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_SAFE_PRIMES_KEYVER, ACVP_PREREQ_DRBG, value);

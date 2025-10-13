@@ -53,5 +53,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif /* __SAFE_LIB_H__ */
+#endif // __SAFE_LIB_H__
 

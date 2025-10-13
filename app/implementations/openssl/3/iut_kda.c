@@ -43,10 +43,10 @@ static unsigned char *fixed_info_gen_concat(ACVP_KDA_PATTERN_CANDIDATE *fixedInf
     unsigned char *fixedInfo = NULL;
     int totalLen = 0, i = 0, tmp = 0, lBits = 0, rv = 1;
 
-    //calculate the size of the buffer we need for fixed info, +4 incase L is included
+    // calculate the size of the buffer we need for fixed info, +4 incase L is included
     totalLen = literalLen + uPartyIdLen + uEphemeralLen + vPartyIdLen
                     + vEphemeralLen + algIdLen + labelLen + contextLen + tLen;
-    //add 4 bytes for the int of lengths is used
+    // add 4 bytes for the int of lengths is used
     for (i = 0; i < ACVP_KDA_PATTERN_MAX; i++) {
         if (fixedInfoPattern[i] == ACVP_KDA_PATTERN_L) {
             totalLen += 4;
