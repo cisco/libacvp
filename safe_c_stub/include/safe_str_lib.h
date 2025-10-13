@@ -37,17 +37,13 @@
 #include <stdint.h>
 #include "safe_lib_errno.h"
 
-/**
- * The shortest string is a null string!! 
- */
+// The shortest string is a null string!! 
 #ifndef RSIZE_MIN_STR 
 #define RSIZE_MIN_STR      ( 1 )
 #endif
 
 
-/**
- * The maximum sring length
- */
+// The maximum string length
 #ifndef RSIZE_MAX_STR 
 #define RSIZE_MAX_STR     RSIZE_MAX
 #endif
@@ -82,16 +78,16 @@ extern errno_t strstr_s(char *dest, rsize_t dmax, const char *src, rsize_t slen,
 // string tokenizer
 extern char *strtok_s(char *dest, rsize_t *dmax, const char *src, char **ptr);
 
-/* get span until character in string*/
+// get span until character in string
 extern errno_t strcspn_s(const char *dest, rsize_t dmax, const char *src,  rsize_t slen, rsize_t *count);
 
-/* get span of character set in string*/
+// get span of character set in string
 extern errno_t strspn_s(const char *dest, rsize_t dmax, const char *src,  rsize_t slen, rsize_t *count);
 
-/* determine if character is a digit*/
+// determine if character is a digit
 extern int strisdigit_s(const char *dest, rsize_t dmax);
 
-/* remove leading and trailing whitespace*/
+// remove leading and trailing whitespace
 extern errno_t strremovews_s(char *s, rsize_t smax);
 
 #endif // __SAFE_STR_LIB_H__
