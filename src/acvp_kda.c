@@ -1245,7 +1245,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                     }
                     uparty = json_object_get_string(upartyobj, "partyId");
                     if (!uparty) {
-                        ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPartyU");
+                        ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPartyU'");
                         rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
@@ -1261,7 +1261,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                     }
                     vparty = json_object_get_string(vpartyobj, "partyId");
                     if (!vparty) {
-                        ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPartyU");
+                        ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPartyU'");
                         rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
