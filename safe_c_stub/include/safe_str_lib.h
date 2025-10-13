@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------
  * safe_str_lib.h - Replacements for Safe C Library String Functions
- * 
+ *
  * Contains code derived from https://sourceforge.net/projects/safeclib/
  * license reproduced below
- * 
+ *
  * October 2008, Bo Berry
  *
  * Copyright (c) 2008-2011 by Cisco Systems, Inc
@@ -37,14 +37,14 @@
 #include <stdint.h>
 #include "safe_lib_errno.h"
 
-// The shortest string is a null string!! 
-#ifndef RSIZE_MIN_STR 
+// The shortest string is a null string!!
+#ifndef RSIZE_MIN_STR
 #define RSIZE_MIN_STR      ( 1 )
 #endif
 
 
 // The maximum string length
-#ifndef RSIZE_MAX_STR 
+#ifndef RSIZE_MAX_STR
 #define RSIZE_MAX_STR     RSIZE_MAX
 #endif
 
@@ -72,7 +72,7 @@ extern errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t sle
 // string length
 extern rsize_t strnlen_s(const char *s, rsize_t smax);
 
-// find a substring 
+// find a substring
 extern errno_t strstr_s(char *dest, rsize_t dmax, const char *src, rsize_t slen, char **substring);
 
 // string tokenizer

@@ -112,7 +112,7 @@ typedef enum acvp_result {
                                   from server is not yet ready to be accessed */
     ACVP_INVALID_ARG,        //!< A provided argument or parameter is not valid for the given operation
     ACVP_MISSING_ARG,        //!< A required argument or parameter is not provided/null/0
-    ACVP_CRYPTO_MODULE_FAIL, /**< A non-zero return code was provided by the application callback 
+    ACVP_CRYPTO_MODULE_FAIL, /**< A non-zero return code was provided by the application callback
                                   for test case processing; this should indicate that the application
                                   failed to process the test case */
     ACVP_NO_CAP,             /**< A registered capability object for the given algorithm does not exist. This
@@ -1292,7 +1292,7 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int mct_index;  //!< used to identify init vs. update
     unsigned int incr_ctr;
     unsigned int ovrflw_ctr;
-    unsigned int keyingOption; /**< For some TDES, indicates keyingOption. 
+    unsigned int keyingOption; /**< For some TDES, indicates keyingOption.
                                  * 1 is 3 key TDES. 2 is 2-key TDES, supported
                                  * for decrypt only. 0 indicates is not applicable */
     unsigned int data_unit_len; /**< for AES-XTS rev 2.0, the amount of data that can be
@@ -1314,7 +1314,7 @@ typedef struct acvp_hash_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;           //!< Test case id
     ACVP_HASH_TESTTYPE test_type; //!< KAT, MCT, VOT, or LDT
-    ACVP_HASH_EXPANSION_METHOD exp_method;  //!< LDT Expansion Technique 
+    ACVP_HASH_EXPANSION_METHOD exp_method;  //!< LDT Expansion Technique
     ACVP_HASH_MCT_VERSION mct_version; //!< MCT version, standard, alternate, or 0 for N/A
 
     unsigned char *msg; //!< Message input
@@ -3066,7 +3066,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
  *        server.
  *
  *        This function should be called to enable crypto capabilities for symmetric ciphers that
- *        will be tested by the ACVP server. This includes AES and 3DES.  
+ *        will be tested by the ACVP server. This includes AES and 3DES.
  *
  *        This function may be called multiple times to specify more than one crypto parameter
  *        value for the cipher. The ACVP_CIPHER value passed to this function should already have
@@ -3768,10 +3768,10 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx,
  *
  * @return ACVP_RESULT
  */
-ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, 
+ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx,
                                           ACVP_KDA_PARM param,
-                                          int value, 
-                                          int kdf_mode, 
+                                          int value,
+                                          int kdf_mode,
                                           const char* string);
 
 /**
@@ -4751,14 +4751,14 @@ ACVP_RESULT acvp_cap_lms_set_parm(ACVP_CTX *ctx,
 
 /**
  * @brief acvp_cap_lms_set_mode_compatability pair allows an application to specify specific compatible pairs
- * of LMS and LMOTS modes, in the case where a IuT does not support an LMS or LMOTS mode universally. 
+ * of LMS and LMOTS modes, in the case where a IuT does not support an LMS or LMOTS mode universally.
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param lms_mode ACVP_LMS_MODE for the LMS mode of the pair
  * @param lmots_mode ACVP_LMOTS_MODE for the LMOTS mode of the pair
  *
- * @return ACVP_RESULT 
+ * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_cap_lms_set_mode_compatability_pair(ACVP_CTX *ctx,
                                                      ACVP_CIPHER cipher,

@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------
  * safe_mem_lib.h - Replacements for Safe C Library Memory Functions
- * 
+ *
  * Contains code derived from https://sourceforge.net/projects/safeclib/
  * license reproduced below
- * 
+ *
  * October 2008, Bo Berry
  *
  * Copyright (c) 2008-2011 by Cisco Systems, Inc
@@ -48,15 +48,15 @@
 #endif
 
 /**
- *  Maximum memory sizes definitions  based on types 
+ *  Maximum memory sizes definitions  based on types
  */
 #ifndef RSIZE_MAX_MEM
 #define RSIZE_MAX_MEM       RSIZE_MAX
 #endif
-#ifndef RSIZE_MAX_MEM16 
+#ifndef RSIZE_MAX_MEM16
 #define RSIZE_MAX_MEM16    ( RSIZE_MAX_MEM/2 )
 #endif
-#ifndef RSIZE_MAX_MEM32 
+#ifndef RSIZE_MAX_MEM32
 #define RSIZE_MAX_MEM32    ( RSIZE_MAX_MEM/4 )
 #endif
 

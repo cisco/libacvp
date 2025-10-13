@@ -130,7 +130,7 @@ struct http_parser {
   unsigned char method;    // requests only
 
   /*
-   1 = Upgrade header was present and the parser has exited because of that.
+   * 1 = Upgrade header was present and the parser has exited because of that.
    * 0 = No upgrade header present.
    * Should be checked when http_parser_execute() returns in addition to
    * error checking.

@@ -781,7 +781,7 @@
 /*
  * END PBKDF
  */
- 
+
  /**
  * Accepted length ranges for TLS 1.2 KDF
  */
@@ -1007,7 +1007,7 @@
 #define ACVP_PATH_SEGMENT_DEFAULT ""
 #define ACVP_JSON_FILENAME_MAX 1024
 
-/* 
+/*
  * This should NOT be made longer than ACVP_JSON_FILENAME_MAX - 15
  * (accounting for _ character, ".json", and 9 digits for testSession ID)
  */
@@ -1986,7 +1986,7 @@ struct acvp_ctx_t {
 
     char *http_user_agent;   // String containing info to be sent with HTTP requests, currently OE info
     char *session_file_path; // String containing the path of the testSession file after it is created when applicable
-    
+
     ACVP_OPERATING_ENV op_env; //!< The Operating Environment resources available
     ACVP_STRING_LIST *vsid_url_list;
     char *session_url;
