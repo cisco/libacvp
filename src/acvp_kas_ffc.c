@@ -55,7 +55,7 @@ static ACVP_KAS_FFC_PARAM acvp_convert_dgm_string(const char *dgm_str)
 }
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
@@ -311,7 +311,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
         r_gobj = json_value_get_object(r_gval);
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
@@ -335,14 +335,14 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
 
         pms_str = json_object_get_string(groupobj, "parmSet");
         if (!pms_str) {
-            ACVP_LOG_ERR("Missing parmSet from server JSON groub obj");
+            ACVP_LOG_ERR("Missing parmSet from server JSON group obj");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         pms = acvp_convert_dgm_string(pms_str);
         if (!pms) {
-            ACVP_LOG_ERR("Missing parmSet from server JSON groub obj");
+            ACVP_LOG_ERR("Missing parmSet from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
@@ -701,20 +701,20 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
         r_gobj = json_value_get_object(r_gval);
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
         dgm_str = json_object_get_string(groupobj, "domainParameterGenerationMode");
         if (!dgm_str) {
-            ACVP_LOG_ERR("Missing domain generation method from server JSON groub obj");
+            ACVP_LOG_ERR("Missing domain generation method from server JSON group obj");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         dgm = acvp_convert_dgm_string(dgm_str);
         if (!dgm) {
-            ACVP_LOG_ERR("Missing domain generation method from server JSON groub obj");
+            ACVP_LOG_ERR("Missing domain generation method from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }

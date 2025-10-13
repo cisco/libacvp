@@ -613,7 +613,7 @@ static int ec_curve_tbl_length =
 
 /*
  * Local table for matching ACVP_EC_CURVE to name string and vice versa.
- * Containes "deprecated" curves (still allowed for ECDSA_KEYVER and ECDSA_SIGVER).
+ * Contains "deprecated" curves (still allowed for ECDSA_KEYVER and ECDSA_SIGVER).
  */
 static struct acvp_ec_curve_info ec_curve_depr_tbl[] = {
     { ACVP_EC_CURVE_P192, "P-192" },
@@ -1276,8 +1276,8 @@ const char *acvp_lookup_error_string(ACVP_RESULT rv) {
         { ACVP_CTX_NOT_EMPTY,      "ctx already initialized"                          },
         { ACVP_JWT_MISSING,        "Error using JWT"                                  },
         { ACVP_JWT_EXPIRED,        "Provided JWT has expired"                         },
-        { ACVP_JWT_INVALID,        "Proivded JWT is not valid"                        },
-        { ACVP_INTERNAL_ERR,       "Unexpected error occured internally"              }
+        { ACVP_JWT_INVALID,        "Provided JWT is not valid"                        },
+        { ACVP_INTERNAL_ERR,       "Unexpected error occurred internally"             }
     };
 
     for (i = 0; i < ACVP_RESULT_MAX - 1; i++) {
@@ -1532,7 +1532,7 @@ ACVP_RESULT acvp_append_param_list(ACVP_PARAM_LIST **list, int param) {
 /**
  * Simple utility function to add a entry to a name list. If the list is NULL, it is created
  * with the given entry being the first one. Note the string is REFERENCED, not copied.
- * This function should be able to accomdate the removal of names from the list if needed in the
+ * This function should be able to accommodate the removal of names from the list if needed in the
  * future; if a name is removed from the list but its node remains (with a NULL value) then
  * the given string will be added to the "dummy" node
  */
@@ -1677,7 +1677,7 @@ int acvp_lookup_param_list(ACVP_PARAM_LIST *list, int value) {
 /**
  * Checks if a domain value in a capability object has already been set
  * if all values are 0, then domain is considered empty
- * helps keep code cleaner in places where we woud need to reference
+ * helps keep code cleaner in places where we would need to reference
  * through several unions/pointers
  */
 int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain) {

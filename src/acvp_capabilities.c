@@ -872,7 +872,7 @@ static ACVP_RESULT acvp_validate_kdf108_param_value(ACVP_CTX *ctx, ACVP_KDF108_P
 
     switch (param) {
     case ACVP_KDF108_KDF_MODE:
-        ACVP_LOG_ERR("No need to explicity enable mode string. It is set implicity as params are added to a mode.");
+        ACVP_LOG_ERR("No need to explicitly enable mode string. It is set implicitly as params are added to a mode.");
         break;
     case ACVP_KDF108_MAC_MODE:
         if (value > ACVP_KDF108_MAC_MODE_MIN && value < ACVP_KDF108_MAC_MODE_MAX) {
@@ -2370,7 +2370,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         cap->cap.sym_cap->radix = value;
         return ACVP_SUCCESS;
     case ACVP_SYM_CIPH_PARM_ALPHABET:
-        ACVP_LOG_ERR("Alphabet paramter is string and can only be set with string API for sym ciphers");
+        ACVP_LOG_ERR("Alphabet parameter is string and can only be set with string API for sym ciphers");
         return ACVP_INVALID_ARG;
     case ACVP_SYM_CIPH_KEYLEN:
     case ACVP_SYM_CIPH_TAGLEN:
@@ -3206,7 +3206,7 @@ ACVP_RESULT acvp_cap_hmac_set_domain(ACVP_CTX *ctx,
 /*
  * The user should call this after invoking acvp_enable_hmac_cap()
  * to specify the supported key ranges, keyblock value, and
- * suuported mac lengths. This is called by the user multiple times,
+ * supported mac lengths. This is called by the user multiple times,
  * once for each length supported.
  */
 ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
@@ -8317,7 +8317,7 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
                 result = acvp_append_name_list(&os_cap->mac_salt_methods,
                                                ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR);
             } else {
-                ACVP_LOG_ERR("Invalid value for ACVK_KDA_MAC_SALT");
+                ACVP_LOG_ERR("Invalid value for ACVP_KDA_MAC_SALT");
                 return ACVP_INVALID_ARG;
             }
             break;
@@ -8404,7 +8404,7 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
                 ACVP_LOG_ERR("Valid for l must be > 0");
                 return ACVP_INVALID_ARG;
             } else  if (value % 8 != 0) {
-                ACVP_LOG_ERR("Value for l for KDA-HKDF must be convertable to exact bytes (mod 8)");
+                ACVP_LOG_ERR("Value for l for KDA-HKDF must be convertible to exact bytes (mod 8)");
                 return ACVP_INVALID_ARG;
             } else {
                 hkdf_cap->l = value;
@@ -8418,7 +8418,7 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
                 result = acvp_append_name_list(&hkdf_cap->mac_salt_methods,
                                                ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR);
             } else {
-                ACVP_LOG_ERR("Invalid value for ACVK_KDA_MAC_SALT");
+                ACVP_LOG_ERR("Invalid value for ACVP_KDA_MAC_SALT");
                 return ACVP_INVALID_ARG;
             }
             break;
@@ -8606,7 +8606,7 @@ ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, ACVP_KDA_PARM param,
             ACVP_LOG_ERR("Valid for l must be > 0");
             return ACVP_INVALID_ARG;
         } else  if (value % 8 != 0) {
-            ACVP_LOG_ERR("Value for l for KDA twostep must be convertable to exact bytes (mod 8)");
+            ACVP_LOG_ERR("Value for l for KDA twostep must be convertible to exact bytes (mod 8)");
             return ACVP_INVALID_ARG;
         } else {
             cap->l = value;
@@ -8620,7 +8620,7 @@ ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, ACVP_KDA_PARM param,
             result = acvp_append_name_list(&cap->mac_salt_methods,
                                             ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR);
         } else {
-            ACVP_LOG_ERR("Invalid value for ACVK_KDA_MAC_SALT");
+            ACVP_LOG_ERR("Invalid value for ACVP_KDA_MAC_SALT");
             return ACVP_INVALID_ARG;
         }
         break;
@@ -9398,7 +9398,7 @@ ACVP_RESULT acvp_cap_lms_enable(ACVP_CTX *ctx,
     }
 
     if (result != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Error occured while enabling LMS algorithm. rv: %d", result);
+        ACVP_LOG_ERR("Error occurred while enabling LMS algorithm. rv: %d", result);
     }
 
     return result;
@@ -9557,7 +9557,7 @@ ACVP_RESULT acvp_cap_ml_dsa_enable(ACVP_CTX *ctx,
     }
 
     if (result != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Error occured while enabling ML-DSA algorithm. rv: %d", result);
+        ACVP_LOG_ERR("Error occurred while enabling ML-DSA algorithm. rv: %d", result);
     }
 
     return result;
@@ -9873,7 +9873,7 @@ ACVP_RESULT acvp_cap_ml_kem_enable(ACVP_CTX *ctx,
     }
 
     if (result != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Error occured while enabling ML-KEM algorithm. rv: %d", result);
+        ACVP_LOG_ERR("Error occurred while enabling ML-KEM algorithm. rv: %d", result);
     }
 
     return result;
@@ -9910,7 +9910,7 @@ ACVP_RESULT acvp_cap_ml_kem_set_parm(ACVP_CTX *ctx,
     switch (param) {
     case ACVP_ML_KEM_PARAM_PARAMETER_SET:
         if (value <= ACVP_ML_KEM_PARAM_SET_NONE || value >= ACVP_ML_KEM_PARAM_SET_MAX) {
-            ACVP_LOG_ERR("Invalid ML-KEM paramter set provided");
+            ACVP_LOG_ERR("Invalid ML-KEM parameter set provided");
             return ACVP_INVALID_ARG;
         }
         return acvp_append_param_list(&ml_kem_cap->param_sets, value);

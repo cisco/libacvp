@@ -72,7 +72,7 @@ int main(int argc, char **argv)
     curl_easy_perform(hnd);
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
 

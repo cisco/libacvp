@@ -351,7 +351,7 @@ static ACVP_RESULT acvp_dsa_pqggen_init_tc(ACVP_CTX *ctx,
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
@@ -1521,7 +1521,7 @@ static ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
         r_gobj = json_value_get_object(r_gval);
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
@@ -1642,7 +1642,7 @@ static ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
         r_gobj = json_value_get_object(r_gval);
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
@@ -1757,7 +1757,7 @@ static ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
         r_gobj = json_value_get_object(r_gval);
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
@@ -1874,7 +1874,7 @@ static ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
         r_gobj = json_value_get_object(r_gval);
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
@@ -1990,7 +1990,7 @@ static ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
         r_gobj = json_value_get_object(r_gval);
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }

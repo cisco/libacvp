@@ -185,7 +185,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
     CURLcode crv = CURLE_OK;
 
     /*
-     * Create the Authorzation header if needed
+     * Create the Authorization header if needed
      */
     slist = acvp_add_auth_hdr(ctx, slist);
 
@@ -229,7 +229,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEY, stopping"); goto end; }
     }
 
-    //To record the HTTP data recieved from the server, set the callback function.
+    //To record the HTTP data received from the server, set the callback function.
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEDATA, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
@@ -246,7 +246,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
     curl_easy_perform(hnd);
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      */
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
@@ -286,7 +286,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
     slist = curl_slist_append(slist, "Content-Type:application/json");
 
     /*
-     * Create the Authorzation header if needed
+     * Create the Authorization header if needed
      */
     slist = acvp_add_auth_hdr(ctx, slist);
 
@@ -335,7 +335,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
         crv = curl_easy_setopt(hnd, CURLOPT_SSLKEY, ctx->tls_key);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEY, stopping"); goto end; }
     }
-    // To record the HTTP data recieved from the server, set the callback function.
+    // To record the HTTP data received from the server, set the callback function.
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEDATA, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
@@ -355,7 +355,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
     }
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      */
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
@@ -395,7 +395,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
     slist = curl_slist_append(slist, "Content-Type:application/json");
 
     /*
-     * Create the Authorzation header if needed
+     * Create the Authorization header if needed
      */
     slist = acvp_add_auth_hdr(ctx, slist);
 
@@ -440,7 +440,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
         crv = curl_easy_setopt(hnd, CURLOPT_SSLKEY, ctx->tls_key);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEY, stopping"); goto end; }
     }
-    //To record the HTTP data recieved from the server, set the callback function.
+    //To record the HTTP data received from the server, set the callback function.
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEDATA, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
@@ -464,7 +464,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
     }
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      */
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
@@ -504,7 +504,7 @@ static long acvp_curl_http_delete(ACVP_CTX *ctx, const char *url) {
     slist = curl_slist_append(slist, "Content-Type:application/json");
 
     /*
-     * Create the Authorzation header if needed
+     * Create the Authorization header if needed
      */
     slist = acvp_add_auth_hdr(ctx, slist);
 
@@ -545,7 +545,7 @@ static long acvp_curl_http_delete(ACVP_CTX *ctx, const char *url) {
         crv = curl_easy_setopt(hnd, CURLOPT_SSLKEY, ctx->tls_key);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEY, stopping"); goto end; }
     }
-    //To record the HTTP data recieved from the server, set the callback function.
+    //To record the HTTP data received from the server, set the callback function.
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEDATA, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
@@ -569,7 +569,7 @@ static long acvp_curl_http_delete(ACVP_CTX *ctx, const char *url) {
     }
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      */
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
@@ -919,7 +919,7 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
     if (parameters) {
         curl_hnd = curl_easy_init();
         if (curl_hnd == NULL) {
-            ACVP_LOG_ERR("Failed to intialize curl handle");
+            ACVP_LOG_ERR("Failed to initialize curl handle");
             rv = ACVP_TRANSPORT_FAIL;
             goto end;
         }
@@ -1125,7 +1125,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
              * We are going to refresh the session
              * and try to obtain a new JWT!
              * This should not ever happen during "login"...
-             * and we need to avoid an infinite loop (via acvp_refesh).
+             * and we need to avoid an infinite loop (via acvp_refresh).
              */
             ACVP_LOG_WARN("JWT authorization has timed out, curl rc=%d. Refreshing session...", rc);
             result = acvp_refresh(ctx);
@@ -1234,11 +1234,11 @@ static void log_network_status(ACVP_CTX *ctx,
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_POST_LOGIN:
-        ACVP_LOG_VERBOSE("POST Login...\n\tStatus: %d\n\tUrl: %s\n\tResp: Recieved\n",
+        ACVP_LOG_VERBOSE("POST Login...\n\tStatus: %d\n\tUrl: %s\n\tResp: Received\n",
                       curl_code, url);
         break;
     case ACVP_NET_POST_REG:
-        ACVP_LOG_VERBOSE("POST Registration...\n\tStatus: %d\n\tUrl: %s\n\tResp: Recieved\n",
+        ACVP_LOG_VERBOSE("POST Registration...\n\tStatus: %d\n\tUrl: %s\n\tResp: Received\n",
                         curl_code, url);
         break;
     case ACVP_NET_POST_VS_RESP:
@@ -1354,7 +1354,7 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
 
 #ifndef ACVP_OFFLINE
 /**
- * This function is called to look for operating enivronment info in the environment
+ * This function is called to look for operating environment info in the environment
  * for the HTTP user-agent string when the library cannot automatically find it
  */
 static void acvp_http_user_agent_check_env_for_var(ACVP_CTX *ctx, char *var_string, ACVP_OE_ENV_VAR var_to_check) {
@@ -1550,7 +1550,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
             ACVP_LOG_WARN("Unable to access Windows OS name, checking environment or omitting from HTTP user-agent...\n");
             acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
         } else {
-            //get string - registry strings not garuanteed to be null terminated
+            //get string - registry strings not guaranteed to be null terminated
             wchar_t *productNameBuffer = calloc(bufferLength + 1, sizeof(wchar_t));
             if (!productNameBuffer) {
                 ACVP_LOG_ERR("Unable to allocate memory while generating windows OS name, skipping...\n");
@@ -1578,7 +1578,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
             ACVP_LOG_WARN("Unable to access Windows version, checking environment or omitting from HTTP user-agent...\n");
             acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
         } else {
-            //get string - registry strings not garuanteed to be null terminated
+            //get string - registry strings not guaranteed to be null terminated
             wchar_t *buildLabBuffer = calloc(bufferLength + 1, sizeof(wchar_t));
             if (!buildLabBuffer) {
                 ACVP_LOG_ERR("Unable to allocate memory while generating windows OS version, skipping...\n");
