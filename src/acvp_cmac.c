@@ -118,7 +118,7 @@ static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */

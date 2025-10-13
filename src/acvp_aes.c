@@ -76,7 +76,7 @@ static unsigned char ctext[TEXT_COL_LEN][TEXT_ROW_LEN];
 /*
  * After each encrypt/decrypt for a Monte Carlo test the iv
  * and/or pt/ct information may need to be modified.  This function
- * performs the iteration depdedent upon the cipher type and direction.
+ * performs the iteration dependent upon the cipher type and direction.
  */
 static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, int i) {
     int j = stc->mct_index;
@@ -181,7 +181,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case for MCT.
  */
@@ -471,7 +471,7 @@ static ACVP_SYM_CIPH_TWEAK_MODE read_tw_mode(const char *str) {
 
 
 /**
- * @brief Read the \p str reprenting the ivgen mode and
+ * @brief Read the \p str representing the ivgen mode and
  *        convert to enum.
  *
  * @param[in] str The char* string representing the ivgen mode.
@@ -495,7 +495,7 @@ static ACVP_SYM_CIPH_IVGEN_MODE read_ivgen_mode(const char *str) {
 }
 
 /**
- * @brief Read the \p str reprenting the ivgen source and
+ * @brief Read the \p str representing the ivgen source and
  *        convert to enum.
  *
  * @param[in] str The char* string representing the ivgen source.
@@ -519,7 +519,7 @@ static ACVP_SYM_CIPH_IVGEN_SRC read_ivgen_source(const char *str) {
 }
 
 /**
- * @brief Read the \p str reprenting the salt source and
+ * @brief Read the \p str representing the salt source and
  *        convert to enum.
  *
  * @param[in] str The char* string representing the salt source.
@@ -543,7 +543,7 @@ static ACVP_SYM_CIPH_SALT_SRC read_salt_source(const char *str) {
 }
 
 /**
- * @brief Read the \p str reprenting the keywrap mode and
+ * @brief Read the \p str representing the keywrap mode and
  *        convert to enum.
  *
  * @param[in] str The char* string representing the keywrap mode.
@@ -567,7 +567,7 @@ static ACVP_SYM_KW_MODE read_kw_mode(const char *str) {
 }
 
 /**
- * @brief Read the \p str reprenting the test type and
+ * @brief Read the \p str representing the test type and
  *        convert to enum.
  *
  * @param[in] str The char* string representing the test type.
@@ -595,7 +595,7 @@ static ACVP_SYM_CIPH_TESTTYPE read_test_type(const char *str) {
 }
 
 /**
- * @brief Read the \p str reprenting the direction and
+ * @brief Read the \p str representing the direction and
  *        convert to enum.
  *
  * @param[in] str The char* string representing the direction.
@@ -1321,7 +1321,7 @@ err:
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */

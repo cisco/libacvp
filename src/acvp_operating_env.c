@@ -1712,7 +1712,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
         }
     }
 
-    // Got thorugh all of the linked Persons
+    // Got through all of the linked Persons
     ACVP_LOG_VERBOSE("Contacts Match");
     *match = 1;
 
@@ -2357,7 +2357,7 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
             strstr_s(ptr, remaining_space, "/", 1, &ptr);
             if (ptr == NULL) break;
             ptr_old = ptr;
-            /* Need to move past this occurence */
+            /* Need to move past this occurrence */
             ptr += 1;
         }
         ptr = ptr_old; // The position of the last delimiter
@@ -2672,11 +2672,11 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_address(ACVP_CTX *ctx,
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
-        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
     }
     if (!vendor) {
-        ACVP_LOG_ERR("Requried parameter 'vendor' is NULL");
+        ACVP_LOG_ERR("Required parameter 'vendor' is NULL");
         return ACVP_INVALID_ARG;
     }
 
@@ -2723,11 +2723,11 @@ static ACVP_RESULT acvp_oe_metadata_parse_emails(ACVP_CTX *ctx,
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
-        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
     }
     if (!email_list) {
-        ACVP_LOG_ERR("Requried parameter 'email_list' is NULL");
+        ACVP_LOG_ERR("Required parameter 'email_list' is NULL");
         return ACVP_INVALID_ARG;
     }
     if (*email_list != NULL) {
@@ -2785,11 +2785,11 @@ static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
-        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
     }
     if (!phone_list) {
-        ACVP_LOG_ERR("Requried parameter 'phone_list' is NULL");
+        ACVP_LOG_ERR("Required parameter 'phone_list' is NULL");
         return ACVP_INVALID_ARG;
     }
     if (*phone_list != NULL) {
@@ -2866,11 +2866,11 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
-        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
     }
     if (!vendor) {
-        ACVP_LOG_ERR("Requried parameter 'vendor' is NULL");
+        ACVP_LOG_ERR("Required parameter 'vendor' is NULL");
         return ACVP_INVALID_ARG;
     }
 
@@ -2941,7 +2941,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
-        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
     } 
 
@@ -3006,7 +3006,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendors(ACVP_CTX *ctx, JSON_Object *ob
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
-        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
     }
 
@@ -3051,7 +3051,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
-        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
     } 
 
@@ -3092,7 +3092,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_modules(ACVP_CTX *ctx, JSON_Object *ob
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
-        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
     }
 
@@ -3165,7 +3165,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
-        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
     }
 
@@ -3314,7 +3314,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe(ACVP_CTX *ctx, JSON_Object *obj) {
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
-        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
     } 
 
@@ -3355,7 +3355,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oes(ACVP_CTX *ctx, JSON_Object *obj) {
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
-        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        ACVP_LOG_ERR("Required parameter 'obj' is NULL");
         return ACVP_INVALID_ARG;
     }
 
@@ -3466,7 +3466,7 @@ end:
  *
  * This function will fail if the \p module_id or \p oe_id are not valid.
  * The user may choose to invoke this function with both \p module_id and \p oe_id or
- * each of them seperately so long as the pair is eventually set. I.e. \p module_id for
+ * each of them separately so long as the pair is eventually set. I.e. \p module_id for
  * first invocation then \p oe_id for the second invocation.
  *
  * This function can be invoked in order to change either \p module_id or \p oe_id after

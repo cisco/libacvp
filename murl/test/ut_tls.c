@@ -576,7 +576,7 @@ static int test_murl_ipv6_address(void)
     }
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      * Our little dummy server should always return a 404.
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);

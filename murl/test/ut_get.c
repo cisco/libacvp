@@ -127,7 +127,7 @@ static int test_murl_http_get(char *url)
     curl_easy_perform(hnd);
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
@@ -150,7 +150,7 @@ static int test_murl_http_get(char *url)
 }
 
 /*
- * This routine will parse the http_reponse value that was recieved
+ * This routine will parse the http_response value that was received
  * from the HTTPS test server.  It will compare the POSTed data
  * received from the server with the POST data we sent to the
  * server.  If they match, this routine returns zero. Otherwise
@@ -282,7 +282,7 @@ static int test_murl_headers_get()
     curl_easy_perform(hnd);
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
     printf("HTTP status from server: %d\n", (int)http_code);
@@ -362,7 +362,7 @@ static int test_murl_missing_slash(void)
     }
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
     if (http_code != 200) {

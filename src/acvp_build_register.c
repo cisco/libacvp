@@ -5291,7 +5291,7 @@ static ACVP_RESULT acvp_build_ml_kem_register_cap(ACVP_CTX *ctx,
 
     return ACVP_SUCCESS;
 err:
-    ACVP_LOG_ERR("Error occured when building ML-KEM JSON");
+    ACVP_LOG_ERR("Error occurred when building ML-KEM JSON");
     return ACVP_INTERNAL_ERR;
 }
 

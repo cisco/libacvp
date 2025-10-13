@@ -19,7 +19,7 @@
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
@@ -740,7 +740,7 @@ ACVP_KDA_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, co
                 goto err;
             }
             if (strnlen_s(token, ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX + 1) > ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX) {
-                ACVP_LOG_ERR("Patttern literal too long");
+                ACVP_LOG_ERR("Pattern literal too long");
                 goto err;
             }
             if (cipher == ACVP_KDA_HKDF) {
@@ -939,7 +939,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
         r_gobj = json_value_get_object(r_gval);
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
@@ -1245,7 +1245,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                     }
                     uparty = json_object_get_string(upartyobj, "partyId");
                     if (!uparty) {
-                        ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPatyU");
+                        ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPartyU'");
                         rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
@@ -1261,7 +1261,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                     }
                     vparty = json_object_get_string(vpartyobj, "partyId");
                     if (!vparty) {
-                        ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPatyU");
+                        ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPartyU'");
                         rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }

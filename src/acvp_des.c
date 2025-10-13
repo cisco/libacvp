@@ -79,7 +79,7 @@ static void shiftin(unsigned char *dst, int dst_max, unsigned char *src, int nbi
 /*
  * After each encrypt/decrypt for a Monte Carlo test the iv
  * and/or pt/ct information may need to be modified.  This function
- * performs the iteration depdedent upon the cipher type and direction.
+ * performs the iteration dependent upon the cipher type and direction.
  */
 static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
                                            ACVP_SYM_CIPHER_TC *stc) {
@@ -204,7 +204,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case for MCT.
  */
@@ -568,7 +568,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
 }
 
 /**
- * @brief Read the \p str reprenting the test type and
+ * @brief Read the \p str representing the test type and
  *        convert to enum.
  *
  * @param[in] str The char* string representing the test type.
@@ -596,7 +596,7 @@ static ACVP_SYM_CIPH_TESTTYPE read_test_type(const char *str) {
 }
 
 /**
- * @brief Read the \p str reprenting the direction and
+ * @brief Read the \p str representing the direction and
  *        convert to enum.
  *
  * @param[in] str The char* string representing the direction.
@@ -722,7 +722,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         r_gobj = json_value_get_object(r_gval);
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
@@ -1036,7 +1036,7 @@ err:
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */

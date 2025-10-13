@@ -19,7 +19,7 @@
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
@@ -117,7 +117,7 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc(ACVP_CTX *ctx,
     memzero_s(stc, sizeof(ACVP_KDF135_SRTP_TC));
 
     if (!kdr || !master_key || !master_salt || !idx || !srtcp_idx) {
-        ACVP_LOG_ERR("Missing parameters - initalize KDF SRTP test case");
+        ACVP_LOG_ERR("Missing parameters - initialize KDF SRTP test case");
         return ACVP_INVALID_ARG;
     }
 
@@ -284,7 +284,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         r_gobj = json_value_get_object(r_gval);
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
