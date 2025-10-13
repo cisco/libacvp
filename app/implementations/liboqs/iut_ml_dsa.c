@@ -12,7 +12,7 @@
 
 #include <oqs/sig.h>
 
-/* We need to declare the internal OQS signature functions - we have the library, liboqs-internal, but no headers */
+// We need to declare the internal OQS signature functions - we have the library, liboqs-internal, but no headers
 extern int pqcrystals_ml_dsa_44_ref_signature_internal(uint8_t *sig,
         size_t *siglen,
         const uint8_t *m,
@@ -65,11 +65,11 @@ extern int pqcrystals_ml_dsa_87_ref_verify_internal(const uint8_t *sig,
         const uint8_t *pk);
 
 
-/* Seed buffer for keygen */
+// Seed buffer for keygen
 static unsigned char *rng_buffer = NULL;
-/* Total size of the seed buffer */
+// Total size of the seed buffer
 static size_t rng_buf_size = 0;
-/* Iterator for the seed buffer */
+// Iterator for the seed buffer
 static unsigned int rng_buf_pos = 0;
 
 void iut_ml_dsa_cleanup(void) {
@@ -93,13 +93,13 @@ static void oqs_rng_callback_acvp(uint8_t *random_array, size_t bytes_to_read) {
     }
 
     while (remaining_bytes > 0) {
-        //if we need to send more bytes than there is space left in the buffer, send only until the end of the buffer
+        // if we need to send more bytes than there is space left in the buffer, send only until the end of the buffer
         bytes_going_this_round = remaining_bytes < rng_buf_size - rng_buf_pos ? remaining_bytes : rng_buf_size - rng_buf_pos;
         memcpy_s(random_array + bytes_sent, bytes_to_read - bytes_sent, rng_buffer + rng_buf_pos, bytes_going_this_round);
         bytes_sent += bytes_going_this_round;
         remaining_bytes -= bytes_going_this_round;
         rng_buf_pos += bytes_sent;
-        //if we hit end of buffer, go back to beginning
+        // if we hit end of buffer, go back to beginning
         if (rng_buf_pos >= rng_buf_size - 1) {
             rng_buf_pos = 0;
         }
@@ -198,7 +198,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             printf("Error allocating seed buffer for ML-DSA\n");
             goto end;
         }
-        /* place seed in the buffer */
+        // place seed in the buffer
         memcpy_s(rng_buffer, rng_buf_size, tc->seed, tc->seed_len);
 
         OQS_randombytes_custom_algorithm(&oqs_rng_callback_acvp);
@@ -217,7 +217,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        /* place rnd in the buffer if it exists - otherwise, deterministic */
+        // place rnd in the buffer if it exists - otherwise, deterministic
         if (!tc->is_deterministic) {
             rng_buf_size = tc->rnd_len;
             rng_buffer = calloc(rng_buf_size, sizeof(unsigned char));

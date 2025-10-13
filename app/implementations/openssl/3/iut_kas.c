@@ -54,7 +54,7 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* Generate server pkey info */
+    // Generate server pkey info
     serv_pbld = OSSL_PARAM_BLD_new();
     if (!serv_pbld) {
         printf("Error creating param_bld in KAS-ECC\n");
@@ -81,7 +81,7 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* generate our pkey info */
+    // generate our pkey info
     iut_pbld = OSSL_PARAM_BLD_new();
     if (!iut_pbld) {
         printf("Error creating param_bld in KAS-ECC\n");
@@ -129,7 +129,7 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
     }
 
     if (tc->test_type == ACVP_KAS_ECC_TT_AFT) {
-        /* get peer X and Y for test response */
+        // get peer X and Y for test response
         EVP_PKEY_get_bn_param(iut_pkey, "qx", &ix);
         EVP_PKEY_get_bn_param(iut_pkey, "qy", &iy);
         EVP_PKEY_get_bn_param(iut_pkey, "priv", &ik);
@@ -142,7 +142,7 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         tc->dlen = BN_bn2bin(ik, tc->d);
     }
 
-    /* Finally, derive secret Z and add to test response */
+    // Finally, derive secret Z and add to test response
     der_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, iut_pkey, NULL);
     if (!der_ctx) {
         printf("Error creating derive ctx in KAS-ECC\n");
@@ -153,7 +153,7 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* Tell derive process to use cofactor */
+    // Tell derive process to use cofactor
     der_pbld = OSSL_PARAM_BLD_new();
     if (!der_pbld) {
         printf("Error creating derive pbld in KAS-ECC\n");
@@ -271,7 +271,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         printf("Invalid dgm for KAS-FFC\n");
         goto err;
     }
-    /* convert values to bignum, DH/FFC requires this for some reason and ECC didn't */
+    // convert values to bignum, DH/FFC requires this for some reason and ECC didn't
     spub = BN_bin2bn(tc->eps, tc->epslen, NULL);
     if (!spub) {
         printf("Error generating bignum from server public key in KAS-FFC\n");
@@ -295,7 +295,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         }
     }
 
-    /* Generate server pkey info */
+    // Generate server pkey info
     serv_pbld = OSSL_PARAM_BLD_new();
     if (!serv_pbld) {
         printf("Error creating param_bld in KAS-FFC\n");
@@ -328,7 +328,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* generate our pkey info */
+    // generate our pkey info
     iut_pbld = OSSL_PARAM_BLD_new();
     if (!iut_pbld) {
         printf("Error creating param_bld in KAS-FFC\n");
@@ -393,8 +393,8 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         tc->piutlen = BN_bn2bin(ipub, tc->piut);
     }
 
-    /* Finally, derive secret Z and add to test response */
-    /* Note: Padding is seemingly guaranteed on newer 3.X versions, but not older */
+    // Finally, derive secret Z and add to test response
+    // Note: Padding is seemingly guaranteed on newer 3.X versions, but not older
     der_pbld = OSSL_PARAM_BLD_new();
     if (!der_pbld) {
         printf("Error creating param_bld in KAS-FFC\n");
@@ -482,7 +482,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /** Step 1: Convert all existing values into bignum, null check needed values */
+    // Step 1: Convert all existing values into bignum, null check needed values
     if (tc->kas_role == ACVP_KAS_IFC_INITIATOR || tc->scheme == ACVP_KAS_IFC_KAS2) {
 
         if (!tc->server_n || !tc->server_e || !tc->server_nlen || !tc->server_elen) {
@@ -527,7 +527,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error generating BN params from test case in KAS-IFC\n");
                 goto err;
             }
-            /* OpenSSL requires a D value for private keys, even for CRT. Fortunately, it is calculable. */
+            // OpenSSL requires a D value for private keys, even for CRT. Fortunately, it is calculable.
             bctx = BN_CTX_new();
             d = BN_dup(n);
             BN_sub(d, d, p);
@@ -543,7 +543,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         }
     }
 
-    /* Step 2a: build pkey structure for server public key */
+    // Step 2a: build pkey structure for server public key
     serv_pbld = OSSL_PARAM_BLD_new();
     if (!serv_pbld) {
         printf("Error creating param_bld in KAS-IFC\n");
@@ -577,7 +577,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* Step 2b: build pkey structure for IUT keypair (for all except KAS1 initiator cases) */
+    // Step 2b: build pkey structure for IUT keypair (for all except KAS1 initiator cases)
     if (!(tc->scheme == ACVP_KAS_IFC_KAS1 && tc->kas_role == ACVP_KAS_IFC_INITIATOR)) {
         pbld = OSSL_PARAM_BLD_new();
         if (!pbld) {
@@ -695,7 +695,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
             tc->iut_pt_z_len = (int)z_len;
         }
 
-        /* For KAS2 initiator tests, regardless of role, we decapsulate the server Z */
+        // For KAS2 initiator tests, regardless of role, we decapsulate the server Z
         if (tc->scheme == ACVP_KAS_IFC_KAS2) {
             if (z) free(z);
             z = NULL;
@@ -752,7 +752,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         memcpy_s(tc->server_pt_z, KAS_IFC_MAX, z, z_len);
         tc->server_pt_z_len = (int)z_len;
 
-        /* For KAS2 responder AFT tests, we also generate and encapsulate our own shared secret */
+        // For KAS2 responder AFT tests, we also generate and encapsulate our own shared secret
         if (tc->scheme == ACVP_KAS_IFC_KAS2 && tc->test_type == ACVP_KAS_IFC_TT_AFT) {
             if (z) free(z);
             z = NULL;
@@ -860,7 +860,7 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-     /* Convert all existing values into bignum */
+     // Convert all existing values into bignum
     n = BN_bin2bn(tc->n, tc->nlen, NULL);
     e = BN_bin2bn(tc->e, tc->elen, NULL);
     if (!n || !e) {
@@ -882,7 +882,7 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error converting dmp1/dmq1/iqmp to bignum in KTS-IFC\n");
                 goto err;
             }
-            /* OpenSSL requires a D value for private keys, even for CRT. Fortunately, it is calculable. */
+            // OpenSSL requires a D value for private keys, even for CRT. Fortunately, it is calculable.
             bctx = BN_CTX_new();
             d = BN_dup(n);
             BN_sub(d, d, p);
@@ -965,7 +965,7 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* As per SP800-56Br2, we simply perform RSA encrypt or decrypt (RSAEP or RSADP) after padding is applied */
+    // As per SP800-56Br2, we simply perform RSA encrypt or decrypt (RSAEP or RSADP) after padding is applied
     if (tc->kts_role == ACVP_KTS_IFC_INITIATOR) {
         if (RAND_bytes(tc->pt, tc->llen) != 1) {
             printf("Error generating random DKM in KTS-IFC\n");

@@ -46,7 +46,7 @@ static ACVP_RESULT acvp_lms_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_LM
         json_object_set_string(tc_rsp, "publicKey", tmp);
         break;
     case ACVP_SUB_LMS_SIGGEN:
-        /* This also needs publicKey in the test group response, handled elsewhere */
+        // This also needs publicKey in the test group response, handled elsewhere
         rv = acvp_bin_to_hexstr(stc->sig, stc->sig_len, tmp, ACVP_LMS_TMP_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (signature)");
@@ -203,9 +203,9 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap = NULL;
     ACVP_LMS_TC stc;
     ACVP_TEST_CASE tc;
@@ -419,7 +419,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_lms_init_tc(ctx, &stc, alg_id, tc_id, tg_id, type, lms_mode, lmots_mode, pub_str,
                                   i_str, seed_str, msg_str, sig_str);
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
                     ACVP_LOG_ERR("Crypto module failed the operation");
@@ -433,9 +433,9 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Output the test case results using JSON */
+            // Output the test case results using JSON
 
-            /* For siggen, we need a public key for the test group object, grab from first TC for group */
+            // For siggen, we need a public key for the test group object, grab from first TC for group
             if (alg_id == ACVP_LMS_SIGGEN && !j) {
                 char *tmp = calloc(ACVP_LMS_TMP_MAX + 1, sizeof(char));
                 rv = acvp_bin_to_hexstr(stc.pub_key, stc.pub_key_len, tmp, ACVP_LMS_TMP_MAX);
@@ -456,7 +456,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
 
             /*

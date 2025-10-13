@@ -679,7 +679,7 @@ static ACVP_KDA_TEST_TYPE read_test_type(const char *str) {
 }
 
 ACVP_KDA_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, const char *str, ACVP_TEST_CASE *tc) {
-    //size of (preprocessor string) includes null terminator
+    // size of (preprocessor string) includes null terminator
     ACVP_RESULT rv =  ACVP_SUCCESS;
     char *tmp = NULL, *lit = NULL, *token = NULL;
     rsize_t len = strnlen_s(str, ACVP_KDA_PATTERN_REG_STR_MAX + 1);
@@ -716,11 +716,11 @@ ACVP_KDA_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, co
     if (!diff && len == sizeof(ACVP_KDA_PATTERN_T_STR) - 1) {
         return ACVP_KDA_PATTERN_T;
     }
-    //only compares first X number of characters, so should match, even though string is literal[0000000]
+    // only compares first X number of characters, so should match, even though string is literal[0000000]
     if (sizeof(ACVP_KDA_PATTERN_LITERAL_STR) - 1 < len) {
         strncmp_s(str, len, ACVP_KDA_PATTERN_LITERAL_STR, sizeof(ACVP_KDA_PATTERN_LITERAL_STR) - 1, &diff);
         if (!diff) {
-            //copy string so it can be tokenized
+            // copy string so it can be tokenized
             tmp = calloc(len + 1, sizeof(char));
             if (!tmp) {
                 ACVP_LOG_ERR("Failed to allocate memory when checking literal pattern");
@@ -728,13 +728,13 @@ ACVP_KDA_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, co
             }
             strncpy_s(tmp, len + 1, str, len);
 
-            //tokenize around the [] characters
+            // tokenize around the [] characters
             token = strtok_s(tmp, &len, "[", &lit);
             if (!token) {
                 ACVP_LOG_ERR("Invalid literal pattern candidate");
                 goto err;
             }
-            token = strtok_s(NULL, &len, "]", &lit); //the actual hex string
+            token = strtok_s(NULL, &len, "]", &lit); // the actual hex string
             if (!token) {
                 ACVP_LOG_ERR("Invalid literal pattern candidate");
                 goto err;
@@ -777,7 +777,7 @@ static ACVP_KDA_PATTERN_CANDIDATE* read_info_pattern(ACVP_CTX *ctx, ACVP_CIPHER 
     ACVP_KDA_PATTERN_CANDIDATE currentCand;
     char *cpy = NULL;
     ACVP_KDA_PATTERN_CANDIDATE *rv = NULL;
-    int hasUParty = 0, hasVParty = 0; //Currently, these are required
+    int hasUParty = 0, hasVParty = 0; // Currently, these are required
     if (!str) {
         return NULL;
     }
@@ -794,7 +794,7 @@ static ACVP_KDA_PATTERN_CANDIDATE* read_info_pattern(ACVP_CTX *ctx, ACVP_CIPHER 
         ACVP_LOG_ERR("Failed to copy string into temp holder for tokenization");
 
     }
-    //we return this to be used in the test case struct, so we want it to survive the scope of this function
+    // we return this to be used in the test case struct, so we want it to survive the scope of this function
     ACVP_KDA_PATTERN_CANDIDATE *arr = calloc(ACVP_KDA_PATTERN_MAX, sizeof(int));
     if (!arr) {
         ACVP_LOG_ERR("Failed to allocate memory for reading fixedInfoPattern");
@@ -897,8 +897,8 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
     JSON_Value *testval = NULL;
     JSON_Object *testobj = NULL, *paramobj = NULL;
     JSON_Array *tests, *r_tarr = NULL;
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     const char *alg_str = NULL,  *pattern_str = NULL, *encoding_str = NULL,
                *salt_method_str = NULL;
     ACVP_HASH_ALG hmac_alg = 0;
@@ -913,7 +913,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
     ACVP_CAPS_LIST *kdfcap = NULL;
     /*These vars are specific to onestep */
     ACVP_CIPHER aux_function = 0;
-    /* These vars are specific to twostep */
+    // These vars are specific to twostep
     int ctr_len = 0, iv_len = 0;
     const char *ctr_loc_str = NULL, *kdf_mode_str = NULL, *iv_str = NULL;
     ACVP_KDF108_MODE kdf_mode = 0;
@@ -1094,7 +1094,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             }
         }
 
-        /* there are some kdfConfiguration values specific to twostep */
+        // there are some kdfConfiguration values specific to twostep
         if (cipher == ACVP_KDA_TWOSTEP) {
             kdf_mode_str = json_object_get_string(configobj, "kdfMode");
             if (!kdf_mode_str) {
@@ -1145,7 +1145,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             }
         }
 
-        /* in case of value not existing or being false, we have the same outcome */
+        // in case of value not existing or being false, we have the same outcome
         hybrid_secret = json_object_get_boolean(paramobj, "usesHybridSharedSecret");
 
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -1194,7 +1194,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 goto err;
             }
 
-            //for onestep, salt only exists for HMAC aux functions
+            // for onestep, salt only exists for HMAC aux functions
             if (cipher != ACVP_KDA_ONESTEP) {
                 if (!salt) {
                     ACVP_LOG_ERR("Server JSON missing 'salt'");
@@ -1230,7 +1230,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 }
             }
 
-            //Read the array of pattern candidates, read specific JSON objects based on whats there
+            // Read the array of pattern candidates, read specific JSON objects based on whats there
             for (k = 0; k < ACVP_KDA_PATTERN_MAX; k++) {
                 if (arr[k] >= ACVP_KDA_PATTERN_MAX || arr[k] <= ACVP_KDA_PATTERN_NONE) {
                     break;
@@ -1249,7 +1249,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                         rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
-                    //ephemeral data is randomly included and optional
+                    // ephemeral data is randomly included and optional
                     uephemeral = json_object_get_string(upartyobj, "ephemeralData");
                     break;
                 case ACVP_KDA_PATTERN_VPARTYINFO:
@@ -1265,7 +1265,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                         rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
-                    //ephemeral data is randomly included and optional
+                    // ephemeral data is randomly included and optional
                     vephemeral = json_object_get_string(vpartyobj, "ephemeralData");
                     break;
                 case ACVP_KDA_PATTERN_CONTEXT:
@@ -1400,7 +1400,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 json_value_free(r_tval);
                 goto err;
             }
-            /* Process the current KAT test vector... */
+            // Process the current KAT test vector...
             if ((cap->crypto_handler)(tc)) {
                 if (cipher == ACVP_KDA_HKDF) {
                     acvp_kda_release_tc(ACVP_KDA_HKDF, tc);
@@ -1455,7 +1455,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 acvp_kda_release_tc(ACVP_KDA_TWOSTEP, tc);
             }
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);
@@ -1474,7 +1474,7 @@ err:
 ACVP_RESULT acvp_kda_hkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;
@@ -1570,7 +1570,7 @@ err:
 ACVP_RESULT acvp_kda_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;
@@ -1666,7 +1666,7 @@ err:
 ACVP_RESULT acvp_kda_twostep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;

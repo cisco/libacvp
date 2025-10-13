@@ -24,11 +24,11 @@
 #define TLS_KEY_EXPAND_CONST             "key expansion"
 #define TLS_KEY_EXPAND_CONST_SIZE        13
 
-#define TLS12_BUF_MAX 4096 /* match library */
+#define TLS12_BUF_MAX 4096 // match library
 #define TLS12_SEED_BUF_MAX (TLS12_BUF_MAX + TLS_EXT_MASTER_SECRET_CONST_SIZE)
 
 
-/* For simplicity, define as non-const; the OSSL_PARAM functions don't use const */
+// For simplicity, define as non-const; the OSSL_PARAM functions don't use const
 static char ssh_kdf_a[] = "A";
 static char ssh_kdf_b[] = "B";
 static char ssh_kdf_c[] = "C";
@@ -189,7 +189,7 @@ int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    aname = calloc(256, sizeof(char)); //avoid const removal warnings
+    aname = calloc(256, sizeof(char)); // avoid const removal warnings
     if (!aname) {
         printf("Error allocating memory for KDF X963\n");
         goto end;
@@ -344,7 +344,7 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     }
 
     if (alg) {
-        aname = calloc(256, sizeof(char)); //avoid const removal warnings
+        aname = calloc(256, sizeof(char)); // avoid const removal warnings
         if (!aname) {
             printf("Error allocating memory for KDF 108\n");
             goto end;
@@ -353,7 +353,7 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     }
 
     if (stc->mac_mode != ACVP_KDF108_MAC_MODE_KMAC_128 && stc->mac_mode != ACVP_KDF108_MAC_MODE_KMAC_256) {
-        fixed = calloc(fixed_len, sizeof(char)); //arbitrary length fixed info
+        fixed = calloc(fixed_len, sizeof(char)); // arbitrary length fixed info
         if (!fixed) {
             printf("Error allocating memory for KDF 108\n");
             goto end;
@@ -453,7 +453,7 @@ int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    aname = calloc(256, sizeof(char)); //avoid const removal warnings
+    aname = calloc(256, sizeof(char)); // avoid const removal warnings
     if (!aname) {
         printf("Error allocating memory for kdf135-ssh\n");
         goto end;
@@ -471,7 +471,7 @@ int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
     params[1] = OSSL_PARAM_construct_octet_string("key", stc->shared_secret_k, stc->shared_secret_len);
     params[2] = OSSL_PARAM_construct_octet_string("session_id", stc->session_id, stc->session_id_len);
     params[3] = OSSL_PARAM_construct_octet_string("xcghash", stc->hash_h, stc->hash_len);
-    //params(4) will be the "type" of operation, before each call
+    // params(4) will be the "type" of operation, before each call
     params[5] = OSSL_PARAM_construct_end();
 
     params[4] = OSSL_PARAM_construct_utf8_string("type", ssh_kdf_a, 1);
@@ -544,7 +544,7 @@ int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
 
-    /* Spec defined limits */
+    // Spec defined limits
     if (stc->iterationCount <= 0 || stc->iterationCount >= 10000000) {
         printf("Invalid iteration count in PBKDF test case\n");
         return -1;
@@ -564,7 +564,7 @@ int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    aname = calloc(256, sizeof(char)); //avoid const removal warnings
+    aname = calloc(256, sizeof(char)); // avoid const removal warnings
     if (!aname) {
         printf("Error allocating memory for PBKDF\n");
         goto end;
@@ -587,7 +587,7 @@ int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
     OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SALT, stc->salt, stc->salt_len);
     OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, aname, 0);
     OSSL_PARAM_BLD_push_uint(pbld, OSSL_KDF_PARAM_ITER, stc->iterationCount);
-    OSSL_PARAM_BLD_push_int(pbld, OSSL_KDF_PARAM_PKCS5, 1); /* disables compliance checks, dont want limit checks for ACVP tests */
+    OSSL_PARAM_BLD_push_int(pbld, OSSL_KDF_PARAM_PKCS5, 1); // disables compliance checks, dont want limit checks for ACVP tests
     params = OSSL_PARAM_BLD_to_param(pbld);
     if (!params) {
         printf("Error generating params in PBKDF\n");
@@ -638,7 +638,7 @@ int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
 
-    /* We need to concatenate label + seed ourselves for PRF() */
+    // We need to concatenate label + seed ourselves for PRF()
     seed = calloc(TLS12_SEED_BUF_MAX, sizeof(char));
     if (!seed) {
         printf("Error allocating memory for seed in TLS1.2 KDF\n");
@@ -664,11 +664,11 @@ int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    /* calculate msecret */
+    // calculate msecret
     seed_len = TLS_EXT_MASTER_SECRET_CONST_SIZE + tc->session_hash_len;
-    /* copy label to buffer */
+    // copy label to buffer
     memcpy_s(seed, TLS12_SEED_BUF_MAX, TLS_EXT_MASTER_SECRET_CONST, TLS_EXT_MASTER_SECRET_CONST_SIZE);
-    /* concatenate session_hash to buffer */
+    // concatenate session_hash to buffer
     memcpy_s(seed + TLS_EXT_MASTER_SECRET_CONST_SIZE, TLS12_SEED_BUF_MAX - TLS_EXT_MASTER_SECRET_CONST_SIZE,
              tc->session_hash, tc->session_hash_len);
 
@@ -686,7 +686,7 @@ int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    /* calculate kblock */
+    // calculate kblock
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     pbld = OSSL_PARAM_BLD_new();
@@ -697,12 +697,12 @@ int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
     EVP_KDF_CTX_reset(kctx);
 
     seed_len = TLS_KEY_EXPAND_CONST_SIZE + tc->s_rnd_len + tc->c_rnd_len;
-    /* Copy label to buffer */
+    // Copy label to buffer
     memcpy_s(seed, TLS12_SEED_BUF_MAX, TLS_KEY_EXPAND_CONST, TLS_KEY_EXPAND_CONST_SIZE);
-    /* Concatenate s_rnd to buffer */
+    // Concatenate s_rnd to buffer
     memcpy_s(seed + TLS_KEY_EXPAND_CONST_SIZE, TLS12_SEED_BUF_MAX - TLS_KEY_EXPAND_CONST_SIZE,
              tc->s_rnd, tc->s_rnd_len);
-    /* Concatenate c_rnd to buffer */
+    // Concatenate c_rnd to buffer
     memcpy_s(seed + TLS_KEY_EXPAND_CONST_SIZE + tc->s_rnd_len,
              TLS12_SEED_BUF_MAX - TLS_KEY_EXPAND_CONST_SIZE - tc->s_rnd_len,
              tc->c_rnd, tc->c_rnd_len);
@@ -839,9 +839,9 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
     }
-    /* generate all the hashes first */
+    // generate all the hashes first
     mctx = EVP_MD_CTX_new();
-    /* The client early secrets step uses a hash of client hello */
+    // The client early secrets step uses a hash of client hello
     if (mctx == NULL
             || EVP_DigestInit_ex(mctx, md_obj, NULL) <= 0
             || EVP_DigestUpdate(mctx, tc->c_hello_rand, tc->c_hello_rand_len) <= 0
@@ -853,7 +853,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     EVP_MD_CTX_free(mctx);
 
     mctx = EVP_MD_CTX_new();
-    /* The handshake secrets step uses a hash of client server hello */
+    // The handshake secrets step uses a hash of client server hello
     if (mctx == NULL
             || EVP_DigestInit_ex(mctx, md_obj, NULL) <= 0
             || EVP_DigestUpdate(mctx, tc->c_hello_rand, tc->c_hello_rand_len) <= 0
@@ -866,7 +866,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     EVP_MD_CTX_free(mctx);
 
     mctx = EVP_MD_CTX_new();
-    /* The application secret steps uses a hash of client hello and server finish */
+    // The application secret steps uses a hash of client hello and server finish
     if (mctx == NULL
             || EVP_DigestInit_ex(mctx, md_obj, NULL) <= 0
             || EVP_DigestUpdate(mctx, tc->c_hello_rand, tc->c_hello_rand_len) <= 0
@@ -880,7 +880,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     EVP_MD_CTX_free(mctx);
 
     mctx = EVP_MD_CTX_new();
-    /* The resume secret step uses a hash of client hello and client finish */
+    // The resume secret step uses a hash of client hello and client finish
     if (mctx == NULL
             || EVP_DigestInit_ex(mctx, md_obj, NULL) <= 0
             || EVP_DigestUpdate(mctx, tc->c_hello_rand, tc->c_hello_rand_len) <= 0
@@ -901,7 +901,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* Create early secret */
+    // Create early secret
     ext_params[0] = OSSL_PARAM_construct_utf8_string("digest", md, 0);
     ext_params[1] = OSSL_PARAM_construct_utf8_string("mode", tls13_extract, 0);
     if (tc->psk_len) {
@@ -909,9 +909,9 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     } else {
         ext_params[2] = OSSL_PARAM_construct_octet_string("key", zero_input, md_size);
     }
-    /* Leave [3] so we can use a salt later on */
-    /* Leave [4] for label later on */
-    /* Leave [5] for prefix later on */
+    // Leave [3] so we can use a salt later on
+    // Leave [4] for label later on
+    // Leave [5] for prefix later on
     ext_params[6] = OSSL_PARAM_construct_end();
 
     ret = EVP_KDF_derive(kctx, early_secret, md_size, ext_params);
@@ -920,7 +920,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* Create the early traffic secret */
+    // Create the early traffic secret
     EVP_KDF_CTX_reset(kctx);
     exp_params[0] = OSSL_PARAM_construct_utf8_string("digest", md, 0);
     exp_params[1] = OSSL_PARAM_construct_utf8_string("mode", tls13_expand, 0);
@@ -937,7 +937,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     }
     tc->cets_len = md_size;
 
-    /* Create the early exporter master secret */
+    // Create the early exporter master secret
     EVP_KDF_CTX_reset(kctx);
     exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_e_exp_master, sizeof(tls13_e_exp_master) - 1);
     ret = EVP_KDF_derive(kctx, tc->early_expt_master_secret, md_size, exp_params);
@@ -947,7 +947,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     }
     tc->eems_len = md_size;
 
-    /* Create handshake secret, if registered for DHE use it */
+    // Create handshake secret, if registered for DHE use it
     EVP_KDF_CTX_reset(kctx);
     if (tc->dhe_len) {
         ext_params[2] = OSSL_PARAM_construct_octet_string("key", tc->dhe, tc->dhe_len);
@@ -963,7 +963,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* Create client handshake traffic secret */
+    // Create client handshake traffic secret
     EVP_KDF_CTX_reset(kctx);
     exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_c_hs_traffic, sizeof(tls13_c_hs_traffic) - 1);
     exp_params[4] = OSSL_PARAM_construct_octet_string("key", handshake_secret, md_size);
@@ -976,7 +976,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     tc->chts_len = md_size;
 
 
-    /* Create server handshake traffic secret */
+    // Create server handshake traffic secret
     EVP_KDF_CTX_reset(kctx);
     exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_s_hs_traffic, sizeof(tls13_s_hs_traffic) - 1);
     ret = EVP_KDF_derive(kctx, tc->s_hs_traffic_secret, md_size, exp_params);
@@ -986,7 +986,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     }
     tc->shts_len = md_size;
 
-    /* Create master secret */
+    // Create master secret
     ext_params[2] = OSSL_PARAM_construct_octet_string("key", zero_input, md_size);
     ext_params[3] = OSSL_PARAM_construct_octet_string("salt", handshake_secret, md_size);
     ret = EVP_KDF_derive(kctx, master_secret, md_size, ext_params);
@@ -995,7 +995,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* Create client application traffic secret */
+    // Create client application traffic secret
     EVP_KDF_CTX_reset(kctx);
     exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_c_ap_traffic, sizeof(tls13_c_ap_traffic) - 1);
     exp_params[4] = OSSL_PARAM_construct_octet_string("key", master_secret, md_size);
@@ -1007,7 +1007,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     }
     tc->cats_len = md_size;
 
-    /* Create server application traffic secret */
+    // Create server application traffic secret
     EVP_KDF_CTX_reset(kctx);
     exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_s_ap_traffic, sizeof(tls13_s_ap_traffic) - 1);
     ret = EVP_KDF_derive(kctx, tc->s_app_traffic_secret, md_size, exp_params);
@@ -1017,7 +1017,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     }
     tc->sats_len = md_size;
 
-    /* Create exporter master secret */
+    // Create exporter master secret
     EVP_KDF_CTX_reset(kctx);
     exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_exp_master, sizeof(tls13_exp_master) - 1);
     ret = EVP_KDF_derive(kctx, tc->expt_master_secret, md_size, exp_params);
@@ -1027,7 +1027,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     }
     tc->ems_len = md_size;
 
-    /* Create resumption master secret */
+    // Create resumption master secret
     EVP_KDF_CTX_reset(kctx);
     exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_res_master, sizeof(tls13_res_master) - 1);
     exp_params[5] = OSSL_PARAM_construct_octet_string("data", client_hash, md_size);

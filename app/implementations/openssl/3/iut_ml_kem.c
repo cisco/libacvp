@@ -154,7 +154,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
         }
     } else if (tc->cipher == ACVP_ML_KEM_XCAP) {
         if (tc->function == ACVP_ML_KEM_FUNCTION_ENCAPSULATE || tc->function == ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK) {
-            /* First, create the pkey containing the sk we are given */
+            // First, create the pkey containing the sk we are given
             pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, param_set, NULL);
             if (!pkey_ctx) {
                 printf("Error initializing pkey CTX in ML-KEM encap\n");
@@ -183,7 +183,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
             }
 
             if (tc->function == ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK) {
-                /* if fromdata returns 1, the check was successful, otherwise fail */
+                // if fromdata returns 1, the check was successful, otherwise fail
                 tc->keycheck_disposition = ossl_ret == 1 ? ACVP_TEST_DISPOSITION_PASS : ACVP_TEST_DISPOSITION_FAIL;
                 rv = 0;
                 goto end;
@@ -257,7 +257,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
             }
 
             if (tc->function == ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK) {
-                /* if fromdata returns 1, the check was successful, otherwise fail */
+                // if fromdata returns 1, the check was successful, otherwise fail
                 tc->keycheck_disposition = ossl_ret == 1 ? ACVP_TEST_DISPOSITION_PASS : ACVP_TEST_DISPOSITION_FAIL;
                 rv = 0;
                 goto end;

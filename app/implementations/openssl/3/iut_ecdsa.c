@@ -58,7 +58,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         return 1;
     }
     tc = test_case->tc.ecdsa;
-    /* Todo: expand these checks and UTs */
+    // Todo: expand these checks and UTs
     if (!tc || !tc->qx || !tc->qy) {
         printf("\nError: test case not found in ECDSA handler\n");
         return 1;
@@ -165,7 +165,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SUB_DET_ECDSA_SIGGEN:
         if (ecdsa_current_tg != tc->tg_id) {
             ecdsa_current_tg = tc->tg_id;
-            /* First, generate key for every test group */
+            // First, generate key for every test group
             pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL);
             if (!pkey_ctx) {
                 printf("Error creating pkey CTX in ECDSA siggen\n");
@@ -191,7 +191,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             }
         }
 
-        /* Then, for each test case, generate a signature */
+        // Then, for each test case, generate a signature
         if (!tc->is_component) {
             sig_ctx = EVP_MD_CTX_new();
             if (!sig_ctx) {
@@ -234,7 +234,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
                     goto err;
                 }
 
-                pkey_ctx = NULL; //freed with md ctx
+                pkey_ctx = NULL; // freed with md ctx
             } else {
                 if (EVP_DigestSignInit_ex(sig_ctx, NULL, md, NULL, NULL, group_pkey, NULL) != 1) {
                     printf("Error initializing signing for ECDSA siggen\n");
@@ -248,7 +248,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error allocating memory in ECDSA siggen\n");
                 goto err;
             }
-            sig_iter = sig; /* since d2i_ECDSA_SIG alters the pointer, we need to keep the original one for freeing */
+            sig_iter = sig; // since d2i_ECDSA_SIG alters the pointer, we need to keep the original one for freeing
             if (EVP_DigestSign(sig_ctx, sig, &sig_len, tc->message, tc->msg_len) != 1) {
                 printf("Error generating signature in ECDSA siggen\n");
                 goto err;
@@ -269,13 +269,13 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error allocating memory in ECDSA component siggen\n");
                 goto err;
             }
-            sig_iter = sig; /* since d2i_ECDSA_SIG alters the pointer, we need to keep the original one for freeing */
+            sig_iter = sig; // since d2i_ECDSA_SIG alters the pointer, we need to keep the original one for freeing
             if (EVP_PKEY_sign(comp_ctx, sig, &sig_len, tc->message, tc->msg_len) != 1) {
                 printf("Error generating signature in ECDSA component siggen\n");
                 goto err;
             }
         }
-        /* Finally, extract R and S from signature */
+        // Finally, extract R and S from signature
         sig_obj = d2i_ECDSA_SIG(NULL, &sig_iter, (long)sig_len);
         if (!sig_obj) {
             printf("Error creating signature object needed to retrieve output in ECDSA siggen\n");
@@ -287,7 +287,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             printf("Error retrieving output values in ECDSA siggen\n");
             goto err;
         }
-        /* and copy our values to the TC response */
+        // and copy our values to the TC response
         tc->r_len = BN_bn2bin(out_r, tc->r);
         tc->s_len = BN_bn2bin(out_s, tc->s);
         tc->qx_len = BN_bn2bin(ecdsa_group_Qx, tc->qx);

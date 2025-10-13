@@ -183,9 +183,9 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_CMAC_TC stc;
     ACVP_TEST_CASE tc;
@@ -356,7 +356,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             tc_id = json_object_get_number(testobj, "tcId");
             msg = json_object_get_string(testobj, "message");
 
-            /* msg can be null if msglen is 0 */
+            // msg can be null if msglen is 0
             if (msg) {
                 json_msglen = strnlen_s(msg, ACVP_CMAC_MSGLEN_MAX_STR + 1);
                 if (json_msglen > ACVP_CMAC_MSGLEN_MAX_STR) {
@@ -454,7 +454,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("Crypto module failed the operation");
                 acvp_cmac_release_tc(&stc);
@@ -479,7 +479,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             acvp_cmac_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

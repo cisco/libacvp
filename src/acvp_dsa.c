@@ -508,7 +508,7 @@ static ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
     JSON_Array *tests;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Value *r_tval = NULL; // Response testval
     int j, t_cnt, tc_id, l, n;
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *mval;
@@ -569,7 +569,7 @@ static ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
             goto err;
         }
 
-        /* Process the current DSA test vector... */
+        // Process the current DSA test vector...
         if ((cap->crypto_handler)(&tc)) {
             ACVP_LOG_ERR("Crypto module failed the operation");
             rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -625,11 +625,11 @@ static ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
             goto err;
         }
 
-        /* Append the test response value to array */
+        // Append the test response value to array
         json_array_append_value(r_tarr, mval);
         acvp_dsa_release_tc(stc);
     }
-    /* Append the test response value to array */
+    // Append the test response value to array
     json_array_append_value(r_tarr, r_tval);
     return ACVP_SUCCESS;
 
@@ -681,8 +681,8 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
     JSON_Array *tests;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
-    JSON_Value *r_tval = NULL;  /* Response testval */
-    JSON_Object *r_tobj = NULL; /* Response testobj */
+    JSON_Value *r_tval = NULL;  // Response testval
+    JSON_Object *r_tobj = NULL; // Response testobj
     int j, t_cnt, tc_id;
     ACVP_RESULT rv = ACVP_SUCCESS;
     unsigned gpq = 0, n, l;
@@ -836,7 +836,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
                 return rv;
             }
 
-            /* Process the current DSA test vector... */
+            // Process the current DSA test vector...
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("Crypto module failed the operation");
                 acvp_dsa_release_tc(stc);
@@ -870,7 +870,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             r_tobj = json_value_get_object(r_tval);
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            /* Process the current DSA test vector... */
+            // Process the current DSA test vector...
             rv = acvp_dsa_pqggen_init_tc(ctx, stc, tg_id, tc_id, l, n, gpq, idx, sha, p, q, seed);
             if (rv != ACVP_SUCCESS) {
                 acvp_dsa_release_tc(stc);
@@ -919,7 +919,7 @@ static ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
     JSON_Array *tests;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Value *r_tval = NULL; // Response testval
     int j, t_cnt, tc_id, l, n;
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *mval;
@@ -1001,7 +1001,7 @@ static ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
             goto err;
         }
 
-        /* Process the current DSA test vector... */
+        // Process the current DSA test vector...
         if ((cap->crypto_handler)(&tc)) {
             ACVP_LOG_ERR("Crypto module failed the operation");
             rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -1067,10 +1067,10 @@ static ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
             goto err;
         }
         acvp_dsa_release_tc(stc);
-        /* Append the test response value to array */
+        // Append the test response value to array
         json_array_append_value(r_tarr, mval);
     }
-    /* Append the test response value to array */
+    // Append the test response value to array
     json_array_append_value(r_tarr, r_tval);
     return ACVP_SUCCESS;
 
@@ -1090,7 +1090,7 @@ static ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
     JSON_Array *tests;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Value *r_tval = NULL; // Response testval
     int j, t_cnt, tc_id, l, n, c, gpq = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *mval;
@@ -1197,7 +1197,7 @@ static ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("               c: %d", c);
         ACVP_LOG_VERBOSE("           idx: %s", idx);
 
-        /* find the mode */
+        // find the mode
         if (gmode) {
             gpq = read_gen_g(gmode);
         } else if (pqmode) {
@@ -1249,7 +1249,7 @@ static ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
             return rv;
         }
 
-        /* Process the current DSA test vector... */
+        // Process the current DSA test vector...
         if ((cap->crypto_handler)(&tc)) {
             ACVP_LOG_ERR("Crypto module failed the operation");
             acvp_dsa_release_tc(stc);
@@ -1270,10 +1270,10 @@ static ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
         }
         acvp_dsa_release_tc(stc);
 
-        /* Append the test response value to array */
+        // Append the test response value to array
         json_array_append_value(r_tarr, mval);
     }
-    /* Append the test response value to array */
+    // Append the test response value to array
     json_array_append_value(r_tarr, r_tval);
     return rv;
 }
@@ -1288,7 +1288,7 @@ static ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
     JSON_Array *tests;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Value *r_tval = NULL; // Response testval
     int j, t_cnt, tc_id, l, n;
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *mval;
@@ -1411,7 +1411,7 @@ static ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
             return rv;
         }
 
-        /* Process the current DSA test vector... */
+        // Process the current DSA test vector...
         if ((cap->crypto_handler)(&tc)) {
             ACVP_LOG_ERR("Crypto module failed the operation");
             acvp_dsa_release_tc(stc);
@@ -1432,10 +1432,10 @@ static ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
         }
         acvp_dsa_release_tc(stc);
 
-        /* Append the test response value to array */
+        // Append the test response value to array
         json_array_append_value(r_tarr, mval);
     }
-    /* Append the test response value to array */
+    // Append the test response value to array
     json_array_append_value(r_tarr, r_tval);
     return rv;
 }
@@ -1445,7 +1445,7 @@ static ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
     JSON_Object *groupobj = NULL;
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL; /* Response testarray */
+    JSON_Array *r_tarr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL, *r_gval = NULL;
     JSON_Array *reg_arry = NULL, *r_garr = NULL;
     JSON_Object *reg_obj = NULL, *r_gobj = NULL;
@@ -1567,7 +1567,7 @@ static ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
     JSON_Object *groupobj = NULL;
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL; /* Response testarray, grouparray */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL; // Response testarray, grouparray
     JSON_Value *reg_arry_val = NULL, *r_gval = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL, *r_gobj = NULL;
@@ -1682,7 +1682,7 @@ static ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
     JSON_Object *groupobj = NULL;
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL; /* Response testarray, grouparray */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL; // Response testarray, grouparray
     JSON_Value *reg_arry_val = NULL, *r_gval = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL, *r_gobj = NULL;
@@ -1799,7 +1799,7 @@ static ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
     JSON_Object *groupobj = NULL;
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL; /* Response testarray, grouparray */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL; // Response testarray, grouparray
     JSON_Value *reg_arry_val = NULL, *r_gval = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL, *r_gobj = NULL;
@@ -1915,7 +1915,7 @@ static ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
     JSON_Object *groupobj = NULL;
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL; /* Response testarray, grouparray */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL; // Response testarray, grouparray
     JSON_Value *reg_arry_val = NULL, *r_gval = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL, *r_gobj = NULL;

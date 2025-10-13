@@ -68,7 +68,7 @@ static ACVP_RESULT acvp_ml_kem_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
                 goto end;
             }
             json_object_set_string(tc_rsp, "c", tmp);
-            /* fallthru */
+            // fallthru
         case ACVP_ML_KEM_FUNCTION_DECAPSULATE:
 		    memzero_s(tmp, ACVP_ML_KEM_TMP_STR_MAX);
 		    rv = acvp_bin_to_hexstr(stc->k, stc->k_len, tmp, ACVP_ML_KEM_TMP_STR_MAX);
@@ -143,7 +143,7 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
     stc->param_set = param_set;
     stc->function = function;
 
-    /* dk and ek are outputs for keygen, and inputs for encap/decap */
+    // dk and ek are outputs for keygen, and inputs for encap/decap
     stc->dk = calloc(ACVP_ML_KEM_TMP_BYTE_MAX, sizeof(unsigned char));
     if (!stc->dk) {
         goto err;
@@ -198,7 +198,7 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Hex conversion failure (m)");
                 return rv;
             }
-            /* fallthru */
+            // fallthru
         case ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK:
             rv = acvp_hexstr_to_bin(ek, stc->ek, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->ek_len));
             if (rv != ACVP_SUCCESS) {
@@ -212,7 +212,7 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Hex conversion failure (c)");
                 return rv;
             }
-            /* fallthru */
+            // fallthru
         case ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK:
             rv = acvp_hexstr_to_bin(dk, stc->dk, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->dk_len));
             if (rv != ACVP_SUCCESS) {
@@ -284,9 +284,9 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap = NULL;
     ACVP_ML_KEM_TC stc;
     ACVP_TEST_CASE tc;
@@ -333,14 +333,14 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     ACVP_LOG_VERBOSE("    ML-KEM mode: %s", mode_str);
 
-    /* Create ACVP array for response */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
         return rv;
     }
 
-    /* Start to build the JSON response */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -459,7 +459,7 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
-            } else { /* else is encap/decap/keycheck */
+            } else { // else is encap/decap/keycheck
                 switch (function) {
                 case ACVP_ML_KEM_FUNCTION_ENCAPSULATE:
                     m_str = json_object_get_string(testobj, "m");
@@ -468,7 +468,7 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                         rv = ACVP_MISSING_ARG;
                         goto err;
                     }
-                    /* fallthru */
+                    // fallthru
                 case ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK:
                     ek_str = json_object_get_string(testobj, "ek");
                     if (!ek_str) {
@@ -484,7 +484,7 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                         rv = ACVP_MISSING_ARG;
                         goto err;
                     }
-                    /* fallthru */
+                    // fallthru
                 case ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK:
                     dk_str = json_object_get_string(testobj, "dk");
                     if (!dk_str) {
@@ -523,7 +523,7 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_VERBOSE("                   dk: %s", dk_str);
             }
 
-            /* Create a new test case in the response */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -532,7 +532,7 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_ml_kem_init_tc(ctx, &stc, alg_id, tc_id, tg_id, type, param_set, function,
                                   d_str, z_str, dk_str, ek_str, m_str, c_str);
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
                     ACVP_LOG_ERR("Crypto module failed the operation");
@@ -546,7 +546,7 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Output the test case results using JSON */
+            // Output the test case results using JSON
             rv = acvp_ml_kem_output_tc(ctx, alg_id, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure recording test response");
@@ -554,10 +554,10 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
 
-            /* Release all the memory associated with the test case */
+            // Release all the memory associated with the test case
             acvp_ml_kem_release_tc(&stc);
         }
         json_array_append_value(r_garr, r_gval);

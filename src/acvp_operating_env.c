@@ -18,7 +18,7 @@
 #include "safe_lib.h"
 
 
-/* Keeps track of what to use the next Dependency ID */
+// Keeps track of what to use the next Dependency ID
 static unsigned int glb_dependency_id = 1;
 static unsigned int glb_vendor_id = 1;
 static unsigned int glb_module_id = 1;
@@ -55,7 +55,7 @@ static ACVP_DEPENDENCY *find_dependency(ACVP_CTX *ctx,
 
     if (!ctx) return NULL;
 
-    /* Get a handle on the Dependencies */
+    // Get a handle on the Dependencies
     dependencies = &ctx->op_env.dependencies;
 
     if (id == 0) {
@@ -64,7 +64,7 @@ static ACVP_DEPENDENCY *find_dependency(ACVP_CTX *ctx,
     }
     for (k = 0; k < dependencies->count; k++) {
         if (id == dependencies->deps[k].id) {
-            /* Match */
+            // Match
             return &dependencies->deps[k];
         }
     }
@@ -88,7 +88,7 @@ ACVP_RESULT acvp_oe_dependency_new(ACVP_CTX *ctx, unsigned int id) {
 
     if (!ctx) return ACVP_NO_CTX;
 
-    /* Get a handle on the Dependencies */
+    // Get a handle on the Dependencies
     dependencies = &ctx->op_env.dependencies;
 
     if (dependencies->count == LIBACVP_DEPENDENCIES_MAX) {
@@ -112,7 +112,7 @@ ACVP_RESULT acvp_oe_dependency_new(ACVP_CTX *ctx, unsigned int id) {
     new_dep = &dependencies->deps[dependencies->count];
     dependencies->count++;
 
-    /* Set the ID */
+    // Set the ID
     new_dep->id = id;
 
     return ACVP_SUCCESS;
@@ -196,7 +196,7 @@ ACVP_RESULT acvp_oe_oe_new(ACVP_CTX *ctx,
 
     if (!ctx) return ACVP_NO_CTX;
 
-    /* Get a handle on the OES */
+    // Get a handle on the OES
     oes = &ctx->op_env.oes;
 
     if (oes->count == LIBACVP_OES_MAX) {
@@ -226,7 +226,7 @@ ACVP_RESULT acvp_oe_oe_new(ACVP_CTX *ctx,
     new_oe = &oes->oe[oes->count];
     oes->count++;
 
-    /* Set the ID */
+    // Set the ID
     new_oe->id = id;
 
     rv = copy_oe_string(&new_oe->name, name);
@@ -249,7 +249,7 @@ static ACVP_OE *find_oe(ACVP_CTX *ctx,
 
     if (!ctx) return NULL;
 
-    /* Get a handle on the Vendors */
+    // Get a handle on the Vendors
     oes = &ctx->op_env.oes;
 
     if (id == 0) {
@@ -258,7 +258,7 @@ static ACVP_OE *find_oe(ACVP_CTX *ctx,
     }
     for (k = 0; k < oes->count; k++) {
         if (id == oes->oe[k].id) {
-            /* Match */
+            // Match
             return &oes->oe[k];
         }
     }
@@ -284,12 +284,12 @@ ACVP_RESULT acvp_oe_oe_set_dependency(ACVP_CTX *ctx,
 
     if (!ctx) return ACVP_NO_CTX;
 
-    /* Get a handle on the selected OE */
+    // Get a handle on the selected OE
     if (!(oe = find_oe(ctx, oe_id))) {
         return ACVP_INVALID_ARG;
     }
 
-    /* Insert a pointer to the actual Dependency struct location */
+    // Insert a pointer to the actual Dependency struct location
     if (!(dep = find_dependency(ctx, dependency_id))) {
         return ACVP_INVALID_ARG;
     }
@@ -300,7 +300,7 @@ ACVP_RESULT acvp_oe_oe_set_dependency(ACVP_CTX *ctx,
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /* Set pointer to the dependency */
+    // Set pointer to the dependency
     oe->dependencies.deps[oe->dependencies.count] = dep;
     oe->dependencies.count++;
 
@@ -314,7 +314,7 @@ static ACVP_VENDOR *find_vendor(ACVP_CTX *ctx,
 
     if (!ctx) return NULL;
 
-    /* Get a handle on the Vendors */
+    // Get a handle on the Vendors
     vendors = &ctx->op_env.vendors;
 
     if (id == 0) {
@@ -323,7 +323,7 @@ static ACVP_VENDOR *find_vendor(ACVP_CTX *ctx,
     }
     for (k = 0; k < vendors->count; k++) {
         if (id == vendors->v[k].id) {
-            /* Match */
+            // Match
             return &vendors->v[k];
         }
     }
@@ -343,7 +343,7 @@ static ACVP_RESULT acvp_oe_vendor_new(ACVP_CTX *ctx,
 
     if (!ctx) return ACVP_NO_CTX;
 
-    /* Get handle on vendor fields */
+    // Get handle on vendor fields
     vendors = &ctx->op_env.vendors;
 
     if (vendors->count == LIBACVP_VENDORS_MAX) {
@@ -367,7 +367,7 @@ static ACVP_RESULT acvp_oe_vendor_new(ACVP_CTX *ctx,
     new_vendor = &vendors->v[vendors->count];
     vendors->count++;
 
-    /* Set the ID */
+    // Set the ID
     new_vendor->id = id;
 
     rv = copy_oe_string(&new_vendor->name, name);
@@ -403,7 +403,7 @@ static ACVP_RESULT acvp_oe_vendor_add_address(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* Get handle on the address field */
+    // Get handle on the address field
     address = &vendor->address;
 
     if (street_1) {
@@ -480,7 +480,7 @@ ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
 
     if (!ctx) return ACVP_NO_CTX;
 
-    /* Get a handle on the Modules */
+    // Get a handle on the Modules
     modules = &ctx->op_env.modules;
 
     if (modules->count == LIBACVP_MODULES_MAX) {
@@ -503,10 +503,10 @@ ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
     new_module = &modules->module[modules->count];
     modules->count++;
 
-    /* Set the ID */
+    // Set the ID
     new_module->id = id;
 
-    /* Insert a pointer to the actual Vendor struct location */
+    // Insert a pointer to the actual Vendor struct location
     if (!(vendor = find_vendor(ctx, id))) return ACVP_INVALID_ARG;
     new_module->vendor = vendor;
 
@@ -538,7 +538,7 @@ static ACVP_MODULE *find_module(ACVP_CTX *ctx,
     }
     for (k = 0; k < modules->count; k++) {
         if (id == modules->module[k].id) {
-            /* Match */
+            // Match
             return &modules->module[k];
         }
     }
@@ -614,17 +614,17 @@ ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
 static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY *b) {
     int diff = 0;
 
-    //Name is the only required field as per the spec
+    // Name is the only required field as per the spec
     if (!a->name || !b->name) {
         return 0;
     }
 
-    //for each other value libacvp supports, check to see if its in both, if so, compare
+    // for each other value libacvp supports, check to see if its in both, if so, compare
     if (a->type && b->type) {
         strcmp_s(a->type, ACVP_OE_STR_MAX, b->type, &diff);
         if (diff != 0) return 0;
     } else if ((!a->type && b->type) || (a->type && !b->type)) {
-        //if one has a value but the other does not, they are not equal.
+        // if one has a value but the other does not, they are not equal.
         return 0;
     }
 
@@ -632,7 +632,7 @@ static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY 
         strcmp_s(a->description, ACVP_OE_STR_MAX, b->description, &diff);
         if (diff != 0) return 0;
     } else if ((!a->description && b->description) || (a->description && !b->description)) {
-        //if one has a value but the other does not, they are not equal.
+        // if one has a value but the other does not, they are not equal.
         return 0;
     }
 
@@ -640,7 +640,7 @@ static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY 
         strcmp_s(a->series, ACVP_OE_STR_MAX, b->series, &diff);
         if (diff != 0) return 0;
     } else if ((!a->series && b->series) || (a->series && !b->series)) {
-        //if one has a value but the other does not, they are not equal.
+        // if one has a value but the other does not, they are not equal.
         return 0;
     }
 
@@ -648,7 +648,7 @@ static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY 
         strcmp_s(a->family, ACVP_OE_STR_MAX, b->family, &diff);
         if (diff != 0) return 0;
     } else if ((!a->family && b->family) || (a->family && !b->family)) {
-        //if one has a value but the other does not, they are not equal.
+        // if one has a value but the other does not, they are not equal.
         return 0;
     }
 
@@ -656,7 +656,7 @@ static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY 
         strcmp_s(a->version, ACVP_OE_STR_MAX, b->version, &diff);
         if (diff != 0) return 0;
     } else if ((!a->version && b->version) || (a->version && !b->version)) {
-        //if one has a value but the other does not, they are not equal.
+        // if one has a value but the other does not, they are not equal.
         return 0;
     }
 
@@ -664,11 +664,11 @@ static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY 
         strcmp_s(a->manufacturer, ACVP_OE_STR_MAX, b->manufacturer, &diff);
         if (diff != 0) return 0;
     } else if ((!a->manufacturer && b->manufacturer) || (a->manufacturer && !b->manufacturer)) {
-        //if one has a value but the other does not, they are not equal.
+        // if one has a value but the other does not, they are not equal.
         return 0;
     }
 
-    /* Reached the end, we have a full match */
+    // Reached the end, we have a full match
     return 1;
 }
 
@@ -892,7 +892,7 @@ static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
 
     ACVP_LOG_INFO("Querying the server for a matching dependency entry...");
     do {
-        /* Query the server DB. */
+        // Query the server DB.
         if (parameters) {
             /* Use parameters and free them, as we get the next pages'
              * URLs from the server */
@@ -907,10 +907,10 @@ static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
             goto end;
         }
 
-        /* Try to match the dependency against the page returned by server. */
+        // Try to match the dependency against the page returned by server.
         rv = match_dependencies_page(ctx, dep, &match, &next_endpoint);
 
-        /* Only query the next page if we are within the limit */
+        // Only query the next page if we are within the limit
         if (rv != ACVP_SUCCESS || match) {
             break;
         }
@@ -964,10 +964,10 @@ static ACVP_RESULT verify_fips_oe_dependencies(ACVP_CTX *ctx,
         }
 
         if (cur_dep->url == NULL) {
-            /* This dependency does not exist. Mark the flag :) */
+            // This dependency does not exist. Mark the flag :)
             dependencies->status = ACVP_RESOURCE_STATUS_PARTIAL;
         } else {
-            /* At least this Dependency exists */
+            // At least this Dependency exists
             all_incomplete = 0;
         }
     }
@@ -1052,7 +1052,7 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
         }
 
         if (oe->dependencies.count != json_array_get_count(dependency_urls)) {
-            /* The number of array elements must be same */
+            // The number of array elements must be same
             continue;
         }
 
@@ -1183,7 +1183,7 @@ static ACVP_RESULT query_oe(ACVP_CTX *ctx,
 
     ACVP_LOG_INFO("Querying the server for a matching OE entry...");
     do {
-        /* Query the server DB. */
+        // Query the server DB.
         if (parameters) {
             /* Use parameters and free them, as we get the next pages'
              * URLs from the server */
@@ -1198,10 +1198,10 @@ static ACVP_RESULT query_oe(ACVP_CTX *ctx,
             goto end;
         }
 
-        /* Try to match against the page returned by server. */
+        // Try to match against the page returned by server.
         rv = match_oes_page(ctx, oe, &match, &next_endpoint);
 
-        /* Only query the next page if we are within the limit */
+        // Only query the next page if we are within the limit
         if (rv != ACVP_SUCCESS || match) {
             break;
         }
@@ -1298,7 +1298,7 @@ static int compare_emails(ACVP_STRING_LIST *email_list,
     }
 
     if (email_list_len != json_array_get_count(candidate_emails)) {
-        /* Must be same length */
+        // Must be same length
         *match = 0;
         return ACVP_SUCCESS;
     }
@@ -1366,7 +1366,7 @@ static ACVP_RESULT compare_phone_numbers(ACVP_OE_PHONE_LIST *phone_list,
     }
 
     if (phone_list_len != json_array_get_count(candidate_phones)) {
-        /* Must be same length */
+        // Must be same length
         *match = 0;
         return ACVP_SUCCESS;
     }
@@ -1959,7 +1959,7 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
             }
         }
 
-        /* Query using the first email in the list */
+        // Query using the first email in the list
         if (vendor->emails) {
             rv = acvp_kv_list_append(&parameters, "email[0]=eq:", vendor->emails->string);
             if (ACVP_SUCCESS != rv) {
@@ -1971,7 +1971,7 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
 
     ACVP_LOG_INFO("Querying the server for a matching vendor entry...");
     do {
-        /* Query the server DB. */
+        // Query the server DB.
         if (parameters) {
             /* Use parameters and free them, as we get the next pages'
              * URLs from the server */
@@ -1986,10 +1986,10 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
             goto end;
         }
 
-        /* Try to match against the page returned by server. */
+        // Try to match against the page returned by server.
         rv = match_vendors_page(ctx, vendor, &match, &next_endpoint);
 
-        /* Only query the next page if there is one */
+        // Only query the next page if there is one
         if (rv != ACVP_SUCCESS || match) {
             break;
         }
@@ -2054,7 +2054,7 @@ static int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b) {
         if (diff != 0) return 0;
     }
 
-    /* Reached the end, we have a full match */
+    // Reached the end, we have a full match
     return 1;
 }
 
@@ -2168,7 +2168,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
         num_contacts = json_array_get_count(contact_urls);
         if (num_contacts != module->vendor->persons.count ||
             num_contacts > LIBACVP_PERSONS_MAX) {
-            /* Length of the contactsUrl array is different */
+            // Length of the contactsUrl array is different
             continue;
         }
 
@@ -2295,7 +2295,7 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
     if (module->url) {
-        /* This resource has already been verified as existing. */
+        // This resource has already been verified as existing.
         return ACVP_SUCCESS;
     }
 
@@ -2310,7 +2310,7 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
         }
         endpoint = first_endpoint;
 
-        /* Prepare the first query. */
+        // Prepare the first query.
         snprintf(first_endpoint, ACVP_ATTR_URL_MAX, "%s%s",
                  ctx->path_segment, "modules?");
 
@@ -2346,7 +2346,7 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
             }
         }
 
-        /* Parse the vendorId */
+        // Parse the vendorId
         vendor_url_len = strnlen_s(module->vendor->url, ACVP_ATTR_URL_MAX);
 
         ptr = module->vendor->url;
@@ -2357,7 +2357,7 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
             strstr_s(ptr, remaining_space, "/", 1, &ptr);
             if (ptr == NULL) break;
             ptr_old = ptr;
-            /* Need to move past this occurrence */
+            // Need to move past this occurrence
             ptr += 1;
         }
         ptr = ptr_old; // The position of the last delimiter
@@ -2371,7 +2371,7 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
 
     ACVP_LOG_INFO("Querying the server for a matching module entry...");
     do {
-        /* Query the server DB. */
+        // Query the server DB.
         if (parameters) {
             /* Use parameters and free them, as we get the next pages'
              * URLs from the server */
@@ -2386,10 +2386,10 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
             goto end;
         }
 
-        /* Try to match against the page returned by server, iterate endpoint */
+        // Try to match against the page returned by server, iterate endpoint
         rv = match_modules_page(ctx, module, &match, &next_endpoint);
 
-        /* Only query the next page if we are within the limit */
+        // Only query the next page if we are within the limit
         if (rv != ACVP_SUCCESS || match) {
            break;
         }
@@ -2899,7 +2899,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
             return ACVP_JSON_ERR;
         }
 
-        /* Increment (in case of error below, we will still cleanup) */
+        // Increment (in case of error below, we will still cleanup)
         vendor->persons.count++;
 
         name_str = json_object_get_string(contact_obj, "fullName");
@@ -2954,17 +2954,17 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
         return ACVP_INVALID_ARG;
     }
 
-    /* Designate and init new Vendor struct */
+    // Designate and init new Vendor struct
     rv = acvp_oe_vendor_new(ctx, id, name);
     if (rv != ACVP_SUCCESS) return rv;
 
-    /* Get pointer to the new vendor */
+    // Get pointer to the new vendor
     vendor = find_vendor(ctx, id);
     if (!vendor) return ACVP_INVALID_ARG;
 
     website = json_object_get_string(obj, "website");
     if (website) {
-        /* Copy the "website" */
+        // Copy the "website"
         rv = copy_oe_string(&vendor->website, website);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'website' string too long");
@@ -2972,19 +2972,19 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
         }
     }
 
-    /* Parse the Emails (if it exists) */
+    // Parse the Emails (if it exists)
     rv = acvp_oe_metadata_parse_emails(ctx, obj, &vendor->emails);
     if (ACVP_SUCCESS != rv) return rv;
 
-    /* Parse the Phone Numbers (if it exists) */
+    // Parse the Phone Numbers (if it exists)
     rv = acvp_oe_metadata_parse_phone_numbers(ctx, obj, &vendor->phone_numbers);
     if (ACVP_SUCCESS != rv) return rv;
 
-    /* Parse the Address */
+    // Parse the Address
     rv = acvp_oe_metadata_parse_vendor_address(ctx, obj, vendor);
     if (ACVP_SUCCESS != rv) return rv;
 
-    /* Parse the Contacts */
+    // Parse the Contacts
     rv = acvp_oe_metadata_parse_vendor_contacts(ctx, obj, vendor);
     if (ACVP_SUCCESS != rv) return rv;
 
@@ -3029,10 +3029,10 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendors(ACVP_CTX *ctx, JSON_Object *ob
         }
 
         rv = acvp_oe_metadata_parse_vendor(ctx, vendor_obj);
-        if (ACVP_SUCCESS != rv) return rv; /* Fail */
+        if (ACVP_SUCCESS != rv) return rv; // Fail
     }
 
-    /* Success */
+    // Success
     return ACVP_SUCCESS;
 }
 
@@ -3063,7 +3063,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj
         return ACVP_INVALID_ARG;
     }
 
-    /* Designate and init new Module struct */
+    // Designate and init new Module struct
     rv = acvp_oe_module_new(ctx, module_id, name);
     if (rv != ACVP_SUCCESS) return rv;
 
@@ -3117,10 +3117,10 @@ static ACVP_RESULT acvp_oe_metadata_parse_modules(ACVP_CTX *ctx, JSON_Object *ob
         }
 
         rv = acvp_oe_metadata_parse_module(ctx, module_obj);
-        if (ACVP_SUCCESS != rv) return rv; /* Fail */
+        if (ACVP_SUCCESS != rv) return rv; // Fail
     }
 
-    /* Success */
+    // Success
     return ACVP_SUCCESS;
 }
 
@@ -3293,7 +3293,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
             glb_dependency_id++;
         }
 
-        /* Add the Dependency to the OE */
+        // Add the Dependency to the OE
         acvp_oe_oe_set_dependency(ctx, oe_id, dep_id);
     }
     return rv;
@@ -3327,7 +3327,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_INVALID_ARG;
     }
 
-    /* Designate and init new OE struct */
+    // Designate and init new OE struct
     rv = acvp_oe_oe_new(ctx, oe_id, name);
     if (rv != ACVP_SUCCESS) return rv;
 
@@ -3380,10 +3380,10 @@ static ACVP_RESULT acvp_oe_metadata_parse_oes(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         rv = acvp_oe_metadata_parse_oe(ctx, oe_obj);
-        if (ACVP_SUCCESS != rv) return rv; /* Fail */
+        if (ACVP_SUCCESS != rv) return rv; // Fail
     }
 
-    /* Success */
+    // Success
     return ACVP_SUCCESS;
 }
 

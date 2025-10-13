@@ -67,9 +67,9 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     int j, t_cnt;
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_DRBG_TC stc;
     ACVP_TEST_CASE tc;
@@ -212,7 +212,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         nonce_len = json_object_get_number(groupobj, "nonceLen");
         if (!(alg_id == ACVP_CTRDRBG && !der_func_enabled)) {
-            /* Allowed to be 0 when counter mode and not using derivation func */
+            // Allowed to be 0 when counter mode and not using derivation func
             if (nonce_len < ACVP_DRBG_NONCE_BIT_MIN ||
                 nonce_len > ACVP_DRBG_NONCE_BIT_MAX) {
                 ACVP_LOG_ERR("Server JSON invalid 'nonceLen'(%u)",
@@ -351,7 +351,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (!pred_resist_enabled && reseed) {
                 ACVP_LOG_VERBOSE("Found new DRBG Prediction Input...");
 
-                /* Get 1st element from the array */
+                // Get 1st element from the array
                 pr_input_val = json_array_get_value(pred_resist_input, index);
                 if (pr_input_val == NULL) {
                    ACVP_LOG_ERR("Server JSON, invalid pr_input_val array");
@@ -410,7 +410,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                goto err;
             }
 
-            /* Get 1st or 2nd element from the array */
+            // Get 1st or 2nd element from the array
             pr_input_val = json_array_get_value(pred_resist_input, index);
             if (pr_input_val == NULL) {
                ACVP_LOG_ERR("Server JSON, invalid pr_input_val array");
@@ -532,7 +532,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("Crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -557,7 +557,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             acvp_drbg_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

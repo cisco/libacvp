@@ -102,7 +102,7 @@ int app_kmac_handler(ACVP_TEST_CASE *test_case) {
         printf("Crypto module error, EVP_MAC_update failed\n");
         goto end;
     }
-    /* Get output size */
+    // Get output size
     if (!EVP_MAC_final(kmac_ctx, NULL, &mac_out_len, 0)) {
         printf("Crypto module error, EVP_MAC_final failed\n");
         goto end;

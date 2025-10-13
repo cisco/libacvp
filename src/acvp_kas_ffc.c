@@ -283,8 +283,8 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
     JSON_Array *tests, *r_tarr = NULL;
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     const char *hash_str = NULL;
     ACVP_HASH_ALG hash_alg = 0;
     const char *p = NULL, *q = NULL, *g = NULL, *pms_str = NULL;
@@ -503,7 +503,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
                 goto err;
             }
 
-            /* Process the current KAT test vector... */
+            // Process the current KAT test vector...
             if ((cap->crypto_handler)(tc)) {
                 acvp_kas_ffc_release_tc(stc);
                 ACVP_LOG_ERR("Crypto module failed the operation");
@@ -528,7 +528,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
              */
             acvp_kas_ffc_release_tc(stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);
@@ -545,7 +545,7 @@ err:
 ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;
@@ -673,8 +673,8 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
     JSON_Array *tests, *r_tarr = NULL;
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_KAS_FFC_CAP_MODE *kas_ffc_mode = NULL;
     const char *hash_str = NULL, *dgm_str = NULL;
     ACVP_HASH_ALG hash_alg = 0;
@@ -723,7 +723,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        //If the user doesn't specify a hash function, neither does the server
+        // If the user doesn't specify a hash function, neither does the server
         if (cap && cap->cap.kas_ffc_cap) {
             kas_ffc_mode = &cap->cap.kas_ffc_cap->kas_ffc_mode[ACVP_KAS_FFC_MODE_NONE - 1];
             if (kas_ffc_mode && kas_ffc_mode->hash != ACVP_NO_SHA) {
@@ -877,7 +877,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
 
                 z = json_object_get_string(testobj, "hashZ");
                 if (!z) {
-                    //Assume user did not specify hash function if we don't have capability info for some reason
+                    // Assume user did not specify hash function if we don't have capability info for some reason
                     if (!cap || !cap->cap.kas_ffc_cap || !cap->cap.kas_ffc_cap->kas_ffc_mode ||
                             cap->cap.kas_ffc_cap->kas_ffc_mode->hash == ACVP_NO_SHA) {
                         z = json_object_get_string(testobj, "z");
@@ -926,7 +926,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
                 goto err;
             }
 
-            /* Process the current KAT test vector... */
+            // Process the current KAT test vector...
             if ((cap->crypto_handler)(tc)) {
                 acvp_kas_ffc_release_tc(stc);
                 ACVP_LOG_ERR("Crypto module failed the operation");
@@ -951,7 +951,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
              */
             acvp_kas_ffc_release_tc(stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);
@@ -968,7 +968,7 @@ err:
 ACVP_RESULT acvp_kas_ffc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;

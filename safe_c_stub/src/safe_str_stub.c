@@ -348,7 +348,7 @@ errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
         return (ESLEMAX);
     }
 
-    /* hold base in case src was not copied */
+    // hold base in case src was not copied
     orig_dest = dest;
 
     if (src == NULL) {
@@ -495,7 +495,7 @@ strtok_s (char *dest, rsize_t *dmax, const char *src, char **ptr)
         return (NULL);
     }
 
-    /* if the source was NULL, use the tokenizer context */
+    // if the source was NULL, use the tokenizer context
     if (dest == NULL) {
         dest = *ptr;
     }
@@ -573,8 +573,8 @@ strtok_s (char *dest, rsize_t *dmax, const char *src, char **ptr)
                  * and return context ptr to next char
                  */
                 *dest = '\0';
-                *ptr = (dest + 1);  /* return pointer for next scan */
-                *dmax = dlen - 1;   /* account for the nulled delimiter */
+                *ptr = (dest + 1);  // return pointer for next scan
+                *dmax = dlen - 1;   // account for the nulled delimiter
                 return (ptoken);
             } else {
                 /*

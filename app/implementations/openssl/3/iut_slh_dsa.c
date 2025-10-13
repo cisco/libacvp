@@ -87,7 +87,7 @@ int app_slh_dsa_handler(ACVP_TEST_CASE *test_case) {
 
     switch (alg) {
     case ACVP_SUB_SLH_DSA_KEYGEN:
-        /* concatenate secret_seed, secret_prf, and pub_seed */
+        // concatenate secret_seed, secret_prf, and pub_seed
         seed_len = tc->secret_seed_len + tc->secret_prf_len + tc->pub_seed_len;
         seed = calloc(seed_len, sizeof(char));
         if (!seed) {
@@ -133,7 +133,7 @@ int app_slh_dsa_handler(ACVP_TEST_CASE *test_case) {
         tc->pub_key_len = (int)pk_len;
         break;
     case ACVP_SUB_SLH_DSA_SIGGEN:
-        /* First, create the pkey containing the sk we are given */
+        // First, create the pkey containing the sk we are given
         pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, param_set, NULL);
         if (!pkey_ctx) {
             printf("Error initializing pkey CTX in SLH-DSA siggen\n");
@@ -159,13 +159,13 @@ int app_slh_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        /* Then, create the signature object */
+        // Then, create the signature object
         sig = EVP_SIGNATURE_fetch(NULL, param_set, NULL);
         if (!sig) {
             printf("Error fetching signature in SLH-DSA siggen\n");
             goto end;
         }
-        /* Then, use that pkey to sign. Start generating new params */
+        // Then, use that pkey to sign. Start generating new params
         if (pbld) OSSL_PARAM_BLD_free(pbld);
         if (params) OSSL_PARAM_free(params);
 
@@ -190,7 +190,7 @@ int app_slh_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        /* Initialize and perform sig operation */
+        // Initialize and perform sig operation
         if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
         pkey_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
         if (!pkey_ctx) {
@@ -212,7 +212,7 @@ int app_slh_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        /* Copy results back into test case */
+        // Copy results back into test case
         memcpy_s(tc->sig, SLH_DSA_MAX_BUF_SIZE, sig_buf, sig_len);
         tc->sig_len = (int)sig_len;
 
@@ -220,7 +220,7 @@ int app_slh_dsa_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SUB_SLH_DSA_SIGVER:
         tc->ver_disposition = 0;
 
-        /* First, create the pkey containing the pk we are given */
+        // First, create the pkey containing the pk we are given
         pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, param_set, NULL);
         if (!pkey_ctx) {
             printf("Error initializing pkey CTX in SLH-DSA sigver\n");
@@ -246,7 +246,7 @@ int app_slh_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        /* Set up params */
+        // Set up params
         if (pbld) OSSL_PARAM_BLD_free(pbld);
         if (params) OSSL_PARAM_free(params);
         if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
@@ -268,7 +268,7 @@ int app_slh_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        /* Set up the CTX's and run the verify */
+        // Set up the CTX's and run the verify
         pkey_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
         if (!pkey_ctx) {
             printf("Error initializing pkey ctx from pkey in SLH-DSA sigver\n");

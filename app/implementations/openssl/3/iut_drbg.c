@@ -33,7 +33,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     }
 
     tc = test_case->tc.drbg;
-    /* Todo: expand these checks and UTs for them */
+    // Todo: expand these checks and UTs for them
     if (!tc->drb || (tc->perso_string_len && !tc->perso_string)) {
         printf("DRBG test case invalid\n");
         goto err;
@@ -146,7 +146,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     strength = EVP_RAND_get_strength(rctx);
     mac_name = remove_str_const("HMAC");
     params[0] = OSSL_PARAM_construct_utf8_string(param_str, tmp, 0);
-    params[1] = OSSL_PARAM_construct_utf8_string(OSSL_DRBG_PARAM_MAC, mac_name, 0); //ignored if irrelevant
+    params[1] = OSSL_PARAM_construct_utf8_string(OSSL_DRBG_PARAM_MAC, mac_name, 0); // ignored if irrelevant
     params[2] = OSSL_PARAM_construct_int(OSSL_DRBG_PARAM_USE_DF, &der_func);
     params[3] = OSSL_PARAM_construct_end();
     if (EVP_RAND_CTX_set_params(rctx, params) != 1) {

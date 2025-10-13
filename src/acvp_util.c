@@ -40,7 +40,7 @@ static int acvp_char_to_int(char ch);
 void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *func, int line, const char *fmt, ...) {
     va_list arguments;
     int iter = 0, ret = 0;
-    //One extra char for null terminator
+    // One extra char for null terminator
     char tmp[ACVP_LOG_MAX_MSG_LEN + 1];
     tmp[ACVP_LOG_MAX_MSG_LEN] = '\0';
 
@@ -53,7 +53,7 @@ void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *func, int line,
     }
 
     if (ctx->test_progress_cb && (ctx->log_lvl >= level)) {
-        /*  Pull the arguments from the stack and invoke the logger function */
+        //  Pull the arguments from the stack and invoke the logger function
         va_start(arguments, fmt);
         ret = vsnprintf(tmp + iter, ACVP_LOG_MAX_MSG_LEN + 1 - iter, fmt, arguments);
         if (ret < 0 || ret >= ACVP_LOG_MAX_MSG_LEN + 1 - iter) {
@@ -101,7 +101,7 @@ ACVP_RESULT acvp_cleanup(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (ctx) {
-        /* Only call if ctx is not null */
+        // Only call if ctx is not null
         rv = acvp_free_test_session(ctx);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Failed to free parameter 'ctx'");
@@ -277,13 +277,13 @@ ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
 
         if (alg_tbl[i].mode == NULL) continue;
 
-        /* Compare the algorithm string */
+        // Compare the algorithm string
         strcmp_s(alg_tbl[i].name,
                  ACVP_ALG_NAME_MAX,
                  algorithm, &diff);
 
         if (!diff) {
-            /* Compare the mode string */
+            // Compare the mode string
             strcmp_s(alg_tbl[i].mode,
                      ACVP_ALG_MODE_MAX,
                      mode, &diff);
@@ -566,7 +566,7 @@ const char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type) {
     }
 }
 
-/* This function checks to see if the value is a valid prime test (RSA) */
+// This function checks to see if the value is a valid prime test (RSA)
 ACVP_RESULT is_valid_prime_test(const char *value) {
     int diff = 0;
 
@@ -581,7 +581,7 @@ ACVP_RESULT is_valid_prime_test(const char *value) {
     return ACVP_INVALID_ARG;
 }
 
-/* This function checks to see if the value is a valid prime test (RSA) */
+// This function checks to see if the value is a valid prime test (RSA)
 ACVP_RESULT is_valid_rsa_mod(int value) {
     if (value != 2048 &&
         value != 3072 &&
@@ -633,7 +633,7 @@ const char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id) {
     }
 
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
-        /* Check the deprecated curves */
+        // Check the deprecated curves
         for (i = 0; i < ec_curve_depr_tbl_length; i++) {
             if (id == ec_curve_depr_tbl[i].id) {
                 return ec_curve_depr_tbl[i].name;
@@ -660,7 +660,7 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     }
 
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
-        /* Check the deprecated curves */
+        // Check the deprecated curves
         for (i = 0; i < ec_curve_depr_tbl_length; i++) {
             int diff = 0;
 
@@ -759,7 +759,7 @@ ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str) {
     return 0;
 }
 
-#define ACVP_LMS_MODE_STR_MAX 64 /* arbitrary */
+#define ACVP_LMS_MODE_STR_MAX 64 // arbitrary
 
 static struct acvp_enum_string_pair lms_mode_tbl[] = {
     { ACVP_LMS_MODE_SHA256_M24_H5, "LMS_SHA256_M24_H5"},
@@ -949,7 +949,7 @@ const char *acvp_lookup_slh_dsa_param_set_str(ACVP_SLH_DSA_PARAM_SET param_set) 
     return NULL;
 }
 
-/* This seems too small to dictate having its own table/function, but future expandability may be useful */
+// This seems too small to dictate having its own table/function, but future expandability may be useful
 static struct acvp_enum_string_pair rsa_key_format_tbl[] = {
     { ACVP_RSA_KEY_FORMAT_STANDARD, "standard" },
     { ACVP_RSA_KEY_FORMAT_CRT, "crt" }
@@ -985,8 +985,8 @@ ACVP_RESULT acvp_bin_to_hexstr(const unsigned char *src, int src_len, char *dest
     }
 
     for (i = 0, j = 0; i < src_len; i++, j += 2) {
-        nibb_a = *src >> 4;   /* Get first half of byte */
-        nibb_b = *src & 0x0f; /* Get second half of byte */
+        nibb_a = *src >> 4;   // Get first half of byte
+        nibb_b = *src & 0x0f; // Get second half of byte
 
         *dest = hex_chars[nibb_a];
         *(dest + 1) = hex_chars[nibb_b];
@@ -1029,10 +1029,10 @@ ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_ma
 
     if (!is_odd) {
         while (*src && src[1]) {
-            byte_a = acvp_char_to_int((char)*src) << 4; /* Shift to left half of byte */
+            byte_a = acvp_char_to_int((char)*src) << 4; // Shift to left half of byte
             byte_b = acvp_char_to_int(*(src + 1));
 
-            *dest = byte_a + byte_b; /* Combine left half with right half */
+            *dest = byte_a + byte_b; // Combine left half with right half
 
             dest++;
             src += 2;
@@ -1073,7 +1073,7 @@ ACVP_DRBG_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_
 
     drbg_cap = cap->cap.drbg_cap;
 
-    /* No entires yet */
+    // No entires yet
     cap_mode = drbg_cap->drbg_cap_mode;
 
     while (cap_mode) {
@@ -1366,7 +1366,7 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
         return ACVP_JSON_ERR;
     }
 
-    /* create an array of response test groups */
+    // create an array of response test groups
     json_object_set_value(*r_vs, "testGroups", json_value_init_array());
     (*groups_arr) = json_object_get_array(*r_vs, "testGroups");
     if (!*groups_arr) {
@@ -1490,7 +1490,7 @@ ACVP_RESULT acvp_append_sl_list(ACVP_SL_LIST **list, int length) {
         current = current->next;
     }
 
-    /* Code should never reach here */
+    // Code should never reach here
     return ACVP_UNSUPPORTED_OP;
 }
 
@@ -1525,7 +1525,7 @@ ACVP_RESULT acvp_append_param_list(ACVP_PARAM_LIST **list, int param) {
         current = current->next;
     }
 
-    /* Code should never reach here */
+    // Code should never reach here
     return ACVP_INTERNAL_ERR;
 }
 
@@ -1562,7 +1562,7 @@ ACVP_RESULT acvp_append_name_list(ACVP_NAME_LIST **list, const char *string) {
         }
         current = current->next;
     }
-    /* Code should never reach here */
+    // Code should never reach here
     return ACVP_UNSUPPORTED_OP;
 }
 
@@ -1822,7 +1822,7 @@ unsigned char *acvp_hash_create_mct_msg(ACVP_HASH_TC *tc, size_t *msg_len) {
         if (!out) {
             goto err;
         }
-        /* If the concatenation is larger than msg_len, only copy msg_len bytes. If smaller, only copy concatenation bytes, so the calloc 0s remain */
+        // If the concatenation is larger than msg_len, only copy msg_len bytes. If smaller, only copy concatenation bytes, so the calloc 0s remain
         out_len = tmp_len > tc->msg_len ? tc->msg_len : tmp_len;
         memcpy_s(out, tc->msg_len, tmp, out_len);
         free(tmp);

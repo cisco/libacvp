@@ -80,9 +80,9 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_KDF_TLS13_TC stc;
     ACVP_TEST_CASE tc;
@@ -316,7 +316,7 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("Crypto module failed the operation");
                 acvp_kdf_tls13_release_tc(&stc);
@@ -341,7 +341,7 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             acvp_kdf_tls13_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);
@@ -377,7 +377,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
         return ACVP_MALLOC_FAIL;
     }
 
-    //append client early traffic secret
+    // append client early traffic secret
     if (stc->cets_len > ACVP_KDF_TLS13_DATA_LEN_BYTE_MAX) {
         ACVP_LOG_ERR("Provided length for test case output too long: cets_len");
         rv = ACVP_INVALID_ARG;
@@ -391,7 +391,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     json_object_set_string(tc_rsp, "clientEarlyTrafficSecret", tmp);
     memzero_s(tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
 
-    //append early export master secret
+    // append early export master secret
     if (stc->eems_len > ACVP_KDF_TLS13_DATA_LEN_BYTE_MAX) {
         ACVP_LOG_ERR("Provided length for test case output too long: eems_len");
         rv = ACVP_INVALID_ARG;
@@ -405,7 +405,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     json_object_set_string(tc_rsp, "earlyExporterMasterSecret", tmp);
     memzero_s(tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
 
-    //append client handshake traffic secret
+    // append client handshake traffic secret
     if (stc->chts_len > ACVP_KDF_TLS13_DATA_LEN_BYTE_MAX) {
         ACVP_LOG_ERR("Provided length for test case output too long: chts_len");
         rv = ACVP_INVALID_ARG;
@@ -419,7 +419,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     json_object_set_string(tc_rsp, "clientHandshakeTrafficSecret", tmp);
     memzero_s(tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
 
-    //append server handshake traffic secret
+    // append server handshake traffic secret
     if (stc->shts_len > ACVP_KDF_TLS13_DATA_LEN_BYTE_MAX) {
         ACVP_LOG_ERR("Provided length for test case output too long: shts_len");
         rv = ACVP_INVALID_ARG;
@@ -433,7 +433,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     json_object_set_string(tc_rsp, "serverHandshakeTrafficSecret", tmp);
     memzero_s(tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
 
-    //append client app traffic secret
+    // append client app traffic secret
     if (stc->cats_len > ACVP_KDF_TLS13_DATA_LEN_BYTE_MAX) {
         ACVP_LOG_ERR("Provided length for test case output too long: cats_len");
         rv = ACVP_INVALID_ARG;
@@ -448,7 +448,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     memzero_s(tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
 
 
-    //append server app traffic secret
+    // append server app traffic secret
     if (stc->sats_len > ACVP_KDF_TLS13_DATA_LEN_BYTE_MAX) {
         ACVP_LOG_ERR("Provided length for test case output too long: sats_len");
         rv = ACVP_INVALID_ARG;
@@ -463,7 +463,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     memzero_s(tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
 
 
-    //append exporter master secret
+    // append exporter master secret
     if (stc->ems_len > ACVP_KDF_TLS13_DATA_LEN_BYTE_MAX) {
         ACVP_LOG_ERR("Provided length for test case output too long: ems_len");
         rv = ACVP_INVALID_ARG;
@@ -477,7 +477,7 @@ static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *st
     json_object_set_string(tc_rsp, "exporterMasterSecret", tmp);
     memzero_s(tmp, ACVP_KDF_TLS13_DATA_LEN_STR_MAX);
 
-    //append resumption master secret
+    // append resumption master secret
     if (stc->rms_len > ACVP_KDF_TLS13_DATA_LEN_BYTE_MAX) {
         ACVP_LOG_ERR("Provided length for test case output too long: rms_len");
         rv = ACVP_INVALID_ARG;

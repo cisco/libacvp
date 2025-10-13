@@ -124,7 +124,7 @@ static ACVP_RESULT acvp_kmac_output_tc(ACVP_CTX *ctx, ACVP_KMAC_TC *stc, JSON_Ob
             goto end;
         }
         json_object_set_string(tc_rsp, "mac", tmp);
-    } else { /* verify */
+    } else { // verify
         json_object_set_boolean(tc_rsp, "testPassed", stc->disposition);
     }
 
@@ -181,9 +181,9 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_KMAC_TC stc;
     ACVP_TEST_CASE tc;
@@ -207,10 +207,10 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    /* Get a reference to the abstracted test case */
+    // Get a reference to the abstracted test case
     tc.tc.kmac = &stc;
 
-    /* Get the crypto module handler for this kmac algorithm */
+    // Get the crypto module handler for this kmac algorithm
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id == 0) {
         ACVP_LOG_ERR("Unsupported algorithm (%s)", alg_str);
@@ -438,7 +438,7 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("Crypto module failed the operation");
                 acvp_kmac_release_tc(&stc);
@@ -462,7 +462,7 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             acvp_kmac_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

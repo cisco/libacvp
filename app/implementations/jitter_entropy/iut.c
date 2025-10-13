@@ -42,7 +42,7 @@ static int app_sha_handler(ACVP_TEST_CASE *test_case) {
     sha3_256_init(ctx);
     sha3_update(ctx, tc->msg, tc->msg_len);
     sha3_final(ctx, tc->md);
-    tc->md_len = 32;  /* always 256 bit */
+    tc->md_len = 32;  // always 256 bit
     sha3_dealloc(ctx);
 
     rc = 0;
@@ -51,7 +51,7 @@ end:
 }
 
 ACVP_RESULT iut_setup(APP_CONFIG *cfg) {
-    /* No specific setup needed */
+    // No specific setup needed
     if (!cfg) {
         printf("Error: missing app_config in IUT setup request\n");
         return ACVP_MISSING_ARG;
@@ -66,7 +66,7 @@ void iut_print_version(APP_CONFIG *cfg) {
     }
     unsigned int jentver = 0, major = 0, minor = 0, patch = 0;
     jentver = jent_version();
-    /* See jent code for how the jent int is formatted */
+    // See jent code for how the jent int is formatted
     major = jentver / 1000000;
     minor = jentver % 1000000 / 10000;
     patch = jentver % 1000000 % 10000 / 100;
@@ -91,6 +91,6 @@ end:
 }
 
 ACVP_RESULT iut_cleanup() {
-    /* No specific cleanup needed */
+    // No specific cleanup needed
     return ACVP_SUCCESS;
 }

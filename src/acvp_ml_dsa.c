@@ -59,7 +59,7 @@ static ACVP_RESULT acvp_ml_dsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         json_object_set_string(tc_rsp, "sk", tmp);
         break;
     case ACVP_SUB_ML_DSA_SIGGEN:
-        /* This also needs pk in the test group response for GDT, handled elsewhere */
+        // This also needs pk in the test group response for GDT, handled elsewhere
         rv = acvp_bin_to_hexstr(stc->sig, stc->sig_len, tmp, ACVP_ML_DSA_MSG_STR_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (signature)");
@@ -131,12 +131,12 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
     stc->param_set = param_set;
     stc->is_deterministic = is_deterministic;
     stc->sig_interface = sig_interface;
-    /* The below values are only used in certain combinations of capabilities */
+    // The below values are only used in certain combinations of capabilities
     stc->is_prehash = is_prehash;
     stc->is_mu_external = is_mu_external;
     stc->hash_alg = hash_alg;
 
-    /* buffers needed for both keys and sigs */
+    // buffers needed for both keys and sigs
     stc->pub_key = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
     if (!stc->pub_key) {
         goto err;
@@ -146,7 +146,7 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
         goto err;
     }
 
-    /* pub_key buffer only filled for sigver, output for other two */
+    // pub_key buffer only filled for sigver, output for other two
     if (cipher == ACVP_ML_DSA_SIGVER) {
         rv = acvp_hexstr_to_bin(pub_key, stc->pub_key, ACVP_ML_DSA_MSG_BYTE_MAX, &(stc->pub_key_len));
         if (rv != ACVP_SUCCESS) {
@@ -155,7 +155,7 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
         }
     }
 
-    /* Seed for keyGen only */
+    // Seed for keyGen only
     if (cipher == ACVP_ML_DSA_KEYGEN) {
         stc->seed = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
         if (!stc->seed) {
@@ -169,7 +169,7 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
     }
 
 
-    /* secret_key (aka sk) only provided for siggen for AFT */
+    // secret_key (aka sk) only provided for siggen for AFT
     if (cipher == ACVP_ML_DSA_SIGGEN && secret_key) {
         rv = acvp_hexstr_to_bin(secret_key, stc->secret_key, ACVP_ML_DSA_MSG_BYTE_MAX, &(stc->secret_key_len));
         if (rv != ACVP_SUCCESS) {
@@ -178,7 +178,7 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
         }
     }
 
-    /* rnd only for siggen, for AFT tests, when deterministic = false */
+    // rnd only for siggen, for AFT tests, when deterministic = false
     if (cipher == ACVP_ML_DSA_SIGGEN && rnd) {
         stc->rnd = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
         if (!stc->rnd) {
@@ -302,9 +302,9 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap = NULL;
     ACVP_ML_DSA_TC stc;
     ACVP_TEST_CASE tc;
@@ -353,14 +353,14 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /* Create ACVP array for response */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
         return rv;
     }
 
-    /* Start to build the JSON response */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -619,7 +619,7 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_VERBOSE("              mu: %s", mu_str);
             }
 
-            /* Create a new test case in the response */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -629,7 +629,7 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                      sig_interface, is_prehash, is_mu_external, hash_alg,
                                      pub_str, secret_str, seed_str, rnd_str, msg_str, sig_str, context_str, mu_str);
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
                     ACVP_LOG_ERR("Crypto module failed the operation");
@@ -643,7 +643,7 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Output the test case results using JSON */
+            // Output the test case results using JSON
 
             rv = acvp_ml_dsa_output_tc(ctx, alg_id, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
@@ -652,10 +652,10 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
 
-            /* Release all the memory associated with the test case */
+            // Release all the memory associated with the test case
             acvp_ml_dsa_release_tc(&stc);
         }
         json_array_append_value(r_garr, r_gval);

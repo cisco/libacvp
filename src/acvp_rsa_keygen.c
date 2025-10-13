@@ -428,9 +428,9 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_RSA_KEYGEN_TC stc;
     ACVP_TEST_CASE tc;
@@ -738,7 +738,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     }
                 }
 
-                /* for B.3.6, test cases also come with xP, xP1, xP2, xQ, xQ1, xQ2 */
+                // for B.3.6, test cases also come with xP, xP1, xP2, xQ, xQ1, xQ2
                 if (rand_pq == ACVP_RSA_KEYGEN_B36 || rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
                     xp_str = json_object_get_string(testobj, "xP");
                     if (!xp_str) {
@@ -836,7 +836,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                          p_str, q_str, xp_str, xp1_str, xp2_str, xq_str, xq1_str,
                                          xq2_str, seed, seed_len, bitlen1, bitlen2, bitlen3, bitlen4);
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
                     ACVP_LOG_ERR("Crypto module failed the operation");
@@ -861,7 +861,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             acvp_rsa_keygen_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

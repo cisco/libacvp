@@ -17,7 +17,7 @@ extern "C"
 #include <stdio.h>
 #include "acvp/acvp.h"
 
-/* MACROS */
+// MACROS
 #define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_SERVER_LEN 9
 #define DEFAULT_PORT 443
@@ -26,8 +26,8 @@ extern "C"
 #define JSON_STRING_LENGTH 32
 #define JSON_REQUEST_LENGTH 128
 #define PROVIDER_NAME_MAX_LEN 64
-#define ALG_STR_MAX_LEN 256 /* arbitrary */
-extern char value[JSON_STRING_LENGTH]; /* Non const for API */
+#define ALG_STR_MAX_LEN 256 // arbitrary
+extern char value[JSON_STRING_LENGTH]; // Non const for API
 
 #define SYM_IV_BYTE_MAX 128
 
@@ -82,7 +82,7 @@ typedef struct app_config {
     char validation_metadata_file[JSON_FILENAME_LENGTH + 1];
     char save_file[JSON_FILENAME_LENGTH + 1];
 
-    /* limit in GiB of hash tasting supported on the platform */
+    // limit in GiB of hash tasting supported on the platform
     int max_ldt_size;
 
     /*
@@ -99,7 +99,7 @@ typedef struct app_config {
     int lms;
     int ml_dsa; int ml_kem;
     int slh_dsa;
-    int testall; /* So the app can check whether the user indicated to test all possible algorithms */
+    int testall; // So the app can check whether the user indicated to test all possible algorithms
 } APP_CONFIG;
 
 ACVP_RESULT totp(char **token, int token_max);
@@ -112,7 +112,7 @@ int check_is_little_endian(void);
 char *remove_str_const(const char *str);
 int save_string_to_file(const char *str, const char *path);
 
-/* These functions need to be provided by IUT handler code */
+// These functions need to be provided by IUT handler code
 ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg);
 ACVP_RESULT iut_cleanup(void);
 void iut_print_version(APP_CONFIG *cfg);

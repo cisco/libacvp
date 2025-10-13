@@ -172,9 +172,9 @@ static ACVP_RESULT acvp_cshake_bits_to_string(const unsigned char *bits, int bit
     }
 
     for (i = 0; i < bits_len; i++) {
-        str[i] = (char)((bits[i] % 26) + 65); /* Convert to uppercase ASCII letters A-Z */
+        str[i] = (char)((bits[i] % 26) + 65); // Convert to uppercase ASCII letters A-Z
     }
-    str[bits_len] = '\0'; /* Null terminate */
+    str[bits_len] = '\0'; // Null terminate
 
     return ACVP_SUCCESS;
 }
@@ -220,10 +220,10 @@ static ACVP_RESULT acvp_cshake_mct(ACVP_CTX *ctx,
                                    int out_len_increment) {
     int i = 0, j = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
-    JSON_Value *r_tval = NULL;  /* Response testval */
-    JSON_Object *r_tobj = NULL; /* Response testobj */
+    JSON_Value *r_tval = NULL;  // Response testval
+    JSON_Object *r_tobj = NULL; // Response testobj
 
-    /* MCT working variables */
+    // MCT working variables
     unsigned char *output = NULL;
     unsigned char *inner_msg = NULL;
     unsigned char *rightmost_bits = NULL;
@@ -234,14 +234,14 @@ static ACVP_RESULT acvp_cshake_mct(ACVP_CTX *ctx,
     uint16_t rightmost_val = 0;
     int leftmost_bytes = 0;
 
-    /* Set leftmost_bytes as per specification (always 128 bits for cSHAKE MCT) */
-    leftmost_bytes = 16; /* 128 bits = 16 bytes as per specification */
+    // Set leftmost_bytes as per specification (always 128 bits for cSHAKE MCT)
+    leftmost_bytes = 16; // 128 bits = 16 bytes as per specification
 
-    /* Allocate working buffers */
+    // Allocate working buffers
     output = calloc(1, ACVP_CSHAKE_OUTPUT_BYTE_MAX);
-    inner_msg = calloc(1, leftmost_bytes + 16); /* leftmost_bytes + padding */
-    rightmost_bits = calloc(1, 2); /* 16 bits = 2 bytes */
-    custom_bits = calloc(1, leftmost_bytes + 2); /* InnerMsg + RightmostBits */
+    inner_msg = calloc(1, leftmost_bytes + 16); // leftmost_bytes + padding
+    rightmost_bits = calloc(1, 2); // 16 bits = 2 bytes
+    custom_bits = calloc(1, leftmost_bytes + 2); // InnerMsg + RightmostBits
     custom_string = calloc(1, ACVP_CSHAKE_CUSTOM_STR_MAX + 1);
 
     if (!output || !inner_msg || !rightmost_bits || !custom_bits || !custom_string) {
@@ -249,63 +249,63 @@ static ACVP_RESULT acvp_cshake_mct(ACVP_CTX *ctx,
         goto err;
     }
 
-    /* MCT algorithm implementation */
+    // MCT algorithm implementation
     range = (max_out_len - min_out_len + 1);
     output_len = max_out_len;
 
-    /* Copy initial message to output[0] */
+    // Copy initial message to output[0]
     memcpy_s(output, ACVP_CSHAKE_OUTPUT_BYTE_MAX, stc->msg, stc->msg_len);
-    int current_output_len = stc->msg_len; /* Track current output length */
+    int current_output_len = stc->msg_len; // Track current output length
 
-    /* Outer loop: j = 0 to 99 */
+    // Outer loop: j = 0 to 99
     for (j = 0; j < 100; j++) {
-        /* Inner loop: i = 1 to 1000 */
+        // Inner loop: i = 1 to 1000
         for (i = 1; i <= 1000; i++) {
-            /* InnerMsg = Left(Output[i-1] || ZeroBits(leftmost_bytes*8), leftmost_bytes*8) */
+            // InnerMsg = Left(Output[i-1] || ZeroBits(leftmost_bytes*8), leftmost_bytes*8)
             memzero_s(inner_msg, leftmost_bytes + 16);
             if (current_output_len >= leftmost_bytes) {
                 memcpy_s(inner_msg, leftmost_bytes, output, leftmost_bytes);
             } else {
                 memcpy_s(inner_msg, leftmost_bytes, output, current_output_len);
-                /* Remaining bytes are already zeroed */
+                // Remaining bytes are already zeroed
             }
 
-            /* Set up test case for crypto handler */
+            // Set up test case for crypto handler
             memcpy_s(stc->msg, ACVP_CSHAKE_MSG_BYTE_MAX, inner_msg, leftmost_bytes);
             stc->msg_len = leftmost_bytes;
-            stc->md_len = (output_len + 7) / 8; /* Convert bits to bytes */
+            stc->md_len = (output_len + 7) / 8; // Convert bits to bytes
 
-            /* Clear md buffer */
+            // Clear md buffer
             memzero_s(stc->md, ACVP_CSHAKE_OUTPUT_BYTE_MAX);
 
-            /* Call crypto module: Output[i] = CSHAKE(InnerMsg, OutputLen, FunctionName, Customization) */
+            // Call crypto module: Output[i] = CSHAKE(InnerMsg, OutputLen, FunctionName, Customization)
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Crypto module failed the operation");
                 goto err;
             }
 
-            /* Copy result to output buffer for next iteration */
+            // Copy result to output buffer for next iteration
             memcpy_s(output, ACVP_CSHAKE_OUTPUT_BYTE_MAX, stc->md, stc->md_len);
             current_output_len = stc->md_len;
 
-            /* Rightmost_Output_bits = Right(Output[i], 16) */
+            // Rightmost_Output_bits = Right(Output[i], 16)
             if (stc->md_len >= 2) {
                 memcpy_s(rightmost_bits, 2, &stc->md[stc->md_len - 2], 2);
             } else {
                 memzero_s(rightmost_bits, 2);
                 if (stc->md_len == 1) {
-                    rightmost_bits[0] = stc->md[0];  /* Rightmost byte goes in index 0 */
+                    rightmost_bits[0] = stc->md[0];  // Rightmost byte goes in index 0
                 }
             }
 
-            /* Convert rightmost bits to integer (little-endian where first 8-bits are MSB) */
+            // Convert rightmost bits to integer (little-endian where first 8-bits are MSB)
             rightmost_val = (uint16_t)(rightmost_bits[1] | (rightmost_bits[0] << 8));
 
-            /* OutputLen = MinOutLen + (floor((Rightmost_Output_bits % Range) / OutLenIncrement) * OutLenIncrement) */
+            // OutputLen = MinOutLen + (floor((Rightmost_Output_bits % Range) / OutLenIncrement) * OutLenIncrement)
             output_len = min_out_len + ((rightmost_val % range) / out_len_increment) * out_len_increment;
 
-            /* Customization = BitsToString(InnerMsg || Rightmost_Output_bits) */
+            // Customization = BitsToString(InnerMsg || Rightmost_Output_bits)
             memcpy_s(custom_bits, leftmost_bytes + 2, inner_msg, leftmost_bytes);
             memcpy_s(&custom_bits[leftmost_bytes], 2, rightmost_bits, 2);
 
@@ -316,16 +316,16 @@ static ACVP_RESULT acvp_cshake_mct(ACVP_CTX *ctx,
                 goto err;
             }
 
-            /* Update customization in test case */
+            // Update customization in test case
             strcpy_s(stc->custom, ACVP_CSHAKE_CUSTOM_STR_MAX + 1, custom_string);
             stc->custom_len = strnlen_s(custom_string, ACVP_CSHAKE_CUSTOM_STR_MAX);
         }
 
-        /* Create response object for this iteration */
+        // Create response object for this iteration
         r_tval = json_value_init_object();
         r_tobj = json_value_get_object(r_tval);
 
-        /* Output the result for this outer loop iteration */
+        // Output the result for this outer loop iteration
         rv = acvp_cshake_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure recording MCT test response");
@@ -335,8 +335,8 @@ static ACVP_RESULT acvp_cshake_mct(ACVP_CTX *ctx,
 
         json_array_append_value(res_array, r_tval);
 
-        /* Output[0] = Output[1000] for next iteration (as per spec line 307) */
-        /* The output buffer already contains Output[1000] from the last inner loop iteration */
+        // Output[0] = Output[1000] for next iteration (as per spec line 307)
+        // The output buffer already contains Output[1000] from the last inner loop iteration
     }
 
 err:
@@ -353,7 +353,7 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     int tc_id = 0, msglen = 0, outlen = 0;
     const char *msg = NULL, *type_str = NULL, *custom = NULL, *function_name = NULL;
     int hex_customization = 0;
-    int min_out_len = 0, max_out_len = 0, out_len_increment = 0; /* MCT parameters */
+    int min_out_len = 0, max_out_len = 0, out_len_increment = 0; // MCT parameters
     ACVP_CSHAKE_TESTTYPE type;
     JSON_Value *groupval = NULL;
     JSON_Object *groupobj = NULL;
@@ -371,9 +371,9 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap = NULL;
     ACVP_CSHAKE_TC stc;
     ACVP_TEST_CASE tc;
@@ -474,7 +474,7 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         hex_customization = json_object_get_boolean(groupobj, "hexCustomization");
 
-        /* Parse MCT-specific parameters if this is an MCT test */
+        // Parse MCT-specific parameters if this is an MCT test
         if (type == ACVP_CSHAKE_TEST_TYPE_MCT) {
             min_out_len = json_object_get_number(groupobj, "minOutLen");
             max_out_len = json_object_get_number(groupobj, "maxOutLen");
@@ -576,11 +576,11 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (type == ACVP_CSHAKE_TEST_TYPE_MCT) {
-                /* MCT tests don't have outLen, md_len will be set during MCT execution */
+                // MCT tests don't have outLen, md_len will be set during MCT execution
                 rv = acvp_cshake_init_tc(ctx, &stc, alg_id, tc_id, type, hex_customization,
                                          msg, 0, function_name, custom);
             } else {
-                /* AFT tests use outLen from JSON */
+                // AFT tests use outLen from JSON
                 rv = acvp_cshake_init_tc(ctx, &stc, alg_id, tc_id, type, hex_customization,
                                          msg, outlen, function_name, custom);
             }
@@ -591,9 +591,9 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Handle MCT or AFT test types */
+            // Handle MCT or AFT test types
             if (type == ACVP_CSHAKE_TEST_TYPE_MCT) {
-                /* For MCT, create resultsArray and call MCT handler */
+                // For MCT, create resultsArray and call MCT handler
                 json_object_set_value(r_tobj, "resultsArray", json_value_init_array());
                 JSON_Array *results_array = json_object_get_array(r_tobj, "resultsArray");
 
@@ -611,10 +611,10 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                  */
                 acvp_cshake_release_tc(&stc);
 
-                /* Append the MCT test case to the main test array */
+                // Append the MCT test case to the main test array
                 json_array_append_value(r_tarr, r_tval);
             } else {
-                /* AFT processing */
+                // AFT processing
                 if ((cap->crypto_handler)(&tc)) {
                     ACVP_LOG_ERR("Crypto module failed the operation");
                     acvp_cshake_release_tc(&stc);
@@ -639,7 +639,7 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                  */
                 acvp_cshake_release_tc(&stc);
 
-                /* Append the AFT test response value to array */
+                // Append the AFT test response value to array
                 json_array_append_value(r_tarr, r_tval);
             }
         }

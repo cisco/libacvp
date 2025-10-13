@@ -52,7 +52,7 @@ typedef int ssize_t;
 #endif
 
 
-/* Maximium header size allowed */
+// Maximium header size allowed
 #define HTTP_MAX_HEADER_SIZE (80*1024)
 
 
@@ -77,18 +77,18 @@ typedef int (*http_data_cb) (http_parser*, const char *at, size_t length);
 typedef int (*http_cb) (http_parser*);
 
 
-/* Request Methods */
+// Request Methods
 enum http_method
   { HTTP_DELETE    = 0
   , HTTP_GET
   , HTTP_HEAD
   , HTTP_POST
   , HTTP_PUT
-  /* pathological */
+  // pathological
   , HTTP_CONNECT
   , HTTP_OPTIONS
   , HTTP_TRACE
-  /* webdav */
+  // webdav
   , HTTP_COPY
   , HTTP_LOCK
   , HTTP_MKCOL
@@ -96,12 +96,12 @@ enum http_method
   , HTTP_PROPFIND
   , HTTP_PROPPATCH
   , HTTP_UNLOCK
-  /* subversion */
+  // subversion
   , HTTP_REPORT
   , HTTP_MKACTIVITY
   , HTTP_CHECKOUT
   , HTTP_MERGE
-  /* upnp */
+  // upnp
   , HTTP_MSEARCH
   , HTTP_NOTIFY
   , HTTP_SUBSCRIBE
@@ -126,8 +126,8 @@ struct http_parser {
   /** READ-ONLY **/
   unsigned short http_major;
   unsigned short http_minor;
-  unsigned short status_code; /* responses only */
-  unsigned char method;    /* requests only */
+  unsigned short status_code; // responses only
+  unsigned char method;    // requests only
 
   /* 1 = Upgrade header was present and the parser has exited because of that.
    * 0 = No upgrade header present.
@@ -137,7 +137,7 @@ struct http_parser {
   char upgrade;
 
   /** PUBLIC **/
-  void *data; /* A pointer to get hook to the "connection" or "socket" object */
+  void *data; // A pointer to get hook to the "connection" or "socket" object
 };
 
 
@@ -172,7 +172,7 @@ size_t http_parser_execute(http_parser *parser,
  */
 int http_should_keep_alive(http_parser *parser);
 
-/* Returns a string version of the HTTP method. */
+// Returns a string version of the HTTP method.
 const char *http_method_str(enum http_method);
 
 #ifdef __cplusplus

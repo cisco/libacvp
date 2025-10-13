@@ -661,8 +661,8 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
             rv = ACVP_MALLOC_FAIL;
             goto err;
         }
-        cap_entry->cap.sym_cap->perform_ctr_tests = 1; //true by default
-        cap_entry->cap.sym_cap->dulen_matches_paylen = 1; //true by default
+        cap_entry->cap.sym_cap->perform_ctr_tests = 1; // true by default
+        cap_entry->cap.sym_cap->dulen_matches_paylen = 1; // true by default
         break;
 
     case ACVP_SAFE_PRIMES_KEYGEN_TYPE:
@@ -1023,7 +1023,7 @@ static ACVP_RESULT acvp_add_dsa_pqggen_parm(ACVP_CTX *ctx,
         }
         break;
     case ACVP_DSA_LN1024_160:
-        /* allow for verify only */
+        // allow for verify only
         if (dsa_cap_mode->cap_mode == ACVP_DSA_MODE_SIGVER || dsa_cap_mode->cap_mode == ACVP_DSA_MODE_PQGVER) {
             return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
         } else {
@@ -1853,7 +1853,7 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
         }
         break;
     case ACVP_KTS_IFC:
-        if (pre_req == ACVP_PREREQ_DRBG || /* will need to add macs if/when supported */
+        if (pre_req == ACVP_PREREQ_DRBG || // will need to add macs if/when supported
             pre_req == ACVP_PREREQ_HMAC ||
             pre_req == ACVP_PREREQ_SHA ||
             pre_req == ACVP_PREREQ_RSA ||
@@ -2012,7 +2012,7 @@ ACVP_RESULT acvp_cap_set_prereq(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    cap_list->has_prereq = 1;     /* make sure this is set */
+    cap_list->has_prereq = 1;     // make sure this is set
     /*
      * Add the value to the cap
      */
@@ -2219,7 +2219,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
             break;
         }
     } else {
-        /* Handle non-AES/TDES algorithms */
+        // Handle non-AES/TDES algorithms
         return ACVP_INVALID_ARG;
     }
 
@@ -2301,14 +2301,14 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
 
     case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
         if (value >= ACVP_SYM_CIPH_IVGEN_SRC_INT && value <= ACVP_SYM_CIPH_IVGEN_SRC_EITHER) {
-            /* Set the whole matrix to support this source */
+            // Set the whole matrix to support this source
             for (i = 0; i < ACVP_SYM_CIPH_IVGEN_MODE_MAX; i++) {
                 cap->cap.sym_cap->iv_mode_matrix[i][1] = value;
             }
 
             return ACVP_SUCCESS;
         } else if (value == ACVP_SYM_CIPH_IVGEN_SRC_NA) {
-            //Ignore this parameter, as it is not applicable
+            // Ignore this parameter, as it is not applicable
             return ACVP_SUCCESS;
         } else {
             ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_IVGEN_SRC");
@@ -2322,7 +2322,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         } else if (value >= ACVP_SYM_CIPH_IVGEN_MODE_821 && value <= ACVP_SYM_CIPH_IVGEN_MODE_822) {
             cap->cap.sym_cap->iv_mode_matrix[value][0] = 1;
         } else if (value == ACVP_SYM_CIPH_IVGEN_MODE_NA) {
-            //Ignore this parameter, as it is not applicable
+            // Ignore this parameter, as it is not applicable
             return ACVP_SUCCESS;
         } else {
             ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_IVGEN_MODE");
@@ -2456,11 +2456,11 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm_string(ACVP_CTX *ctx,
 
     aes_alg = acvp_get_aes_alg(cipher);
 
-    /* Only AES FF1/FF3 algorithms support string parameters */
+    // Only AES FF1/FF3 algorithms support string parameters
     if (aes_alg == ACVP_SUB_AES_FF1 || aes_alg == ACVP_SUB_AES_FF3) {
-        /* Valid AES FPE algorithms */
+        // Valid AES FPE algorithms
     } else {
-        /* All other algorithms are not supported */
+        // All other algorithms are not supported
         return ACVP_INVALID_ARG;
     }
 
@@ -2572,7 +2572,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_iv_modes(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    /* If setting both, just use the main param set API */
+    // If setting both, just use the main param set API
     if (iv_mode < ACVP_SYM_CIPH_IVGEN_MODE_821 || iv_mode >= ACVP_SYM_CIPH_IVGEN_MODE_BOTH) {
         ACVP_LOG_ERR("Invalid IV mode provided when setting AES iv mode/source");
         return ACVP_INVALID_ARG;
@@ -3929,7 +3929,7 @@ static ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value)
     return retval;
 }
 
-/* The user should call this after invoking acvp_enable_drbg_cap_parm(). */
+// The user should call this after invoking acvp_enable_drbg_cap_parm().
 ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
                                    ACVP_CIPHER cipher,
                                    ACVP_DRBG_MODE mode,
@@ -4389,7 +4389,7 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_exponent(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    /* Get pointer to rsa keygen cap */
+    // Get pointer to rsa keygen cap
     cap = cap_list->cap.rsa_keygen_cap;
 
     /*
@@ -4445,7 +4445,7 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_exponent(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    /* Get pointer to rsa keygen cap */
+    // Get pointer to rsa keygen cap
     cap = cap_list->cap.rsa_sigver_cap;
 
     /*
@@ -4568,7 +4568,7 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_primes(ACVP_CTX *ctx,
         }
         break;
     case ACVP_RSA_PRIME_TEST:
-        /* Just use the string lookup to make sure its a valid value) */
+        // Just use the string lookup to make sure its a valid value)
         if (acvp_lookup_rsa_prime_test_name(value)) {
             acvp_append_param_list(&current_prime->prime_tests, value);
         } else {
@@ -4577,7 +4577,7 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_primes(ACVP_CTX *ctx,
         }
         break;
     case ACVP_RSA_PRIME_PMOD8:
-        /* Values can be 0, 1, 3, 5, 7, but hardcoding seems messy */
+        // Values can be 0, 1, 3, 5, 7, but hardcoding seems messy
         if (value == 0 || (value < 8 && value > 0 && value % 2 != 0)) {
             current_prime->pMod8 = value;
         } else {
@@ -5214,7 +5214,7 @@ ACVP_RESULT acvp_cap_rsa_prim_set_exponent(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* Get pointer to rsa prim cap */
+    // Get pointer to rsa prim cap
     cap = cap_list->cap.rsa_prim_cap;
 
     /*
@@ -5719,7 +5719,7 @@ ACVP_RESULT acvp_cap_dsa_set_parm(ACVP_CTX *ctx,
     }
     dsa_cap = cap_list->cap.dsa_cap;
 
-    /* range check mode */
+    // range check mode
     dsa_cap_mode = &dsa_cap->dsa_cap_mode[mode - 1];
     dsa_cap_mode->defined = 1;
 
@@ -6175,7 +6175,7 @@ ACVP_RESULT acvp_cap_kdf135_ssh_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* only support two method types so just use whichever is available */
+    // only support two method types so just use whichever is available
     switch (method) {
     case ACVP_SSH_METH_TDES_CBC:
         kdf135_ssh_cap->method[0] = ACVP_SSH_METH_TDES_CBC;
@@ -6275,7 +6275,7 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
         }
     }
 
-    /* only support two method types so just use whichever is available */
+    // only support two method types so just use whichever is available
     switch (param) {
     case ACVP_KDF108_MAC_MODE:
         switch (value) {
@@ -6442,7 +6442,7 @@ ACVP_RESULT acvp_cap_kdf135_srtp_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* only support two method types so just use whichever is available */
+    // only support two method types so just use whichever is available
     switch (param) {
     case ACVP_SRTP_AES_KEYLEN:
         if (value != 128 && value != 192 && value != 256) {
@@ -7570,7 +7570,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
                 current_scheme = current_scheme->next;
             }
         }
-        /* if there are none or didn't find the one we're looking for... */
+        // if there are none or didn't find the one we're looking for...
         if (current_scheme == NULL) {
             kas_ecc_cap_mode->scheme = calloc(1, sizeof(ACVP_KAS_ECC_SCHEME));
             kas_ecc_cap_mode->scheme->scheme = scheme;
@@ -7613,7 +7613,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
                 current_pset->set = param;
                 current_pset->curve = option;
             }
-            //then set sha in a param list
+            // then set sha in a param list
             result = acvp_append_param_list(&current_pset->sha, value);
             break;
         case ACVP_KAS_ECC_NONE:
@@ -7960,7 +7960,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_scheme(ACVP_CTX *ctx,
                 current_scheme = current_scheme->next;
             }
         }
-        /* if there are none or didn't find the one we're looking for... */
+        // if there are none or didn't find the one we're looking for...
         if (current_scheme == NULL) {
             kas_ffc_cap_mode->scheme = calloc(1, sizeof(ACVP_KAS_FFC_SCHEME));
             kas_ffc_cap_mode->scheme->scheme = scheme;
@@ -8010,7 +8010,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_scheme(ACVP_CTX *ctx,
                 }
                 current_pset->set = param;
             }
-            //then set sha in a param list
+            // then set sha in a param list
             result = acvp_append_param_list(&current_pset->sha, value);
             break;
         case ACVP_KAS_FFC_FUNCTION:
@@ -8431,7 +8431,7 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
             result = acvp_append_name_list(&hkdf_cap->hmac_algs, tmp);
             break;
         case ACVP_KDA_USE_HYBRID_SECRET:
-            /* revision is only set for non-default revisions */
+            // revision is only set for non-default revisions
             if (cap_list->cap.kda_hkdf_cap->revision) {
                 ACVP_LOG_ERR("Hybrid secrets for HKDF can only be set for revision SP800-56Cr2");
                 return ACVP_INVALID_ARG;
@@ -8486,7 +8486,7 @@ ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, ACVP_KDA_PARM param,
     ACVP_KDA_TWOSTEP_CAP *cap = NULL;
     ACVP_KDF108_MODE_PARAMS *mode_obj = NULL;
 
-    /* Validate input */
+    // Validate input
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -8502,7 +8502,7 @@ ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, ACVP_KDA_PARM param,
         return ACVP_NO_CAP;
     }
 
-    /* check if a valid KDF108 mode has been provided if needed */
+    // check if a valid KDF108 mode has been provided if needed
     switch (param) {
     case ACVP_KDA_TWOSTEP_SUPPORTED_LEN:
     case ACVP_KDA_TWOSTEP_FIXED_DATA_ORDER:
@@ -8689,7 +8689,7 @@ ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, ACVP_KDA_PARM param,
             cap->perform_multi_expansion_tests = 0;
         }
         break;
-    /* For these, a KDF108 mode must be provided */
+    // For these, a KDF108 mode must be provided
     case ACVP_KDA_TWOSTEP_FIXED_DATA_ORDER:
         switch (value) {
         case ACVP_KDF108_FIXED_DATA_ORDER_AFTER:
@@ -8750,7 +8750,7 @@ ACVP_RESULT acvp_cap_kda_twostep_set_domain(ACVP_CTX *ctx, ACVP_KDA_PARM param,
     ACVP_KDA_TWOSTEP_CAP *cap = NULL;
     ACVP_KDF108_MODE_PARAMS *mode_obj = NULL;
 
-    /* Validate input */
+    // Validate input
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -9611,7 +9611,7 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* Check if group already exists, make one if not */
+    // Check if group already exists, make one if not
     if (!ml_dsa_cap->cap_group) {
         ml_dsa_cap->cap_group = calloc(1, sizeof(ACVP_ML_DSA_CAP_GROUP));
         if (!ml_dsa_cap->cap_group) {
@@ -9778,7 +9778,7 @@ ACVP_RESULT acvp_cap_ml_dsa_set_domain(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* Check if group already exists, make one if not */
+    // Check if group already exists, make one if not
     if (!ml_dsa_cap->cap_group) {
         ml_dsa_cap->cap_group = calloc(1, sizeof(ACVP_ML_DSA_CAP_GROUP));
         if (!ml_dsa_cap->cap_group) {
@@ -10022,7 +10022,7 @@ ACVP_RESULT acvp_cap_slh_dsa_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* Check if group already exists, make one if not */
+    // Check if group already exists, make one if not
     if (!slh_dsa_cap->cap_group) {
         slh_dsa_cap->cap_group = calloc(1, sizeof(ACVP_SLH_DSA_CAP_GROUP));
         if (!slh_dsa_cap->cap_group) {
@@ -10173,7 +10173,7 @@ ACVP_RESULT acvp_cap_slh_dsa_set_domain(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* Check if group already exists, make one if not */
+    // Check if group already exists, make one if not
     if (!slh_dsa_cap->cap_group) {
         slh_dsa_cap->cap_group = calloc(1, sizeof(ACVP_SLH_DSA_CAP_GROUP));
         if (!slh_dsa_cap->cap_group) {
