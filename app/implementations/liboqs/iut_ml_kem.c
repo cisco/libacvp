@@ -89,7 +89,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
     }
 
     if (tc->cipher == ACVP_ML_KEM_KEYGEN) {
-        /** 
+        /**
          * We need to specify the D and Z seed values that ML-KEM uses. We cannot do that directly.
          * However, we can specify a custom RNG function. For testing's sake, we set a RNG function
          * that really just returns bytes for the D and Z values the server specifies. This is not

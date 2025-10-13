@@ -1195,7 +1195,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_GCM_SIV || alg_id == ACVP_AES_CCM || 
+            if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_GCM_SIV || alg_id == ACVP_AES_CCM ||
                                           alg_id == ACVP_AES_GMAC || alg_id == ACVP_AES_XPN) {
                 aad = json_object_get_string(testobj, "aad");
                 if (!aad) {
@@ -1243,10 +1243,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, 
+            rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag,
                                   aad, salt, kwcipher, keylen, ivlen, datalen, paylen,
-                                  taglen, aadlen, saltLen, dataUnitLen, conformance, 
-                                  alg_id, dir, iv_gen, iv_gen_mode, incr_ctr, ovrflw_ctr, 
+                                  taglen, aadlen, saltLen, dataUnitLen, conformance,
+                                  alg_id, dir, iv_gen, iv_gen_mode, incr_ctr, ovrflw_ctr,
                                   tweak_mode, seq_num, radix, alphabet_str, salt_src);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Init for stc (test case) failed");
@@ -1269,11 +1269,11 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 /* Process the current AES KAT test vector... */
                 int t_rv = (cap->crypto_handler)(&tc);
                 if (t_rv) {
-                    if (alg_id != ACVP_AES_KW && 
+                    if (alg_id != ACVP_AES_KW &&
                             alg_id != ACVP_AES_GCM &&
-                            alg_id != ACVP_AES_GCM_SIV && 
+                            alg_id != ACVP_AES_GCM_SIV &&
                             alg_id != ACVP_AES_CCM &&
-                            alg_id != ACVP_AES_KWP && 
+                            alg_id != ACVP_AES_KWP &&
                             alg_id != ACVP_AES_GMAC) {
                         ACVP_LOG_ERR("Crypto module failed the operation");
                         acvp_aes_release_tc(&stc);

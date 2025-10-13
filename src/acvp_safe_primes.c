@@ -287,7 +287,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = ACVP_INVALID_ARG;
             goto err;
         }
-    
+
         switch (alg) {
         case ACVP_SUB_SAFE_PRIMES_KEYGEN:
 
@@ -330,7 +330,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                  * Setup the test case data that will be passed down to
                  * the crypto module.
                  */
-                rv = acvp_safe_primes_init_tc(ctx, tg_id, tc_id, alg_id, 
+                rv = acvp_safe_primes_init_tc(ctx, tg_id, tc_id, alg_id,
                                               &stc, dgm, x, y, test_type);
                 if (rv != ACVP_SUCCESS) {
                     acvp_safe_primes_release_tc(&stc);
@@ -367,7 +367,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 json_array_append_value(r_tarr, r_tval);
             }
             break;
-        
+
         case ACVP_SUB_SAFE_PRIMES_KEYVER:
             tests = json_object_get_array(groupobj, "tests");
             t_cnt = json_array_get_count(tests);
@@ -427,7 +427,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                  * Setup the test case data that will be passed down to
                  * the crypto module.
                  */
-                 rv = acvp_safe_primes_init_tc(ctx, tg_id, tc_id, alg_id, 
+                 rv = acvp_safe_primes_init_tc(ctx, tg_id, tc_id, alg_id,
                                                &stc, dgm, x, y, test_type);
                 if (rv != ACVP_SUCCESS) {
                     acvp_safe_primes_release_tc(&stc);

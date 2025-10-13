@@ -35,7 +35,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
     }
 
     tc = test_case->tc.symmetric;
-    
+
     if (!tc) {
         goto err;
     }
@@ -69,7 +69,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
         printf("Invalid cipher value");
         return 1;
     }
-    
+
     switch (alg) {
     case ACVP_SUB_TDES_ECB:
         cipher = EVP_des_ede3_ecb();

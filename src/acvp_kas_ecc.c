@@ -804,7 +804,7 @@ ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         rv = ACVP_INVALID_ARG;
         goto err;
     }
-    
+
     switch (alg) {
     case ACVP_SUB_KAS_ECC_CDH:
         cap = acvp_locate_cap_entry(ctx, ACVP_KAS_ECC_CDH);
@@ -1195,7 +1195,7 @@ static ACVP_RESULT acvp_kas_ecc_ssc(ACVP_CTX *ctx,
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            /* 
+            /*
              * we can use the comp init since the only difference between
              * ECC_SSC and comp is the keywords used - why NIST did that ???
              */

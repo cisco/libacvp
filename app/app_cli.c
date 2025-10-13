@@ -311,7 +311,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                 } else {
                     print_usage(0);
                 }
-            } else { 
+            } else {
                 print_usage(0);
             }
             return 1;
@@ -631,7 +631,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     //Many args do not need an alg specified. Todo: make cleaner
     if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put && !cfg->get_results
             && !cfg->get_expected && !cfg->manual_reg && !cfg->vector_upload
-            && !cfg->delete && !cfg->cancel_session && !(cfg->resume_session && 
+            && !cfg->delete && !cfg->cancel_session && !(cfg->resume_session &&
             cfg->vector_req) && !cfg->output_version) {
         /* The user needs to select at least 1 algorithm */
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);

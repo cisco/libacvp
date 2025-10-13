@@ -138,7 +138,7 @@ static ACVP_RESULT acvp_kda_onestep_init_tc(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Error copying array of fixedInfoPattern candidates into test case structure");
         rv = ACVP_MALLOC_FAIL;
         return rv;
-    } 
+    }
     if (salt) {
         stc->salt = calloc(1, ACVP_KDA_SALT_BYTE_MAX);
         if (!stc->salt) { return ACVP_MALLOC_FAIL; }
@@ -232,9 +232,9 @@ static ACVP_RESULT acvp_kda_onestep_init_tc(ACVP_CTX *ctx,
     }
 
     stc->outputDkm = calloc(ACVP_KDA_DKM_BYTE_MAX, 1);
-    if (!stc->outputDkm) { 
+    if (!stc->outputDkm) {
         ACVP_LOG_ERR("Failed to allocate outputDkm initializing test case");
-        return ACVP_MALLOC_FAIL; 
+        return ACVP_MALLOC_FAIL;
     }
 
     if (stc->type == ACVP_KDA_TT_VAL) {
@@ -336,7 +336,7 @@ static ACVP_RESULT acvp_kda_twostep_init_tc(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Error copying array of fixedInfoPattern candidates into test case structure");
         rv = ACVP_MALLOC_FAIL;
         return rv;
-    } 
+    }
 
     stc->salt = calloc(1, ACVP_KDA_SALT_BYTE_MAX);
     if (!stc->salt) { return ACVP_MALLOC_FAIL; }
@@ -440,9 +440,9 @@ static ACVP_RESULT acvp_kda_twostep_init_tc(ACVP_CTX *ctx,
     }
 
     stc->outputDkm = calloc(ACVP_KDA_DKM_BYTE_MAX, 1);
-    if (!stc->outputDkm) { 
+    if (!stc->outputDkm) {
         ACVP_LOG_ERR("Failed to allocate outputDkm initializing test case");
-        return ACVP_MALLOC_FAIL; 
+        return ACVP_MALLOC_FAIL;
     }
 
     if (stc->type == ACVP_KDA_TT_VAL) {
@@ -495,7 +495,7 @@ static ACVP_RESULT acvp_kda_hkdf_init_tc(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Error copying array of fixedInfoPattern candidates into test case structure");
         rv = ACVP_MALLOC_FAIL;
         return rv;
-    } 
+    }
 
     stc->salt = calloc(1, ACVP_KDA_SALT_BYTE_MAX);
     if (!stc->salt) { return ACVP_MALLOC_FAIL; }
@@ -588,9 +588,9 @@ static ACVP_RESULT acvp_kda_hkdf_init_tc(ACVP_CTX *ctx,
     }
 
     stc->outputDkm = calloc(ACVP_KDA_DKM_BYTE_MAX, 1);
-    if (!stc->outputDkm) { 
+    if (!stc->outputDkm) {
         ACVP_LOG_ERR("Failed to allocate outputDkm initializing test case");
-        return ACVP_MALLOC_FAIL; 
+        return ACVP_MALLOC_FAIL;
     }
 
     if (stc->type == ACVP_KDA_TT_VAL) {
@@ -684,7 +684,7 @@ ACVP_KDA_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, co
     char *tmp = NULL, *lit = NULL, *token = NULL;
     rsize_t len = strnlen_s(str, ACVP_KDA_PATTERN_REG_STR_MAX + 1);
     int diff = 1;
-    if (len > ACVP_KDA_PATTERN_REG_STR_MAX) { 
+    if (len > ACVP_KDA_PATTERN_REG_STR_MAX) {
         ACVP_LOG_ERR("pattern candidate too long");
         return 0;
     }
@@ -730,12 +730,12 @@ ACVP_KDA_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, co
 
             //tokenize around the [] characters
             token = strtok_s(tmp, &len, "[", &lit);
-            if (!token) { 
+            if (!token) {
                 ACVP_LOG_ERR("Invalid literal pattern candidate");
                 goto err;
             }
             token = strtok_s(NULL, &len, "]", &lit); //the actual hex string
-            if (!token) { 
+            if (!token) {
                 ACVP_LOG_ERR("Invalid literal pattern candidate");
                 goto err;
             }
@@ -808,7 +808,7 @@ static ACVP_KDA_PATTERN_CANDIDATE* read_info_pattern(ACVP_CTX *ctx, ACVP_CIPHER 
         ACVP_LOG_ERR("Server JSON invalid 'fixedInfoPattern'");
         free(arr);
         goto err;
-    } 
+    }
 
     do {
         if (count >= ACVP_KDA_PATTERN_MAX) {
@@ -852,7 +852,7 @@ static ACVP_KDA_ENCODING read_encoding_type(const char* str) {
     strncmp_s(ACVP_KDA_ENCODING_CONCATENATION_STR,
               sizeof(ACVP_KDA_ENCODING_CONCATENATION_STR) - 1,
               str, strnlen_s(str, 16), &diff);
-            
+
     if (!diff) {
         return ACVP_KDA_ENCODING_CONCAT;
     }
@@ -865,13 +865,13 @@ static ACVP_KDA_MAC_SALT_METHOD read_salt_method(const char* str) {
     if (!str) {
         return 0;
     }
-    strncmp_s(ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR, 
+    strncmp_s(ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR,
               sizeof(ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR) - 1,
               str, strnlen_s(str, 16), &diff);
     if (!diff) {
         return ACVP_KDA_MAC_SALT_METHOD_DEFAULT;
     }
-    strncmp_s(ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR, 
+    strncmp_s(ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR,
               sizeof(ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR) - 1,
               str, strnlen_s(str, 16), &diff);
     if (!diff) {
@@ -885,7 +885,7 @@ static ACVP_KDA_MAC_SALT_METHOD read_salt_method(const char* str) {
  * uses an hmac alg and onestep uses an aux function (which can also be an hmac alg)
  */
 static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
-                                        ACVP_CIPHER cipher, 
+                                        ACVP_CIPHER cipher,
                                         ACVP_CAPS_LIST *cap,
                                         ACVP_TEST_CASE *tc,
                                         JSON_Object *obj,
@@ -899,7 +899,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
     JSON_Array *tests, *r_tarr = NULL;
     JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
     JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
-    const char *alg_str = NULL,  *pattern_str = NULL, *encoding_str = NULL, 
+    const char *alg_str = NULL,  *pattern_str = NULL, *encoding_str = NULL,
                *salt_method_str = NULL;
     ACVP_HASH_ALG hmac_alg = 0;
     unsigned int i = 0, g_cnt = 0;
@@ -1177,7 +1177,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
         for (j = 0; j < t_cnt; j++) {
             JSON_Object *upartyobj = NULL, *vpartyobj = NULL;
             const char *salt = NULL, *z = NULL, *uparty = NULL,
-                       *uephemeral = NULL, *vparty = NULL, 
+                       *uephemeral = NULL, *vparty = NULL,
                        *vephemeral = NULL, *dkm = NULL, *context = NULL,
                        *algid = NULL, *label = NULL, *t = NULL;
             ACVP_LOG_VERBOSE("Found new KDA test vector...");
@@ -1186,7 +1186,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             paramobj = json_object_get_object(testobj, "kdfParameter");
             tc_id = json_object_get_number(testobj, "tcId");
             salt = json_object_get_string(paramobj, "salt");
-          
+
             arr = read_info_pattern(ctx, cipher, pattern_str, tc);
             if (!arr || arr[0] <= ACVP_KDA_PATTERN_NONE || arr[0] > ACVP_KDA_PATTERN_MAX) {
                 ACVP_LOG_ERR("Invalid fixedInfoPattern provided by server");
@@ -1235,7 +1235,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 if (arr[k] >= ACVP_KDA_PATTERN_MAX || arr[k] <= ACVP_KDA_PATTERN_NONE) {
                     break;
                 }
-                switch (arr[k]) {                    
+                switch (arr[k]) {
                 case ACVP_KDA_PATTERN_UPARTYINFO:
                     upartyobj = json_object_get_object(testobj, "fixedInfoPartyU");
                     if (!upartyobj) {

@@ -107,7 +107,7 @@ int app_kmac_handler(ACVP_TEST_CASE *test_case) {
         printf("Crypto module error, EVP_MAC_final failed\n");
         goto end;
     }
-        
+
     if (tc->test_type == ACVP_KMAC_TEST_TYPE_MVT) {
         mac_compare = calloc(mac_out_len, sizeof(unsigned char));
         if (!mac_compare) {

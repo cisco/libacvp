@@ -797,8 +797,8 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             /**
              * Z values can get messy. iutZ and z are the same for KAS1 cases, but for KAS2,
              * z is serverZ || iutZ. Ideally, serverZ would be specified separately in these cases
-             * for SSC since SSC should not really cover how the z values are combined in KAS2; handle 
-             * concatenation ourselves in library for convenience. 
+             * for SSC since SSC should not really cover how the z values are combined in KAS2; handle
+             * concatenation ourselves in library for convenience.
              */
             if (test_type == ACVP_KAS_IFC_TT_VAL) {
                 if (scheme == ACVP_KAS_IFC_KAS1) {

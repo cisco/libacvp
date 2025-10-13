@@ -156,7 +156,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_ERR("Server JSON missing 'mode'");
         return ACVP_MISSING_ARG;
     }
-    
+
     alg_id = acvp_lookup_cipher_w_mode_index(alg_str, mode_str);
     if (alg_id != ACVP_KDF135_X963) {
         ACVP_LOG_ERR("Server JSON invalid 'algorithm' or 'mode'");

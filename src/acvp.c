@@ -1192,8 +1192,8 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
     if (vs_cnt == 0) {
         int vsid;
         char* start = strstr(req_filename, "vs");
-        if (!start || 
-            (strnlen_s(start, ACVP_JSON_FILENAME_MAX) <= 2) || 
+        if (!start ||
+            (strnlen_s(start, ACVP_JSON_FILENAME_MAX) <= 2) ||
             (0 == (vsid = atoi(start+2)))) {
             ACVP_LOG_WARN("No vsId in file or filename; cannot proceed");
             goto end;
@@ -1231,8 +1231,8 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         }
         ACVP_LOG_STATUS("Writing vector set responses for vector set %d...", ctx->vs_id);
 
-        /* 
-         * Convert the JSON from a fully qualified to a value that can be 
+        /*
+         * Convert the JSON from a fully qualified to a value that can be
          * added to the file. Kind of clumsy, but it works.
          */
         kat_array = json_value_get_array(ctx->kat_resp);
@@ -1256,7 +1256,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
                 json_value_free(file_val);
                 goto end;
             }
-        } 
+        }
         /* append vector sets */
         rv = acvp_json_serialize_to_file_pretty_a(file_val, rsp_filename);
         if (rv != ACVP_SUCCESS) {
@@ -1272,7 +1272,7 @@ skip_error:
         obj = json_array_get_object(reg_array, n);
         vs_entry = vs_entry->next;
     }
-    /* append the final ']' to make the JSON work */ 
+    /* append the final ']' to make the JSON work */
     rv = acvp_json_serialize_to_file_pretty_a(NULL, rsp_filename);
     ACVP_LOG_STATUS("Completed processing of vector sets. Responses saved in specified file.");
 end:
@@ -1323,11 +1323,11 @@ ACVP_RESULT acvp_run_vectors_from_file_offline(ACVP_CTX *ctx, const char *req_fi
             ACVP_LOG_ERR("JSON obj parse error (array with no objects)");
             goto end;
         }
-        /* 
-        * If the file contains a header (an object *without* a "vsId"), we throw it away.  
-        * We are processing all the vsIds found in this file, and we don't care about any 
-        * session information (sessionId, jwt, etc).  By not relying on information in 
-        * the header (e.g. vsId), we make the file processor able to process both 
+        /*
+        * If the file contains a header (an object *without* a "vsId"), we throw it away.
+        * We are processing all the vsIds found in this file, and we don't care about any
+        * session information (sessionId, jwt, etc).  By not relying on information in
+        * the header (e.g. vsId), we make the file processor able to process both
         * libacvp-style and acvpproxy-style files.
         */
         while (((obj = json_array_get_object(reg_array, n)) != NULL) &&
@@ -1354,8 +1354,8 @@ ACVP_RESULT acvp_run_vectors_from_file_offline(ACVP_CTX *ctx, const char *req_fi
         }
         ACVP_LOG_STATUS("Writing vector set responses for vector set %d...", ctx->vs_id);
 
-        /* 
-         * Convert the JSON from a fully qualified to a value that can be 
+        /*
+         * Convert the JSON from a fully qualified to a value that can be
          * added to the file. Kind of clumsy, but it works.
          */
         kat_array = json_value_get_array(ctx->kat_resp);
@@ -1378,7 +1378,7 @@ ACVP_RESULT acvp_run_vectors_from_file_offline(ACVP_CTX *ctx, const char *req_fi
                 json_value_free(file_val);
                 goto end;
             }
-        } 
+        }
         /* Append vector sets */
         if (reg_array) // Array of many algorithms
             rv = acvp_json_serialize_to_file_pretty_a(file_val, rsp_filename);
@@ -1404,7 +1404,7 @@ skip_error:
         }
     }
 
-    /* append the final ']' to make the JSON work */ 
+    /* append the final ']' to make the JSON work */
     if (reg_array) {
         rv = acvp_json_serialize_to_file_pretty_a(NULL, rsp_filename);
     }
@@ -1494,7 +1494,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         rv = ACVP_MALLOC_FAIL;
         goto end;
     }
-    
+
     isSample = json_object_get_boolean(obj, "isSample");
     if (json_object_has_value(obj, "isSample")) {
         ctx->is_sample = isSample;
@@ -1618,7 +1618,7 @@ ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_file
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-  
+
     rv = acvp_parse_session_info_file(ctx, request_filename);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Error reading session info file, unable to get results");
@@ -1632,12 +1632,12 @@ ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_file
     }
 
     rv = acvp_check_test_results(ctx);
-    
+
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to retrieve test results");
         goto end;
     }
-    
+
 end:
     return rv;
 }
@@ -1741,7 +1741,7 @@ ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filenam
             rv = ACVP_JSON_ERR;
             goto end;
         }
-        
+
         vsid_url = json_object_get_string(current, "vectorSetUrl");
         if (!vsid_url) {
             ACVP_LOG_ERR("Error parsing vector set URL from server");
@@ -1797,11 +1797,11 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
     JSON_Value *val = NULL;
     JSON_Object *obj = NULL;
     ACVP_RESULT rv = ACVP_SUCCESS;
-    
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    
+
     ACVP_LOG_STATUS("Resuming session...");
     if (ctx->vector_req) {
         ACVP_LOG_STATUS("Restarting download of vector sets to file...");
@@ -1862,11 +1862,11 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
         rv = ACVP_JSON_ERR;
         goto end;
     }
-    
+
     count = (int)json_array_get_count(results);
     JSON_Object *current = NULL;
     const char *vsid_url = NULL, *status = NULL;
-    
+
     for (i = 0; i < count; i++) {
         int diff = 1;
         current = json_array_get_object(results, i);
@@ -1875,7 +1875,7 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
             rv = ACVP_JSON_ERR;
             goto end;
         }
-        
+
         status = json_object_get_string(current, "status");
         if (!status) {
             ACVP_LOG_ERR("Error parsing status from server");
@@ -1888,7 +1888,7 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
             rv = ACVP_JSON_ERR;
             goto end;
         }
-        
+
         if (ctx->vector_req) {
             //If we are just saving to file, we don't need to check status, download all VS
             rv = acvp_append_vsid_url(ctx, vsid_url);
@@ -1903,7 +1903,7 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
                 rv = ACVP_INVALID_ARG;
                 goto end;
             }
-            
+
             /*
              * If the result is unreceived, add it to the list of vsID urls
              */
@@ -2258,7 +2258,7 @@ ACVP_RESULT acvp_mark_as_sample(ACVP_CTX *ctx) {
 ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename) {
     if (!ctx) {
         return ACVP_NO_CTX;
-    } 
+    }
     if (!filename) {
         return ACVP_MISSING_ARG;
     }
@@ -2282,7 +2282,7 @@ ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string, const char *save_
 
     if (!ctx) {
         return ACVP_NO_CTX;
-    } 
+    }
     if (!string) {
         return ACVP_MISSING_ARG;
     }
@@ -2322,7 +2322,7 @@ ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string, const char *save_
 ACVP_RESULT acvp_mark_as_put_after_test(ACVP_CTX *ctx, char *filename) {
     if (!ctx) {
         return ACVP_NO_CTX;
-    } 
+    }
     if (!filename) {
         return ACVP_MISSING_ARG;
     }
@@ -2345,7 +2345,7 @@ ACVP_RESULT acvp_mark_as_post_only(ACVP_CTX *ctx, char *filename) {
 
     if (!ctx) {
         return ACVP_NO_CTX;
-    } 
+    }
     if (!filename) {
         return ACVP_MISSING_ARG;
     }
@@ -2713,7 +2713,7 @@ static ACVP_RESULT acvp_parse_validation(ACVP_CTX *ctx) {
         new_ts = json_object_get_wrapping_value(ts_obj);
         if (!new_ts) {
             ACVP_LOG_WARN("Failed to save request URL to test session file. Make sure you save it from output!");
-            goto end;  
+            goto end;
         }
         rv = acvp_json_serialize_to_file_pretty_w(new_ts, ctx->session_file_path);
         if (rv) {
@@ -2767,7 +2767,7 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
     val = json_value_init_object();
     obj = json_value_get_object(val);
 
-    /* 
+    /*
      * Cut off the https://name:port/ prefix and /results suffix
      */
     strstr_s((char *)url, ACVP_ATTR_URL_MAX, "/acvp/v1", 8, &substr);
@@ -2781,7 +2781,7 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
 
     json_object_set_string(obj, "vectorSetUrl", snipped_url);
     json_object_set_number(obj, "submissionSize", data_len);
-    
+
     json_array_append_value(arr, val);
 
     large_notify = json_serialize_to_string(arr_val, &notify_len);
@@ -2941,12 +2941,12 @@ static ACVP_RESULT acvp_parse_session_info_file(ACVP_CTX *ctx, const char *filen
         ACVP_LOG_ERR("Must provide value for JSON filename");
         return ACVP_MISSING_ARG;
     }
-    
+
     if (strnlen_s(filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
         ACVP_LOG_ERR("Provided filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
         return ACVP_INVALID_ARG;
     }
-    
+
     val = json_parse_file(filename);
     if (!val) {
         ACVP_LOG_ERR("JSON val parse error");
@@ -3051,7 +3051,7 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, int *retry_period, unsigned
     if (*waited_so_far >= ACVP_MAX_WAIT_TIME) {
         return ACVP_TRANSPORT_FAIL;
     }
-    
+
     if (*waited_so_far + *retry_period > ACVP_MAX_WAIT_TIME) {
         *retry_period = ACVP_MAX_WAIT_TIME - *waited_so_far;
     }
@@ -3205,7 +3205,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
              * Save the KAT VectorSet to file
              */
             if (ctx->vector_req) {
-                
+
                 ACVP_LOG_STATUS("Saving vector set %s to file...", vsid_url);
                 alg_array = json_value_get_array(val);
                 alg_val = json_array_get_value(alg_array, 1);
@@ -3234,7 +3234,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
                         json_value_free(ts_val);
                         goto end;
                     }
-                } 
+                }
                 /* append vector set */
                 rv = acvp_json_serialize_to_file_pretty_a(alg_val, ctx->vector_req_file);
                 json_value_free(ts_val);
@@ -3416,7 +3416,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 ACVP_LOG_ERR("One or more vector sets expired before results were submitted. Please start a new test session.");
                 goto end;
             }
-            
+
             strcmp_s("unreceived", 10, status, &diff);
             if (!diff) {
                 ACVP_LOG_ERR("Missing submissions for one or more vector sets. Please submit responses for all vector sets.");
@@ -3450,7 +3450,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                     char *vs_url = calloc(ACVP_REQUEST_STR_LEN_MAX + 1, sizeof(char));
                     if (!vs_url) {
                         ACVP_LOG_ERR("Unable to calloc when reporting failed algorithms, skipping...");
-                        continue;                    
+                        continue;
                     }
                     strncpy_s(vs_url, ACVP_REQUEST_STR_LEN_MAX + 1, vsurl, ACVP_REQUEST_STR_LEN_MAX);
                     rv = acvp_retrieve_vector_set(ctx, vs_url);
@@ -3562,7 +3562,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 }
             }
         }
-        
+
         /* If we got here, the testSession failed, exit loop*/
         break;
     }
@@ -3736,7 +3736,7 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
     prefix = getenv("ACV_SESSION_SAVE_PREFIX");
 
     /*
-     * Check the total length of our path, prefix, and total concatenated filename. 
+     * Check the total length of our path, prefix, and total concatenated filename.
      * Add 6 to checks for .json and the _ between prefix and session ID
      * If any lengths are too long, just use default prefix and location
      */
@@ -3747,7 +3747,7 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
         pathLen += strnlen_s(prefix, ACVP_JSON_FILENAME_MAX + 1);
     }
     pathLen += strnlen_s(ptr, ACVP_JSON_FILENAME_MAX + 1);
-    
+
     if (pathLen > ACVP_JSON_FILENAME_MAX - 6) {
         ACVP_LOG_WARN("Provided ACV_SESSION_SAVE information too long (current max path len: %d). Using defaults", \
                       ACVP_JSON_FILENAME_MAX);
@@ -3791,7 +3791,7 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
         free(ctx->session_file_path);
     }
     ctx->session_file_path = calloc(ACVP_JSON_FILENAME_MAX + 1, sizeof(char));
-    if (strncpy_s(ctx->session_file_path, ACVP_JSON_FILENAME_MAX + 1, filename, 
+    if (strncpy_s(ctx->session_file_path, ACVP_JSON_FILENAME_MAX + 1, filename,
                   ACVP_JSON_FILENAME_MAX)) {
         ACVP_LOG_ERR("Buffer write error while trying to save session file path to CTX");
         rv = ACVP_UNSUPPORTED_OP;
@@ -3822,7 +3822,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     }
 
 
-    if (ctx->get) { 
+    if (ctx->get) {
         rv = acvp_transport_get(ctx, ctx->get_string, NULL);
         if (ctx->save_filename) {
             ACVP_LOG_STATUS("Saving GET result to specified file...");
@@ -3849,7 +3849,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
         goto end;
     }
 
-    if (ctx->post) { 
+    if (ctx->post) {
         rv = acvp_post_data(ctx, ctx->post_filename);
         goto end;
     }
@@ -3902,7 +3902,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
         ACVP_LOG_ERR("Failed to register with ACVP server");
         goto end;
     }
-    
+
     //write session info so if we time out or lose connection waiting for results, we can recheck later on
     if (!ctx->put) {
         if (acvp_write_session_info(ctx) != ACVP_SUCCESS) {

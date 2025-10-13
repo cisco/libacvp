@@ -467,7 +467,7 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                         ACVP_LOG_ERR("Server JSON missing 'm'");
                         rv = ACVP_MISSING_ARG;
                         goto err;
-                    }                        
+                    }
                     /* fallthru */
                 case ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK:
                     ek_str = json_object_get_string(testobj, "ek");

@@ -310,16 +310,16 @@ static BIO *create_connection_v6(char *address, int port)
     int		    sock;
 
     /*
-     * Strip off trailing bracket 
+     * Strip off trailing bracket
      */
     host[strnlen(host, IPV6_ADDRESS_MAX)-1] = 0;
 
     /*
-     * Setup destination address/port 
+     * Setup destination address/port
      */
     memset((char *) &si6, 0, sizeof(si6));
     si6.sin6_flowinfo = 0;
-    si6.sin6_family = AF_INET6;    
+    si6.sin6_family = AF_INET6;
     si6.sin6_port = htons(port);
     rc = inet_pton(AF_INET6, host, &si6.sin6_addr);
     if (rc != 1) {
@@ -349,7 +349,7 @@ static BIO *create_connection_v6(char *address, int port)
         fprintf(stderr, "OpenSSL error creating IP socket\n");
         //ossl_dump_ssl_errors();
         return(NULL);
-    }        
+    }
 
     return(conn);
 }
@@ -640,7 +640,7 @@ static void murl_log_peer_cert(SSL *ssl)
 	    X509_NAME_print(out, subject, 0);
 	    (void)BIO_flush(out);
 	    BIO_get_mem_ptr(out, &bptr);
-	    //fprintf(stdout, "TLS peer subject name: %s\n", bptr->data); 
+	    //fprintf(stdout, "TLS peer subject name: %s\n", bptr->data);
 	    BIO_free_all(out);
 	}
     }
@@ -674,7 +674,7 @@ CURLcode curl_easy_perform(CURL *curl)
      * Allocate some space to build the HTTP request
      */
     if (ctx->http_post && ctx->post_field_size) {
-        cl = ctx->post_field_size; 
+        cl = ctx->post_field_size;
     } else if (ctx->http_post && ctx->post_fields) {
         cl = strlen(ctx->post_fields); //FIXME: this is not safe
     } else {

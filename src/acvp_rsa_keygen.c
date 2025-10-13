@@ -38,7 +38,7 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JS
         return ACVP_MALLOC_FAIL;
     }
 
-    // (E, P, Q, N, D) for all 
+    // (E, P, Q, N, D) for all
     if (stc->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_RANDOM && !stc->info_gen_by_server) {
         rv = acvp_bin_to_hexstr(stc->e, stc->e_len, tmp, ACVP_RSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
@@ -286,8 +286,8 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc(ACVP_CTX *ctx,
         stc->xq2 = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
         if (!stc->xq2) { return ACVP_MALLOC_FAIL; }
     }
-    if (info_gen_by_server && 
-        (rand_pq == ACVP_RSA_KEYGEN_B36 || 
+    if (info_gen_by_server &&
+        (rand_pq == ACVP_RSA_KEYGEN_B36 ||
          rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX)) {
         rv = acvp_hexstr_to_bin(xp, stc->xp, ACVP_RSA_EXP_BYTE_MAX, &(stc->xp_len));
         if (rv != ACVP_SUCCESS) {
@@ -341,7 +341,7 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc(ACVP_CTX *ctx,
             return rv;
         }
     }
-    
+
     stc->seed = calloc(ACVP_RSA_SEEDLEN_MAX, sizeof(unsigned char));
     if (!stc->seed) { return ACVP_MALLOC_FAIL; }
 
@@ -445,9 +445,9 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RSA_PRIME_TEST_TYPE prime_test = 0;
     ACVP_RSA_PUB_EXP_MODE pub_exp_mode = 0;
     ACVP_RSA_KEY_FORMAT key_format = 0;
-    const char *e_str = NULL, *p_str = NULL, *q_str = NULL, *xp_str = NULL, *xp1_str = NULL, 
-               *xp2_str = NULL, *xq_str = NULL, *xq1_str = NULL, *xq2_str = NULL, *alg_str = NULL, 
-               *mode_str = NULL, *hash_alg_str = NULL, *seed = NULL, *pub_exp_mode_str = NULL, 
+    const char *e_str = NULL, *p_str = NULL, *q_str = NULL, *xp_str = NULL, *xp1_str = NULL,
+               *xp2_str = NULL, *xq_str = NULL, *xq1_str = NULL, *xq2_str = NULL, *alg_str = NULL,
+               *mode_str = NULL, *hash_alg_str = NULL, *seed = NULL, *pub_exp_mode_str = NULL,
                *key_format_str = NULL, *rand_pq_str = NULL, *prime_test_str = NULL,
                *test_type_str = NULL;
     int bitlen1 = 0, bitlen2 = 0, bitlen3 = 0, bitlen4 = 0;
@@ -669,7 +669,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            if (info_gen_by_server && 
+            if (info_gen_by_server &&
                 pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_RANDOM) {
                 e_str = json_object_get_string(testobj, "e");
                 if (!e_str) {
@@ -785,7 +785,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            if (test_type == ACVP_RSA_TESTTYPE_KAT && 
+            if (test_type == ACVP_RSA_TESTTYPE_KAT &&
                 (rand_pq == ACVP_RSA_KEYGEN_B33 || rand_pq == ACVP_RSA_KEYGEN_PROBABLE)) {
                 // E
                 e_str = json_object_get_string(testobj, "e");
@@ -831,9 +831,9 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            rv = acvp_rsa_keygen_init_tc(ctx, &stc, tc_id, test_type, info_gen_by_server, hash_alg, 
+            rv = acvp_rsa_keygen_init_tc(ctx, &stc, tc_id, test_type, info_gen_by_server, hash_alg,
                                          key_format, pub_exp_mode, mod, prime_test, rand_pq, e_str,
-                                         p_str, q_str, xp_str, xp1_str, xp2_str, xq_str, xq1_str, 
+                                         p_str, q_str, xp_str, xp1_str, xp2_str, xq_str, xq1_str,
                                          xq2_str, seed, seed_len, bitlen1, bitlen2, bitlen3, bitlen4);
 
             /* Process the current test vector... */

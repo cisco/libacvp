@@ -159,7 +159,7 @@ const char *acvp_lookup_cipher_name(ACVP_CIPHER alg) {
  *        If the mode is given, then it will also use that to
  *        narrow down the search to entries that only match
  *        both the \p alg and \p mode.
- * 
+ *
  *        Note that this should not be used when the user registers an alternative revision for a
  *        cipher.
  *
@@ -1359,7 +1359,7 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
     *r_vs = json_value_get_object(*r_vs_val);
     if (!*r_vs) {
         return ACVP_JSON_ERR;
-    } 
+    }
 
     if (json_object_set_number(*r_vs, "vsId", (*ctx)->vs_id) != JSONSuccess ||
             json_object_set_string(*r_vs, "algorithm", alg_str) != JSONSuccess) {
@@ -1427,7 +1427,7 @@ void acvp_release_json(JSON_Value *r_vs_val,
  *
  * @return 1 Length of \string <= \p max_allowed
  * @return 0 Length of \string > \p max_allowed
- * 
+ *
  */
 int string_fits(const char *string, unsigned int max_allowed) {
     if (strnlen_s(string, max_allowed + 1) > max_allowed) {
@@ -1468,7 +1468,7 @@ ACVP_RESULT acvp_append_sl_list(ACVP_SL_LIST **list, int length) {
     if (!list) {
         return ACVP_NO_DATA;
     }
-    
+
     if (*list == NULL) {
         *list = calloc(1, sizeof(ACVP_SL_LIST));
         if (!*list) {
@@ -1503,7 +1503,7 @@ ACVP_RESULT acvp_append_param_list(ACVP_PARAM_LIST **list, int param) {
     if (!list) {
         return ACVP_NO_DATA;
     }
-    
+
     if (*list == NULL) {
         *list = calloc(1, sizeof(ACVP_PARAM_LIST));
         if (!*list) {
@@ -1687,7 +1687,7 @@ int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain) {
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a_work(const JSON_Value *value, const char *filename, int first) {
     ACVP_RESULT return_code = ACVP_SUCCESS;
     FILE *fp = NULL;
-    char *serialized_string = NULL; 
+    char *serialized_string = NULL;
 
     if (!filename) {
         return ACVP_INVALID_ARG;
@@ -1733,9 +1733,9 @@ ACVP_RESULT acvp_json_serialize_to_file_pretty_a_raw(const JSON_Value *value, co
 }
 
 static ACVP_RESULT acvp_json_serialize_to_file_pretty_w_work(
-        const JSON_Value *value, 
-        const char *filename, 
-        int leading_bracket) { 
+        const JSON_Value *value,
+        const char *filename,
+        int leading_bracket) {
     ACVP_RESULT return_code = ACVP_SUCCESS;
     FILE *fp = NULL;
     char *serialized_string = NULL;

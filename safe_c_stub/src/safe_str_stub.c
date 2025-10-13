@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------
  * safe_str_stub.c - Replacements for Safe C Library String Functions
- * 
+ *
  * Contains code derived from https://sourceforge.net/projects/safeclib/
  * license reproduced below
- * 
+ *
  * October 2008, Bo Berry
  *
  * Copyright (c) 2008-2011 by Cisco Systems, Inc
@@ -348,7 +348,7 @@ errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
         return (ESLEMAX);
     }
 
-    /* hold base in case src was not copied */  
+    /* hold base in case src was not copied */
     orig_dest = dest;
 
     if (src == NULL) {
@@ -367,15 +367,15 @@ errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
         while (dmax > 0) {
             if (dest == overlap_bumper) {
                 *orig_dest = '\0';
-                return (ESOVRLP); 
+                return (ESOVRLP);
             }
 
 	    if (slen == 0) {
                 /*
                  * Copying truncated to n chars.  Note that the C11 says to
-                 * copy n chars plus the null char.  
+                 * copy n chars plus the null char.
                  */
-                *dest = '\0'; 
+                *dest = '\0';
                 return (EOK);
             }
 
@@ -390,21 +390,21 @@ errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
             src++;
         }
 
-    } else { 
+    } else {
         overlap_bumper = dest;
 
         while (dmax > 0) {
             if (src == overlap_bumper) {
                 *orig_dest = '\0';
-                return (ESOVRLP); 
+                return (ESOVRLP);
             }
 
 	    if (slen == 0) {
                 /*
                  * Copying truncated to n chars.  Note that the C11 says to
-                 * copy n chars plus the null char. 
+                 * copy n chars plus the null char.
                  */
-                *dest = '\0'; 
+                *dest = '\0';
                 return (EOK);
             }
 
@@ -418,7 +418,7 @@ errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
             dest++;
             src++;
         }
-    } 
+    }
 
     /*
      * the entire src was not copied, so zero the string
@@ -446,7 +446,7 @@ rsize_t strnlen_s (const char *s, rsize_t smax) {
  *
  * Emulate subset of the functionality of strstr_s() with strstr()
  */
-errno_t strstr_s (char *dest, rsize_t dmax, 
+errno_t strstr_s (char *dest, rsize_t dmax,
                   const char *src, rsize_t slen, char **substring) {
     SAFEC_STUB_UNUSED(dmax);
     SAFEC_STUB_UNUSED(slen);
@@ -617,14 +617,14 @@ errno_t strremovews_s (char *s, rsize_t smax) {
             while (orig_smax) { *orig_s++ = '\0';  orig_smax--; }
             return (ESUNTERM);
         }
-        smax--; 
+        smax--;
 
         s++;
-    } 
+    }
 
 
 	
-    if (new_s != s) { 
+    if (new_s != s) {
         while (*s) {
 
             if (smax == 0) {
@@ -634,11 +634,11 @@ errno_t strremovews_s (char *s, rsize_t smax) {
             smax--;
 
             *new_s++ = *s;
-            *s++ = ' '; 
-        } 
+            *s++ = ' ';
+        }
         *new_s = '\0';
 
-    } else { 
+    } else {
         while (*s) {
 
             if (smax == 0) {
@@ -649,13 +649,13 @@ errno_t strremovews_s (char *s, rsize_t smax) {
 
             s++;
         }
-    }  
+    }
 
-    s--; 
+    s--;
     while ((*s == ' ') || (*s == '\t') || (*s == '\0')) {
-        *s = '\0'; 
+        *s = '\0';
         s--;
-    } 
+    }
 
     return (EOK);
 }
