@@ -3653,8 +3653,7 @@ ACVP_RESULT acvp_cap_cshake_set_parm(ACVP_CTX *ctx,
         if (is_valid_tf_param(value) == ACVP_SUCCESS) {
             cshake_cap->hex_customization = value;
         } else {
-            ACVP_LOG_ERR("Invalid param 'value' for ACVP_CSHAKE_HEX_CUSTOM_SUPPORT. "
-                         "Must be 1 or 0");
+            ACVP_LOG_ERR("Invalid param 'value' for ACVP_CSHAKE_HEX_CUSTOM_SUPPORT. Must be 1 or 0");
             return ACVP_INVALID_ARG;
         }
         break;

@@ -2438,8 +2438,7 @@ static ACVP_RESULT verify_fips_module(ACVP_CTX *ctx) {
          * The user must create the Vendor using some other program
          * such as metadata.py
          */
-        ACVP_LOG_ERR("The Vendor(%u) does not exist in server DB. Must create first!",
-                     ctx->fips.module->vendor->id);
+        ACVP_LOG_ERR("The Vendor(%u) does not exist in server DB. Must create first!", ctx->fips.module->vendor->id);
         return ACVP_INVALID_ARG;
     }
 

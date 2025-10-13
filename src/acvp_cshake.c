@@ -159,8 +159,7 @@ static ACVP_CSHAKE_TESTTYPE read_test_type(const char *str) {
  * Helper function to convert bits to ASCII string as specified in XOF draft
  * BitsToString(bits) converts each byte to ASCII character ((byte % 26) + 65)
  */
-static ACVP_RESULT acvp_cshake_bits_to_string(const unsigned char *bits, int bits_len,
-                                               char *str, int str_max_len) {
+static ACVP_RESULT acvp_cshake_bits_to_string(const unsigned char *bits, int bits_len, char *str, int str_max_len) {
     int i;
 
     if (!bits || !str || bits_len < 0 || str_max_len <= 0) {

@@ -182,8 +182,7 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
                                       stc->algorithmId, stc->label, stc->context, stc->t,
                                       stc->literalLen, stc->uPartyIdLen, stc->uEphemeralLen,
                                       stc->vPartyIdLen, stc->vEphemeralLen, stc->algIdLen,
-                                      stc->labelLen, stc->contextLen, stc->tLen, stc->l,
-                                      &fixedInfoLen);
+                                      stc->labelLen, stc->contextLen, stc->tLen, stc->l, &fixedInfoLen);
     if (!fixedInfo) {
         printf("Error creating fixed info\n");
         goto end;
@@ -261,8 +260,7 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
                                       stc->algorithmId, stc->label, stc->context, stc->t,
                                       stc->literalLen, stc->uPartyIdLen, stc->uEphemeralLen,
                                       stc->vPartyIdLen, stc->vEphemeralLen, stc->algIdLen,
-                                      stc->labelLen, stc->contextLen, stc->tLen, stc->l,
-                                      &fixedInfoLen);
+                                      stc->labelLen, stc->contextLen, stc->tLen, stc->l, &fixedInfoLen);
     if (!fixedInfo) {
         printf("Error creating fixed info\n");
         goto end;
@@ -433,8 +431,7 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
                                       stc->algorithmId, stc->label, stc->context, stc->t,
                                       stc->literalLen, stc->uPartyIdLen, stc->uEphemeralLen,
                                       stc->vPartyIdLen, stc->vEphemeralLen, stc->algIdLen,
-                                      stc->labelLen, stc->contextLen, stc->tLen, stc->l,
-                                      &fixedInfoLen);
+                                      stc->labelLen, stc->contextLen, stc->tLen, stc->l, &fixedInfoLen);
     if (!fixedInfo) {
         printf("Error creating fixed info\n");
         goto end;

@@ -1202,8 +1202,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                     goto err;
                 }
                 if ((int)strnlen_s(salt, ACVP_KDA_SALT_STR_MAX + 1) != saltLen / 4) {
-                    ACVP_LOG_ERR("salt wrong length, should match provided saltLen %d",
-                                saltLen);
+                    ACVP_LOG_ERR("salt wrong length, should match provided saltLen %d", saltLen);
                     rv = ACVP_MALFORMED_JSON;
                     goto err;
                 }

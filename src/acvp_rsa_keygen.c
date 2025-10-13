@@ -702,8 +702,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     bitlens = json_object_get_array(testobj, "bitlens");
                     count = json_array_get_count(bitlens);
                     if (count != 4) {
-                        ACVP_LOG_ERR("Server JSON 'bitlens' list count is (%u). Expected (%u)",
-                                    count, 4);
+                        ACVP_LOG_ERR("Server JSON 'bitlens' list count is (%u). Expected (%u)", count, 4);
                         rv = ACVP_INVALID_ARG;
                         json_value_free(r_tval);
                         goto err;

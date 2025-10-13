@@ -708,8 +708,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         const char *test_type_str = NULL, *dir_str = NULL, *kwcipher_str = NULL,
-                   *iv_gen_str = NULL, *iv_gen_mode_str = NULL, *salt_src_str = NULL,
-                   *alphabet_str = NULL;
+                   *iv_gen_str = NULL, *iv_gen_mode_str = NULL, *salt_src_str = NULL, *alphabet_str = NULL;
         unsigned int keylen = 0, ivlen = 0, paylen = 0, datalen = 0, aadlen = 0, taglen = 0,
                      saltLen = 0, dataUnitLen = 0, radix = 0;
         int ovrflw_ctr = -1, incr_ctr = -1, tgId = 0;

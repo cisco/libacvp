@@ -67,8 +67,7 @@ static ACVP_RESULT acvp_kdf108_output_tc(ACVP_CTX *ctx,
         * Length check
         */
         if (stc->fixed_data_len > ACVP_KDF108_FIXED_DATA_BYTE_MAX) {
-            ACVP_LOG_ERR("stc->fixed_data_len > ACVP_KDF108_FIXED_DATA_BYTE_MAX(%u)",
-                        ACVP_KDF108_FIXED_DATA_BYTE_MAX);
+            ACVP_LOG_ERR("stc->fixed_data_len > ACVP_KDF108_FIXED_DATA_BYTE_MAX(%u)", ACVP_KDF108_FIXED_DATA_BYTE_MAX);
             rv = ACVP_INVALID_ARG;
             goto end;
         }

@@ -4993,8 +4993,7 @@ ACVP_RESULT acvp_cap_set_prereq(ACVP_CTX *ctx,
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
-                                     ACVP_RESULT (*progress_cb)(char *msg, ACVP_LOG_LVL level),
-                                     ACVP_LOG_LVL level);
+                                     ACVP_RESULT (*progress_cb)(char *msg, ACVP_LOG_LVL level), ACVP_LOG_LVL level);
 
 /**
  * @brief acvp_free_test_session() releases the memory associated with an ACVP_CTX. This function

@@ -1279,9 +1279,7 @@ typedef struct acvp_sym_cipher_capability {
 typedef struct acvp_hash_capability {
     int in_bit;   // defaults to false
     int in_empty; // defaults to false
-    int out_bit; /**< 1 for true, 0 for false
-                      Defaults to false.
-                      Only for ACVP_HASH_SHAKE_* */
+    int out_bit; //!< 1 for true, 0 for false. Defaults to false. Only for ACVP_HASH_SHAKE_*
     ACVP_JSON_DOMAIN_OBJ out_len; //!< Required for ACVP_HASH_SHAKE_*
     ACVP_JSON_DOMAIN_OBJ msg_length;
     ACVP_SL_LIST *large_lens;

@@ -191,8 +191,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
  * a new context to be used for the test session.
  */
 ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
-                                     ACVP_RESULT (*progress_cb)(char *msg, ACVP_LOG_LVL level),
-                                     ACVP_LOG_LVL level) {
+                                     ACVP_RESULT (*progress_cb)(char *msg, ACVP_LOG_LVL level), ACVP_LOG_LVL level) {
     if (!ctx) {
         return ACVP_INVALID_ARG;
     }
