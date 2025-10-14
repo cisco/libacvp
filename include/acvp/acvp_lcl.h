@@ -2227,7 +2227,11 @@ int acvp_lookup_rsa_randpq_index(const char *value);
 
 ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **arry);
 
-ACVP_RESULT acvp_get_tc_str_from_json(ACVP_CTX *ctx, JSON_Object *obj, const char *key, const char **out);
+ACVP_RESULT acvp_tc_json_get_string(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, const char **out);
+ACVP_RESULT acvp_tc_json_get_int(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, int *out);
+ACVP_RESULT acvp_tc_json_get_boolean(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, int *out);
+ACVP_RESULT acvp_tc_json_get_object(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, JSON_Object **out);
+ACVP_RESULT acvp_tc_json_get_array(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, JSON_Array **out);
 
 ACVP_RESULT is_valid_tf_param(int value);
 

@@ -1224,28 +1224,6 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_get_tc_str_from_json(ACVP_CTX *ctx, JSON_Object *obj, const char *key, const char **out) {
-    const char *val= NULL;
-    ACVP_RESULT rv = ACVP_INTERNAL_ERR;
-
-    if (!json_object_has_value(obj, key)) {
-        ACVP_LOG_ERR("Server JSON is missing '%s' data", key);
-        rv = ACVP_TC_MISSING_DATA;
-        goto err;
-    }
-
-    val = json_object_get_string(obj, key);
-    if (!val) {
-        ACVP_LOG_ERR("Server JSON provided an invalid '%s' value", key);
-        rv = ACVP_TC_INVALID_DATA;
-        goto err;
-    }
-
-    *out = val;
-    rv = ACVP_SUCCESS;
-err:
-    return rv;
-}
 
 /*
  * This function returns a string that describes the error
