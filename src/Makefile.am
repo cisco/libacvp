@@ -9,6 +9,7 @@ libacvp_la_SOURCES =  acvp.c \
                     acvp_build_register.c \
                     acvp_capabilities.c \
                     acvp_operating_env.c \
+                    acvp_parse.c \
                     acvp_aes.c \
                     acvp_des.c \
                     acvp_hash.c \

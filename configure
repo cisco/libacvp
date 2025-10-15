@@ -1723,7 +1723,7 @@ then :
   printf %s "(cached) " >&6
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 $4
 #include <$2>
 _ACEOF
@@ -1755,7 +1755,7 @@ then :
   printf %s "(cached) " >&6
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 /* Define $2 to an innocuous variant, in case <limits.h> declares $2.
    For example, HP-UX 11i <limits.h> declares gettimeofday.  */
 #define $2 innocuous_$2
@@ -2034,7 +2034,7 @@ ac_signal=0
 # confdefs.h avoids OS command line length limits that DEFS can exceed.
 rm -f -r conftest* confdefs.h
 
-printf "%s\n" "// confdefs.h" > confdefs.h
+printf "%s\n" "/* confdefs.h */" > confdefs.h
 
 # Predefined preprocessor variables.
 
@@ -2110,7 +2110,7 @@ ac_c_conftest_c89_globals='
 #include <stddef.h>
 #include <stdarg.h>
 struct stat;
-// Most of the following tests are stolen from RCS 5.7 src/conf.sh. 
+/* Most of the following tests are stolen from RCS 5.7 src/conf.sh.  */
 struct buf { int x; };
 struct buf * (*rcsopen) (struct buf *, struct stat *, int);
 static char *e (p, i)
@@ -3711,7 +3711,7 @@ printf "%s\n" "$ac_try_echo"; } >&5
 done
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -3854,7 +3854,7 @@ rm -f conftest.$ac_ext
 EXEEXT=$ac_cv_exeext
 ac_exeext=$EXEEXT
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 #include <stdio.h>
 int
 main (void)
@@ -3919,7 +3919,7 @@ then :
   printf %s "(cached) " >&6
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -3972,7 +3972,7 @@ then :
   printf %s "(cached) " >&6
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -4017,7 +4017,7 @@ else $as_nop
    ac_cv_prog_cc_g=no
    CFLAGS="-g"
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -4033,7 +4033,7 @@ then :
 else $as_nop
   CFLAGS=""
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -4050,7 +4050,7 @@ else $as_nop
   ac_c_werror_flag=$ac_save_c_werror_flag
 	 CFLAGS="-g"
 	 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -4100,7 +4100,7 @@ else $as_nop
   ac_cv_prog_cc_c11=no
 ac_save_CC=$CC
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 $ac_c_conftest_c11_program
 _ACEOF
 for ac_arg in '' -std=gnu11
@@ -4146,7 +4146,7 @@ else $as_nop
   ac_cv_prog_cc_c99=no
 ac_save_CC=$CC
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 $ac_c_conftest_c99_program
 _ACEOF
 for ac_arg in '' -std=gnu99 -std=c99 -c99 -qlanglvl=extc1x -qlanglvl=extc99 -AC99 -D_STDC_C99=
@@ -4192,7 +4192,7 @@ else $as_nop
   ac_cv_prog_cc_c89=no
 ac_save_CC=$CC
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 $ac_c_conftest_c89_program
 _ACEOF
 for ac_arg in '' -qlanglvl=extc89 -qlanglvl=ansi -std -Ae "-Aa -D_HPUX_SOURCE" "-Xc -D__EXTENSIONS__"
@@ -4247,7 +4247,7 @@ then :
   printf %s "(cached) " >&6
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -4409,7 +4409,7 @@ else $as_nop
       echo '#include "conftst'$i'.h"' >> sub/conftest.c
       # Using ": > sub/conftst$i.h" creates only sub/conftst1.h with
       # Solaris 10 /bin/sh.
-      echo '// dummy' > sub/conftst$i.h
+      echo '/* dummy */' > sub/conftst$i.h
     done
     echo "${am__include} ${am__quote}sub/conftest.Po${am__quote}" > confmf
 
@@ -4625,7 +4625,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
    am_cv_ar_interface=ar
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 int some_variable = 0;
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
@@ -6454,7 +6454,7 @@ then :
 else $as_nop
   lt_cv_ar_at_file=no
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -6971,13 +6971,13 @@ _LT_EOF
       if $GREP ' nm_test_var$' "$nlist" >/dev/null; then
 	if $GREP ' nm_test_func$' "$nlist" >/dev/null; then
 	  cat <<_LT_EOF > conftest.$ac_ext
-// Keep this code in sync between libtool.m4, ltmain, lt_system.h, and tests. 
+/* Keep this code in sync between libtool.m4, ltmain, lt_system.h, and tests.  */
 #if defined _WIN32 || defined __CYGWIN__ || defined _WIN32_WCE
 /* DATA imports from DLLs on WIN32 can't be const, because runtime
    relocations are performed -- see ld's documentation on pseudo-relocs.  */
 # define LT_DLSYM_CONST
 #elif defined __osf__
-// This system does not cope well with relocations in const data. 
+/* This system does not cope well with relocations in const data.  */
 # define LT_DLSYM_CONST
 #else
 # define LT_DLSYM_CONST const
@@ -6993,7 +6993,7 @@ _LT_EOF
 
 	  cat <<_LT_EOF >> conftest.$ac_ext
 
-// The mapping between symbol names and symbols. 
+/* The mapping between symbol names and symbols.  */
 LT_DLSYM_CONST struct {
   const char *name;
   void       *address;
@@ -7007,7 +7007,7 @@ _LT_EOF
   {0, (void *) 0}
 };
 
-// This works around a problem in FreeBSD linker
+/* This works around a problem in FreeBSD linker */
 #ifdef FREEBSD_WORKAROUND
 static const void *lt_preloaded_setup() {
   return lt__PROGRAM__LTX_preloaded_symbols;
@@ -7430,7 +7430,7 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -8218,7 +8218,7 @@ else $as_nop
       echo "_main" > conftest.sym
       LDFLAGS="$LDFLAGS -Wl,-exported_symbols_list,conftest.sym"
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -10141,7 +10141,7 @@ then :
   printf %s "(cached) " >&6
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -10196,7 +10196,7 @@ then :
   printf %s "(cached) " >&6
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -10552,7 +10552,7 @@ else $as_nop
   save_LDFLAGS=$LDFLAGS
 	   LDFLAGS="$LDFLAGS -shared $wl-exported_symbol ${wl}foo $wl-update_registry $wl/dev/null"
 	   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 int foo (void) { return 0; }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"
@@ -11660,7 +11660,7 @@ else $as_nop
     eval "libdir=/foo; wl=\"$lt_prog_compiler_wl\"; \
 	 LDFLAGS=\"\$LDFLAGS $hardcode_libdir_flag_spec\""
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 int
 main (void)
@@ -12122,7 +12122,7 @@ else $as_nop
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-ldl  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 /* Override any GCC internal prototype to avoid an error.
    Use char because int might match the return type of a GCC
@@ -12184,7 +12184,7 @@ else $as_nop
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-ldld  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 /* Override any GCC internal prototype to avoid an error.
    Use char because int might match the return type of a GCC
@@ -12228,7 +12228,7 @@ else $as_nop
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-ldl  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 /* Override any GCC internal prototype to avoid an error.
    Use char because int might match the return type of a GCC
@@ -12267,7 +12267,7 @@ else $as_nop
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-lsvld  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 /* Override any GCC internal prototype to avoid an error.
    Use char because int might match the return type of a GCC
@@ -12306,7 +12306,7 @@ else $as_nop
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-ldld  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 /* Override any GCC internal prototype to avoid an error.
    Use char because int might match the return type of a GCC
@@ -12445,7 +12445,7 @@ int main ()
 	  if (dlsym( self,"_fnord"))  status = $lt_dlneed_uscore;
           else puts (dlerror ());
 	}
-      // dlclose (self);
+      /* dlclose (self); */
     }
   else
     puts (dlerror ());
@@ -12552,7 +12552,7 @@ int main ()
 	  if (dlsym( self,"_fnord"))  status = $lt_dlneed_uscore;
           else puts (dlerror ());
 	}
-      // dlclose (self);
+      /* dlclose (self); */
     }
   else
     puts (dlerror ());
@@ -13018,7 +13018,7 @@ then :
 else $as_nop
   ac_func_search_save_LIBS=$LIBS
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 /* Override any GCC internal prototype to avoid an error.
    Use char because int might match the return type of a GCC
@@ -13136,7 +13136,7 @@ then :
 else $as_nop
   ac_func_search_save_LIBS=$LIBS
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 /* Override any GCC internal prototype to avoid an error.
    Use char because int might match the return type of a GCC
@@ -13189,7 +13189,7 @@ fi
 
 
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
                 #include <$iut_dir/include/openssl/opensslv.h>
                 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
@@ -13219,7 +13219,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to libcrypto" >&5
 printf %s "checking for link to libcrypto... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
                 #include <openssl/evp.h>
 
@@ -13247,7 +13247,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to libssl" >&5
 printf %s "checking for link to libssl... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
                 #include <openssl/ssl.h>
 
@@ -13278,7 +13278,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to jitterentropy" >&5
 printf %s "checking for link to jitterentropy... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
                 #include <jitterentropy.h>
 
@@ -13308,7 +13308,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for link to liboqs" >&5
 printf %s "checking for link to liboqs... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
                 #include <oqs/common.h>
 
@@ -13354,7 +13354,7 @@ else $as_nop
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-lacvp  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 /* Override any GCC internal prototype to avoid an error.
    Use char because int might match the return type of a GCC
@@ -13407,7 +13407,7 @@ then :
 else $as_nop
   ac_func_search_save_LIBS=$LIBS
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-// end confdefs.h. 
+/* end confdefs.h.  */
 
 /* Override any GCC internal prototype to avoid an error.
    Use char because int might match the return type of a GCC
@@ -14955,7 +14955,7 @@ do
 
     # Let's still pretend it is `configure' which instantiates (i.e., don't
     # use $as_me), people would be surprised to read:
-    #    // config.h.  Generated by config.status. 
+    #    /* config.h.  Generated by config.status.  */
     configure_input='Generated from '`
 	  printf "%s\n" "$*" | sed 's|^[^:]*/||;s|:[^:]*/|, |g'
 	`' by configure.'

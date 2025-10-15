@@ -348,10 +348,8 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_object_set_string(r_vs, "mode", mode_str);
 
-    groups = json_object_get_array(obj, "testGroups");
-    if (!groups) {
-        ACVP_LOG_ERR("Missing testGroups from server JSON");
-        rv = ACVP_MALFORMED_JSON;
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
         goto err;
     }
     g_cnt = json_array_get_count(groups);
@@ -367,20 +365,16 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tg_id = json_object_get_number(groupobj, "tgId");
-        if (!tg_id) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tg_id);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tg_id);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        type_str = json_object_get_string(groupobj, "testType");
-        if (!type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         type = read_test_type(type_str);
@@ -390,10 +384,8 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        param_set_str = json_object_get_string(groupobj, "parameterSet");
-        if (!param_set_str) {
-            ACVP_LOG_ERR("Server JSON missing 'parameterSet'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "parameterSet", &param_set_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         param_set = acvp_lookup_ml_kem_param_set(param_set_str);
@@ -404,10 +396,8 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         if (alg_id == ACVP_ML_KEM_XCAP) {
-            func_str = json_object_get_string(groupobj, "function");
-            if (!func_str) {
-                ACVP_LOG_ERR("Server JSON missing 'function'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "function", &func_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
             function = read_function(func_str);
@@ -431,7 +421,10 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
             ACVP_LOG_ERR("Test array count is zero");
@@ -443,53 +436,44 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("Found new ML-KEM test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", &tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             if (alg_id == ACVP_ML_KEM_KEYGEN) {
-                d_str = json_object_get_string(testobj, "d");
-                if (!d_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'd'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "d", &d_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
-                z_str = json_object_get_string(testobj, "z");
-                if (!z_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'z'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "z", &z_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
             } else { // else is encap/decap/keycheck
                 switch (function) {
                 case ACVP_ML_KEM_FUNCTION_ENCAPSULATE:
-                    m_str = json_object_get_string(testobj, "m");
-                    if (!m_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'm'");
-                        rv = ACVP_MISSING_ARG;
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "m", &m_str);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     // fallthru
                 case ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK:
-                    ek_str = json_object_get_string(testobj, "ek");
-                    if (!ek_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'ek'");
-                        rv = ACVP_MISSING_ARG;
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "ek", &ek_str);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     break;
                 case ACVP_ML_KEM_FUNCTION_DECAPSULATE:
-                    c_str = json_object_get_string(testobj, "c");
-                    if (!c_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'c'");
-                        rv = ACVP_MISSING_ARG;
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "c", &c_str);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     // fallthru
                 case ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK:
-                    dk_str = json_object_get_string(testobj, "dk");
-                    if (!dk_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'dk'");
-                        rv = ACVP_MISSING_ARG;
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "dk", &dk_str);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     break;
