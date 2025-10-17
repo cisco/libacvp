@@ -319,12 +319,11 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        hash_str = json_object_get_string(groupobj, "hashAlg");
-        if (!hash_str) {
-            ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "hashAlg", &hash_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         hash_alg = acvp_lookup_hash_alg(hash_str);
         if (hash_alg != ACVP_SHA224 && hash_alg != ACVP_SHA256 &&
             hash_alg != ACVP_SHA384 && hash_alg != ACVP_SHA512) {
@@ -333,10 +332,8 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             goto err;
         }
 
-        pms_str = json_object_get_string(groupobj, "parmSet");
-        if (!pms_str) {
-            ACVP_LOG_ERR("Missing parmSet from server JSON group obj");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "parmSet", &pms_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -347,10 +344,8 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             goto err;
         }
 
-        test_type_str = json_object_get_string(groupobj, "testType");
-        if (!test_type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "testType", &test_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -361,12 +356,11 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             goto err;
         }
 
-        p = json_object_get_string(groupobj, "p");
-        if (!p) {
-            ACVP_LOG_ERR("Server JSON missing 'p'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "p", &p);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         if (strnlen_s(p, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
             ACVP_LOG_ERR("p too long, max allowed=(%d)",
                          ACVP_KAS_FFC_STR_MAX);
@@ -374,12 +368,11 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             goto err;
         }
 
-        q = json_object_get_string(groupobj, "q");
-        if (!q) {
-            ACVP_LOG_ERR("Server JSON missing 'q'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "q", &q);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         if (strnlen_s(q, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
             ACVP_LOG_ERR("q too long, max allowed=(%d)",
                          ACVP_KAS_FFC_STR_MAX);
@@ -387,10 +380,8 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             goto err;
         }
 
-        g = json_object_get_string(groupobj, "g");
-        if (!g) {
-            ACVP_LOG_ERR("Server JSON missing 'g'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "g", &g);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         if (strnlen_s(g, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
@@ -418,12 +409,11 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             testobj = json_value_get_object(testval);
             tc_id = json_object_get_number(testobj, "tcId");
 
-            eps = json_object_get_string(testobj, "ephemeralPublicServer");
-            if (!eps) {
-                ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicServer'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "ephemeralPublicServer", &eps);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(eps, ACVP_KAS_FFC_STR_MAX + 1)
                 > ACVP_KAS_FFC_STR_MAX) {
                 ACVP_LOG_ERR("ephemeralPublicServer too long, max allowed=(%d)",
@@ -436,12 +426,11 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
                 /*
                  * Validate
                  */
-                epri = json_object_get_string(testobj, "ephemeralPrivateIut");
-                if (!epri) {
-                    ACVP_LOG_ERR("Server JSON missing 'ephemeralPrivateIut'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "ephemeralPrivateIut", &epri);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(epri, ACVP_KAS_FFC_STR_MAX + 1)
                     > ACVP_KAS_FFC_STR_MAX) {
                     ACVP_LOG_ERR("ephemeralPrivateIut too long, max allowed=(%d)",
@@ -450,12 +439,11 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
                     goto err;
                 }
 
-                epui = json_object_get_string(testobj, "ephemeralPublicIut");
-                if (!epui) {
-                    ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicIut'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "ephemeralPublicIut", &epui);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(epui, ACVP_KAS_FFC_STR_MAX + 1)
                     > ACVP_KAS_FFC_STR_MAX) {
                     ACVP_LOG_ERR("ephemeralPublicIut too long, max allowed=(%d)",
@@ -464,12 +452,11 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
                     goto err;
                 }
 
-                z = json_object_get_string(testobj, "hashZIut");
-                if (!z) {
-                    ACVP_LOG_ERR("Server JSON missing 'hashZIut'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "hashZIut", &z);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(z, ACVP_KAS_FFC_STR_MAX + 1)
                     > ACVP_KAS_FFC_STR_MAX) {
                     ACVP_LOG_ERR("hashZIut too long, max allowed=(%d)",
@@ -705,10 +692,8 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
-        dgm_str = json_object_get_string(groupobj, "domainParameterGenerationMode");
-        if (!dgm_str) {
-            ACVP_LOG_ERR("Missing domain generation method from server JSON group obj");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "domainParameterGenerationMode", &dgm_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -727,12 +712,11 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
         if (cap && cap->cap.kas_ffc_cap) {
             kas_ffc_mode = &cap->cap.kas_ffc_cap->kas_ffc_mode[ACVP_KAS_FFC_MODE_NONE - 1];
             if (kas_ffc_mode && kas_ffc_mode->hash != ACVP_NO_SHA) {
-                hash_str = json_object_get_string(groupobj, "hashFunctionZ");
-                if (!hash_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'hashFunctionZ'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "hashFunctionZ", &hash_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 hash_alg = acvp_lookup_hash_alg(hash_str);
                 switch (hash_alg) {
                 case ACVP_SHA224:
@@ -759,10 +743,8 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
             }
         }
 
-        test_type_str = json_object_get_string(groupobj, "testType");
-        if (!test_type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "testType", &test_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -773,12 +755,11 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
             goto err;
         }
         if ((dgm == ACVP_KAS_FFC_FB) || (dgm == ACVP_KAS_FFC_FC)) {
-            p = json_object_get_string(groupobj, "p");
-            if (!p) {
-                ACVP_LOG_ERR("Server JSON missing 'p'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "p", &p);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(p, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
                 ACVP_LOG_ERR("p too long, max allowed=(%d)",
                               ACVP_KAS_FFC_STR_MAX);
@@ -786,12 +767,11 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
                 goto err;
             }
 
-            q = json_object_get_string(groupobj, "q");
-            if (!q) {
-                ACVP_LOG_ERR("Server JSON missing 'q'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "q", &q);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(q, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
                 ACVP_LOG_ERR("q too long, max allowed=(%d)",
                              ACVP_KAS_FFC_STR_MAX);
@@ -799,12 +779,11 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
                 goto err;
             }
 
-            g = json_object_get_string(groupobj, "g");
-            if (!g) {
-                ACVP_LOG_ERR("Server JSON missing 'g'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "g", &g);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(g, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
                 ACVP_LOG_ERR("g too long, max allowed=(%d)",
                              ACVP_KAS_FFC_STR_MAX);
@@ -830,12 +809,11 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
             testobj = json_value_get_object(testval);
             tc_id = json_object_get_number(testobj, "tcId");
 
-            eps = json_object_get_string(testobj, "ephemeralPublicServer");
-            if (!eps) {
-                ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicServer'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "ephemeralPublicServer", &eps);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(eps, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
                 ACVP_LOG_ERR("ephemeralPublicServer too long, max allowed=(%d)",
                              ACVP_KAS_FFC_STR_MAX);
@@ -847,12 +825,11 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
                 /*
                  * Validate
                  */
-                epri = json_object_get_string(testobj, "ephemeralPrivateIut");
-                if (!epri) {
-                    ACVP_LOG_ERR("Server JSON missing 'ephemeralPrivateIut'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "ephemeralPrivateIut", &epri);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(epri, ACVP_KAS_FFC_STR_MAX + 1)
                     > ACVP_KAS_FFC_STR_MAX) {
                     ACVP_LOG_ERR("ephemeralPrivateIut too long, max allowed=(%d)",
@@ -861,12 +838,11 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
                     goto err;
                 }
 
-                epui = json_object_get_string(testobj, "ephemeralPublicIut");
-                if (!epui) {
-                    ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicIut'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "ephemeralPublicIut", &epui);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(epui, ACVP_KAS_FFC_STR_MAX + 1)
                     > ACVP_KAS_FFC_STR_MAX) {
                     ACVP_LOG_ERR("ephemeralPublicIut too long, max allowed=(%d)",

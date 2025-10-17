@@ -157,6 +157,7 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-fp_312.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-fp_340.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-fp_350.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-fp_4X.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-non_fips.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_hash.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_hmac.o \
@@ -172,6 +173,7 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_drbg.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_kda.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_kmac.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_cshake.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_ml_dsa.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_ml_kem.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_slh_dsa.o

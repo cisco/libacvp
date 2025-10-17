@@ -83,6 +83,7 @@ APP_LINK += ../app/implementations/openssl/3/acvp_app-iut.o \
             ../app/implementations/openssl/3/registrations/acvp_app-fp_312.o \
             ../app/implementations/openssl/3/registrations/acvp_app-fp_340.o \
             ../app/implementations/openssl/3/registrations/acvp_app-fp_350.o \
+            ../app/implementations/openssl/3/registrations/acvp_app-fp_4X.o \
             ../app/implementations/openssl/3/registrations/acvp_app-non_fips.o \
             ../app/implementations/openssl/3/acvp_app-iut_hash.o \
             ../app/implementations/openssl/3/acvp_app-iut_hmac.o \
@@ -98,6 +99,7 @@ APP_LINK += ../app/implementations/openssl/3/acvp_app-iut.o \
             ../app/implementations/openssl/3/acvp_app-iut_drbg.o \
             ../app/implementations/openssl/3/acvp_app-iut_kda.o \
             ../app/implementations/openssl/3/acvp_app-iut_kmac.o \
+            ../app/implementations/openssl/3/acvp_app-iut_cshake.o \
             ../app/implementations/openssl/3/acvp_app-iut_ml_dsa.o \
             ../app/implementations/openssl/3/acvp_app-iut_ml_kem.o \
             ../app/implementations/openssl/3/acvp_app-iut_slh_dsa.o

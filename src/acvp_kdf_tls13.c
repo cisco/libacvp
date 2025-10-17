@@ -172,12 +172,11 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        type_str = json_object_get_string(groupobj, "testType");
-        if (!type_str) {
-            ACVP_LOG_ERR("Missing testType from server JSON group obj");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         type = read_test_type(type_str);
         if (!type) {
             ACVP_LOG_ERR("Invalid testType from server JSON group obj");
@@ -185,12 +184,11 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        hmac_str = json_object_get_string(groupobj, "hmacAlg");
-        if (!hmac_str) {
-            ACVP_LOG_ERR("Missing hmacAlg from server JSON group obj");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hmacAlg", &hmac_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         hmac = acvp_lookup_hash_alg(hmac_str);
         if (!hmac) {
             ACVP_LOG_ERR("Invalid hmacAlg from server JSON group obj");
@@ -198,12 +196,11 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        run_str = json_object_get_string(groupobj, "runningMode");
-        if (!run_str) {
-            ACVP_LOG_ERR("Missing runningMode from server JSON group obj");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "runningMode", &run_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         runmode = read_run_mode(run_str);
         if (!runmode) {
             ACVP_LOG_ERR("Invalid runningMode from server JSON group obj");
@@ -237,49 +234,37 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (runmode == ACVP_KDF_TLS13_RUN_MODE_PSK || runmode == ACVP_KDF_TLS13_RUN_MODE_PSK_DHE) {
-                psk = json_object_get_string(testobj, "psk");
-                if (!psk) {
-                    ACVP_LOG_ERR("Server json missing 'psk'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "psk", &psk);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
             }
 
             if (runmode == ACVP_KDF_TLS13_RUN_MODE_DHE || runmode == ACVP_KDF_TLS13_RUN_MODE_PSK_DHE) {
-                dhe = json_object_get_string(testobj, "dhe");
-                if (!dhe) {
-                    ACVP_LOG_ERR("Server json missing 'dhe'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "dhe", &dhe);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
             }
 
 
-            sh_rnd = json_object_get_string(testobj, "helloServerRandom");
-            if (!sh_rnd) {
-                ACVP_LOG_ERR("Failed to include helloServerRandom");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "helloServerRandom", &sh_rnd);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            ch_rnd = json_object_get_string(testobj, "helloClientRandom");
-            if (!ch_rnd) {
-                ACVP_LOG_ERR("Failed to include helloClientRandom");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "helloClientRandom", &ch_rnd);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            s_fin_rnd = json_object_get_string(testobj, "finishedServerRandom");
-            if (!s_fin_rnd) {
-                ACVP_LOG_ERR("Failed to include finishedServerRandom");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "finishedServerRandom", &s_fin_rnd);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            c_fin_rnd = json_object_get_string(testobj, "finishedClientRandom");
-            if (!c_fin_rnd) {
-                ACVP_LOG_ERR("Failed to include finishedClientRandom");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "finishedClientRandom", &c_fin_rnd);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 

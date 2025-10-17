@@ -166,17 +166,13 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         r_tarr = json_object_get_array(r_gobj, "tests");
 
         // Get the expected (user will generate) key and iv lengths
-        cipher_str = json_object_get_string(groupobj, "cipher");
-        if (!cipher_str) {
-            ACVP_LOG_ERR("Failed to include cipher.");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "cipher", &cipher_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
-        sha_str = json_object_get_string(groupobj, "hashAlg");
-        if (!sha_str) {
-            ACVP_LOG_ERR("Failed to include hashAlg.");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &sha_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -264,24 +260,18 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            shared_secret_str = json_object_get_string(testobj, "k");
-            if (!shared_secret_str) {
-                ACVP_LOG_ERR("Failed to include k.");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "k", &shared_secret_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            hash_str = json_object_get_string(testobj, "h");
-            if (!hash_str) {
-                ACVP_LOG_ERR("Failed to include h.");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "h", &hash_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            session_id_str = json_object_get_string(testobj, "sessionId");
-            if (!session_id_str) {
-                ACVP_LOG_ERR("Failed to include sessionId.");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "sessionId", &session_id_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 

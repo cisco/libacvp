@@ -263,12 +263,11 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        dgm_str = json_object_get_string(groupobj, "safePrimeGroup");
-        if (!dgm_str) {
-            ACVP_LOG_ERR("Server JSON missing 'safePrimeGroup'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "safePrimeGroup", &dgm_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         dgm = acvp_convert_dgm_string(dgm_str);
         if (!dgm) {
             ACVP_LOG_ERR("safePrimeGroup invalid");
@@ -306,10 +305,8 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                test_type_str = json_object_get_string(groupobj, "testType");
-                if (!test_type_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'testType'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &test_type_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
@@ -385,10 +382,8 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
 
 
-                test_type_str = json_object_get_string(groupobj, "testType");
-                if (!test_type_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'testType'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &test_type_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
@@ -407,18 +402,14 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 json_object_set_number(r_tobj, "tcId", tc_id);
 
 
-                x = json_object_get_string(testobj, "x");
-                if (!x) {
-                    ACVP_LOG_ERR("Server JSON missing 'x'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "x", &x);
+                if (rv != ACVP_SUCCESS) {
                     json_value_free(r_tval);
                     goto err;
                 }
 
-                y = json_object_get_string(testobj, "y");
-                if (!y) {
-                    ACVP_LOG_ERR("Server JSON missing 'y'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "y", &y);
+                if (rv != ACVP_SUCCESS) {
                     json_value_free(r_tval);
                     goto err;
                 }

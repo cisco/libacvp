@@ -291,12 +291,11 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        test_type_str = json_object_get_string(groupobj, "testType");
-        if (!test_type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &test_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         strcmp_s("AFT", 3, test_type_str, &diff);
         if (!diff) {
             testtype = ACVP_CMAC_TEST_TYPE_AFT;
@@ -306,10 +305,8 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        direction = json_object_get_string(groupobj, "direction");
-        if (!direction) {
-            ACVP_LOG_ERR("Unable to parse 'direction' from JSON.");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "direction", &direction);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -376,12 +373,11 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_CMAC_AES) {
-                key1 = json_object_get_string(testobj, "key");
-                if (!key1) {
-                    ACVP_LOG_ERR("Server JSON missing 'key'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "key", &key1);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 key1_len = strnlen_s(key1, ACVP_CMAC_KEY_MAX + 1);
                 if (key1_len > ACVP_CMAC_KEY_MAX) {
                     ACVP_LOG_ERR("Invalid length for 'key' attribute in CMAC-AES test");
@@ -389,14 +385,21 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
             } else if (alg_id == ACVP_CMAC_TDES) {
-                key1 = json_object_get_string(testobj, "key1");
-                key2 = json_object_get_string(testobj, "key2");
-                key3 = json_object_get_string(testobj, "key3");
-                if (!key1 || !key2 || !key3) {
-                    ACVP_LOG_ERR("Server JSON missing 'key(1,2,3)' value");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "key1", &key1);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "key2", &key2);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "key3", &key3);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+
                 key1_len = strnlen_s(key1, ACVP_CMAC_KEY_MAX + 1);
                 key2_len = strnlen_s(key2, ACVP_CMAC_KEY_MAX + 1);
                 key3_len = strnlen_s(key3, ACVP_CMAC_KEY_MAX + 1);
@@ -410,10 +413,8 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (verify) {
-                mac = json_object_get_string(testobj, "mac");
-                if (!mac) {
-                    ACVP_LOG_ERR("Server JSON missing 'mac'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "mac", &mac);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
             }

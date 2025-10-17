@@ -161,12 +161,11 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        sha = json_object_get_string(groupobj, "hashAlg");
-        if (!sha) {
-            ACVP_LOG_ERR("Failed to include hashAlg");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &sha);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         md = acvp_lookup_hash_alg(sha);
         if (md != ACVP_SHA256 && md != ACVP_SHA384 &&
             md != ACVP_SHA512) {
@@ -189,12 +188,11 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
 
-            pm_secret = json_object_get_string(testobj, "preMasterSecret");
-            if (!pm_secret) {
-                ACVP_LOG_ERR("Failed to include preMasterSecret");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "preMasterSecret", &pm_secret);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(pm_secret, pm_len) != pm_len / 4) {
                 ACVP_LOG_ERR("pmLen(%d) or pmSecret length(%d) incorrect",
                              pm_len / 4, (int)strnlen_s(pm_secret, ACVP_KDF_TLS12_PMSECRET_STR_MAX));
@@ -202,24 +200,18 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            session_hash = json_object_get_string(testobj, "sessionHash");
-            if (!session_hash) {
-                ACVP_LOG_ERR("Failed to include sessionHash");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "sessionHash", &session_hash);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            s_rnd = json_object_get_string(testobj, "serverRandom");
-            if (!s_rnd) {
-                ACVP_LOG_ERR("Failed to include serverRandom");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "serverRandom", &s_rnd);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            c_rnd = json_object_get_string(testobj, "clientRandom");
-            if (!c_rnd) {
-                ACVP_LOG_ERR("Failed to include clientRandom");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "clientRandom", &c_rnd);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 

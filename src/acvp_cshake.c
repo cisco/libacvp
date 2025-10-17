@@ -457,10 +457,8 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        type_str = json_object_get_string(groupobj, "testType");
-        if (!type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -505,31 +503,40 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
 
-            msg = json_object_get_string(testobj, "msg");
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "msg", &msg);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+
             msglen = json_object_get_number(testobj, "len");
             outlen = json_object_get_number(testobj, "outLen");
-            function_name = json_object_get_string(testobj, "functionName");
+
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "functionName", &function_name);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             if (hex_customization) {
-                custom = json_object_get_string(testobj, "customizationHex");
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "customizationHex", &custom);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
                 if (custom && strnlen_s(custom, ACVP_CSHAKE_CUSTOM_HEX_STR_MAX + 1) > ACVP_CSHAKE_CUSTOM_HEX_STR_MAX) {
                     ACVP_LOG_ERR("customization hex too long in tcid %d", tc_id);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
             } else {
-                custom = json_object_get_string(testobj, "customization");
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "customization", &custom);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+
                 if (custom && strnlen_s(custom, ACVP_CSHAKE_CUSTOM_STR_MAX + 1) > ACVP_CSHAKE_CUSTOM_STR_MAX) {
                     ACVP_LOG_ERR("customization string too long in tcid %d", tc_id);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-            }
-
-            if (!msg) {
-                ACVP_LOG_ERR("Server JSON missing 'msg'");
-                rv = ACVP_MISSING_ARG;
-                goto err;
             }
 
             if (msglen < 0) {

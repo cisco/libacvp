@@ -155,10 +155,8 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        engine_id = json_object_get_string(groupobj, "engineId");
-        if (!engine_id) {
-            ACVP_LOG_ERR("Failed to include engineId.");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "engineId", &engine_id);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -192,12 +190,11 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            password = json_object_get_string(testobj, "password");
-            if (!password) {
-                ACVP_LOG_ERR("Failed to include password");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "password", &password);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             unsigned int actual_len = strnlen_s(password, ACVP_KDF135_SNMP_PASS_LEN_MAX);
             if (actual_len != p_len / 8) {
                 ACVP_LOG_ERR("pLen(%d) or password length(%d) incorrect", p_len, actual_len);

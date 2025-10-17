@@ -943,12 +943,11 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
-        test_type_str = json_object_get_string(groupobj, "testType");
-        if (!test_type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_string(ctx, cipher, groupobj, "testType", &test_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         test_type = read_test_type(test_type_str);
         if (!test_type) {
             ACVP_LOG_ERR("Server provided invalid testType");
@@ -964,10 +963,8 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             goto err;
         }
         if (cipher == ACVP_KDA_HKDF) {
-            alg_str = json_object_get_string(configobj, "hmacAlg");
-            if (!alg_str) {
-                ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
-                rv = ACVP_MALFORMED_JSON;
+            rv = acvp_tc_json_get_string(ctx, cipher, configobj, "hmacAlg", &alg_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -995,12 +992,11 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 goto err;
             }
         } else if (cipher == ACVP_KDA_ONESTEP) {
-            alg_str = json_object_get_string(configobj, "auxFunction");
-            if (!alg_str) {
-                ACVP_LOG_ERR("Server JSON missing 'auxFunction'");
-                rv = ACVP_MALFORMED_JSON;
+            rv = acvp_tc_json_get_string(ctx, cipher, configobj, "auxFunction", &alg_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             aux_function = acvp_lookup_aux_function_alg_tbl(alg_str);
             if (!aux_function) {
                 ACVP_LOG_ERR("Invalid auxFunction provided by server JSON");
@@ -1008,12 +1004,11 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 goto err;
             }
         } else if (cipher == ACVP_KDA_TWOSTEP) {
-            alg_str = json_object_get_string(configobj, "macMode");
-            if (!alg_str) {
-                ACVP_LOG_ERR("Server JSON missing 'macMode'");
-                rv = ACVP_TC_INVALID_DATA;
+            rv = acvp_tc_json_get_string(ctx, cipher, configobj, "macMode", &alg_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             mac_mode = read_mac_mode(alg_str);
             if (!mac_mode) {
                 ACVP_LOG_ERR("Sever JSON invalid 'macMode'");
@@ -1026,21 +1021,28 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             goto err;
         }
 
-        pattern_str = json_object_get_string(configobj, "fixedInfoPattern");
-        if (!pattern_str) {
-            ACVP_LOG_ERR("Server JSON missing 'fixedInfoPattern'");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_string(ctx, cipher, configobj, "fixedInfoPattern", &pattern_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
-        encoding_str = json_object_get_string(configobj, "fixedInfoEncoding");
+        rv = acvp_tc_json_get_string(ctx, cipher, configobj, "fixedInfoEncoding", &encoding_str);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
+
         encoding = read_encoding_type(encoding_str);
         if (!encoding) {
             ACVP_LOG_ERR("Invalid fixedInfoEncoding provided by server");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
-        salt_method_str = json_object_get_string(configobj, "saltMethod");
+
+        rv = acvp_tc_json_get_string(ctx, cipher, configobj, "saltMethod", &salt_method_str);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
+
         salt_method = read_salt_method(salt_method_str);
         if (!salt_method) {
             ACVP_LOG_ERR("Invalid saltMethod provided by server");
@@ -1096,12 +1098,11 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
 
         // there are some kdfConfiguration values specific to twostep
         if (cipher == ACVP_KDA_TWOSTEP) {
-            kdf_mode_str = json_object_get_string(configobj, "kdfMode");
-            if (!kdf_mode_str) {
-                ACVP_LOG_ERR("Server JSON missing kdfMode");
-                rv = ACVP_TC_INVALID_DATA;
+            rv = acvp_tc_json_get_string(ctx, cipher, configobj, "kdfMode", &kdf_mode_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             kdf_mode = read_mode(kdf_mode_str);
             if (!kdf_mode) {
                 ACVP_LOG_ERR("Server JSON invalid kdfMode");
@@ -1109,12 +1110,11 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 goto err;
             }
 
-            ctr_loc_str = json_object_get_string(configobj, "counterLocation");
-            if (!ctr_loc_str) {
-                ACVP_LOG_ERR("Server JSON missing counterLocation");
-                rv = ACVP_TC_INVALID_DATA;
+            rv = acvp_tc_json_get_string(ctx, cipher, configobj, "counterLocation", &ctr_loc_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             ctr_loc = read_ctr_location(ctr_loc_str);
             if (!ctr_loc) {
                 ACVP_LOG_ERR("Server JSON invalid counterLocation.");
@@ -1208,12 +1208,11 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 }
             }
 
-            z = json_object_get_string(paramobj, "z");
-            if (!z) {
-                ACVP_LOG_ERR("Server JSON missing 'z'");
-                rv = ACVP_MALFORMED_JSON;
+            rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "z", &z);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(z, ACVP_KDA_Z_STR_MAX + 1) > ACVP_KDA_Z_STR_MAX) {
                 ACVP_LOG_ERR("Server JSON 'z' too long");
                 rv = ACVP_TC_INVALID_DATA;
@@ -1221,10 +1220,8 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             }
 
             if (cipher == ACVP_KDA_TWOSTEP && iv_len > 0) {
-                iv_str = json_object_get_string(paramobj, "iv");
-                if (!iv_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'iv'");
-                    rv = ACVP_TC_INVALID_DATA;
+                rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "iv", &iv_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
             }
@@ -1242,10 +1239,8 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                         rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
-                    uparty = json_object_get_string(upartyobj, "partyId");
-                    if (!uparty) {
-                        ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPartyU'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_string(ctx, cipher, upartyobj, "partyId", &uparty);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     // ephemeral data is randomly included and optional
@@ -1258,44 +1253,34 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                         rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
-                    vparty = json_object_get_string(vpartyobj, "partyId");
-                    if (!vparty) {
-                        ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPartyU'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_string(ctx, cipher, vpartyobj, "partyId", &vparty);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     // ephemeral data is randomly included and optional
                     vephemeral = json_object_get_string(vpartyobj, "ephemeralData");
                     break;
                 case ACVP_KDA_PATTERN_CONTEXT:
-                    context = json_object_get_string(paramobj, "context");
-                    if (!context) {
-                        ACVP_LOG_ERR("Server JSON missing 'context'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "context", &context);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     break;
                 case ACVP_KDA_PATTERN_ALGID:
-                    algid = json_object_get_string(paramobj, "algorithmId");
-                    if (!algid) {
-                        ACVP_LOG_ERR("Server JSON missing 'algorithmId'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "algorithmId", &algid);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     break;
                 case ACVP_KDA_PATTERN_LABEL:
-                    label = json_object_get_string(paramobj, "label");
-                    if (!label) {
-                        ACVP_LOG_ERR("Server JSON missing 'label'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "label", &label);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     break;
                 case ACVP_KDA_PATTERN_T:
-                    t = json_object_get_string(paramobj, "t");
-                    if (!t) {
-                        ACVP_LOG_ERR("Server JSON missing 't'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "t", &t);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     break;

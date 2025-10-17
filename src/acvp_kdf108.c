@@ -432,12 +432,11 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         // Process testGroups header info
         if (kdf_mode == ACVP_KDF108_MODE_KMAC) {
-            mac_mode_str = json_object_get_string(groupobj, "macMode");
-            if (!mac_mode_str) {
-                ACVP_LOG_ERR("Server JSON missing macMode");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "macMode", &mac_mode_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             mac_mode = read_mac_mode(mac_mode_str);
             if (!mac_mode) {
                 ACVP_LOG_ERR("Server JSON invalid macMode");
@@ -445,12 +444,11 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
         } else {
-            kdf_mode_str = json_object_get_string(groupobj, "kdfMode");
-            if (!kdf_mode_str) {
-                ACVP_LOG_ERR("Failed to include kdfMode");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "kdfMode", &kdf_mode_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             kdf_mode = read_mode(kdf_mode_str);
             if (!kdf_mode) {
                 ACVP_LOG_ERR("Server JSON invalid kdfMode");
@@ -458,12 +456,11 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            mac_mode_str = json_object_get_string(groupobj, "macMode");
-            if (!mac_mode_str) {
-                ACVP_LOG_ERR("Server JSON missing macMode");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "macMode", &mac_mode_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             mac_mode = read_mac_mode(mac_mode_str);
             if (!mac_mode) {
                 ACVP_LOG_ERR("Server JSON invalid macMode");
@@ -491,12 +488,11 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            ctr_loc_str = json_object_get_string(groupobj, "counterLocation");
-            if (!ctr_loc_str) {
-                ACVP_LOG_ERR("Server JSON missing counterLocation");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "counterLocation", &ctr_loc_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             ctr_loc = read_ctr_location(ctr_loc_str);
             if (!ctr_loc) {
                 ACVP_LOG_ERR("Server JSON invalid counterLocation.");
@@ -527,10 +523,8 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             tc_id = json_object_get_number(testobj, "tcId");
 
             if (kdf_mode == ACVP_KDF108_MODE_KMAC) {
-                key_in_str = json_object_get_string(testobj, "keyDerivationKey");
-                if (!key_in_str) {
-                    ACVP_LOG_ERR("Server JSON missing keyDerivationKey");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "keyDerivationKey", &key_in_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
@@ -544,10 +538,8 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 // Convert to byte length
                 key_in_len = key_in_len / 2;
 
-                context_str = json_object_get_string(testobj, "context");
-                if (!context_str) {
-                    ACVP_LOG_ERR("Server JSON missing context");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "context", &context_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
@@ -561,10 +553,8 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 // Convert to byte length
                 context_len = context_len / 2;
 
-                label_str = json_object_get_string(testobj, "label");
-                if (!label_str) {
-                    ACVP_LOG_ERR("Server JSON missing label");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "label", &label_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
@@ -588,10 +578,8 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 key_out_len = (key_out_bit_len + 7) / 8;
 
             } else {
-                key_in_str = json_object_get_string(testobj, "keyIn");
-                if (!key_in_str) {
-                    ACVP_LOG_ERR("Server JSON missing keyIn");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "keyIn", &key_in_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
@@ -606,10 +594,8 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 key_in_len = key_in_len / 2;
 
                 if (kdf_mode == ACVP_KDF108_MODE_FEEDBACK) {
-                    iv_str = json_object_get_string(testobj, "iv");
-                    if (!iv_str) {
-                        ACVP_LOG_ERR("Server JSON missing iv");
-                        rv = ACVP_MISSING_ARG;
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "iv", &iv_str);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                 }
 

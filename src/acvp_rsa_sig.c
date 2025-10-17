@@ -318,12 +318,11 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
         /*
          * Get a reference to the abstracted test case
          */
-        sig_type_str = json_object_get_string(groupobj, "sigType");
-        if (!sig_type_str) {
-            ACVP_LOG_ERR("Missing sigType from rsa_siggen json");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "sigType", &sig_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         sig_type = read_sig_type(sig_type_str);
         if (!sig_type) {
             ACVP_LOG_ERR("Server JSON invalid 'sigType'");
@@ -343,12 +342,11 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
             goto err;
         }
 
-        hash_alg_str = json_object_get_string(groupobj, "hashAlg");
-        if (!hash_alg_str) {
-            ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &hash_alg_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         hash_alg = acvp_lookup_hash_alg(hash_alg_str);
         if (!hash_alg || (alg_id == ACVP_RSA_SIGGEN && hash_alg == ACVP_SHA1)) {
             ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
@@ -359,10 +357,8 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
         salt_len = json_object_get_number(groupobj, "saltLen");
 
         if (!old_rev && sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
-            mask_str = json_object_get_string(groupobj, "maskFunction");
-            if (!mask_str) {
-                ACVP_LOG_ERR("Server JSON missing 'maskFunction'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "maskFunction", &mask_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -375,13 +371,16 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
         }
 
         if (alg_id == ACVP_RSA_SIGVER) {
-            e_str = json_object_get_string(groupobj, "e");
-            n_str = json_object_get_string(groupobj, "n");
-            if (!e_str || !n_str) {
-                ACVP_LOG_ERR("Missing e|n from server json");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "e", &e_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "n", &n_str);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+
             if ((strnlen_s(e_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) ||
                 (strnlen_s(n_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX)) {
                 ACVP_LOG_ERR("server provided e or n of invalid length");
@@ -427,13 +426,12 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
              * Get a reference to the abstracted test case
              */
 
-            msg = json_object_get_string(testobj, "message");
-            if (!msg) {
-                ACVP_LOG_ERR("Missing 'message' from server json");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "message", &msg);
+            if (rv != ACVP_SUCCESS) {
                 json_value_free(r_tval);
                 goto err;
             }
+
             json_msglen = strnlen_s(msg, ACVP_RSA_MSGLEN_MAX + 1);
             if (json_msglen > ACVP_RSA_MSGLEN_MAX) {
                 ACVP_LOG_ERR("'message' too long in server json");
@@ -445,13 +443,12 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
 
 
             if (alg_id == ACVP_RSA_SIGVER) {
-                tmp_signature = json_object_get_string(testobj, "signature");
-                if (!tmp_signature) {
-                    ACVP_LOG_ERR("Missing 'signature' from server json");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "signature", &tmp_signature);
+                if (rv != ACVP_SUCCESS) {
                     json_value_free(r_tval);
                     goto err;
                 }
+
                 json_siglen = strnlen_s(tmp_signature, ACVP_RSA_SIGNATURE_MAX + 1);
                 if (json_siglen > ACVP_RSA_SIGNATURE_MAX) {
                     ACVP_LOG_ERR("'signature' too long in server json");

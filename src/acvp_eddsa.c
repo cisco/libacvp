@@ -308,10 +308,8 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        curve_str = json_object_get_string(groupobj, "curve");
-        if (!curve_str) {
-            ACVP_LOG_ERR("Server JSON missing 'curve'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "curve", &curve_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -322,7 +320,11 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             goto err;
         }
 
-        type_str = json_object_get_string(groupobj, "testType");
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &type_str);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
+
         test_type = read_test_type(type_str);
         if (!test_type) {
             ACVP_LOG_ERR("Server JSON includes unrecognized testType");
@@ -366,12 +368,11 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             tc_id = json_object_get_number(testobj, "tcId");
 
             if (alg_id == ACVP_EDDSA_KEYVER || alg_id == ACVP_EDDSA_SIGVER) {
-                q = json_object_get_string(testobj, "q");
-                if (!q) {
-                    ACVP_LOG_ERR("Server JSON missing 'q'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "q", &q);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(q, ACVP_EDDSA_POINT_LEN_MAX + 1) > ACVP_EDDSA_POINT_LEN_MAX) {
                     ACVP_LOG_ERR("'q' too long");
                     rv = ACVP_INVALID_ARG;
@@ -379,12 +380,11 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 }
             }
             if (alg_id == ACVP_EDDSA_SIGGEN || alg_id == ACVP_EDDSA_SIGVER) {
-                message = json_object_get_string(testobj, "message");
-                if (!message) {
-                    ACVP_LOG_ERR("Server JSON missing 'message'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "message", &message);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(message, ACVP_EDDSA_MSG_LEN_MAX + 1) > ACVP_EDDSA_MSG_LEN_MAX) {
                     ACVP_LOG_ERR("message string too long");
                     rv = ACVP_INVALID_ARG;
@@ -402,12 +402,11 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             }
 
             if (alg_id == ACVP_EDDSA_SIGVER) {
-                sig = json_object_get_string(testobj, "signature");
-                if (!sig) {
-                    ACVP_LOG_ERR("Server JSON missing 'signature'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "signature", &sig);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(sig, ACVP_EDDSA_MSG_LEN_MAX + 1) > ACVP_EDDSA_MSG_LEN_MAX) {
                     ACVP_LOG_ERR("'signature' too long");
                     rv = ACVP_INVALID_ARG;

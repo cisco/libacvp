@@ -306,12 +306,11 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        hash_alg_str = json_object_get_string(groupobj, "hashAlg");
-        if (!hash_alg_str) {
-            ACVP_LOG_ERR("Failed to include hashAlg");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &hash_alg_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         hash_alg = acvp_lookup_hash_alg(hash_alg_str);
         if (hash_alg != ACVP_SHA1 && hash_alg != ACVP_SHA224 &&
             hash_alg != ACVP_SHA256 && hash_alg != ACVP_SHA384 &&
@@ -370,12 +369,11 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
 
-            init_nonce = json_object_get_string(testobj, "nInit");
-            if (!init_nonce) {
-                ACVP_LOG_ERR("Failed to include nInit");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "nInit", &init_nonce);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(init_nonce, init_nonce_len) != init_nonce_len / 4) {
                 ACVP_LOG_ERR("nInit length(%d) incorrect, expected(%d)",
                              (int)strnlen_s(init_nonce, ACVP_KDF135_IKEV2_INIT_NONCE_STR_MAX), init_nonce_len / 4);
@@ -383,12 +381,11 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            resp_nonce = json_object_get_string(testobj, "nResp");
-            if (!resp_nonce) {
-                ACVP_LOG_ERR("Failed to include nResp");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "nResp", &resp_nonce);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(resp_nonce, resp_nonce_len) != resp_nonce_len / 4) {
                 ACVP_LOG_ERR("nResp length(%d) incorrect, expected(%d)",
                              (int)strnlen_s(resp_nonce, ACVP_KDF135_IKEV2_RESP_NONCE_STR_MAX), resp_nonce_len / 4);
@@ -396,12 +393,11 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            init_spi = json_object_get_string(testobj, "spiInit");
-            if (!init_spi) {
-                ACVP_LOG_ERR("Failed to include spiInit");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "spiInit", &init_spi);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(init_spi, ACVP_KDF135_IKEV2_SPI_STR_MAX + 1)
                 > ACVP_KDF135_IKEV2_SPI_STR_MAX) {
                 ACVP_LOG_ERR("spiInit too long, max allowed=(%d)",
@@ -410,12 +406,11 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            resp_spi = json_object_get_string(testobj, "spiResp");
-            if (!resp_spi) {
-                ACVP_LOG_ERR("Failed to include spiResp");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "spiResp", &resp_spi);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(resp_spi, ACVP_KDF135_IKEV2_SPI_STR_MAX + 1)
                 > ACVP_KDF135_IKEV2_SPI_STR_MAX) {
                 ACVP_LOG_ERR("spiResp too long, max allowed=(%d)",
@@ -424,12 +419,11 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            gir = json_object_get_string(testobj, "gir");
-            if (!gir) {
-                ACVP_LOG_ERR("Failed to include gir");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "gir", &gir);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(gir, ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX + 1)
                 > ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX) {
                 ACVP_LOG_ERR("gir too long, max allowed=(%d)",
@@ -438,10 +432,8 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            gir_new = json_object_get_string(testobj, "girNew");
-            if (!gir_new) {
-                ACVP_LOG_ERR("Failed to include girNew");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "girNew", &gir_new);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
             if (strnlen_s(gir_new, ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX + 1)
