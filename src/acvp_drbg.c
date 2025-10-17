@@ -162,12 +162,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         /*
          * Get DRBG Mode index
          */
-        mode_str = json_object_get_string(groupobj, "mode");
-        if (!mode_str) {
-            ACVP_LOG_ERR("Server JSON missing 'mode'");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "mode", &mode_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         mode_id = acvp_lookup_drbg_mode_index(mode_str);
         if (mode_id == 0) {
             ACVP_LOG_ERR("unsupported DRBG mode (%s)", mode_str);
@@ -282,12 +281,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
 
-            perso_string = json_object_get_string(testobj, "persoString");
-            if (!perso_string) {
-                ACVP_LOG_ERR("Server JSON missing 'persoString'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "persoString", &perso_string);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(perso_string, ACVP_DRBG_PER_SO_STR_MAX + 1)
                 > ACVP_DRBG_PER_SO_STR_MAX) {
                 ACVP_LOG_ERR("persoString too long, max allowed=(%d)",
@@ -296,12 +294,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            entropy = json_object_get_string(testobj, "entropyInput");
-            if (!entropy) {
-                ACVP_LOG_ERR("Server JSON missing 'entropyInput'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "entropyInput", &entropy);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(entropy, ACVP_DRBG_ENTPY_IN_STR_MAX + 1)
                 > ACVP_DRBG_ENTPY_IN_STR_MAX) {
                 ACVP_LOG_ERR("entropyInput too long, max allowed=(%d)",
@@ -310,12 +307,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            nonce = json_object_get_string(testobj, "nonce");
-            if (!nonce) {
-                ACVP_LOG_ERR("Server JSON missing 'nonce'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "nonce", &nonce);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(nonce, ACVP_DRBG_NONCE_STR_MAX + 1)
                 > ACVP_DRBG_NONCE_STR_MAX) {
                 ACVP_LOG_ERR("nonce too long, max allowed=(%d)",
@@ -366,7 +362,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                    goto err;
                 }
 
-                int_use = json_object_get_string(pr_input_obj, "intendedUse");
+                rv = acvp_tc_json_get_string(ctx, alg_id, pr_input_obj, "intendedUse", &int_use);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+
                 strncmp_s(int_use, 6, "reSeed", 6, &diff);
                 if (diff) {
                    ACVP_LOG_ERR("Server JSON, intended use should be reSeed");
@@ -374,12 +374,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                    goto err;
                 }
 
-                additional_input_0 = json_object_get_string(pr_input_obj, "additionalInput");
-                if (!additional_input_0) {
-                   ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'additionalInput'", 0);
-                   rv = ACVP_MISSING_ARG;
-                   goto err;
+                rv = acvp_tc_json_get_string(ctx, alg_id, pr_input_obj, "additionalInput", &additional_input_0);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
                 }
+
                 if (strnlen_s(additional_input_0, ACVP_DRBG_ADDI_IN_STR_MAX + 1)
                     > ACVP_DRBG_ADDI_IN_STR_MAX) {
                     ACVP_LOG_ERR("In otherInput[%d], additionalInput too long. Max allowed=(%d)",
@@ -388,12 +387,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                entropy_input_pr_0 = json_object_get_string(pr_input_obj, "entropyInput");
-                if (!entropy_input_pr_0) {
-                   ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'entropyInput'", 0);
-                   rv = ACVP_MISSING_ARG;
-                   goto err;
+                rv = acvp_tc_json_get_string(ctx, alg_id, pr_input_obj, "entropyInput", &entropy_input_pr_0);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
                 }
+
                 if (strnlen_s(entropy_input_pr_0, ACVP_DRBG_ENTPY_IN_STR_MAX + 1)
                     > ACVP_DRBG_ENTPY_IN_STR_MAX) {
                     ACVP_LOG_ERR("In otherInput[%d], entropyInput too long. Max allowed=(%d)",
@@ -419,7 +417,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             pr_input_obj = json_value_get_object(pr_input_val);
 
-            int_use = json_object_get_string(pr_input_obj, "intendedUse");
+            rv = acvp_tc_json_get_string(ctx, alg_id, pr_input_obj, "intendedUse", &int_use);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+
             strncmp_s(int_use, 8, "generate", 8, &diff);
             if (diff) {
                ACVP_LOG_ERR("Server JSON, intended use should be generate");
@@ -427,12 +429,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                goto err;
             }
 
-            additional_input_1 = json_object_get_string(pr_input_obj, "additionalInput");
-            if (!additional_input_1) {
-               ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'additionalInput'", 0);
-               rv = ACVP_MISSING_ARG;
-               goto err;
+            rv = acvp_tc_json_get_string(ctx, alg_id, pr_input_obj, "additionalInput", &additional_input_1);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
             }
+
             if (strnlen_s(additional_input_1, ACVP_DRBG_ADDI_IN_STR_MAX + 1)
                 > ACVP_DRBG_ADDI_IN_STR_MAX) {
                 ACVP_LOG_ERR("In otherInput[%d], additionalInput too long. Max allowed=(%d)",
@@ -441,12 +442,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            entropy_input_pr_1 = json_object_get_string(pr_input_obj, "entropyInput");
-            if (!entropy_input_pr_1) {
-                ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'entropyInput'", 0);
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, pr_input_obj, "entropyInput", &entropy_input_pr_1);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             pr1_len = strnlen_s(entropy_input_pr_1, ACVP_DRBG_ENTPY_IN_STR_MAX + 1);
             if (pr1_len > ACVP_DRBG_ENTPY_IN_STR_MAX) {
                 ACVP_LOG_ERR("In otherInput[%d], entropyInput too long. Max allowed=(%d)",
@@ -467,7 +467,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             pr_input_obj = json_value_get_object(pr_input_val);
 
-            int_use = json_object_get_string(pr_input_obj, "intendedUse");
+            rv = acvp_tc_json_get_string(ctx, alg_id, pr_input_obj, "intendedUse", &int_use);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+
             strncmp_s(int_use, 8, "generate",8 , &diff);
             if (diff) {
                 ACVP_LOG_ERR("Server JSON, intended use should be generate");
@@ -475,12 +479,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            additional_input_2 = json_object_get_string(pr_input_obj, "additionalInput");
-            if (!additional_input_2) {
-               ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'additionalInput'", 1);
-               rv = ACVP_MISSING_ARG;
-               goto err;
+            rv = acvp_tc_json_get_string(ctx, alg_id, pr_input_obj, "additionalInput", &additional_input_2);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
             }
+
             if (strnlen_s(additional_input_2, ACVP_DRBG_ADDI_IN_STR_MAX + 1)
                 > ACVP_DRBG_ADDI_IN_STR_MAX) {
                 ACVP_LOG_ERR("In otherInput[%d], additionalInput too long. Max allowed=(%d)",
@@ -489,12 +492,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            entropy_input_pr_2 = json_object_get_string(pr_input_obj, "entropyInput");
-            if (!entropy_input_pr_2) {
-                ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'entropyInput'", 1);
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, pr_input_obj, "entropyInput", &entropy_input_pr_2);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             pr2_len = strnlen_s(entropy_input_pr_2, ACVP_DRBG_ENTPY_IN_STR_MAX + 1);
             if (pr2_len > ACVP_DRBG_ENTPY_IN_STR_MAX) {
                 ACVP_LOG_ERR("In otherInput[%d], entropyInput too long. Max allowed=(%d)",

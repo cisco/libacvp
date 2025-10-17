@@ -527,12 +527,11 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        test_type_str = json_object_get_string(groupobj, "testType");
-        if (!test_type_str) {
-            ACVP_LOG_ERR("Missing testType from server JSON for RSA keyGen");
-            rv = ACVP_TC_INVALID_DATA;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &test_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         test_type = read_test_type(test_type_str);
 
         info_gen_by_server = json_object_get_boolean(groupobj, "infoGeneratedByServer");
@@ -542,12 +541,11 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        pub_exp_mode_str = json_object_get_string(groupobj, "pubExp");
-        if (!pub_exp_mode_str) {
-            ACVP_LOG_ERR("Server JSON missing 'pubExpMode'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "pubExp", &pub_exp_mode_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         pub_exp_mode = acvp_lookup_rsa_pub_exp_mode(pub_exp_mode_str);
         if (!pub_exp_mode) {
             ACVP_LOG_ERR("Server JSON invalid 'pubExpMode'");
@@ -556,20 +554,17 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         if (pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
-            e_str = json_object_get_string(groupobj, "fixedPubExp");
-            if (!e_str) {
-                ACVP_LOG_ERR("Server JSON missing 'fixedPubExp'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "fixedPubExp", &e_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
         }
 
-        key_format_str = json_object_get_string(groupobj, "keyFormat");
-        if (!key_format_str) {
-            ACVP_LOG_ERR("Server JSON missing 'keyFormat'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "keyFormat", &key_format_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         key_format = read_key_format(key_format_str);
         if (!key_format) {
             ACVP_LOG_ERR("Server JSON invalid 'keyFormat'");
@@ -577,12 +572,11 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        rand_pq_str = json_object_get_string(groupobj, "randPQ");
-        if (!rand_pq_str) {
-            ACVP_LOG_ERR("Server JSON missing 'randPQ'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "randPQ", &rand_pq_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         rand_pq = acvp_lookup_rsa_randpq_index(rand_pq_str);
         if (rand_pq == 0) {
             ACVP_LOG_ERR("Server JSON invalid randPQ");
@@ -596,10 +590,8 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rand_pq == ACVP_RSA_KEYGEN_PROBABLE ||
             rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX ||
             rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
-            prime_test_str = json_object_get_string(groupobj, "primeTest");
-            if (!prime_test_str) {
-                ACVP_LOG_ERR("Server JSON missing 'primeTest'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "primeTest", &prime_test_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -629,12 +621,11 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rand_pq == ACVP_RSA_KEYGEN_PROVABLE ||
             rand_pq == ACVP_RSA_KEYGEN_PROV_W_PROV_AUX ||
             rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX) {
-            hash_alg_str = json_object_get_string(groupobj, "hashAlg");
-            if (!hash_alg_str) {
-                ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &hash_alg_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             hash_alg = acvp_lookup_hash_alg(hash_alg_str);
             if (!hash_alg) {
                 ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
@@ -671,13 +662,12 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             if (info_gen_by_server &&
                 pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_RANDOM) {
-                e_str = json_object_get_string(testobj, "e");
-                if (!e_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'e'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "e", &e_str);
+                if (rv != ACVP_SUCCESS) {
                     json_value_free(r_tval);
                     goto err;
                 }
+
                 if (strnlen_s(e_str, ACVP_RSA_EXP_LEN_MAX + 1)
                     > ACVP_RSA_EXP_LEN_MAX) {
                     ACVP_LOG_ERR("'e' too long, max allowed=(%d)",
@@ -720,13 +710,12 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rand_pq == ACVP_RSA_KEYGEN_PROVABLE ||
                     rand_pq == ACVP_RSA_KEYGEN_PROV_W_PROV_AUX ||
                     rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX) {
-                    seed = json_object_get_string(testobj, "seed");
-                    if (!seed) {
-                        ACVP_LOG_ERR("Server JSON missing 'seed'");
-                        rv = ACVP_MISSING_ARG;
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "seed", &seed);
+                    if (rv != ACVP_SUCCESS) {
                         json_value_free(r_tval);
                         goto err;
                     }
+
                     seed_len = strnlen_s(seed, ACVP_RSA_SEEDLEN_MAX + 1);
                     if (seed_len > ACVP_RSA_SEEDLEN_MAX) {
                         ACVP_LOG_ERR("'seed' too long, max allowed=(%d)",
@@ -739,45 +728,38 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
                 // for B.3.6, test cases also come with xP, xP1, xP2, xQ, xQ1, xQ2
                 if (rand_pq == ACVP_RSA_KEYGEN_B36 || rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
-                    xp_str = json_object_get_string(testobj, "xP");
-                    if (!xp_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'xP'");
-                        rv = ACVP_MISSING_ARG;
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "xP", &xp_str);
+                    if (rv != ACVP_SUCCESS) {
                         json_value_free(r_tval);
                         goto err;
                     }
-                    xp1_str = json_object_get_string(testobj, "xP1");
-                    if (!xp1_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'xP1'");
-                        rv = ACVP_MISSING_ARG;
+
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "xP1", &xp1_str);
+                    if (rv != ACVP_SUCCESS) {
                         json_value_free(r_tval);
                         goto err;
                     }
-                    xp2_str = json_object_get_string(testobj, "xP2");
-                    if (!xp2_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'xP2'");
-                        rv = ACVP_MISSING_ARG;
+
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "xP2", &xp2_str);
+                    if (rv != ACVP_SUCCESS) {
                         json_value_free(r_tval);
                         goto err;
                     }
-                    xq_str = json_object_get_string(testobj, "xQ");
-                    if (!xq_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'xQ'");
-                        rv = ACVP_MISSING_ARG;
+
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "xQ", &xq_str);
+                    if (rv != ACVP_SUCCESS) {
                         json_value_free(r_tval);
                         goto err;
                     }
-                    xq1_str = json_object_get_string(testobj, "xQ1");
-                    if (!xq1_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'xQ1'");
-                        rv = ACVP_MISSING_ARG;
+
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "xQ1", &xq1_str);
+                    if (rv != ACVP_SUCCESS) {
                         json_value_free(r_tval);
                         goto err;
                     }
-                    xq2_str = json_object_get_string(testobj, "xQ2");
-                    if (!xq2_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'xQ2'");
-                        rv = ACVP_MISSING_ARG;
+
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "xQ2", &xq2_str);
+                    if (rv != ACVP_SUCCESS) {
                         json_value_free(r_tval);
                         goto err;
                     }
@@ -787,13 +769,12 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (test_type == ACVP_RSA_TESTTYPE_KAT &&
                 (rand_pq == ACVP_RSA_KEYGEN_B33 || rand_pq == ACVP_RSA_KEYGEN_PROBABLE)) {
                 // E
-                e_str = json_object_get_string(testobj, "e");
-                if (!e_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'e'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "e", &e_str);
+                if (rv != ACVP_SUCCESS) {
                     json_value_free(r_tval);
                     goto err;
                 }
+
                 if (strnlen_s(e_str, ACVP_RSA_EXP_LEN_MAX + 1)
                     > ACVP_RSA_EXP_LEN_MAX) {
                     ACVP_LOG_ERR("'e' too long, max allowed=(%d)",
@@ -802,13 +783,13 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     json_value_free(r_tval);
                     goto err;
                 }
-                p_str = json_object_get_string(testobj, "p");
-                if (!p_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'p'");
-                    rv = ACVP_MISSING_ARG;
+
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "p", &p_str);
+                if (rv != ACVP_SUCCESS) {
                     json_value_free(r_tval);
                     goto err;
                 }
+
                 if (strnlen_s(p_str, ACVP_RSA_EXP_LEN_MAX + 1)
                     > ACVP_RSA_EXP_LEN_MAX) {
                     ACVP_LOG_ERR("'p' too long, max allowed=(%d)",
@@ -817,6 +798,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     json_value_free(r_tval);
                     goto err;
                 }
+
                 q_str = json_object_get_string(testobj, "q");
                 if (q_str) { // optional!
                     if (strnlen_s(p_str, ACVP_RSA_EXP_LEN_MAX + 1)

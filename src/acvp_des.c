@@ -730,12 +730,11 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        dir_str = json_object_get_string(groupobj, "direction");
-        if (!dir_str) {
-            ACVP_LOG_ERR("Server JSON missing 'direction'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "direction", &dir_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         dir = read_direction(dir_str);
         if (!dir) {
             ACVP_LOG_ERR("Server JSON invalid 'direction'");
@@ -743,10 +742,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        test_type_str = json_object_get_string(groupobj, "testType");
-        if (!test_type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &test_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -807,12 +804,11 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
 
-            key1 = json_object_get_string(testobj, "key1");
-            if (!key1) {
-                ACVP_LOG_ERR("Server JSON missing 'key1'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "key1", &key1);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             tmp_key_len = strnlen_s(key1, ACVP_SYM_KEY_MAX_STR + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key1' wrong length (%u). Expected (%d)",
@@ -821,12 +817,11 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            key2 = json_object_get_string(testobj, "key2");
-            if (!key2) {
-                ACVP_LOG_ERR("Server JSON missing 'key2'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "key2", &key2);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             tmp_key_len = strnlen_s(key2, ACVP_SYM_KEY_MAX_STR + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key2' wrong length (%u). Expected (%d)",
@@ -835,12 +830,11 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            key3 = json_object_get_string(testobj, "key3");
-            if (!key3) {
-                ACVP_LOG_ERR("Server JSON missing 'key3'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "key3", &key3);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             tmp_key_len = strnlen_s(key3, ACVP_SYM_KEY_MAX_STR + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key3' wrong length (%u). Expected (%d)",
@@ -863,11 +857,9 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (dir == ACVP_SYM_CIPH_DIR_ENCRYPT) {
-                pt = json_object_get_string(testobj, "pt");
-                if (!pt) {
-                    ACVP_LOG_ERR("Server JSON missing 'pt'");
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "pt", &pt);
+                if (rv != ACVP_SUCCESS) {
                     free(key);
-                    rv = ACVP_MISSING_ARG;
                     goto err;
                 }
 
@@ -891,11 +883,9 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     }
                 }
             } else {
-                ct = json_object_get_string(testobj, "ct");
-                if (!ct) {
-                    ACVP_LOG_ERR("Server JSON missing 'ct'");
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "ct", &ct);
+                if (rv != ACVP_SUCCESS) {
                     free(key);
-                    rv = ACVP_MISSING_ARG;
                     goto err;
                 }
 
@@ -921,11 +911,9 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id != ACVP_TDES_ECB) {
-                iv = json_object_get_string(testobj, "iv");
-                if (!iv) {
-                    ACVP_LOG_ERR("Server JSON missing 'iv'");
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "iv", &iv);
+                if (rv != ACVP_SUCCESS) {
                     free(key);
-                    rv = ACVP_MISSING_ARG;
                     goto err;
                 }
 

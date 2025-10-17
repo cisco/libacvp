@@ -311,12 +311,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        hash_alg_str = json_object_get_string(groupobj, "hashAlg");
-        if (!hash_alg_str) {
-            ACVP_LOG_ERR("Failed to include hashAlg");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &hash_alg_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         hash_alg = acvp_lookup_hash_alg(hash_alg_str);
         if (hash_alg != ACVP_SHA1 && hash_alg != ACVP_SHA224 &&
             hash_alg != ACVP_SHA256 && hash_alg != ACVP_SHA384 &&
@@ -326,12 +325,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        auth_method_str = json_object_get_string(groupobj, "authenticationMethod");
-        if (!auth_method_str) {
-            ACVP_LOG_ERR("Failed to include authenticationMethod");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "authenticationMethod", &auth_method_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         auth_method = read_auth_method(auth_method_str);
         if (!auth_method) {
             ACVP_LOG_ERR("ACVP server requesting invalid authenticationMethod");
@@ -392,12 +390,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
 
-            init_nonce = json_object_get_string(testobj, "nInit");
-            if (!init_nonce) {
-                ACVP_LOG_ERR("Failed to include nInit");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "nInit", &init_nonce);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(init_nonce,
                         ACVP_KDF135_IKEV1_INIT_NONCE_STR_MAX + 1) != ((init_nonce_len + 7) / 8) * 2) {
                 ACVP_LOG_ERR("nInit length(%d) incorrect, expected(%d)",
@@ -408,12 +405,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            resp_nonce = json_object_get_string(testobj, "nResp");
-            if (!resp_nonce) {
-                ACVP_LOG_ERR("Failed to include nResp");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "nResp", &resp_nonce);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(resp_nonce,
                         ACVP_KDF135_IKEV1_RESP_NONCE_STR_MAX + 1) != ((resp_nonce_len + 7) / 8) * 2) {
                 ACVP_LOG_ERR("nResp length(%d) incorrect, expected(%d)",
@@ -423,12 +419,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            init_ckey = json_object_get_string(testobj, "ckyInit");
-            if (!init_ckey) {
-                ACVP_LOG_ERR("Failed to include ckyInit");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "ckyInit", &init_ckey);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(init_ckey, ACVP_KDF135_IKEV1_COOKIE_STR_MAX + 1)
                 > ACVP_KDF135_IKEV1_COOKIE_STR_MAX) {
                 ACVP_LOG_ERR("ckyInit too long, max allowed=(%d)",
@@ -437,12 +432,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            resp_ckey = json_object_get_string(testobj, "ckyResp");
-            if (!resp_ckey) {
-                ACVP_LOG_ERR("Failed to include ckyResp");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "ckyResp", &resp_ckey);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(resp_ckey, ACVP_KDF135_IKEV1_COOKIE_STR_MAX + 1)
                 > ACVP_KDF135_IKEV1_COOKIE_STR_MAX) {
                 ACVP_LOG_ERR("ckyResp too long, max allowed=(%d)",
@@ -451,12 +445,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            gxy = json_object_get_string(testobj, "gxy");
-            if (!gxy) {
-                ACVP_LOG_ERR("Failed to include gxy");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "gxy", &gxy);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(gxy, ACVP_KDF135_IKEV1_DH_SHARED_SECRET_STR_MAX + 1)
                 > ACVP_KDF135_IKEV1_DH_SHARED_SECRET_STR_MAX) {
                 ACVP_LOG_ERR("gxy too long, max allowed=(%d)",
@@ -468,12 +461,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             if (auth_method == ACVP_KDF135_IKEV1_AMETH_PSK) {
                 // Only for PSK authentication method
-                psk = json_object_get_string(testobj, "preSharedKey");
-                if (!psk) {
-                    ACVP_LOG_ERR("Failed to include preSharedKey");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "preSharedKey", &psk);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(psk, ACVP_KDF135_IKEV1_PSK_STR_MAX + 1)
                     > ACVP_KDF135_IKEV1_PSK_STR_MAX) {
                     ACVP_LOG_ERR("preSharedKey too long, max allowed=(%d)",

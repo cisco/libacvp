@@ -536,10 +536,8 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         ACVP_LOG_VERBOSE("    Test group: %d", i);
 
-        test_type_str = json_object_get_string(groupobj, "testType");
-        if (!test_type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &test_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -573,12 +571,11 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
             } else { // All hash algs apart from SHAKE
-                mct_version_str = json_object_get_string(groupobj, ACVP_STR_HASH_MCT);
-                if (!mct_version_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'mctVersion'");
-                    rv = ACVP_TC_MISSING_DATA;
+                rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, ACVP_STR_HASH_MCT, &mct_version_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 mct_version = read_mct_version(mct_version_str);
                 if (mct_version < 0) {
                     ACVP_LOG_ERR("Server JSON invalid 'mctVersion'");
@@ -612,12 +609,11 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
                 ldtobj = json_object_get_object(testobj, "largeMsg");
 
-                msg = json_object_get_string(ldtobj, "content");
-                if (!msg) {
-                    ACVP_LOG_ERR("Server JSON missing 'content'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, ldtobj, "content", &msg);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 max_len = ACVP_HASH_MSG_STR_MAX;
                 tmp_msg_len = strnlen_s(msg, max_len + 1);
                 if (tmp_msg_len > max_len) {
@@ -637,7 +633,11 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 exp_len = json_object_get_number(ldtobj, "fullLength")/8;  // In bits; store as bytes
                 // Variable size, and large; no need to validate
 
-                exp_method_str = json_object_get_string(ldtobj, "expansionTechnique");
+                rv = acvp_tc_json_get_string(ctx, alg_id, ldtobj, "expansionTechnique", &exp_method_str);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+
                 exp_method = read_exp_method(exp_method_str);
                 if (exp_method != ACVP_HASH_EXPANSION_REPEATING) {
                     ACVP_LOG_ERR("Invalid LDT expansion technique (only 'repeating' is allowed for Hash/SHA).");
@@ -645,12 +645,11 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
             } else {
-                msg = json_object_get_string(testobj, "msg");
-                if (!msg) {
-                    ACVP_LOG_ERR("Server JSON missing 'msg'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "msg", &msg);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (alg_id != ACVP_HASH_SHAKE_128 && alg_id != ACVP_HASH_SHAKE_256) {
                     max_len = ACVP_HASH_MSG_STR_MAX;
                 } else {

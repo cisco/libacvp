@@ -298,10 +298,8 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        kdr = json_object_get_string(groupobj, "kdr");
-        if (!kdr) {
-            ACVP_LOG_ERR("Failed to include kdr");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "kdr", &kdr);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -319,31 +317,23 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
 
-            master_key = json_object_get_string(testobj, "masterKey");
-            if (!master_key) {
-                ACVP_LOG_ERR("Failed to include JSON key:\"masterKey\"");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "masterKey", &master_key);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            master_salt = json_object_get_string(testobj, "masterSalt");
-            if (!master_salt) {
-                ACVP_LOG_ERR("Failed to include JSON key:\"masterSalt\"");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "masterSalt", &master_salt);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            idx = json_object_get_string(testobj, "index");
-            if (!idx) {
-                ACVP_LOG_ERR("Failed to include JSON key:\"idx\"");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "index", &idx);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            srtcp_idx = json_object_get_string(testobj, "srtcpIndex");
-            if (!srtcp_idx) {
-                ACVP_LOG_ERR("Failed to include JSON key:\"srtcpIndex\"");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "srtcpIndex", &srtcp_idx);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 

@@ -242,12 +242,11 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         shared_info_len = json_object_get_number(groupobj, "sharedInfoLength");
 
-        hash_alg_str = json_object_get_string(groupobj, "hashAlg");
-        if (!hash_alg_str) {
-            ACVP_LOG_ERR("Failed to include hashAlg.");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &hash_alg_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         hash_alg = acvp_lookup_hash_alg(hash_alg_str);
         if (hash_alg != ACVP_SHA224 && hash_alg != ACVP_SHA256 &&
             hash_alg != ACVP_SHA384 && hash_alg != ACVP_SHA512) {
@@ -288,17 +287,13 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            z = json_object_get_string(testobj, "z");
-            shared_info = json_object_get_string(testobj, "sharedInfo");
-            if (!z) {
-                ACVP_LOG_ERR("Failed to include z.");
-                rv = ACVP_INVALID_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "z", &z);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            if (!shared_info) {
-                ACVP_LOG_ERR("Failed to include shared_info.");
-                rv = ACVP_INVALID_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "sharedInfo", &shared_info);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 

@@ -300,10 +300,8 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        type_str = json_object_get_string(groupobj, "testType");
-        if (!type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -314,10 +312,8 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        lms_str = json_object_get_string(groupobj, "lmsMode");
-        if (!lms_str) {
-            ACVP_LOG_ERR("Server JSON missing 'lmsMode'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "lmsMode", &lms_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -328,10 +324,8 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        lmots_str = json_object_get_string(groupobj, "lmOtsMode");
-        if (!lmots_str) {
-            ACVP_LOG_ERR("Server JSON missing 'lmOtsMode'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "lmOtsMode", &lmots_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -343,10 +337,8 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         if (alg_id == ACVP_LMS_SIGVER) {
-            pub_str = json_object_get_string(groupobj, "publicKey");
-            if (!pub_str) {
-                ACVP_LOG_ERR("Server JSON missing 'publicKey'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "publicKey", &pub_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
         }
@@ -374,33 +366,25 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             tc_id = json_object_get_number(testobj, "tcId");
 
             if (alg_id == ACVP_LMS_KEYGEN) {
-                i_str = json_object_get_string(testobj, "i");
-                if (!i_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'i'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "i", &i_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
-                seed_str = json_object_get_string(testobj, "seed");
-                if (!seed_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'seed'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "seed", &seed_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
             } else {
-                msg_str = json_object_get_string(testobj, "message");
-                if (!msg_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'message'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "message", &msg_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
             }
 
             if (alg_id == ACVP_LMS_SIGVER) {
-                sig_str = json_object_get_string(testobj, "signature");
-                if (!sig_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'signature'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "signature", &sig_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
             }

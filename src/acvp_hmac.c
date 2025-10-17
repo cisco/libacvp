@@ -259,10 +259,9 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            msg = json_object_get_string(testobj, "msg");
-            if (!msg) {
-                ACVP_LOG_ERR("Failed to include msg.");
-                rv = ACVP_MISSING_ARG;
+
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "msg", &msg);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -273,10 +272,8 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            key = json_object_get_string(testobj, "key");
-            if (!key) {
-                ACVP_LOG_ERR("Failed to include key.");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "key", &key);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 

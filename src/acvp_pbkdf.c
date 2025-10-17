@@ -294,12 +294,11 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        test_type_str = json_object_get_string(groupobj, "testType");
-        if (!test_type_str) {
-            ACVP_LOG_ERR("Failed to include testType");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &test_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         test_type = read_test_type(test_type_str);
         if (!test_type) {
             ACVP_LOG_ERR("Server JSON invalid testType");
@@ -307,12 +306,11 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        hmac_alg_str = json_object_get_string(groupobj, "hmacAlg");
-        if (!hmac_alg_str) {
-            ACVP_LOG_ERR("Server JSON missing hmacAlg");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hmacAlg", &hmac_alg_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         hmac_alg = read_hmac_alg(hmac_alg_str);
         if (!hmac_alg) {
             ACVP_LOG_ERR("Server JSON invalid hmacAlg");
@@ -354,12 +352,11 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             // convert to byte length
             key_len /= 8;
 
-            salt_str = json_object_get_string(testobj, "salt");
-            if (!salt_str) {
-                ACVP_LOG_ERR("Server JSON missing salt");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "salt", &salt_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             salt_len = strnlen_s(salt_str, ACVP_PBKDF_SALT_LEN_STR_MAX + 1);
             if (salt_len > ACVP_PBKDF_SALT_LEN_STR_MAX) {
                 ACVP_LOG_ERR("salt too long, max allowed=(%d)", ACVP_PBKDF_SALT_LEN_STR_MAX);
@@ -369,12 +366,11 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             // convert to byte length
             salt_len /= 2;
 
-            password_str = json_object_get_string(testobj, "password");
-            if (!password_str) {
-                ACVP_LOG_ERR("Server JSON missing password");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "password", &password_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             password_len = strnlen_s(password_str, ACVP_PBKDF_PASS_LEN_MAX + 1);
             if (password_len < ACVP_PBKDF_PASS_LEN_MIN) {
                 ACVP_LOG_ERR("password to short, min allowed=(%d)", ACVP_PBKDF_PASS_LEN_MIN);

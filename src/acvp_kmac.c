@@ -268,12 +268,11 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        type_str = json_object_get_string(groupobj, "testType");
-        if (!type_str) {
-            ACVP_LOG_ERR("Failed to include testType.");
-            rv = ACVP_TC_MISSING_DATA;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         type = read_test_type(type_str);
         if (!type) {
             ACVP_LOG_ERR("Error parsing test type.");
@@ -331,12 +330,12 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_TC_MISSING_DATA;
                 goto err;
             }
-            msg = json_object_get_string(testobj, "msg");
-            if (!msg) {
-                ACVP_LOG_ERR("Failed to include msg.");
-                rv = ACVP_TC_MISSING_DATA;
+
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "msg", &msg);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if ((int)strnlen_s(msg, ACVP_KMAC_MSG_STR_MAX) != msglen >> 2) {
                 ACVP_LOG_ERR("msgLen(%d) or msg length(%zu) incorrect",
                              msglen, strnlen_s(msg, ACVP_KMAC_MSG_STR_MAX) >> 2);
@@ -350,12 +349,12 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_TC_MISSING_DATA;
                 goto err;
             }
-            key = json_object_get_string(testobj, "key");
-            if (!key) {
-                ACVP_LOG_ERR("Failed to include key.");
-                rv = ACVP_TC_MISSING_DATA;
+
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "key", &key);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if ((int)strnlen_s(key, ACVP_KMAC_KEY_STR_MAX) != (keylen >> 2)) {
                 ACVP_LOG_ERR("keyLen(%d) or key length(%zu) incorrect",
                              keylen, strnlen_s(key, ACVP_KMAC_KEY_STR_MAX) >> 2);
@@ -370,12 +369,11 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
             if (type == ACVP_KMAC_TEST_TYPE_MVT) {
-                mac = json_object_get_string(testobj, "mac");
-                if (!mac) {
-                    ACVP_LOG_ERR("Failed to include mac in MVT test.");
-                    rv = ACVP_TC_MISSING_DATA;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "mac", &mac);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if ((int)strnlen_s(mac, ACVP_KMAC_MAC_STR_MAX) << 2 != maclen) {
                     ACVP_LOG_ERR("macLen(%d) or mac length(%zu) incorrect",
                                 maclen, strnlen_s(mac, ACVP_KMAC_MAC_STR_MAX) << 2);
@@ -385,22 +383,20 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (hex_customization) {
-                custom = json_object_get_string(testobj, "customizationHex");
-                if (!custom) {
-                    ACVP_LOG_ERR("Failed to include customizationHex.");
-                    rv = ACVP_TC_MISSING_DATA;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "customizationHex", &custom);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(custom, ACVP_KMAC_CUSTOM_HEX_STR_MAX + 1) > ACVP_KMAC_CUSTOM_HEX_STR_MAX) {
                     ACVP_LOG_ERR("customizationHex string too long in tcid %d", tc_id);
                 }
             } else {
-                custom = json_object_get_string(testobj, "customization");
-                if (!custom) {
-                    ACVP_LOG_ERR("Failed to include customization.");
-                    rv = ACVP_TC_MISSING_DATA;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "customization", &custom);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(custom, ACVP_KMAC_CUSTOM_STR_MAX + 1) > ACVP_KMAC_CUSTOM_STR_MAX) {
                     ACVP_LOG_ERR("customization string too long in tcid %d", tc_id);
                 }

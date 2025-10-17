@@ -347,10 +347,8 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
         /*
          * Get a reference to the abstracted test case
          */
-        curve_str = json_object_get_string(groupobj, "curve");
-        if (!curve_str) {
-            ACVP_LOG_ERR("Server JSON missing 'curve'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "curve", &curve_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -362,10 +360,8 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
         }
 
         if (alg_id == ACVP_ECDSA_KEYGEN) {
-            secret_gen_mode_str = json_object_get_string(groupobj, "secretGenerationMode");
-            if (!secret_gen_mode_str) {
-                ACVP_LOG_ERR("Server JSON missing 'secretGenerationMode'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "secretGenerationMode", &secret_gen_mode_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -376,10 +372,8 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 goto err;
             }
         } else if (alg_id == ACVP_ECDSA_SIGGEN || alg_id == ACVP_ECDSA_SIGVER || alg_id == ACVP_DET_ECDSA_SIGGEN) {
-            hash_alg_str = json_object_get_string(groupobj, "hashAlg");
-            if (!hash_alg_str) {
-                ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &hash_alg_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -415,13 +409,16 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             tc_id = json_object_get_number(testobj, "tcId");
 
             if (alg_id == ACVP_ECDSA_KEYVER || alg_id == ACVP_ECDSA_SIGVER) {
-                qx = json_object_get_string(testobj, "qx");
-                qy = json_object_get_string(testobj, "qy");
-                if (!qx || !qy) {
-                    ACVP_LOG_ERR("Server JSON missing 'qx' or 'qy'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "qx", &qx);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "qy", &qy);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+
                 if (strnlen_s(qx, ACVP_ECDSA_EXP_LEN_MAX + 1) > ACVP_ECDSA_EXP_LEN_MAX ||
                     strnlen_s(qy, ACVP_ECDSA_EXP_LEN_MAX + 1) > ACVP_ECDSA_EXP_LEN_MAX) {
                     ACVP_LOG_ERR("'qx' or 'qy' too long");
@@ -430,12 +427,11 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 }
             }
             if (alg_id == ACVP_ECDSA_SIGGEN || alg_id == ACVP_ECDSA_SIGVER || alg_id == ACVP_DET_ECDSA_SIGGEN) {
-                message = json_object_get_string(testobj, "message");
-                if (!message) {
-                    ACVP_LOG_ERR("Server JSON missing 'message'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "message", &message);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(message, ACVP_ECDSA_MSGLEN_MAX + 1) > ACVP_ECDSA_MSGLEN_MAX) {
                     ACVP_LOG_ERR("message string too long");
                     rv = ACVP_INVALID_ARG;
@@ -443,13 +439,16 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 }
             }
             if (alg_id == ACVP_ECDSA_SIGVER) {
-                r = json_object_get_string(testobj, "r");
-                s = json_object_get_string(testobj, "s");
-                if (!r || !s) {
-                    ACVP_LOG_ERR("Server JSON missing 'r' or 's'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "r", &r);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "s", &s);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+
                 if (strnlen_s(r, ACVP_ECDSA_EXP_LEN_MAX + 1) > ACVP_ECDSA_EXP_LEN_MAX ||
                     strnlen_s(s, ACVP_ECDSA_EXP_LEN_MAX + 1) > ACVP_ECDSA_EXP_LEN_MAX) {
                     ACVP_LOG_ERR("'r' or 's' too long");
