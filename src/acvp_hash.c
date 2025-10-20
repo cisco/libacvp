@@ -524,10 +524,8 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -556,14 +554,20 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
         if (test_type == ACVP_HASH_TEST_TYPE_MCT) {
             if (alg_id == ACVP_HASH_SHAKE_128 || alg_id == ACVP_HASH_SHAKE_256) {
-                min_xof_len = json_object_get_number(groupobj, "minOutLen");
+                rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "minOutLen", &min_xof_len);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
                 if (min_xof_len < ACVP_HASH_XOF_MD_BIT_MIN) {
                     ACVP_LOG_ERR("Server JSON invalid 'minOutLen' (%u)",
                                  min_xof_len);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-                max_xof_len = json_object_get_number(groupobj, "maxOutLen");
+                rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "maxOutLen", &max_xof_len);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
                 if (max_xof_len > ACVP_HASH_XOF_MD_BIT_MAX) {
                     ACVP_LOG_ERR("Server JSON invalid 'maxOutLen' (%u)",
                                  max_xof_len);
@@ -592,12 +596,16 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             unsigned int tmp_msg_len = 0;
             unsigned int xof_len = 0;
             unsigned int max_len = 0;
+            double fullLength_val = 0;
 
             ACVP_LOG_VERBOSE("Found new hash test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             // Based on test type: LDT vs AFT && VOT
             if (test_type == ACVP_HASH_TEST_TYPE_LDT) {
@@ -623,15 +631,26 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
                 msglen = tmp_msg_len/2;  // tmp_msg_len is ASCII chars, we store hex bytes
 
-                max_len = json_object_get_number(ldtobj, "contentLength")/8;  // In bits; store as bytes
+                rv = acvp_tc_json_get_int(ctx, alg_id, ldtobj, "contentLength", (int *)&max_len);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+                max_len = max_len / 8;  // In bits; store as bytes
                 if (msglen != max_len) {
                     ACVP_LOG_ERR("Length of content (%d) does not match stated length (%d)", tmp_msg_len, max_len);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
 
-                exp_len = json_object_get_number(ldtobj, "fullLength")/8;  // In bits; store as bytes
-                // Variable size, and large; no need to validate
+                // fullLength can be very large (no defined max), so use json_object_get_number directly
+                // If the value is negative, casting it to unsigned could cause some very large buffer allocation attempts
+                fullLength_val = json_object_get_number(ldtobj, "fullLength");
+                if (fullLength_val < 0) {
+                    ACVP_LOG_ERR("Server JSON invalid 'fullLength' (negative value)");
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+                exp_len = (unsigned long long int)fullLength_val / 8;  // In bits; store as bytes
 
                 rv = acvp_tc_json_get_string(ctx, alg_id, ldtobj, "expansionTechnique", &exp_method_str);
                 if (rv != ACVP_SUCCESS) {
@@ -666,7 +685,10 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
                 if ((alg_id == ACVP_HASH_SHAKE_128 || alg_id == ACVP_HASH_SHAKE_256) &&
                         test_type != ACVP_HASH_TEST_TYPE_MCT) {
-                    xof_len = json_object_get_number(testobj, "outLen");
+                    rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "outLen", (int *)&xof_len);
+                    if (rv != ACVP_SUCCESS) {
+                        goto err;
+                    }
                     if (!(xof_len >= ACVP_HASH_XOF_MD_BIT_MIN &&
                         xof_len <= ACVP_HASH_XOF_MD_BIT_MAX)) {
                         ACVP_LOG_ERR("Server JSON invalid 'outLen'(%d)", xof_len);

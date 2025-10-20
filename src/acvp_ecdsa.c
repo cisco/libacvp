@@ -334,10 +334,8 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -406,7 +404,11 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             ACVP_LOG_VERBOSE("Found new ECDSA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
+
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             if (alg_id == ACVP_ECDSA_KEYVER || alg_id == ACVP_ECDSA_SIGVER) {
                 rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "qx", &qx);

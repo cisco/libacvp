@@ -447,10 +447,8 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -473,9 +471,18 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         // Parse MCT-specific parameters if this is an MCT test
         if (type == ACVP_CSHAKE_TEST_TYPE_MCT) {
-            min_out_len = json_object_get_number(groupobj, "minOutLen");
-            max_out_len = json_object_get_number(groupobj, "maxOutLen");
-            out_len_increment = json_object_get_number(groupobj, "outLenIncrement");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "minOutLen", &min_out_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "maxOutLen", &max_out_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "outLenIncrement", &out_len_increment);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             if (min_out_len <= 0 || max_out_len <= 0 || out_len_increment <= 0) {
                 ACVP_LOG_ERR("Invalid MCT parameters in test group");
@@ -501,15 +508,24 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "msg", &msg);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            msglen = json_object_get_number(testobj, "len");
-            outlen = json_object_get_number(testobj, "outLen");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "len", &msglen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "outLen", &outlen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "functionName", &function_name);
             if (rv != ACVP_SUCCESS) {

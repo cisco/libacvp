@@ -483,9 +483,8 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
+        rv = acvp_tc_json_get_int(ctx, stc->cipher, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
@@ -576,9 +575,8 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             goto err;
         }
 
-        modulo = json_object_get_number(groupobj, "modulo");
-        if (!modulo) {
-            ACVP_LOG_ERR("Server JSON missing 'modulo'");
+        rv = acvp_tc_json_get_int(ctx, stc->cipher, groupobj, "modulo", &modulo);
+        if (rv != ACVP_SUCCESS) {
             rv = ACVP_MISSING_ARG;
             goto err;
         }
@@ -602,7 +600,11 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("Found new KAS-IFC Component test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
+
+            rv = acvp_tc_json_get_int(ctx, stc->cipher, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             if (role == ACVP_KAS_IFC_RESPONDER || scheme == ACVP_KAS_IFC_KAS2) {
                 rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "iutP", &p);

@@ -325,10 +325,8 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, stc->cipher, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -371,7 +369,10 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("Found new KAS-ECC CDH test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, stc->cipher, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             /*
              * Create a new test case in the response
@@ -500,10 +501,8 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, stc->cipher, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -562,7 +561,10 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("Found new KAS-ECC Component test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, stc->cipher, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             /*
              * Create a new test case in the response
@@ -967,10 +969,8 @@ static ACVP_RESULT acvp_kas_ecc_ssc(ACVP_CTX *ctx,
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, stc->cipher, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -1051,7 +1051,10 @@ static ACVP_RESULT acvp_kas_ecc_ssc(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("Found new KAS-ECC-SSC Component test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, stc->cipher, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             /*
              * Create a new test case in the response

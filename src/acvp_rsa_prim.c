@@ -533,30 +533,37 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
         if (old_rev) {
-            mod = json_object_get_number(groupobj, "modulo");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "modulo", &mod);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (mod != 2048) {
                 ACVP_LOG_ERR("Server JSON invalid modulo");
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
 
-            total = json_object_get_number(groupobj, "totalTestCases");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "totalTestCases", &total);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (total == 0) {
                 ACVP_LOG_ERR("Server JSON invalid totalTestCases");
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
-            fail = json_object_get_number(groupobj, "totalFailingCases");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "totalFailingCases", &fail);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (fail == 0) {
                 ACVP_LOG_ERR("Server JSON invalid totalFailingCases");
                 rv = ACVP_INVALID_ARG;
@@ -564,7 +571,10 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             pass = total - fail;
         } else {
-            mod = json_object_get_number(groupobj, "modulo");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "modulo", &mod);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (mod != 2048 && mod != 3072 && mod != 4096) {
                 ACVP_LOG_ERR("Server JSON invalid modulo");
                 rv = ACVP_INVALID_ARG;
@@ -613,7 +623,10 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("Found new RSA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
@@ -933,15 +946,16 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
         if (old_rev) {
-            mod = json_object_get_number(groupobj, "modulus");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "modulus", &mod);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (mod != 2048) {
                 ACVP_LOG_ERR("Server JSON invalid modulus");
                 rv = ACVP_INVALID_ARG;
@@ -953,7 +967,10 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
         } else {
-            mod = json_object_get_number(groupobj, "modulo");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "modulo", &mod);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (mod != 2048 && mod != 3072 && mod != 4096) {
                 ACVP_LOG_ERR("Server JSON invalid modulo");
                 rv = ACVP_INVALID_ARG;
@@ -988,10 +1005,8 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("Found new RSA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
-            if (!tc_id) {
-                ACVP_LOG_ERR("Missing tc_id");
-                rv = ACVP_MALFORMED_JSON;
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 

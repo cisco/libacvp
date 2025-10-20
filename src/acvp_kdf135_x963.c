@@ -216,8 +216,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
@@ -226,21 +226,24 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        field_size = json_object_get_number(groupobj, "fieldSize");
-        if (!field_size) {
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "fieldSize", &field_size);
+        if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Failed to include field size.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
-        key_data_length = json_object_get_number(groupobj, "keyDataLength");
-        if (!key_data_length) {
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "keyDataLength", &key_data_length);
+        if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Failed to include key data length.");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
-        shared_info_len = json_object_get_number(groupobj, "sharedInfoLength");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "sharedInfoLength", &shared_info_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
 
         rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &hash_alg_str);
         if (rv != ACVP_SUCCESS) {
@@ -280,8 +283,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
-            if (!tc_id) {
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Failed to include tc_id.");
                 rv = ACVP_MISSING_ARG;
                 goto err;

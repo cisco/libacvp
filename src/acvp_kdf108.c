@@ -420,8 +420,8 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
@@ -468,7 +468,10 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            key_out_bit_len = json_object_get_number(groupobj, "keyOutLength");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "keyOutLength", &key_out_bit_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (!key_out_bit_len || key_out_bit_len > ACVP_KDF108_KEYOUT_BIT_MAX) {
                 ACVP_LOG_ERR("Server JSON invalid keyOutLength, (%d)", key_out_len);
                 rv = ACVP_INVALID_ARG;
@@ -477,7 +480,10 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             // Get the keyout byte length  (+1 for overflow bits)
             key_out_len = (key_out_bit_len + 7) / 8;
 
-            ctr_len = json_object_get_number(groupobj, "counterLength");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "counterLength", &ctr_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (kdf_mode == ACVP_KDF108_MODE_COUNTER) {
                 // Only check during counter mode
                 if (ctr_len != 8 && ctr_len != 16 &&
@@ -520,7 +526,10 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             if (kdf_mode == ACVP_KDF108_MODE_KMAC) {
                 rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "keyDerivationKey", &key_in_str);
@@ -568,7 +577,10 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 // Convert to byte length
                 label_len = label_len / 2;
 
-                key_out_bit_len = json_object_get_number(testobj, "derivedKeyLength");
+                rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "derivedKeyLength", &key_out_bit_len);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
                 if (!key_out_bit_len || key_out_bit_len > ACVP_KDF108_KEYOUT_BIT_MAX) {
                     ACVP_LOG_ERR("Server JSON invalid derivedKeyLength, (%d)", key_out_len);
                     rv = ACVP_INVALID_ARG;

@@ -267,10 +267,8 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, stc->cipher, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -331,17 +329,13 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
             goto err;
         }
 
-        modulo = json_object_get_number(groupobj, "modulo");
-        if (!modulo) {
-            ACVP_LOG_ERR("Server JSON missing 'modulo'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_int(ctx, stc->cipher, groupobj, "modulo", &modulo);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
-        llen = json_object_get_number(groupobj, "l");
-        if (!llen) {
-            ACVP_LOG_ERR("Server JSON missing 'l'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_int(ctx, stc->cipher, groupobj, "l", &llen);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -403,7 +397,11 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("Found new KTS-IFC Component test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
+
+            rv = acvp_tc_json_get_int(ctx, stc->cipher, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             if (role == ACVP_KTS_IFC_RESPONDER) {
                 rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "serverC", &ct);

@@ -251,9 +251,8 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
@@ -321,9 +320,8 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
-            if (!tc_id) {
-                ACVP_LOG_ERR("Server JSON missing 'tcId'");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
@@ -340,9 +338,8 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            key_len = json_object_get_number(testobj, "keyLen");
-            if (!key_len) {
-                ACVP_LOG_ERR("Server JSON missing 'keyLen'");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "keyLen", &key_len);
+            if (rv != ACVP_SUCCESS) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
