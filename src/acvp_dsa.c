@@ -1245,7 +1245,7 @@ static ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("          pqMode: %s", pqmode);
         ACVP_LOG_VERBOSE("           gMode: %s", gmode);
         ACVP_LOG_VERBOSE("               c: %d", c);
-        ACVP_LOG_VERBOSE("           idx: %s", idx);
+        ACVP_LOG_VERBOSE("             idx: %s", idx);
 
         /*
          * Setup the test case data that will be passed down to
