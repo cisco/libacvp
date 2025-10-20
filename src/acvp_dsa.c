@@ -1151,30 +1151,90 @@ static ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
 
         rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
         if (rv != ACVP_SUCCESS) {
+            acvp_dsa_release_tc(stc);
             return rv;
         }
 
-        seed = json_object_get_string(testobj, "domainSeed");
-
-        rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "counter", &c);
-        if (rv != ACVP_SUCCESS) {
-            return rv;
+        /* Determine which generation mode we're using */
+        if (gmode) {
+            gpq = read_gen_g(gmode);
+        } else if (pqmode) {
+            gpq = read_gen_pq(pqmode);
+        } else {
+            ACVP_LOG_ERR("No valid pqMode or gMode");
+            acvp_dsa_release_tc(stc);
+            return ACVP_MISSING_ARG;
         }
 
-        idx = json_object_get_string(testobj, "index");
-
+        /* Parse required fields common to all modes */
         rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "p", &p);
         if (rv != ACVP_SUCCESS) {
+            acvp_dsa_release_tc(stc);
             return rv;
         }
 
         rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "q", &q);
         if (rv != ACVP_SUCCESS) {
+            acvp_dsa_release_tc(stc);
             return rv;
         }
 
-        g = json_object_get_string(testobj, "g");
-        h = json_object_get_string(testobj, "h");
+        // Parse mode-specific fields based on the ACVP spec
+        switch (gpq) {
+        case ACVP_DSA_PROBABLE:
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "domainSeed", &seed);
+            if (rv != ACVP_SUCCESS) {
+                acvp_dsa_release_tc(stc);
+                return rv;
+            }
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "counter", &c);
+            if (rv != ACVP_SUCCESS) {
+                acvp_dsa_release_tc(stc);
+                return rv;
+            }
+            break;
+
+        case ACVP_DSA_PROVABLE:
+            ACVP_LOG_ERR("libacvp does not fully support \"provable\" method for pqgVer at this time");
+            acvp_dsa_release_tc(stc);
+            return ACVP_UNSUPPORTED_OP;
+
+        case ACVP_DSA_UNVERIFIABLE:
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "g", &g);
+            if (rv != ACVP_SUCCESS) {
+                acvp_dsa_release_tc(stc);
+                return rv;
+            }
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "h", &h);
+            if (rv != ACVP_SUCCESS) {
+                acvp_dsa_release_tc(stc);
+                return rv;
+            }
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "domainSeed", &seed);
+            if (rv != ACVP_SUCCESS) {
+                acvp_dsa_release_tc(stc);
+                return rv;
+            }
+            break;
+
+        case ACVP_DSA_CANONICAL:
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "g", &g);
+            if (rv != ACVP_SUCCESS) {
+                acvp_dsa_release_tc(stc);
+                return rv;
+            }
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "index", &idx);
+            if (rv != ACVP_SUCCESS) {
+                acvp_dsa_release_tc(stc);
+                return rv;
+            }
+            break;
+
+        default:
+            ACVP_LOG_ERR("Unknown DSA generation parameter mode");
+            acvp_dsa_release_tc(stc);
+            return ACVP_INVALID_ARG;
+        }
 
         ACVP_LOG_VERBOSE("       Test case: %d", j);
         ACVP_LOG_VERBOSE("            tcId: %d", tc_id);
@@ -1186,48 +1246,6 @@ static ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("           gMode: %s", gmode);
         ACVP_LOG_VERBOSE("               c: %d", c);
         ACVP_LOG_VERBOSE("           idx: %s", idx);
-
-        // find the mode
-        if (gmode) {
-            gpq = read_gen_g(gmode);
-        } else if (pqmode) {
-            gpq = read_gen_pq(pqmode);
-        }
-
-        switch (gpq) {
-        case ACVP_DSA_PROVABLE:
-            ACVP_LOG_ERR("libacvp does not fully support \"provable\" method for pqgVer at this time");
-            return ACVP_UNSUPPORTED_OP;
-        case ACVP_DSA_PROBABLE:
-            if (!seed) {
-                ACVP_LOG_ERR("Failed to include seed.");
-                return ACVP_MISSING_ARG;
-            }
-            break;
-        case ACVP_DSA_CANONICAL:
-            if (!idx) {
-                ACVP_LOG_ERR("Failed to include idx.");
-                return ACVP_MISSING_ARG;
-            }
-            if (!g) {
-                ACVP_LOG_ERR("Failed to include q.");
-                return ACVP_MISSING_ARG;
-            }
-            break;
-        case ACVP_DSA_UNVERIFIABLE:
-            if (!seed) {
-                ACVP_LOG_ERR("Failed to include seed.");
-                return ACVP_MISSING_ARG;
-            }
-            if (!h) {
-                ACVP_LOG_ERR("Failed to include h.");
-                return ACVP_MISSING_ARG;
-            }
-            break;
-        default:
-            ACVP_LOG_ERR("Failed to include valid gen_pq.");
-            return ACVP_UNSUPPORTED_OP;
-        }
 
         /*
          * Setup the test case data that will be passed down to
