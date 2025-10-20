@@ -734,7 +734,6 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         r_gobj = json_value_get_object(r_gval);
         rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
         if (rv != ACVP_SUCCESS) {
-            rv = ACVP_TC_MISSING_DATA;
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -787,7 +786,6 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "radix", &radix);
             if (rv != ACVP_SUCCESS) {
-                rv = ACVP_TC_MISSING_DATA;
                 goto err;
             }
         }
@@ -831,7 +829,6 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 alg_id == ACVP_AES_GCM_SIV || alg_id == ACVP_AES_XPN) {
             rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "ivLen", &ivlen);
             if (rv != ACVP_SUCCESS) {
-                rv = ACVP_TC_MISSING_DATA;
                 goto err;
             }
 
@@ -1037,7 +1034,6 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
             if (rv != ACVP_SUCCESS) {
-                rv = ACVP_TC_MISSING_DATA;
                 goto err;
             }
 

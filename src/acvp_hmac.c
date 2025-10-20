@@ -202,8 +202,6 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         r_gobj = json_value_get_object(r_gval);
         rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -212,22 +210,16 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "msgLen", &msglen);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to include msgLen.");
-            rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "keyLen", &keylen);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to include keyLen.");
-            rv = ACVP_MISSING_ARG;
             goto err;
         }
 
         rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "macLen", &maclen);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to include macLen.");
-            rv = ACVP_MISSING_ARG;
             goto err;
         }
 
@@ -255,8 +247,6 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Failed to include tc_id.");
-                rv = ACVP_MISSING_ARG;
                 goto err;
             }
 

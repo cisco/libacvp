@@ -253,7 +253,6 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         r_gobj = json_value_get_object(r_gval);
         rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
         if (rv != ACVP_SUCCESS) {
-            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -322,7 +321,6 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
             if (rv != ACVP_SUCCESS) {
-                rv = ACVP_MISSING_ARG;
                 goto err;
             }
 
@@ -340,7 +338,6 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "keyLen", &key_len);
             if (rv != ACVP_SUCCESS) {
-                rv = ACVP_MISSING_ARG;
                 goto err;
             }
             if (key_len < 1 || key_len > ACVP_KDF135_X942_BIT_MAX) {

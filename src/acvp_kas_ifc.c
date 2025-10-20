@@ -485,7 +485,6 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
         r_gobj = json_value_get_object(r_gval);
         rv = acvp_tc_json_get_int(ctx, stc->cipher, groupobj, "tgId", &tgId);
         if (rv != ACVP_SUCCESS) {
-            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -577,7 +576,6 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
 
         rv = acvp_tc_json_get_int(ctx, stc->cipher, groupobj, "modulo", &modulo);
         if (rv != ACVP_SUCCESS) {
-            rv = ACVP_MISSING_ARG;
             goto err;
         }
 

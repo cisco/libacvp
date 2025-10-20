@@ -519,7 +519,6 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         r_gobj = json_value_get_object(r_gval);
         rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
         if (rv != ACVP_SUCCESS) {
-            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -604,7 +603,6 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "modulo", &mod);
         if (rv != ACVP_SUCCESS) {
-            rv = ACVP_MISSING_ARG;
             goto err;
         }
         if (mod > 8192 || mod < 2048 || mod % 1024 != 0) {

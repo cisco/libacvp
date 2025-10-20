@@ -283,7 +283,6 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         r_gobj = json_value_get_object(r_gval);
         rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
         if (rv != ACVP_SUCCESS) {
-            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -292,7 +291,6 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "aesKeyLength", &aes_key_length);
         if (rv != ACVP_SUCCESS) {
-            rv = ACVP_INVALID_ARG;
             goto err;
         }
 
