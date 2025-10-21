@@ -99,7 +99,7 @@ ACVP_RESULT acvp_tc_json_get_int(ACVP_CTX *ctx, ACVP_CIPHER alg_id,
      * Note that this has imperfect precision, but we assume for ACVP purposes
      * that we will never get decimals that are extremely close to an integer.
      */
-    if (num_val != floor(num_val)) {
+    if (num_val - floor(num_val) > ACVP_DOUBLE_EPSILON) {
         ACVP_LOG_ERR("[%s] Server JSON field '%s' has decimal (expected integer)",
                      acvp_lookup_cipher_name(alg_id), key);
         rv = ACVP_TC_INVALID_DATA;

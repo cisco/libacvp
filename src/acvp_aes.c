@@ -945,7 +945,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         case ACVP_SUB_AES_FF3:
         default:
             if (json_object_has_value(groupobj, "payloadLen")) {
-                if (fabs(json_object_get_number(groupobj, "payloadLen")) >= 0.000001) {
+                if (fabs(json_object_get_number(groupobj, "payloadLen")) > ACVP_DOUBLE_EPSILON) {
                     ACVP_LOG_ERR("Non-zero 'payloadLen' found in server JSON data when not applicable");
                     rv = ACVP_TC_INVALID_DATA;
                     goto err;

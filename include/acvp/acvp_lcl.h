@@ -1015,6 +1015,12 @@
 
 #define ACVP_CFB1_BIT_MASK      0x80
 
+/*
+ * This value is used for floating point comparisons and is the threshold
+ * under which the difference between two floating point values is considered negligible
+ * and thus equal
+ */
+#define ACVP_DOUBLE_EPSILON 1.0e-8
 
 #define ACVP_USER_AGENT_STR_MAX 255
 //char cannot exist in any string for http user agent for parsing reasons
