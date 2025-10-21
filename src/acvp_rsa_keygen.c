@@ -532,10 +532,8 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         test_type = read_test_type(test_type_str);
 
-        info_gen_by_server = json_object_get_boolean(groupobj, "infoGeneratedByServer");
-        if (info_gen_by_server == -1) {
-            ACVP_LOG_ERR("Server JSON missing 'infoGeneratedByServer'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "infoGeneratedByServer", &info_gen_by_server);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 

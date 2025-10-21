@@ -336,10 +336,8 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
         }
 
         if (alg_id == ACVP_EDDSA_SIGGEN || alg_id == ACVP_EDDSA_SIGVER) {
-            use_prehash = json_object_get_boolean(groupobj, "preHash");
-            if (use_prehash == -1) {
-                ACVP_LOG_ERR("Server JSON missing or invalid 'preHash'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "preHash", &use_prehash);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
         }

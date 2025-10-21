@@ -764,16 +764,13 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
         if (test_type == ACVP_SYM_TEST_TYPE_CTR) {
-            incr_ctr = json_object_get_boolean(groupobj, "incremental");
-            ovrflw_ctr = json_object_get_boolean(groupobj, "overflow");
-            if (ovrflw_ctr != 0 && ovrflw_ctr != 1) {
-                ACVP_LOG_ERR("Server JSON invalid 'overflowCounter'");
-                rv = ACVP_TC_INVALID_DATA;
+            rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "incremental", &incr_ctr);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
-            if (incr_ctr != 0 && incr_ctr != 1) {
-                ACVP_LOG_ERR("Server JSON invalid 'incrementalCounter'");
-                rv = ACVP_TC_INVALID_DATA;
+
+            rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "overflow", &ovrflw_ctr);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
         }

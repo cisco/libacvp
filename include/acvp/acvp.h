@@ -1502,7 +1502,7 @@ typedef struct acvp_kdf108_tc_t {
                                      --- User supplied ---
                                      Must be <= ACVP_KDF108_FIXED_DATA_MAX */
     int counter_len;
-    int deferred;
+    int deferred; //!< Removed from schema but leaving here for backward compatibility for now
 } ACVP_KDF108_TC;
 
 /**

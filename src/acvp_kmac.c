@@ -280,16 +280,13 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        xof = json_object_get_boolean(groupobj, "xof");
-        if (xof < 0) {
-            ACVP_LOG_ERR("Server JSON missing 'xof'");
-            rv = ACVP_TC_MISSING_DATA;
+        rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "xof", &xof);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
-        hex_customization = json_object_get_boolean(groupobj, "hexCustomization");
-        if (hex_customization < 0) {
-            ACVP_LOG_ERR("Server JSON missing 'hexCustomization'");
-            rv = ACVP_TC_MISSING_DATA;
+
+        rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "hexCustomization", &hex_customization);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
