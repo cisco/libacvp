@@ -281,20 +281,16 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        aes_key_length = json_object_get_number(groupobj, "aesKeyLength");
-        if (!aes_key_length) {
-            ACVP_LOG_ERR("aesKeyLength incorrect, %d", aes_key_length);
-            rv = ACVP_INVALID_ARG;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "aesKeyLength", &aes_key_length);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -315,7 +311,10 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "masterKey", &master_key);
             if (rv != ACVP_SUCCESS) {

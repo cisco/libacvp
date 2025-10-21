@@ -149,10 +149,8 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -200,7 +198,10 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        entropy_len = json_object_get_number(groupobj, "entropyInputLen");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "entropyInputLen", &entropy_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (entropy_len < ACVP_DRBG_ENTPY_IN_BIT_MIN ||
             entropy_len > ACVP_DRBG_ENTPY_IN_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid 'entropyInputLen'(%u)",
@@ -209,7 +210,10 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        nonce_len = json_object_get_number(groupobj, "nonceLen");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "nonceLen", &nonce_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (!(alg_id == ACVP_CTRDRBG && !der_func_enabled)) {
             // Allowed to be 0 when counter mode and not using derivation func
             if (nonce_len < ACVP_DRBG_NONCE_BIT_MIN ||
@@ -221,7 +225,10 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        perso_string_len = json_object_get_number(groupobj, "persoStringLen");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "persoStringLen", &perso_string_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (perso_string_len > ACVP_DRBG_PER_SO_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid 'persoStringLen'(%u)",
                          nonce_len);
@@ -229,7 +236,10 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        drb_len = json_object_get_number(groupobj, "returnedBitsLen");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "returnedBitsLen", &drb_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (!drb_len || drb_len > ACVP_DRB_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid 'returnedBitsLen'(%u)",
                          drb_len);
@@ -237,7 +247,10 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        additional_input_len = json_object_get_number(groupobj, "additionalInputLen");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "additionalInputLen", &additional_input_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (additional_input_len > ACVP_DRBG_ADDI_IN_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid 'additionalInputLen'(%u)",
                          additional_input_len);
@@ -279,7 +292,10 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("json testval count: %d\n %s\n", i, json_result);
             json_free_serialized_string(json_result);
 
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "persoString", &perso_string);
             if (rv != ACVP_SUCCESS) {

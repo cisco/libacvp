@@ -258,8 +258,8 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_TC_MISSING_DATA;
             goto err;
@@ -317,14 +317,17 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
-            if (!tc_id) {
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Failed to include tc_id.");
                 rv = ACVP_TC_MISSING_DATA;
                 goto err;
             }
 
-            msglen = json_object_get_number(testobj, "msgLen");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "msgLen", &msglen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (msglen < 0) {
                 ACVP_LOG_ERR("Missing msgLen");
                 rv = ACVP_TC_MISSING_DATA;
@@ -343,7 +346,10 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            keylen = json_object_get_number(testobj, "keyLen");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "keyLen", &keylen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (keylen <= 0) {
                 ACVP_LOG_ERR("Invalid or missing keyLen");
                 rv = ACVP_TC_MISSING_DATA;
@@ -362,7 +368,10 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            maclen = json_object_get_number(testobj, "macLen");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "macLen", &maclen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (maclen <= 0) {
                 ACVP_LOG_ERR("Invalid or missing keyLen");
                 rv = ACVP_TC_MISSING_DATA;

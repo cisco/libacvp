@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "acvp.h"
 #include "acvp_lcl.h"
@@ -653,6 +654,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *alg_str = NULL;
     const char *tw_mode = NULL;
     ACVP_CIPHER alg_id = 0;
+    ACVP_SUB_AES aes_id = 0;
     ACVP_SYM_CIPH_TWEAK_MODE tweak_mode = 0;
     ACVP_CONFORMANCE conformance = 0;
     int seq_num = 0;
@@ -681,6 +683,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_ERR("Unsupported algorithm (%s)", alg_str);
         return ACVP_TC_INVALID_DATA;
     }
+    aes_id = acvp_get_aes_alg(alg_id);
+
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ACVP server requesting unregistered capability");
@@ -728,10 +732,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_TC_MISSING_DATA;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -782,10 +784,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            radix = json_object_get_number(groupobj, "radix");
-            if (!radix) {
-                ACVP_LOG_ERR("Server JSON missing 'radix'");
-                rv = ACVP_TC_MISSING_DATA;
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "radix", &radix);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
         }
@@ -805,7 +805,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        keylen = json_object_get_number(groupobj, "keyLen");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "keyLen", &keylen);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (keylen != 128 && keylen != 192 && keylen != 256) {
             ACVP_LOG_ERR("Server JSON invalid 'keyLen', (%u)", keylen);
             rv = ACVP_TC_INVALID_DATA;
@@ -824,10 +827,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM || alg_id == ACVP_AES_GMAC ||
                 alg_id == ACVP_AES_GCM_SIV || alg_id == ACVP_AES_XPN) {
-            ivlen = json_object_get_number(groupobj, "ivLen");
-            if (!ivlen) {
-                ACVP_LOG_ERR("Server JSON missing 'ivLen'");
-                rv = ACVP_TC_MISSING_DATA;
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "ivLen", &ivlen);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -885,7 +886,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            aadlen = json_object_get_number(groupobj, "aadLen");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "aadLen", &aadlen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (aadlen > ACVP_SYM_AAD_BIT_MAX) {
                 ACVP_LOG_ERR("'aadLen' too large (%u), max allowed=(%d)",
                              aadlen, ACVP_SYM_AAD_BIT_MAX);
@@ -893,7 +897,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            taglen = json_object_get_number(groupobj, "tagLen");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tagLen", &taglen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (alg_id == ACVP_AES_GCM_SIV && taglen != ACVP_AES_GCM_SIV_TAGLEN) {
                 ACVP_LOG_ERR("Server JSON invalid 'tagLen', (%u)", taglen);
                 rv = ACVP_TC_INVALID_DATA;
@@ -905,17 +912,46 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        paylen = json_object_get_number(groupobj, "payloadLen");
-        if (alg_id == ACVP_AES_GMAC && paylen != 0) {
-            ACVP_LOG_ERR("Server provided 'payloadLen' not allowed for AES-GMAC");
-            rv = ACVP_TC_INVALID_DATA;
-            goto err;
-        }
-        if (paylen > ACVP_SYM_PT_BIT_MAX) {
-            ACVP_LOG_ERR("'payloadLen' too large (%u), max allowed=(%d)",
-                         paylen, ACVP_SYM_PT_BIT_MAX);
-            rv = ACVP_TC_INVALID_DATA;
-            goto err;
+        switch(aes_id) {
+        case ACVP_SUB_AES_GCM:
+        case ACVP_SUB_AES_GCM_SIV:
+        case ACVP_SUB_AES_CCM:
+        case ACVP_SUB_AES_XPN:
+        case ACVP_SUB_AES_KW:
+        case ACVP_SUB_AES_KWP:
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "payloadLen", &paylen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            if (paylen > ACVP_SYM_PT_BIT_MAX) {
+                ACVP_LOG_ERR("'payloadLen' too large (%u), max allowed=(%d)", paylen, ACVP_SYM_PT_BIT_MAX);
+                rv = ACVP_TC_INVALID_DATA;
+                goto err;
+            }
+            break;
+        case ACVP_SUB_AES_ECB:
+        case ACVP_SUB_AES_CTR:
+        case ACVP_SUB_AES_CFB1:
+        case ACVP_SUB_AES_CFB8:
+        case ACVP_SUB_AES_CFB128:
+        case ACVP_SUB_AES_OFB:
+        case ACVP_SUB_AES_CBC:
+        case ACVP_SUB_AES_CBC_CS1:
+        case ACVP_SUB_AES_CBC_CS2:
+        case ACVP_SUB_AES_CBC_CS3:
+        case ACVP_SUB_AES_XTS:
+        case ACVP_SUB_AES_GMAC:
+        case ACVP_SUB_AES_FF1:
+        case ACVP_SUB_AES_FF3:
+        default:
+            if (json_object_has_value(groupobj, "payloadLen")) {
+                if (fabs(json_object_get_number(groupobj, "payloadLen")) >= 0.000001) {
+                    ACVP_LOG_ERR("Non-zero 'payloadLen' found in server JSON data when not applicable");
+                    rv = ACVP_TC_INVALID_DATA;
+                    goto err;
+                }
+            }
+            break;
         }
 
         if (alg_id == ACVP_AES_XTS) {
@@ -937,7 +973,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
-            saltLen = json_object_get_number(groupobj, "saltLen");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "saltLen", &saltLen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (saltLen != ACVP_AES_XPN_SALTLEN) {
                 ACVP_LOG_ERR("Invalid 'saltLen' in server JSON data; expected %d, got %d", ACVP_AES_XPN_SALTLEN, saltLen);
                 rv = ACVP_TC_INVALID_DATA;
@@ -993,10 +1032,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
-            if (!json_object_has_value(testobj, "tcId")) {
-                ACVP_LOG_ERR("Server JSON missing 'tcId'");
-                rv = ACVP_TC_MISSING_DATA;
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -1012,7 +1049,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_AES_FF1 || alg_id == ACVP_AES_FF3) {
-                ivlen = json_object_get_number(testobj, "tweakLen");
+                rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tweakLen", &ivlen);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
                 if (ivlen > ACVP_AES_FPE_TWEAK_MAX) {
                     ACVP_LOG_ERR("'tweakLen' too large (%u), max allowed=(%d)",
                                  ivlen, ACVP_AES_FPE_TWEAK_MAX);
@@ -1027,7 +1067,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_AES_CFB1) {
-                datalen = json_object_get_number(testobj, "payloadLen");
+                rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "payloadLen", &datalen);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
                 if (datalen > ACVP_SYM_PT_BIT_MAX) {
                     ACVP_LOG_ERR("'dataLen' too large (%u), max allowed=(%d)",
                                  datalen, ACVP_SYM_PT_BIT_MAX);
@@ -1037,7 +1080,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_AES_XTS) {
-                dataUnitLen = json_object_get_number(testobj, "dataUnitLen");
+                rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "dataUnitLen", &dataUnitLen);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
                 if (dataUnitLen > ACVP_SYM_PT_BIT_MAX) {
                     ACVP_LOG_ERR("'dataUnitLen' too large (%u), max allowed=(%d)",
                                    dataUnitLen, ACVP_SYM_PT_BIT_MAX);
@@ -1161,7 +1207,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     }
                     break;
                 case ACVP_SYM_CIPH_TWEAK_NUM:
-                    seq_num = json_object_get_number(testobj, "sequenceNumber");
+                    rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "sequenceNumber", &seq_num);
+                    if (rv != ACVP_SUCCESS) {
+                        goto err;
+                    }
                     if ((seq_num < 0) || (seq_num > 255)) {
                         ACVP_LOG_ERR("Server JSON invalid number 'tweakValue'");
                         rv = ACVP_TC_INVALID_DATA;

@@ -720,8 +720,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
@@ -773,7 +773,10 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         // get keyingOption if it exists. Otherwise it remains set to 0, which means not applicable.
         if (json_object_get_value(groupobj, "keyingOption")) {
-            keyingOption = json_object_get_number(groupobj, "keyingOption");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "keyingOption", &keyingOption);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (keyingOption > 2 || keyingOption < 1) {
                 ACVP_LOG_ERR("Server JSON invalid 'keyingOption', %d", keyingOption);
                 rv = ACVP_TC_INVALID_DATA;
@@ -802,7 +805,10 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "key1", &key1);
             if (rv != ACVP_SUCCESS) {
@@ -876,7 +882,10 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
                 if (alg_id == ACVP_TDES_CFB1) {
                     unsigned int tmp_pt_len = 0;
-                    tmp_pt_len = json_object_get_number(testobj, "payloadLen");
+                    rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "payloadLen", (int *)&tmp_pt_len);
+                    if (rv != ACVP_SUCCESS) {
+                        goto err;
+                    }
                     if (tmp_pt_len) {
                         // Replace with the provided ptLen
                         ptlen = tmp_pt_len;
@@ -902,7 +911,10 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
                 if (alg_id == ACVP_TDES_CFB1) {
                     unsigned int tmp_ct_len = 0;
-                    tmp_ct_len = json_object_get_number(testobj, "payloadLen");
+                    rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "payloadLen", (int *)&tmp_ct_len);
+                    if (rv != ACVP_SUCCESS) {
+                        goto err;
+                    }
                     if (tmp_ct_len) {
                         // Replace with the provided ctLen
                         ctlen = tmp_ct_len;

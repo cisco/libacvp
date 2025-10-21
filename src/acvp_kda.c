@@ -937,10 +937,8 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, cipher, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         rv = acvp_tc_json_get_string(ctx, cipher, groupobj, "testType", &test_type_str);
@@ -1050,14 +1048,23 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             goto err;
         }
 
-        saltLen = json_object_get_number(configobj, "saltLen");
+        if (cipher != ACVP_KDA_ONESTEP) {
+            rv = acvp_tc_json_get_int(ctx, cipher, configobj, "saltLen", &saltLen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+        }
+
         if (saltLen % 8 != 0 || saltLen < 0 || saltLen > ACVP_KDA_SALT_BIT_MAX) {
             ACVP_LOG_ERR("Invalid saltLen provided by server");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
 
-        l = json_object_get_number(configobj, "l");
+        rv = acvp_tc_json_get_int(ctx, cipher, configobj, "l", &l);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (cipher == ACVP_KDA_HKDF) {
             kdfcap = acvp_locate_cap_entry(ctx, ACVP_KDA_HKDF);
             if (!kdfcap || !kdfcap->cap.kda_hkdf_cap) {
@@ -1122,14 +1129,20 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 goto err;
             }
 
-            ctr_len = json_object_get_number(configobj, "counterLen");
+            rv = acvp_tc_json_get_int(ctx, cipher, configobj, "counterLen", &ctr_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (ctr_len <= 0) {
                 ACVP_LOG_ERR("Server JSON missing or invalid counterLen.");
                 rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
 
-            iv_len = json_object_get_number(configobj, "ivLen");
+            rv = acvp_tc_json_get_int(ctx, cipher, configobj, "ivLen", &iv_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if ((kdf_mode == ACVP_KDF108_MODE_COUNTER && !kdfcap->cap.kda_twostep_cap->kdf_params.counter_mode.requires_empty_iv)
             || (kdf_mode == ACVP_KDF108_MODE_DPI && !kdfcap->cap.kda_twostep_cap->kdf_params.dpi_mode.requires_empty_iv)
             || (kdf_mode == ACVP_KDF108_MODE_FEEDBACK && !kdfcap->cap.kda_twostep_cap->kdf_params.feedback_mode.requires_empty_iv)) {
@@ -1184,7 +1197,10 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
             paramobj = json_object_get_object(testobj, "kdfParameter");
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, cipher, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             salt = json_object_get_string(paramobj, "salt");
 
             arr = read_info_pattern(ctx, cipher, pattern_str, tc);

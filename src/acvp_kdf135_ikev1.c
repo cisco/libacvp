@@ -301,10 +301,8 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -337,7 +335,10 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        init_nonce_len = json_object_get_number(groupobj, "nInitLength");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "nInitLength", &init_nonce_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (!(init_nonce_len >= ACVP_KDF135_IKEV1_INIT_NONCE_BIT_MIN &&
               init_nonce_len <= ACVP_KDF135_IKEV1_INIT_NONCE_BIT_MAX)) {
             ACVP_LOG_ERR("nInitLength incorrect, %d", init_nonce_len);
@@ -345,7 +346,10 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        resp_nonce_len = json_object_get_number(groupobj, "nRespLength");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "nRespLength", &resp_nonce_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (!(resp_nonce_len >= ACVP_KDF135_IKEV1_RESP_NONCE_BIT_MIN &&
               resp_nonce_len <= ACVP_KDF135_IKEV1_RESP_NONCE_BIT_MAX)) {
             ACVP_LOG_ERR("nRespLength incorrect, %d", resp_nonce_len);
@@ -353,7 +357,10 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        dh_secret_len = json_object_get_number(groupobj, "dhLength");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "dhLength", &dh_secret_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (!(dh_secret_len >= ACVP_KDF135_IKEV1_DH_SHARED_SECRET_BIT_MIN &&
               dh_secret_len <= ACVP_KDF135_IKEV1_DH_SHARED_SECRET_BIT_MAX)) {
             ACVP_LOG_ERR("dhLength incorrect, %d", dh_secret_len);
@@ -363,7 +370,10 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         if (auth_method == ACVP_KDF135_IKEV1_AMETH_PSK) {
             // Only for PSK authentication method
-            psk_len = json_object_get_number(groupobj, "preSharedKeyLength");
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "preSharedKeyLength", &psk_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (!(psk_len >= ACVP_KDF135_IKEV1_PSK_BIT_MIN &&
                   psk_len <= ACVP_KDF135_IKEV1_PSK_BIT_MAX)) {
                 ACVP_LOG_ERR("preSharedKeyLength incorrect, %d", psk_len);
@@ -388,7 +398,10 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "nInit", &init_nonce);
             if (rv != ACVP_SUCCESS) {
