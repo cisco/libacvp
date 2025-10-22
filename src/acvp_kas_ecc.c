@@ -307,7 +307,10 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
     int j, t_cnt, tc_id;
     ACVP_RESULT rv;
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, stc->cipher, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        return rv;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -360,7 +363,10 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("    Test group: %d", i+1);
         ACVP_LOG_VERBOSE("          curve: %s", curve_str);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, stc->cipher, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            return rv;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
@@ -482,7 +488,10 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
     int j, t_cnt, tc_id;
     ACVP_RESULT rv;
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, stc->cipher, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        return rv;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -551,7 +560,10 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("          curve: %s", curve_str);
         ACVP_LOG_VERBOSE("           hash: %s", hash_str);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, stc->cipher, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            return rv;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
@@ -950,7 +962,10 @@ static ACVP_RESULT acvp_kas_ecc_ssc(ACVP_CTX *ctx,
     int j, t_cnt, tc_id;
     ACVP_RESULT rv;
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, stc->cipher, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        return rv;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -1041,7 +1056,10 @@ static ACVP_RESULT acvp_kas_ecc_ssc(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("          curve: %s", curve_str);
         ACVP_LOG_VERBOSE("           hash: %s", hash_str);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, stc->cipher, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            return rv;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {

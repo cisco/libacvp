@@ -519,7 +519,10 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_object_set_string(r_vs, "mode", mode_str);
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -616,7 +619,10 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("       Pub Exp Mode: %s", pub_exp_mode_str);
         }
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
@@ -648,7 +654,11 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                ciphers = json_object_get_array(testobj, "resultsArray");
+                rv = acvp_tc_json_get_array(ctx, alg_id, testobj, "resultsArray", &ciphers);
+                if (rv != ACVP_SUCCESS) {
+                    json_value_free(r_tval);
+                    goto err;
+                }
                 c_cnt = json_array_get_count(ciphers);
 
                 json_object_set_value(r_tobj, "resultsArray", json_value_init_array());
@@ -930,7 +940,10 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_object_set_string(r_vs, "mode", mode_str);
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -996,7 +1009,10 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("       Key Format: %s", key_format);
         ACVP_LOG_VERBOSE("           Modulo: %d", mod);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {

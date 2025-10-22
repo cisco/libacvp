@@ -276,10 +276,8 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
     }
     json_object_set_string(r_vs, "mode", mode_str);
 
-    groups = json_object_get_array(obj, "testGroups");
-    if (!groups) {
-        ACVP_LOG_ERR("Missing testGroups from server JSON");
-        rv = ACVP_MALFORMED_JSON;
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
         goto err;
     }
     g_cnt = json_array_get_count(groups);
@@ -349,7 +347,10 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             ACVP_LOG_VERBOSE("          use_prehash: %s", use_prehash == 1 ? "true" : "false");
         }
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
             ACVP_LOG_ERR("Test array count is zero");

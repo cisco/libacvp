@@ -295,7 +295,10 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
     ACVP_KAS_FFC_TEST_TYPE test_type;
     ACVP_KAS_FFC_PARAM pms;
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, stc->cipher, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        return rv;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -396,7 +399,10 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("              q: %s", q);
         ACVP_LOG_VERBOSE("              g: %s", g);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, stc->cipher, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            return rv;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
@@ -674,7 +680,10 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
     const char *test_type_str;
     ACVP_KAS_FFC_TEST_TYPE test_type;
     ACVP_KAS_FFC_PARAM dgm;
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, stc->cipher, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        return rv;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -798,7 +807,10 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("              q: %s", q);
         ACVP_LOG_VERBOSE("              g: %s", g);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, stc->cipher, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            return rv;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {

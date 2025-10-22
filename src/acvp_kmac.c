@@ -240,10 +240,8 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return rv;
     }
 
-    groups = json_object_get_array(obj, "testGroups");
-    if (!groups) {
-        ACVP_LOG_ERR("Failed to include testGroups.");
-        rv = ACVP_TC_MISSING_DATA;
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
         goto err;
     }
     g_cnt = json_array_get_count(groups);
@@ -295,10 +293,8 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("           xof: %d", xof);
         ACVP_LOG_VERBOSE("     hexCustom: %d", hex_customization);
 
-        tests = json_object_get_array(groupobj, "tests");
-        if (!tests) {
-            ACVP_LOG_ERR("Failed to include tests.");
-            rv = ACVP_TC_MISSING_DATA;
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 

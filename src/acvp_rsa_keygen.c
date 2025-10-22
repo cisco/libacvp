@@ -503,7 +503,10 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_object_set_string(r_vs, "mode", mode_str);
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -634,7 +637,10 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("        keyFormat: %s", key_format_str);
         ACVP_LOG_VERBOSE("           modulo: %d", mod);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
@@ -687,7 +693,10 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rand_pq == ACVP_RSA_KEYGEN_PROV_W_PROV_AUX ||
                     rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX ||
                     rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
-                    bitlens = json_object_get_array(testobj, "bitlens");
+                    rv = acvp_tc_json_get_array(ctx, alg_id, testobj, "bitlens", &bitlens);
+                    if (rv != ACVP_SUCCESS) {
+                        goto err;
+                    }
                     count = json_array_get_count(bitlens);
                     if (count != 4) {
                         ACVP_LOG_ERR("Server JSON 'bitlens' list count is (%u). Expected (%u)", count, 4);

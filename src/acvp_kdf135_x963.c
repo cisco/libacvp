@@ -194,10 +194,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_object_set_string(r_vs, "mode", "ansix9.63");
 
-    groups = json_object_get_array(obj, "testGroups");
-    if (!groups) {
-        ACVP_LOG_ERR("Failed to include testGroups.");
-        rv = ACVP_MISSING_ARG;
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
         goto err;
     }
 
@@ -258,10 +256,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("   sharedInfoLen: %d", shared_info_len);
         ACVP_LOG_VERBOSE("   keyDataLength: %d", key_data_length);
 
-        tests = json_object_get_array(groupobj, "tests");
-        if (!tests) {
-            ACVP_LOG_ERR("Failed to include tests.");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
