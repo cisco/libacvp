@@ -900,11 +900,12 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
     JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
     JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     const char *alg_str = NULL,  *pattern_str = NULL, *encoding_str = NULL,
-               *salt_method_str = NULL;
+               *salt_method_str = NULL, *rev_str = NULL;
     ACVP_HASH_ALG hmac_alg = 0;
     unsigned int i = 0, g_cnt = 0;
     int j = 0, k = 0, t_cnt = 0, tc_id = 0, saltLen = 0, l = 0,hybrid_secret = 0;
     ACVP_RESULT rv;
+    ACVP_REVISION revision = ACVP_REVISION_DEFAULT;
     const char *test_type_str = NULL;
     ACVP_KDA_TEST_TYPE test_type;
     ACVP_KDA_PATTERN_CANDIDATE *arr = NULL;
@@ -919,6 +920,14 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
     ACVP_KDF108_MODE kdf_mode = 0;
     ACVP_KDF108_MAC_MODE_VAL mac_mode = 0;
     ACVP_KDF108_FIXED_DATA_ORDER_VAL ctr_loc = 0;
+
+    // Check revision to determine if hybrid secret is supported
+    rev_str = json_object_get_string(obj, "revision");
+    if (!rev_str) {
+        ACVP_LOG_ERR("Missing 'revision' from server json");
+        return ACVP_MISSING_ARG;
+    }
+    revision = acvp_lookup_alt_revision(rev_str);
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
@@ -1158,8 +1167,13 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             }
         }
 
-        // in case of value not existing or being false, we have the same outcome
-        hybrid_secret = json_object_get_boolean(paramobj, "usesHybridSharedSecret");
+        // usesHybridSharedSecret only exists in revisions after CR1
+        if (cipher != ACVP_KDA_ONESTEP && revision != ACVP_REVISION_SP800_56CR1) {
+            rv = acvp_tc_json_get_boolean(ctx, cipher, groupobj, "usesHybridSharedSecret", &hybrid_secret);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+        }
 
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");

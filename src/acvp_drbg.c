@@ -175,25 +175,19 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         /*
          * Handle Group Params
          */
-        pred_resist_enabled = json_object_get_boolean(groupobj, "predResistance");
-        if (pred_resist_enabled == -1) {
-            ACVP_LOG_ERR("Server JSON missing 'predResistance'");
-            rv = ACVP_MISSING_ARG;
-            goto err;
-        }
-        reseed = json_object_get_boolean(groupobj, "reSeed");
-        if (reseed == -1) {
-            ACVP_LOG_ERR("Server JSON missing reseedImplemented'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "predResistance", &pred_resist_enabled);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
+        rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "reSeed", &reseed);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
 
         if (alg_id == ACVP_CTRDRBG) {
-            der_func_enabled = json_object_get_boolean(groupobj, "derFunc");
-            if (der_func_enabled == -1) {
-                ACVP_LOG_ERR("Server JSON missing 'derFunc'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "derFunc", &der_func_enabled);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
         }

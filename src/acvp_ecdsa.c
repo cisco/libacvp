@@ -383,7 +383,10 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             }
 
             if (alg_id != ACVP_ECDSA_SIGVER) {
-               is_component = json_object_get_boolean(groupobj, "componentTest");
+                rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "componentTest", &is_component);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
             }
         }
 

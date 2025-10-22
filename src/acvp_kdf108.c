@@ -344,7 +344,7 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_KDF108_MAC_MODE_VAL mac_mode = 0;
     ACVP_KDF108_FIXED_DATA_ORDER_VAL ctr_loc = 0;
     int key_out_bit_len = 0, key_out_len = 0, key_in_len = 0,
-        iv_len = 0, ctr_len = 0, context_len = 0, label_len = 0, deferred = 0;
+        iv_len = 0, ctr_len = 0, context_len = 0, label_len = 0;
     const char *kdf_mode_str = NULL, *mac_mode_str = NULL, *key_in_str = NULL,
                *iv_str = NULL, *ctr_loc_str = NULL, *context_str = NULL,
                *label_str = NULL;
@@ -620,13 +620,6 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     // Convert to byte length
                     iv_len = iv_len / 2;
                 }
-
-                deferred = json_object_get_boolean(testobj, "deferred");
-                if (deferred == -1 && ctr_loc == ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE) {
-                    ACVP_LOG_ERR("Server JSON missing deferred");
-                    rv = ACVP_MISSING_ARG;
-                    goto err;
-                }
             }
 
             /*
@@ -640,7 +633,6 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_VERBOSE("            label: %s", label_str);
             } else {
                 ACVP_LOG_VERBOSE("            keyIn: %s", key_in_str);
-                ACVP_LOG_VERBOSE("         deferred: %d", deferred);
             }
 
             /*
@@ -650,7 +642,7 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_kdf108_init_tc(&stc, tc_id, kdf_mode, mac_mode, ctr_loc,
                                      key_in_str, iv_str, context_str, label_str,
                                      key_in_len, key_out_len, iv_len, context_len,
-                                     label_len, ctr_len, deferred);
+                                     label_len, ctr_len, 0);
             if (rv != ACVP_SUCCESS) {
                 acvp_kdf108_release_tc(&stc);
                 goto err;

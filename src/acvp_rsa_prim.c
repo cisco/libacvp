@@ -642,10 +642,8 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             if (old_rev) {
                 // Retrieve values from JSON and initialize the tc
-                deferred = json_object_get_boolean(testobj, "deferred");
-                if (deferred == -1) {
-                    ACVP_LOG_ERR("Server JSON missing 'deferred'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_boolean(ctx, alg_id, testobj, "deferred", &deferred);
+                if (rv != ACVP_SUCCESS) {
                     json_value_free(r_tval);
                     goto err;
                 }

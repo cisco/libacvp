@@ -467,7 +467,10 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        hex_customization = json_object_get_boolean(groupobj, "hexCustomization");
+        rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "hexCustomization", &hex_customization);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
 
         // Parse MCT-specific parameters if this is an MCT test
         if (type == ACVP_CSHAKE_TEST_TYPE_MCT) {
