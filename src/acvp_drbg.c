@@ -131,7 +131,10 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return rv;
     }
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
     ACVP_LOG_VERBOSE("Number of TestGroups: %d", g_cnt);
     for (i = 0; i < g_cnt; i++) {
@@ -266,7 +269,10 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         /*
          * Handle test array
          */
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
         ACVP_LOG_VERBOSE("Number of Tests: %d", t_cnt);
         for (j = 0; j < t_cnt; j++) {
@@ -339,10 +345,8 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             /*
              * Handle pred_resist_input array. Has at most 2 elements
              */
-            pred_resist_input = json_object_get_array(testobj, "otherInput");
-            if (!pred_resist_input) {
-                ACVP_LOG_ERR("Server JSON missing 'otherInput'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_array(ctx, alg_id, testobj, "otherInput", &pred_resist_input);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 

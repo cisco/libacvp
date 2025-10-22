@@ -469,7 +469,10 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
     ACVP_KAS_IFC_PARAM scheme = ACVP_KAS_IFC_KAS1;
     ACVP_KAS_IFC_KEYGEN key_gen = 0;
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, stc->cipher, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -590,7 +593,10 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("         modulo: %d", modulo);
         ACVP_LOG_VERBOSE("           role: %d", role);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, stc->cipher, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
