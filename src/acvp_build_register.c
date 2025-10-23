@@ -55,15 +55,11 @@ static ACVP_RESULT acvp_lookup_prereqVals(JSON_Object *cap_obj, ACVP_CAPS_LIST *
     if (!cap_entry) { return ACVP_INVALID_ARG; }
 
     if (!cap_entry->has_prereq) { return ACVP_SUCCESS; }
-    /*
-     * Init json array
-     */
+    // Init json array
     json_object_set_value(cap_obj, ACVP_PREREQ_OBJ_STR, json_value_init_array());
     prereq_array = json_object_get_array(cap_obj, ACVP_PREREQ_OBJ_STR);
 
-    /*
-     * return OK if nothing present
-     */
+    // return OK if nothing present
     prereq_vals = cap_entry->prereq_vals;
 
     while (prereq_vals) {
@@ -219,9 +215,7 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
 
-    /*
-     * Set the supported key lengths
-     */
+    // Set the supported key lengths
     json_object_set_value(cap_obj, "keyLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "keyLen");
 
@@ -242,9 +236,7 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         list = list->next;
     }
 
-    /*
-     * Set the supported mac lengths
-     */
+    // Set the supported mac lengths
     json_object_set_value(cap_obj, "macLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "macLen");
 
@@ -319,9 +311,7 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         sl_list = sl_list->next;
     }
 
-    /*
-     * Set the supported mac lengths
-     */
+    // Set the supported mac lengths
     json_object_set_value(capabilities_obj, "macLen", json_value_init_array());
     temp_arr = json_object_get_array(capabilities_obj, "macLen");
 
@@ -341,9 +331,7 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     }
 
     if (cap_entry->cipher == ACVP_CMAC_AES) {
-        /*
-         * Set the supported key lengths. if CMAC-AES
-         */
+        // Set the supported key lengths. if CMAC-AES
         json_object_set_value(capabilities_obj, "keyLen", json_value_init_array());
         temp_arr = json_object_get_array(capabilities_obj, "keyLen");
         sl_list = cap_entry->cap.cmac_cap->key_len;
@@ -352,9 +340,7 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
             sl_list = sl_list->next;
         }
     } else if (cap_entry->cipher == ACVP_CMAC_TDES) {
-        /*
-         * Set the supported key lengths. if CMAC-TDES
-         */
+        // Set the supported key lengths. if CMAC-TDES
         json_object_set_value(capabilities_obj, "keyingOption", json_value_init_array());
         temp_arr = json_object_get_array(capabilities_obj, "keyingOption");
         sl_list = cap_entry->cap.cmac_cap->keying_option;
@@ -557,9 +543,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
 
     aes_alg = acvp_get_aes_alg(cap_entry->cipher);
 
-    /*
-     * If we have a non-default conformance, set the array
-     */
+    // If we have a non-default conformance, set the array
     switch (sym_cap->conformance) {
     case ACVP_CONFORMANCE_RFC3686:
         json_object_set_value(cap_obj, "conformances", json_value_init_array());
@@ -571,9 +555,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         break;
     }
 
-    /*
-     * Set the direction capability
-     */
+    // Set the direction capability
     if (!sym_cap->direction) {
         return ACVP_MISSING_ARG;
     }
@@ -588,9 +570,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         json_array_append_string(mode_arr, "decrypt");
     }
 
-    /*
-     * Set the keywrap modes capability
-     */
+    // Set the keywrap modes capability
     if ((cap_entry->cipher == ACVP_AES_KW) || (cap_entry->cipher == ACVP_AES_KWP) ||
         (cap_entry->cipher == ACVP_TDES_KW)) {
         json_object_set_value(cap_obj, "kwCipher", json_value_init_array());
@@ -609,9 +589,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         json_object_set_boolean(cap_obj, "performCounterTests", sym_cap->perform_ctr_tests);
     }
 
-    /*
-     * Set the IV generation source if applicable
-     */
+    // Set the IV generation source if applicable
 
     // For some reason, RFC3686 uses "ivGenMode" instead of "ivGen" here- may be corrected
     // spec-side later on
@@ -640,9 +618,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         break;
     }
 
-    /*
-     * Set the salt generation source if applicable (XPN)
-     */
+    // Set the salt generation source if applicable (XPN)
     switch (sym_cap->salt_source) {
     case ACVP_SYM_CIPH_SALT_SRC_INT:
         json_object_set_string(cap_obj, "saltGen", "internal");
@@ -672,9 +648,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         break;
     }
 
-    /*
-     * Set the TDES keyingOptions  if applicable
-     */
+    // Set the TDES keyingOptions  if applicable
     if (sym_cap->keying_option != ACVP_SYM_CIPH_KO_NA) {
         json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "keyingOption");
@@ -689,9 +663,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         }
     }
 
-    /*
-     * Set the supported key lengths
-     */
+    // Set the supported key lengths
     sl_list = sym_cap->keylen;
     if (sl_list) {
         json_object_set_value(cap_obj, "keyLen", json_value_init_array());
@@ -705,9 +677,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         return ACVP_MISSING_ARG;
     }
 
-    /*
-     * Set the supported tag lengths (for AEAD ciphers)
-     */
+    // Set the supported tag lengths (for AEAD ciphers)
     if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)
           || (cap_entry->cipher == ACVP_AES_GMAC) || (cap_entry->cipher == ACVP_AES_XPN)) {
         json_object_set_value(cap_obj, "tagLen", json_value_init_array());
@@ -719,9 +689,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         }
     }
 
-    /*
-     * Set the supported IV lengths
-     */
+    // Set the supported IV lengths
     if (aes_alg == ACVP_SUB_AES_GCM || aes_alg == ACVP_SUB_AES_GCM_SIV ||
         aes_alg == ACVP_SUB_AES_CCM || aes_alg == ACVP_SUB_AES_GMAC) {
         json_object_set_value(cap_obj, "ivLen", json_value_init_array());
@@ -848,9 +816,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         json_array_append_value(opts_arr, tmp_val);
     }
 
-    /*
-     * Set the supported AAD lengths (for AEAD ciphers)
-     */
+    // Set the supported AAD lengths (for AEAD ciphers)
     if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)
             || (cap_entry->cipher == ACVP_AES_GMAC) || (cap_entry->cipher == ACVP_AES_GCM_SIV)
             || (cap_entry->cipher == ACVP_AES_XPN)) {
@@ -1092,9 +1058,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     return ACVP_SUCCESS;
 }
 
-/*
- * Builds the JSON object for RSA keygen primes
- */
+// Builds the JSON object for RSA keygen primes
 static ACVP_RESULT acvp_lookup_rsa_primes(JSON_Object *cap_obj, ACVP_RSA_KEYGEN_CAP *rsa_cap) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Array *primes_array = NULL, *hash_array = NULL, *prime_test_array = NULL;
@@ -1104,9 +1068,7 @@ static ACVP_RESULT acvp_lookup_rsa_primes(JSON_Object *cap_obj, ACVP_RSA_KEYGEN_
 
     if (!rsa_cap) { return ACVP_INVALID_ARG; }
 
-    /*
-     * return OK if nothing present
-     */
+    // return OK if nothing present
     current_mode_cap = rsa_cap->mode_capabilities;
     if (!current_mode_cap) {
         return ACVP_SUCCESS;
@@ -3008,15 +2970,11 @@ static ACVP_RESULT acvp_lookup_kas_ecc_prereqVals(JSON_Object *cap_obj,
 
     if (!kas_ecc_mode) { return ACVP_INVALID_ARG; }
 
-    /*
-     * Init json array
-     */
+    // Init json array
     json_object_set_value(cap_obj, ACVP_PREREQ_OBJ_STR, json_value_init_array());
     prereq_array = json_object_get_array(cap_obj, ACVP_PREREQ_OBJ_STR);
 
-    /*
-     * return OK if nothing present
-     */
+    // return OK if nothing present
     prereq_vals = kas_ecc_mode->prereq_vals;
     if (!prereq_vals) {
         return ACVP_SUCCESS;
@@ -3452,15 +3410,11 @@ static ACVP_RESULT acvp_lookup_kas_ffc_prereqVals(JSON_Object *cap_obj,
 
     if (!kas_ffc_mode) { return ACVP_INVALID_ARG; }
 
-    /*
-     * Init json array
-     */
+    // Init json array
     json_object_set_value(cap_obj, ACVP_PREREQ_OBJ_STR, json_value_init_array());
     prereq_array = json_object_get_array(cap_obj, ACVP_PREREQ_OBJ_STR);
 
-    /*
-     * return OK if nothing present
-     */
+    // return OK if nothing present
     prereq_vals = kas_ffc_mode->prereq_vals;
     if (!prereq_vals) {
         return ACVP_SUCCESS;
@@ -5520,9 +5474,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
 
     val = json_value_init_array();
     caps_arr = json_value_get_array(val);
-    /*
-     * Iterate through all the capabilities the user has enabled
-     */
+    // Iterate through all the capabilities the user has enabled
     if (ctx->caps_list) {
         cap_entry = ctx->caps_list;
         while (cap_entry) {
@@ -5544,9 +5496,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 }
             }
 
-            /*
-             * Build up the capability JSON based on the cipher type
-             */
+            // Build up the capability JSON based on the cipher type
             switch (cap_entry->cipher) {
             case ACVP_AES_GCM:
             case ACVP_AES_XPN:
@@ -5913,9 +5863,7 @@ ACVP_RESULT acvp_build_full_registration(ACVP_CTX *ctx, char **out, int *out_len
     JSON_Array *top_array = NULL;
     JSON_Object *obj = NULL;
 
-    /*
-     * Start top-level array
-     */
+    // Start top-level array
     top_array_val = json_value_init_array();
     if (!top_array_val) {
         return ACVP_MALLOC_FAIL;
@@ -5954,22 +5902,16 @@ ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx,
     oe = ctx->fips.oe;
     module = ctx->fips.module;
 
-    /*
-     * Start top-level array
-     */
+    // Start top-level array
     top_array_val = json_value_init_array();
     top_array = json_array((const JSON_Value *)top_array_val);
     json_array_append_value(top_array, acvp_version_json_value());
 
-    /*
-     * Start the next object, which will be appended to the top-level array
-     */
+    // Start the next object, which will be appended to the top-level array
     val = json_value_init_object();
     obj = json_value_get_object(val);
 
-    /*
-     * Add the OE
-     */
+    // Add the OE
     if (oe->url) {
         json_object_set_string(obj, "oeUrl", oe->url);
     } else {
@@ -5984,9 +5926,7 @@ ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx,
 
         if (oe->dependencies.status == ACVP_RESOURCE_STATUS_COMPLETE ||
             oe->dependencies.status == ACVP_RESOURCE_STATUS_PARTIAL) {
-            /*
-             * There are some "complete" urls to record.
-             */
+            // There are some "complete" urls to record.
             JSON_Array *dep_url_array = NULL;
             unsigned int i = 0;
 
@@ -6003,9 +5943,7 @@ ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx,
 
         if (oe->dependencies.status == ACVP_RESOURCE_STATUS_INCOMPLETE ||
             oe->dependencies.status == ACVP_RESOURCE_STATUS_PARTIAL) {
-            /*
-             * There are some dependencies that we need to create.
-             */
+            // There are some dependencies that we need to create.
             JSON_Array *dep_array = NULL;
             unsigned int i = 0;
 
@@ -6046,15 +5984,11 @@ ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx,
             }
         }
 
-        /*
-         * Attach the OE object
-         */
+        // Attach the OE object
         json_object_set_value(obj, "oe", oe_val);
     }
 
-    /*
-     * Add the Module
-     */
+    // Add the Module
     if (module->url) {
         json_object_set_string(obj, "moduleUrl", module->url);
     } else {
@@ -6089,9 +6023,7 @@ ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx,
             json_array_append_string(contact_url_array, person->url);
         }
 
-        /*
-         * Attach the Module object
-         */
+        // Attach the Module object
         json_object_set_value(obj, "module", module_val);
     }
 

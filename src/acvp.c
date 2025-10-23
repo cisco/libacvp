@@ -17,9 +17,7 @@
 #include "parson.h"
 #include "safe_lib.h"
 
-/*
- * Forward prototypes for local functions
- */
+// Forward prototypes for local functions
 static ACVP_RESULT acvp_login(ACVP_CTX *ctx, int refresh);
 
 static ACVP_RESULT acvp_validate_test_session(ACVP_CTX *ctx);
@@ -235,9 +233,7 @@ static void acvp_free_prereqs(ACVP_CAPS_LIST *cap_list) {
     }
 }
 
-/*
- * Free internal memory for EC curve/hash alg list
- */
+// Free internal memory for EC curve/hash alg list
 static void acvp_cap_free_ec_alg_list(ACVP_CURVE_ALG_COMPAT_LIST *list) {
     ACVP_CURVE_ALG_COMPAT_LIST *tmp = NULL, *tmp2 = NULL;
 
@@ -352,9 +348,7 @@ static void acvp_cap_free_rsa_sig_list(ACVP_CAPS_LIST *cap_list) {
     }
 }
 
-/*
- * Free Internal memory for KAS-ECC Data struct
- */
+// Free Internal memory for KAS-ECC Data struct
 static void acvp_cap_free_kas_ecc_mode(ACVP_CAPS_LIST *cap_list) {
     ACVP_KAS_ECC_CAP *kas_ecc_cap = cap_list->cap.kas_ecc_cap;
     ACVP_KAS_ECC_CAP_MODE *mode;
@@ -372,9 +366,7 @@ static void acvp_cap_free_kas_ecc_mode(ACVP_CAPS_LIST *cap_list) {
             for (i = 0; i < ACVP_KAS_ECC_MAX_MODES; i++) {
                 mode = &kas_ecc_cap->kas_ecc_mode[i];
                 current_pre_req_vals = mode->prereq_vals;
-                /*
-                 * Delete all pre_req
-                 */
+                // Delete all pre_req
                 if (current_pre_req_vals) {
                     do {
                         next_pre_req_vals = current_pre_req_vals->next;
@@ -382,19 +374,13 @@ static void acvp_cap_free_kas_ecc_mode(ACVP_CAPS_LIST *cap_list) {
                         current_pre_req_vals = next_pre_req_vals;
                     } while (current_pre_req_vals);
                 }
-                /*
-                 * Delete all function name lists
-                 */
+                // Delete all function name lists
                 acvp_cap_free_pl(mode->function);
 
-                /*
-                 * Delete all curve name lists
-                 */
+                // Delete all curve name lists
                 acvp_cap_free_pl(mode->curve);
 
-                /*
-                 * Delete all schemes, psets and their param lists
-                 */
+                // Delete all schemes, psets and their param lists
                 current_scheme = mode->scheme;
                 if (current_scheme) {
                     do {
@@ -420,9 +406,7 @@ static void acvp_cap_free_kas_ecc_mode(ACVP_CAPS_LIST *cap_list) {
     free(cap_list->cap.kas_ecc_cap);
 }
 
-/*
- * Free Internal memory for KAS-FFC Data struct
- */
+// Free Internal memory for KAS-FFC Data struct
 static void acvp_cap_free_kas_ffc_mode(ACVP_CAPS_LIST *cap_list) {
     ACVP_KAS_FFC_CAP *kas_ffc_cap = cap_list->cap.kas_ffc_cap;
     ACVP_KAS_FFC_CAP_MODE *mode;
@@ -440,9 +424,7 @@ static void acvp_cap_free_kas_ffc_mode(ACVP_CAPS_LIST *cap_list) {
             for (i = 0; i < ACVP_KAS_FFC_MAX_MODES; i++) {
                 mode = &kas_ffc_cap->kas_ffc_mode[i];
                 current_pre_req_vals = mode->prereq_vals;
-                /*
-                 * Delete all pre_req
-                 */
+                // Delete all pre_req
                 if (current_pre_req_vals) {
                     do {
                         next_pre_req_vals = current_pre_req_vals->next;
@@ -450,19 +432,13 @@ static void acvp_cap_free_kas_ffc_mode(ACVP_CAPS_LIST *cap_list) {
                         current_pre_req_vals = next_pre_req_vals;
                     } while (current_pre_req_vals);
                 }
-                /*
-                 * Delete all generation methods
-                 */
+                // Delete all generation methods
                 acvp_cap_free_pl(mode->genmeth);
 
-                /*
-                 * Delete all function name lists
-                 */
+                // Delete all function name lists
                 acvp_cap_free_pl(mode->function);
 
-                /*
-                 * Delete all schemes, psets and their param lists
-                 */
+                // Delete all schemes, psets and their param lists
                 current_scheme = mode->scheme;
                 if (current_scheme) {
                     do {
@@ -488,9 +464,7 @@ static void acvp_cap_free_kas_ffc_mode(ACVP_CAPS_LIST *cap_list) {
     free(cap_list->cap.kas_ffc_cap);
 }
 
-/*
- * Free Internal memory for DRBG Data struct
- */
+// Free Internal memory for DRBG Data struct
 static void acvp_free_drbg_struct(ACVP_CAPS_LIST *cap_list) {
     ACVP_DRBG_CAP *drbg_cap = cap_list->cap.drbg_cap;
 
@@ -529,9 +503,7 @@ static void acvp_free_drbg_struct(ACVP_CAPS_LIST *cap_list) {
     }
 }
 
-/*
- * Free Internal memory for KDF108 Cap struct
- */
+// Free Internal memory for KDF108 Cap struct
 static void acvp_cap_free_kdf108(ACVP_KDF108_CAP *cap) {
     ACVP_KDF108_MODE_PARAMS *mode_obj = NULL;
 
@@ -995,9 +967,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
         }
     }
 
-    /*
-     * Free everything in the Operating Environment structs
-     */
+    // Free everything in the Operating Environment structs
     acvp_oe_free_operating_env(ctx);
 
     // Free the ACVP_CTX struct
@@ -1583,9 +1553,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         vs_entry = vs_entry->next;
     }
 
-    /*
-     * Check the test results.
-     */
+    // Check the test results.
     ACVP_LOG_STATUS("Tests complete, checking results...");
     rv = acvp_check_test_results(ctx);
     if (rv != ACVP_SUCCESS) {
@@ -1593,9 +1561,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
     }
 
     if (fips_validation) {
-        /*
-         * Tell the server to provision a FIPS certificate for this testSession.
-         */
+        // Tell the server to provision a FIPS certificate for this testSession.
         rv = acvp_validate_test_session(ctx);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Failed to perform Validation of testSession");
@@ -1848,9 +1814,7 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
     } else {
         ctx->fips.do_validation = 0; // Disable
     }
-    /*
-     * Check for vector sets the server received no response to
-     */
+    // Check for vector sets the server received no response to
 
     JSON_Array *results = NULL;
     int count = 0, i = 0;
@@ -1903,9 +1867,7 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
                 goto end;
             }
 
-            /*
-             * If the result is unreceived, add it to the list of vsID urls
-             */
+            // If the result is unreceived, add it to the list of vsID urls
             strcmp_s("unreceived", 10, status, &diff);
             if (!diff) {
                 rv = acvp_append_vsid_url(ctx, vsid_url);
@@ -1931,9 +1893,7 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
             return ACVP_SUCCESS;
         }
 
-        /*
-         * Check the test results.
-         */
+        // Check the test results.
         ACVP_LOG_STATUS("Tests complete, checking results...");
         rv = acvp_check_test_results(ctx);
         if (rv != ACVP_SUCCESS) {
@@ -1942,9 +1902,7 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
         }
 
         if (fips_validation) {
-            /*
-             * Tell the server to provision a FIPS certificate for this testSession.
-             */
+            // Tell the server to provision a FIPS certificate for this testSession.
             rv = acvp_validate_test_session(ctx);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Failed to perform Validation of testSession");
@@ -2429,9 +2387,7 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
 
     if (!login_len) return ACVP_INVALID_ARG;
 
-    /*
-     * Start the login array
-     */
+    // Start the login array
     reg_arry_val = json_value_init_array();
     reg_arry = json_array((const JSON_Value *)reg_arry_val);
 
@@ -2606,9 +2562,7 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
 #endif
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    /*
-     * Parse the JSON
-     */
+    // Parse the JSON
     val = json_parse_string(json_buf);
     if (!val) {
         ACVP_LOG_ERR("JSON parse error");
@@ -2656,9 +2610,7 @@ static ACVP_RESULT acvp_parse_validation(ACVP_CTX *ctx) {
     const char *url = NULL, *status = NULL;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    /*
-     * Parse the JSON
-     */
+    // Parse the JSON
     val = json_parse_string(ctx->curl_buf);
     if (!val) {
         ACVP_LOG_ERR("JSON parse error");
@@ -2667,9 +2619,7 @@ static ACVP_RESULT acvp_parse_validation(ACVP_CTX *ctx) {
 
     obj = acvp_get_obj_from_rsp(ctx, val);
 
-    /*
-     * Get the url of the 'request' status sent by server.
-     */
+    // Get the url of the 'request' status sent by server.
     url = json_object_get_string(obj, "url");
     if (!url) {
         ACVP_LOG_ERR("Validation response JSON missing 'url'");
@@ -2760,15 +2710,11 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
     json_object_set_string(ver_obj, "acvVersion", ACVP_PROTOCOL_VERSION);
     json_array_append_value(arr, ver_val);
 
-    /*
-     * Start the large/ array
-     */
+    // Start the large/ array
     val = json_value_init_object();
     obj = json_value_get_object(val);
 
-    /*
-     * Cut off the https://name:port/ prefix and /results suffix
-     */
+    // Cut off the https://name:port/ prefix and /results suffix
     strstr_s((char *)url, ACVP_ATTR_URL_MAX, "/acvp/v1", 8, &substr);
     strcpy_s(snipped_url, ACVP_ATTR_URL_MAX, substr);
     strstr_s(snipped_url, ACVP_ATTR_URL_MAX, "/results", 8, &substr);
@@ -2818,9 +2764,7 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
 
     jwt = json_object_get_string(server_obj, "accessToken");
     if (jwt) {
-        /*
-         * A single-use JWT was given.
-         */
+        // A single-use JWT was given.
         if (strnlen_s(jwt, ACVP_JWT_TOKEN_MAX + 1) > ACVP_JWT_TOKEN_MAX) {
             ACVP_LOG_ERR("access_token too large");
             rv = ACVP_JWT_INVALID;
@@ -2858,9 +2802,7 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
     int i = 0, vs_cnt = 0;
     ACVP_RESULT rv = 0;
 
-    /*
-     * Parse the JSON
-     */
+    // Parse the JSON
     val = json_parse_string(ctx->curl_buf);
     if (!val) {
         ACVP_LOG_ERR("JSON parse error");
@@ -2881,9 +2823,7 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
     ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
     strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
 
-    /*
-     * The accessToken needed for this specific test session.
-     */
+    // The accessToken needed for this specific test session.
     access_token = json_object_get_string(obj, "accessToken");
     if (!access_token) {
         ACVP_LOG_ERR("JSON parse error");
@@ -3113,9 +3053,7 @@ static ACVP_RESULT acvp_login(ACVP_CTX *ctx, int refresh) {
         goto end;
     }
 
-    /*
-     * Send the login to the ACVP server and get the response,
-     */
+    // Send the login to the ACVP server and get the response,
     rv = acvp_send_login(ctx, login, login_len);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Login Send Failed");
@@ -3170,9 +3108,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
     int retry = 1;
     unsigned int time_waited_so_far = 0;
     while (retry) {
-        /*
-         * Get the KAT vector set
-         */
+        // Get the KAT vector set
         rv = acvp_retrieve_vector_set(ctx, vsid_url);
         if (rv != ACVP_SUCCESS) goto end;
 
@@ -3184,15 +3120,11 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
         }
         obj = acvp_get_obj_from_rsp(ctx, val);
 
-        /*
-         * Check if we received a retry response
-         */
+        // Check if we received a retry response
         tmp_num = json_object_get_number(obj, "retry");
         retry_period = (int)tmp_num;
         if (retry_period) {
-            /*
-             * Wait and try again to retrieve the VectorSet
-             */
+            // Wait and try again to retrieve the VectorSet
             if (acvp_retry_handler(ctx, &retry_period, &time_waited_so_far, 1, ACVP_WAITING_FOR_TESTS) != ACVP_KAT_DOWNLOAD_RETRY) {
                 ACVP_LOG_STATUS("Maximum wait time with server reached! (Max: %d seconds)", ACVP_MAX_WAIT_TIME);
                 rv = ACVP_TRANSPORT_FAIL;
@@ -3200,9 +3132,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
             };
             retry = 1;
         } else {
-            /*
-             * Save the KAT VectorSet to file
-             */
+            // Save the KAT VectorSet to file
             if (ctx->vector_req) {
 
                 ACVP_LOG_STATUS("Saving vector set %s to file...", vsid_url);
@@ -3239,9 +3169,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
                 json_value_free(ts_val);
                 goto end;
             }
-            /*
-             * Process the KAT VectorSet
-             */
+            // Process the KAT VectorSet
             rv = acvp_process_vector_set(ctx, obj);
             json_value_free(ts_val);
             retry = 0;
@@ -3252,9 +3180,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
         val = NULL;
     }
 
-    /*
-     * Send the responses to the ACVP server
-     */
+    // Send the responses to the ACVP server
     ACVP_LOG_STATUS("Posting vector set responses for vsId %d...", ctx->vs_id);
     rv = acvp_submit_vector_responses(ctx, vsid_url);
 
@@ -3348,9 +3274,7 @@ static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
     return ACVP_SUCCESS;
 }
 
-/*
- * This function will get the test results for a test session by checking the results of each vector set
- */
+// This function will get the test results for a test session by checking the results of each vector set
 static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *val = NULL;
@@ -3375,9 +3299,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
     while (1) {
         int testsCompleted = 0;
 
-        /*
-         * Get the KAT vector set
-         */
+        // Get the KAT vector set
         rv = acvp_retrieve_vector_set_result(ctx, session_url);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Error retrieving vector set results!");
@@ -3421,16 +3343,12 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 ACVP_LOG_ERR("Missing submissions for one or more vector sets. Please submit responses for all vector sets.");
                 goto end;
             }
-            /*
-             * If the result is incomplete, set the flag so it keeps retrying
-             */
+            // If the result is incomplete, set the flag so it keeps retrying
             strcmp_s("incomplete", 10, status, &diff);
             if (!diff) {
                 continue;
             }
-            /*
-             * If the result is fail, retrieve vector set, get algorithm name, add to list
-             */
+            // If the result is fail, retrieve vector set, get algorithm name, add to list
             strcmp_s("fail", 4, status, &diff);
             if (!diff) {
                 const char *vsurl = json_object_get_string(current, "vectorSetUrl");
@@ -3508,25 +3426,19 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
         if (testsCompleted >= count) {
             passed = json_object_get_boolean(obj, "passed");
             if (passed == 1) {
-                /*
-                 * Pass, exit loop
-                 */
+                // Pass, exit loop
                 ACVP_LOG_STATUS("Passed all vectors in test session!");
                 ctx->session_passed = 1;
                 rv = ACVP_SUCCESS;
                 goto end;
             } else {
-                 /*
-                  * Fail, continue with reporting results
-                  */
+                 // Fail, continue with reporting results
                  ACVP_LOG_STATUS("Test session complete: some vectors failed, reporting results...");
                  ACVP_LOG_STATUS("Note: Use verbose-level logging to see results of each test case");
                  acvp_list_failing_algorithms(ctx, &failedAlgList, &failedModeList);
              }
         } else {
-              /*
-             * If any tests are incomplete, retry, even if some have failed
-             */
+              // If any tests are incomplete, retry, even if some have failed
             acvp_list_failing_algorithms(ctx, &failedAlgList, &failedModeList);
             ACVP_LOG_STATUS("Test session results incomplete...");
             if (acvp_retry_handler(ctx, &retry_interval, &time_waited_so_far, 1, ACVP_WAITING_FOR_RESULTS) != ACVP_KAT_DOWNLOAD_RETRY) {
@@ -3598,9 +3510,7 @@ static ACVP_RESULT acvp_validate_test_session(ACVP_CTX *ctx) {
         goto end;
     }
 
-    /*
-     * PUT the validation with the ACVP server and get the response,
-     */
+    // PUT the validation with the ACVP server and get the response,
     rv = acvp_transport_put_validation(ctx, validation, validation_len);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_STATUS("Validation send failed");
@@ -3925,9 +3835,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
         return ACVP_SUCCESS;
     }
 
-    /*
-     * Check the test results.
-     */
+    // Check the test results.
     ACVP_LOG_STATUS("Tests complete, checking results...");
     rv = acvp_check_test_results(ctx);
     if (rv != ACVP_SUCCESS) {
@@ -3936,9 +3844,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     }
 
     if (fips_validation) {
-        /*
-         * Tell the server to provision a FIPS certificate for this testSession.
-         */
+        // Tell the server to provision a FIPS certificate for this testSession.
         rv = acvp_validate_test_session(ctx);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Failed to perform Validation of testSession");
@@ -4062,9 +3968,7 @@ ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {
         goto end;
     }
 
-    /*
-     * Check the test results.
-     */
+    // Check the test results.
     if (validation) {
         ACVP_LOG_STATUS("Checking validation response...");
         rv = acvp_parse_validation(ctx);
@@ -4137,9 +4041,7 @@ static ACVP_RESULT acvp_put_data_from_ctx(ACVP_CTX *ctx) {
         goto end;
     }
 
-    /*
-     * Check the test results.
-     */
+    // Check the test results.
     ACVP_LOG_STATUS("Tests complete, checking results...");
     rv = acvp_parse_validation(ctx);
     if (rv != ACVP_SUCCESS) {

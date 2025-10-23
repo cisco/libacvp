@@ -38,9 +38,7 @@ static size_t http_body_cb(void *ptr, size_t size, size_t nmemb, void *userdata)
     return nmemb;
 }
 
-/*
- * Sample test app that shows how to use Murl
- */
+// Sample test app that shows how to use Murl
 int main(int argc, char **argv)
 {
     long http_code = 0;
@@ -51,9 +49,7 @@ int main(int argc, char **argv)
 	exit(1);
     }
 
-    /*
-     * Setup Murl
-     */
+    // Setup Murl
     hnd = curl_easy_init();
     curl_easy_setopt(hnd, CURLOPT_URL, argv[2]);
     curl_easy_setopt(hnd, CURLOPT_USERAGENT, "murl");
@@ -66,14 +62,10 @@ int main(int argc, char **argv)
      */
     curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, &http_body_cb);
 
-    /*
-     * Send the HTTP GET request
-     */
+    // Send the HTTP GET request
     curl_easy_perform(hnd);
 
-    /*
-     * Get the HTTP response status code from the server
-     */
+    // Get the HTTP response status code from the server
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
     curl_easy_cleanup(hnd);

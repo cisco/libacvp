@@ -17,9 +17,7 @@
 #include "parson.h"
 #include "safe_lib.h"
 
-/*
- * Forward prototypes for local functions
- */
+// Forward prototypes for local functions
 static ACVP_RESULT acvp_drbg_output_tc(ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_Object *tc_rsp);
 
 static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
@@ -93,14 +91,10 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     ACVP_LOG_VERBOSE("    DRBG alg: %s", alg_str);
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.drbg = &stc;
 
-    /*
-     * Get the crypto module handler for this DRBG algorithm
-     */
+    // Get the crypto module handler for this DRBG algorithm
     alg_id = acvp_lookup_cipher_index(alg_str);
     if ((alg_id < ACVP_HASHDRBG) || (alg_id > ACVP_CTRDRBG)) {
         ACVP_LOG_ERR("Unsupported algorithm (%s)", alg_str);
@@ -113,18 +107,14 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -160,9 +150,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        /*
-         * Get DRBG Mode index
-         */
+        // Get DRBG Mode index
         rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "mode", &mode_str);
         if (rv != ACVP_SUCCESS) {
             goto err;
@@ -175,9 +163,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        /*
-         * Handle Group Params
-         */
+        // Handle Group Params
         rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "predResistance", &pred_resist_enabled);
         if (rv != ACVP_SUCCESS) {
             goto err;
@@ -266,9 +252,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("    nonceLen: %d", nonce_len);
         ACVP_LOG_VERBOSE("    returnedBitsLen: %d", drb_len);
 
-        /*
-         * Handle test array
-         */
+        // Handle test array
         rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
         if (rv != ACVP_SUCCESS) {
             goto err;
@@ -342,9 +326,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("             persoString: %s", perso_string);
             ACVP_LOG_VERBOSE("             nonce: %s", nonce);
 
-            /*
-             * Handle pred_resist_input array. Has at most 2 elements
-             */
+            // Handle pred_resist_input array. Has at most 2 elements
             rv = acvp_tc_json_get_array(ctx, alg_id, testobj, "otherInput", &pred_resist_input);
             if (rv != ACVP_SUCCESS) {
                 goto err;
@@ -470,9 +452,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             pr1_len = pr1_len/2;
             index++;
-            /*
-             * Get 2nd or 3rd element from the array
-             */
+            // Get 2nd or 3rd element from the array
             pr_input_val = json_array_get_value(pred_resist_input, index);
             if (pr_input_val == NULL) {
                 ACVP_LOG_ERR("Server JSON, invalid pr_input_val array");
@@ -519,9 +499,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
             pr2_len = pr2_len/2;
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -557,9 +535,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             rv = acvp_drbg_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure recording test response");
@@ -568,9 +544,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_drbg_release_tc(&stc);
 
             // Append the test response value to array

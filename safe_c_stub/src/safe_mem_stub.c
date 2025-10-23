@@ -128,9 +128,7 @@ errno_t memmove_s (void *dest, rsize_t dmax, const void *src, rsize_t smax)
         return (ESNULLP);
     }
 
-    /*
-     * now perform the copy
-     */
+    // now perform the copy
 
     memmove(dp, sp, smax);
 

@@ -1349,9 +1349,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             }
 
             if (test_type == ACVP_KDA_TT_VAL) {
-                /*
-                 * Validate
-                 */
+                // Validate
                 rv = acvp_tc_json_get_string(ctx, cipher, testobj, "dkm", &dkm);
                 if (rv != ACVP_SUCCESS) {
                     goto err;
@@ -1389,9 +1387,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("            dkm: %s", dkm);
             }
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -1443,9 +1439,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 goto err;
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             if (cipher == ACVP_KDA_HKDF) {
                 rv = acvp_kda_hkdf_output_tc(ctx, tc->tc.kda_hkdf, r_tobj);
                 if (rv != ACVP_SUCCESS) {
@@ -1472,9 +1466,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 }
             }
 
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             if (cipher == ACVP_KDA_HKDF) {
                 acvp_kda_release_tc(ACVP_KDA_HKDF, tc);
             } else if (cipher == ACVP_KDA_ONESTEP) {
@@ -1525,24 +1517,18 @@ ACVP_RESULT acvp_kda_hkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    /*
-    * Get a reference to the abstracted test case
-    */
+    // Get a reference to the abstracted test case
     tc.tc.kda_hkdf = &stc;
     memzero_s(&stc, sizeof(ACVP_KDA_HKDF_TC));
 
-    /*
-    * Create ACVP array for response
-    */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -1621,24 +1607,18 @@ ACVP_RESULT acvp_kda_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    /*
-    * Get a reference to the abstracted test case
-    */
+    // Get a reference to the abstracted test case
     tc.tc.kda_onestep = &stc;
     memzero_s(&stc, sizeof(ACVP_KDA_ONESTEP_TC));
 
-    /*
-    * Create ACVP array for response
-    */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -1717,24 +1697,18 @@ ACVP_RESULT acvp_kda_twostep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    /*
-    * Get a reference to the abstracted test case
-    */
+    // Get a reference to the abstracted test case
     tc.tc.kda_twostep = &stc;
     memzero_s(&stc, sizeof(ACVP_KDA_TWOSTEP_TC));
 
-    /*
-    * Create ACVP array for response
-    */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
