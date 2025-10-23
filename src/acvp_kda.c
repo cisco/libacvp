@@ -966,12 +966,11 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
         }
         json_object_set_number(r_gobj, "tgId", tgId);
 
-        configobj = json_object_get_object(groupobj, "kdfConfiguration");
-        if (!configobj) {
-            ACVP_LOG_ERR("Missing kdfConfiguration object in server JSON");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_object(ctx, cipher, groupobj, "kdfConfiguration", &configobj);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         if (cipher == ACVP_KDA_HKDF) {
             rv = acvp_tc_json_get_string(ctx, cipher, configobj, "hmacAlg", &alg_str);
             if (rv != ACVP_SUCCESS) {
@@ -1216,7 +1215,12 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("Found new KDA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            paramobj = json_object_get_object(testobj, "kdfParameter");
+
+            rv = acvp_tc_json_get_object(ctx, cipher, testobj, "kdfParameter", &paramobj);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+
             rv = acvp_tc_json_get_int(ctx, cipher, testobj, "tcId", (int *)&tc_id);
             if (rv != ACVP_SUCCESS) {
                 goto err;
@@ -1269,10 +1273,8 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 }
                 switch (arr[k]) {
                 case ACVP_KDA_PATTERN_UPARTYINFO:
-                    upartyobj = json_object_get_object(testobj, "fixedInfoPartyU");
-                    if (!upartyobj) {
-                        ACVP_LOG_ERR("Server JSON missing 'fixedInfoPartyU'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_object(ctx, cipher, testobj, "fixedInfoPartyU", &upartyobj);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     rv = acvp_tc_json_get_string(ctx, cipher, upartyobj, "partyId", &uparty);
@@ -1280,13 +1282,16 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                         goto err;
                     }
                     // ephemeral data is randomly included and optional
-                    uephemeral = json_object_get_string(upartyobj, "ephemeralData");
+                    if (json_object_has_value_of_type(upartyobj, "ephemeralData", JSONString)) {
+                        rv = acvp_tc_json_get_string(ctx, cipher, upartyobj, "ephemeralData", &uephemeral);
+                        if (rv != ACVP_SUCCESS) {
+                            goto err;
+                        }
+                    }
                     break;
                 case ACVP_KDA_PATTERN_VPARTYINFO:
-                    vpartyobj = json_object_get_object(testobj, "fixedInfoPartyV");
-                    if (!vpartyobj) {
-                        ACVP_LOG_ERR("Server JSON missing 'fixedInfoPartyV'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_object(ctx, cipher, testobj, "fixedInfoPartyV", &vpartyobj);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     rv = acvp_tc_json_get_string(ctx, cipher, vpartyobj, "partyId", &vparty);
@@ -1294,7 +1299,12 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                         goto err;
                     }
                     // ephemeral data is randomly included and optional
-                    vephemeral = json_object_get_string(vpartyobj, "ephemeralData");
+                    if (json_object_has_value_of_type(vpartyobj, "ephemeralData", JSONString)) {
+                        rv = acvp_tc_json_get_string(ctx, cipher, vpartyobj, "ephemeralData", &vephemeral);
+                        if (rv != ACVP_SUCCESS) {
+                            goto err;
+                        }
+                    }
                     break;
                 case ACVP_KDA_PATTERN_CONTEXT:
                     rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "context", &context);
@@ -1342,10 +1352,8 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 /*
                  * Validate
                  */
-                dkm = json_object_get_string(testobj, "dkm");
-                if (!dkm) {
-                    ACVP_LOG_ERR("Server json missing 'dkm'");
-                    rv = ACVP_MALFORMED_JSON;
+                rv = acvp_tc_json_get_string(ctx, cipher, testobj, "dkm", &dkm);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
                 if ((int)strnlen_s(dkm, ACVP_KDA_DKM_STR_MAX) != l / 4) {

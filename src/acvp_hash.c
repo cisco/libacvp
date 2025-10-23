@@ -621,7 +621,10 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                ldtobj = json_object_get_object(testobj, "largeMsg");
+                rv = acvp_tc_json_get_object(ctx, alg_id, testobj, "largeMsg", &ldtobj);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
 
                 rv = acvp_tc_json_get_string(ctx, alg_id, ldtobj, "content", &msg);
                 if (rv != ACVP_SUCCESS) {

@@ -363,6 +363,9 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
+            /* Reset optional field for each test case */
+            context = NULL;
+
             rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
             if (rv != ACVP_SUCCESS) {
                 goto err;
@@ -393,9 +396,12 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 }
             }
 
-            if (alg_id == ACVP_EDDSA_SIGGEN) {
-                context = json_object_get_string(testobj, "context");
-                if (context && strnlen_s(context, ACVP_EDDSA_MSG_LEN_MAX + 1) > ACVP_EDDSA_MSG_LEN_MAX) {
+            if (alg_id == ACVP_EDDSA_SIGGEN && json_object_has_value_of_type(testobj, "context", JSONString)) {
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "context", &context);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+                if (strnlen_s(context, ACVP_EDDSA_MSG_LEN_MAX + 1) > ACVP_EDDSA_MSG_LEN_MAX) {
                     ACVP_LOG_ERR("'context' too long");
                     rv = ACVP_INVALID_ARG;
                     goto err;
