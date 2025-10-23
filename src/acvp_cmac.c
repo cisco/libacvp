@@ -358,14 +358,20 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
+            /* Reset optional field for each test case */
+            msg = NULL;
+
             rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
-            msg = json_object_get_string(testobj, "message");
 
             // msg can be null if msglen is 0
-            if (msg) {
+            if (json_object_has_value_of_type(testobj, "message", JSONString)) {
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "message", &msg);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
                 json_msglen = strnlen_s(msg, ACVP_CMAC_MSGLEN_MAX_STR + 1);
                 if (json_msglen > ACVP_CMAC_MSGLEN_MAX_STR) {
                     ACVP_LOG_ERR("'msg' too long");

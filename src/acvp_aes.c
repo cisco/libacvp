@@ -1245,7 +1245,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_AES_XPN && salt_src == ACVP_SYM_CIPH_SALT_SRC_EXT) {
-                salt = json_object_get_string(testobj, "salt");
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "salt", &salt);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
             }
 
             ACVP_LOG_VERBOSE("        Test case: %d", j);

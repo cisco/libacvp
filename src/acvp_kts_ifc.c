@@ -352,8 +352,11 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
             goto err;
         }
 
+        rv = acvp_tc_json_get_object(ctx, stc->cipher, groupobj, "ktsConfiguration", &ktsobj);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
 
-        ktsobj = json_object_get_object(groupobj, "ktsConfiguration");
         rv = acvp_tc_json_get_string(ctx, stc->cipher, ktsobj, "hashAlg", &hash);
         if (rv != ACVP_SUCCESS) {
             goto err;
