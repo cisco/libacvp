@@ -529,7 +529,7 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
                 if (outlen <= 0) {
                     ACVP_LOG_ERR("Server JSON has non-positive/invalid 'outLen'");
-                    rv = ACVP_MISSING_ARG;
+                    rv = ACVP_TC_INVALID_DATA;
                     goto err;
                 }
             }
