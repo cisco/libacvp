@@ -40,9 +40,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /*
-     * We only support 3 key DES
-     */
+    // We only support 3 key DES
     if (tc->key_len != 192) {
         printf("Unsupported DES key length\n");
         goto err;

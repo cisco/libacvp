@@ -17,9 +17,7 @@
 #include "parson.h"
 #include "safe_lib.h"
 
-/*
- * Forward prototypes for local functions
- */
+// Forward prototypes for local functions
 static ACVP_RESULT acvp_kdf_tls13_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS13_TC *stc, JSON_Object *tc_rsp);
 
 static ACVP_RESULT acvp_kdf_tls13_init_tc(ACVP_CTX *ctx,
@@ -120,9 +118,7 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_INVALID_ARG;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.kdf_tls13 = &stc;
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
@@ -131,18 +127,14 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -283,9 +275,7 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("    serverFinRand: %s", s_fin_rnd);
             ACVP_LOG_VERBOSE("    clientFinRand: %s", c_fin_rnd);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -312,9 +302,7 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             rv = acvp_kdf_tls13_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure recording test response");
@@ -323,9 +311,7 @@ ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_kdf_tls13_release_tc(&stc);
 
             // Append the test response value to array

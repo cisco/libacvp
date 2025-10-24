@@ -431,9 +431,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             }
 
             if (test_type == ACVP_KAS_FFC_TT_VAL) {
-                /*
-                 * Validate
-                 */
+                // Validate
                 rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "ephemeralPrivateIut", &epri);
                 if (rv != ACVP_SUCCESS) {
                     goto err;
@@ -479,9 +477,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("           epri: %s", epri);
             ACVP_LOG_VERBOSE("           epui: %s", epui);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -507,9 +503,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
                 goto err;
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             rv = acvp_kas_ffc_output_comp_tc(ctx, stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure recording test response");
@@ -518,9 +512,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
                 goto err;
             }
 
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_kas_ffc_release_tc(stc);
 
             // Append the test response value to array
@@ -564,24 +556,18 @@ ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.kas_ffc = &stc;
     memzero_s(&stc, sizeof(ACVP_KAS_FFC_TC));
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -838,9 +824,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
             }
 
             if (test_type == ACVP_KAS_FFC_TT_VAL) {
-                /*
-                 * Validate
-                 */
+                // Validate
                 rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "ephemeralPrivateIut", &epri);
                 if (rv != ACVP_SUCCESS) {
                     goto err;
@@ -899,9 +883,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("           epri: %s", epri);
             ACVP_LOG_VERBOSE("           epui: %s", epui);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -927,9 +909,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
                 goto err;
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             rv = acvp_kas_ffc_output_ssc_tc(ctx, stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure recording test response");
@@ -938,9 +918,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
                 goto err;
             }
 
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_kas_ffc_release_tc(stc);
 
             // Append the test response value to array
@@ -982,24 +960,18 @@ ACVP_RESULT acvp_kas_ffc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.kas_ffc = &stc;
     memzero_s(&stc, sizeof(ACVP_KAS_FFC_TC));
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");

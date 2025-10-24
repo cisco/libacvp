@@ -20,9 +20,7 @@
 #define ACVP_HOST_LITTLE_ENDIAN (__BYTE_ORDER == __LITTLE_ENDIAN)
 #define SWAP_16(x) ((x>>8) | (x<<8))
 
-/*
- * Forward prototypes for local functions
- */
+// Forward prototypes for local functions
 static ACVP_RESULT acvp_hash_output_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *tc_rsp);
 
 static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
@@ -192,9 +190,7 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
      * ***********
      */
     for (j = 0; j < ACVP_HASH_MCT_OUTER; j++) {
-        /*
-         * Create a new test case in the response
-         */
+        // Create a new test case in the response
         r_tval = json_value_init_object();
         r_tobj = json_value_get_object(r_tval);
 
@@ -241,9 +237,7 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
             }
         }
 
-        /*
-         * Output the test case request values using JSON
-         */
+        // Output the test case request values using JSON
         rv = acvp_hash_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure recording test response");
@@ -283,9 +277,7 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
     unsigned int max_xof_bytes = (max_xof_bits / 8);
     unsigned int range = max_xof_bytes - min_xof_bytes + 1;
 
-    /*
-     * Initial Outputlen = (floor(maxoutlen/8) )*8
-     */
+    // Initial Outputlen = (floor(maxoutlen/8) )*8
     xof_len = (max_xof_bits / 8) * 8;
     // Convert from bits to bytes
     stc->xof_len = (xof_len + 7) / 8;
@@ -295,9 +287,7 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
      * ***********
      */
     for (j = 0; j < ACVP_HASH_MCT_OUTER; j++) {
-        /*
-         * Create a new test case in the response
-         */
+        // Create a new test case in the response
         r_tval = json_value_init_object();
         r_tobj = json_value_get_object(r_tval);
 
@@ -357,9 +347,7 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
             stc->xof_len = min_xof_bytes + ((*rightmost_out_bits) % range);
         }
 
-        /*
-         * Output the test case request values using JSON
-         */
+        // Output the test case request values using JSON
         rv = acvp_hash_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure recording test response");
@@ -470,14 +458,10 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.hash = &stc;
 
-    /*
-     * Get the crypto module handler for this hash algorithm
-     */
+    // Get the crypto module handler for this hash algorithm
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id == 0) {
         ACVP_LOG_ERR("Unsupported algorithm (%s)", alg_str);
@@ -489,18 +473,14 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -720,9 +700,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             ACVP_LOG_VERBOSE("         testtype: %s", test_type_str);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -772,9 +750,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                /*
-                 * Output the test case results using JSON
-                 */
+                // Output the test case results using JSON
                 rv = acvp_hash_output_tc(ctx, &stc, r_tobj);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure recording test response");
@@ -783,9 +759,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
             }
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_hash_release_tc(&stc);
 
             // Append the test response value to array

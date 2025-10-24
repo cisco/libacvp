@@ -420,9 +420,7 @@ errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
         }
     }
 
-    /*
-     * the entire src was not copied, so zero the string
-     */
+    // the entire src was not copied, so zero the string
     *orig_dest = '\0';
 
     return(ESNOSPC);
@@ -500,9 +498,7 @@ strtok_s (char *dest, rsize_t *dmax, const char *src, char **ptr)
         dest = *ptr;
     }
 
-    /*
-     * scan dest for a delimiter
-     */
+    // scan dest for a delimiter
     dlen = *dmax;
     ptoken = NULL;
     while (*dest != '\0' && !ptoken) {
@@ -547,9 +543,7 @@ strtok_s (char *dest, rsize_t *dmax, const char *src, char **ptr)
         return (ptoken);
     }
 
-    /*
-     * Now we need to locate the end of the token
-     */
+    // Now we need to locate the end of the token
     while (*dest != '\0') {
 
         if (dlen == 0) {
@@ -577,9 +571,7 @@ strtok_s (char *dest, rsize_t *dmax, const char *src, char **ptr)
                 *dmax = dlen - 1;   // account for the nulled delimiter
                 return (ptoken);
             } else {
-                /*
-                 * simply scanning through the delimiter string
-                 */
+                // simply scanning through the delimiter string
                 pt++;
             }
         }
@@ -591,9 +583,7 @@ strtok_s (char *dest, rsize_t *dmax, const char *src, char **ptr)
     return (ptoken);
 }
 
-/*
- * strremovews_s
- */
+// strremovews_s
 errno_t strremovews_s (char *s, rsize_t smax) {
 	if (!s) return (ESNULLP);
 	if (smax == 0) return (ESZEROL);

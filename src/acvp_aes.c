@@ -18,9 +18,7 @@
 #include "parson.h"
 #include "safe_lib.h"
 
-/*
- * Forward prototypes for local functions
- */
+// Forward prototypes for local functions
 static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
                                       ACVP_SYM_CIPHER_TC *stc,
                                       JSON_Object *tc_rsp,
@@ -281,15 +279,11 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
 
     memcpy_s(miv[0], IV_ROW_LEN, stc->iv, stc->iv_len);
     for (i = 0; i < ACVP_AES_MCT_OUTER; ++i) {
-        /*
-         * Create a new test case in the response
-         */
+        // Create a new test case in the response
         r_tval = json_value_init_object();
         r_tobj = json_value_get_object(r_tval);
 
-        /*
-         * Output the test case request values using JSON
-         */
+        // Output the test case request values using JSON
         rv = acvp_aes_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure recording test response");
@@ -308,9 +302,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
-            /*
-             * Adjust the parameters for next iteration if needed.
-             */
+            // Adjust the parameters for next iteration if needed.
             rv = acvp_aes_mct_iterate_tc(ctx, stc, i);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Failed the MCT iteration changes");
@@ -1267,9 +1259,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (aad)
                 ACVP_LOG_VERBOSE("              aad: %s", aad);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -1319,9 +1309,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     }
                 }
 
-                /*
-                 * Output the test case results using JSON
-                 */
+                // Output the test case results using JSON
                 rv = acvp_aes_output_tc(ctx, &stc, r_tobj, t_rv);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure recording test response");
@@ -1331,9 +1319,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_aes_release_tc(&stc);
 
             // Append the test response value to array
@@ -1374,9 +1360,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
         return ACVP_MALLOC_FAIL;
     }
 
-    /*
-     * Only return IV on AES ciphers with internal IV generation
-     */
+    // Only return IV on AES ciphers with internal IV generation
     if (stc->ivgen_source == ACVP_SYM_CIPH_IVGEN_SRC_INT &&
           (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_GMAC || stc->cipher == ACVP_AES_XPN ||
           (stc->cipher == ACVP_AES_CTR && stc->conformance == ACVP_CONFORMANCE_RFC3686))) {
@@ -1417,9 +1401,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
             json_object_set_string(tc_rsp, "ct", tmp);
         }
 
-        /*
-         * AES-GCM ciphers need to include the tag
-         */
+        // AES-GCM ciphers need to include the tag
         if (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_GMAC || stc->cipher == ACVP_AES_XPN) {
             memzero_s(tmp, ACVP_SYM_CT_MAX);
             rv = acvp_bin_to_hexstr(stc->tag, stc->tag_len, tmp, ACVP_SYM_CT_MAX);

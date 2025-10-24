@@ -252,18 +252,14 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     ACVP_LOG_VERBOSE("    LMS mode: %s", mode_str);
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -395,9 +391,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -446,9 +440,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
 
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_lms_release_tc(&stc);
         }
         json_array_append_value(r_garr, r_gval);

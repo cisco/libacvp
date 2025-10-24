@@ -41,9 +41,7 @@
 #endif
 
 
-/*
- * Macros
- */
+// Macros
 #define HTTP_OK    200
 #define HTTP_UNAUTH    401
 #define HTTP_BAD_REQ 400
@@ -75,9 +73,7 @@ typedef enum acvp_net_action {
 } ACVP_NET_ACTION;
 
 #ifndef ACVP_OFFLINE
-/*
- * Prototypes
- */
+// Prototypes
 static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx, ACVP_NET_ACTION action,
                                        const char *url, const char *data, int data_len);
 
@@ -88,9 +84,7 @@ static struct curl_slist *acvp_add_auth_hdr(ACVP_CTX *ctx, struct curl_slist *sl
     int bearer_size = 0;
 
     if (!ctx->jwt_token && !(ctx->tmp_jwt && ctx->use_tmp_jwt)) {
-        /*
-         * We don't have a token to embed
-         */
+        // We don't have a token to embed
         return slist;
     }
 
@@ -184,9 +178,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
     struct curl_slist *slist = NULL;
     CURLcode crv = CURLE_OK;
 
-    /*
-     * Create the Authorization header if needed
-     */
+    // Create the Authorization header if needed
     slist = acvp_add_auth_hdr(ctx, slist);
 
     ctx->curl_read_ctr = 0;
@@ -240,14 +232,10 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
         memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
     }
 
-    /*
-     * Send the HTTP GET request
-     */
+    // Send the HTTP GET request
     curl_easy_perform(hnd);
 
-    /*
-     * Get the HTTP response status code from the server
-     */
+    // Get the HTTP response status code from the server
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
 end:
@@ -280,14 +268,10 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
     CURLcode crv = CURLE_OK;
     struct curl_slist *slist = NULL;
 
-    /*
-     * Set the Content-Type header in the HTTP request
-     */
+    // Set the Content-Type header in the HTTP request
     slist = curl_slist_append(slist, "Content-Type:application/json");
 
-    /*
-     * Create the Authorization header if needed
-     */
+    // Create the Authorization header if needed
     slist = acvp_add_auth_hdr(ctx, slist);
 
     ctx->curl_read_ctr = 0;
@@ -346,17 +330,13 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
         memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
     }
 
-    /*
-     * Send the HTTP POST request
-     */
+    // Send the HTTP POST request
     crv = curl_easy_perform(hnd);
     if (crv != CURLE_OK) {
         ACVP_LOG_ERR("Curl failed with code %d (%s)", crv, curl_easy_strerror(crv));
     }
 
-    /*
-     * Get the HTTP response status code from the server
-     */
+    // Get the HTTP response status code from the server
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
 end:
@@ -389,14 +369,10 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
 
 
     ctx->curl_read_ctr = 0;
-    /*
-     * Set the Content-Type header in the HTTP request
-     */
+    // Set the Content-Type header in the HTTP request
     slist = curl_slist_append(slist, "Content-Type:application/json");
 
-    /*
-     * Create the Authorization header if needed
-     */
+    // Create the Authorization header if needed
     slist = acvp_add_auth_hdr(ctx, slist);
 
     // Setup Curl
@@ -455,17 +431,13 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
         printf("\nHTTP PUT:\n\n%s\n", data);
     }
 
-    /*
-     * Send the HTTP PUT request
-     */
+    // Send the HTTP PUT request
     crv = curl_easy_perform(hnd);
     if (crv != CURLE_OK) {
         ACVP_LOG_ERR("Curl failed with code %d (%s)", crv, curl_easy_strerror(crv));
     }
 
-    /*
-     * Get the HTTP response status code from the server
-     */
+    // Get the HTTP response status code from the server
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
 end:
@@ -498,14 +470,10 @@ static long acvp_curl_http_delete(ACVP_CTX *ctx, const char *url) {
 
 
     ctx->curl_read_ctr = 0;
-    /*
-     * Set the Content-Type header in the HTTP request
-     */
+    // Set the Content-Type header in the HTTP request
     slist = curl_slist_append(slist, "Content-Type:application/json");
 
-    /*
-     * Create the Authorization header if needed
-     */
+    // Create the Authorization header if needed
     slist = acvp_add_auth_hdr(ctx, slist);
 
     // Setup Curl
@@ -560,17 +528,13 @@ static long acvp_curl_http_delete(ACVP_CTX *ctx, const char *url) {
         printf("\nHTTP DELETE: %s\n", url);
     }
 
-    /*
-     * Send the HTTP PUT request
-     */
+    // Send the HTTP PUT request
     crv = curl_easy_perform(hnd);
     if (crv != CURLE_OK) {
         ACVP_LOG_ERR("Curl failed with code %d (%s) ", crv, curl_easy_strerror(crv));
     }
 
-    /*
-     * Get the HTTP response status code from the server
-     */
+    // Get the HTTP response status code from the server
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
 end:
@@ -1186,9 +1150,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                 goto end;
             }
         } else if (result == ACVP_JWT_INVALID) {
-            /*
-             * Invalid JWT
-             */
+            // Invalid JWT
             ACVP_LOG_ERR("JWT invalid. curl rc=%d.\n", rc);
             goto end;
         }
@@ -1431,9 +1393,7 @@ static void acvp_http_user_agent_check_compiler_ver(char *comp_string) {
 #endif
 }
 
-/*
- * remove delimiter characters, check for leading and trailing whitespace
- */
+// remove delimiter characters, check for leading and trailing whitespace
 static void acvp_http_user_agent_string_clean(char *str) {
     int i = 0;
     if (!str) {

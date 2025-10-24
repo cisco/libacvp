@@ -160,21 +160,15 @@ CURLcode Curl_setopt(CURL *ctx, CURLoption option, va_list param)
 
     switch (option) {
     case CURLOPT_USERAGENT:
-        /*
-         * String to use in the HTTP User-Agent field
-         */
+        // String to use in the HTTP User-Agent field
         result = setstropt(&data->user_agent, va_arg(param, char *));
         break;
     case CURLOPT_URL:
-        /*
-         * The URL to fetch.
-         */
+        // The URL to fetch.
         result = setstropt(&data->url, va_arg(param, char *));
         break;
     case CURLOPT_HTTPHEADER:
-        /*
-         * Set a list with HTTP headers to use (or replace internals with)
-         */
+        // Set a list with HTTP headers to use (or replace internals with)
         data->headers = va_arg(param, struct curl_slist *);
         break;
     case CURLOPT_POSTFIELDS:
@@ -189,45 +183,31 @@ CURLcode Curl_setopt(CURL *ctx, CURLoption option, va_list param)
         data->post_field_size = va_arg(param, long);
         break;
     case CURLOPT_CAINFO:
-        /*
-         * Set CA info for SSL connection. Specify file name of the CA certificate
-         */
+        // Set CA info for SSL connection. Specify file name of the CA certificate
         result = setstropt(&data->ca_file, va_arg(param, char *));
         break;
     case CURLOPT_SSL_VERIFYPEER:
-        /*
-         * Enable peer SSL verifying.
-         */
+        // Enable peer SSL verifying.
         data->ssl_verify_peer = (0 != va_arg(param, long)) ? 1 : 0;
         break;
     case CURLOPT_CERTINFO:
-        /*
-         * Enable certification info logging.
-         */
+        // Enable certification info logging.
         data->ssl_certinfo = (0 != va_arg(param, long)) ? 1 : 0;
         break;
     case CURLOPT_SSLCERT:
-        /*
-         * String that holds file name of the SSL certificate to use
-         */
+        // String that holds file name of the SSL certificate to use
         result = setstropt(&data->ssl_cert_file, va_arg(param, char *));
         break;
     case CURLOPT_SSLCERTTYPE:
-        /*
-         * String that holds file type of the SSL certificate to use
-         */
+        // String that holds file type of the SSL certificate to use
         result = setstropt(&data->ssl_cert_type, va_arg(param, char *));
         break;
     case CURLOPT_SSLKEY:
-        /*
-         * String that holds file name of the SSL key to use
-         */
+        // String that holds file name of the SSL key to use
         result = setstropt(&data->ssl_key_file, va_arg(param, char *));
         break;
     case CURLOPT_SSLKEYTYPE:
-        /*
-         * String that holds file type of the SSL key to use
-         */
+        // String that holds file type of the SSL key to use
         result = setstropt(&data->ssl_key_type, va_arg(param, char *));
         break;
     case CURLOPT_WRITEDATA:
@@ -237,9 +217,7 @@ CURLcode Curl_setopt(CURL *ctx, CURLoption option, va_list param)
         data->write_func = va_arg(param, curl_write_callback);
         break;
     case CURLOPT_SSL_VERIFY_HOSTNAME:
-        /*
-         * Enable peer hostname verification.
-         */
+        // Enable peer hostname verification.
         data->ssl_verify_hostname = (0 != va_arg(param, long)) ? 1 : 0;
         break;
     default:
@@ -309,14 +287,10 @@ static BIO *create_connection_v6(char *address, int port)
     int		    rc;
     int		    sock;
 
-    /*
-     * Strip off trailing bracket
-     */
+    // Strip off trailing bracket
     host[strnlen(host, IPV6_ADDRESS_MAX)-1] = 0;
 
-    /*
-     * Setup destination address/port
-     */
+    // Setup destination address/port
     memset((char *) &si6, 0, sizeof(si6));
     si6.sin6_flowinfo = 0;
     si6.sin6_family = AF_INET6;
@@ -327,9 +301,7 @@ static BIO *create_connection_v6(char *address, int port)
 	return(NULL);
     }
 
-    /*
-     * Create and connect to the socket
-     */
+    // Create and connect to the socket
     if ((sock = socket(AF_INET6, SOCK_STREAM, 0)) < 0 ) {
 	fprintf(stderr, "Unable to create v6 socket for address: %s\n", host);
 	return(NULL);
@@ -417,9 +389,7 @@ static CURLcode parseurl(SessionHandle *data)
             }
         }
     }
-    /*
-     * Murl only supports http
-     */
+    // Murl only supports http
     protop = "https";
 
     /* We search for '?' in the host name (but only on the right side of a
@@ -517,9 +487,7 @@ static CURLcode parseurl(SessionHandle *data)
         return result;
 #endif
 
-    /*
-     * Check for an IPv6 address as the host name
-     */
+    // Check for an IPv6 address as the host name
     if (host_name[0] == '[') {
 	data->use_ipv6 = 1;
 #if 0
@@ -670,9 +638,7 @@ CURLcode curl_easy_perform(CURL *curl)
 	return CURLE_UNKNOWN_OPTION;
     }
 
-    /*
-     * Allocate some space to build the HTTP request
-     */
+    // Allocate some space to build the HTTP request
     if (ctx->http_post && ctx->post_field_size) {
         cl = ctx->post_field_size;
     } else if (ctx->http_post && ctx->post_fields) {
@@ -690,15 +656,11 @@ CURLcode curl_easy_perform(CURL *curl)
         return CURLE_OUT_OF_MEMORY;
     }
 
-    /*
-     * Split the URL into it's parts
-     */
+    // Split the URL into it's parts
     crv = parseurl(ctx);
     if (crv != CURLE_OK) goto easy_perform_cleanup;
 
-    /*
-     * Setup OpenSSL API
-     */
+    // Setup OpenSSL API
     ssl_ctx = SSL_CTX_new(SSLv23_client_method());
     if (!ssl_ctx) {
         fprintf(stderr, "Failed to create SSL context.\n");
@@ -716,9 +678,7 @@ CURLcode curl_easy_perform(CURL *curl)
     SSL_CTX_set_mode(ssl_ctx, SSL_MODE_AUTO_RETRY);
 
 
-    /*
-     * Enable TLS peer verification if requested and CA certs were provided
-     */
+    // Enable TLS peer verification if requested and CA certs were provided
     if (ctx->ssl_verify_peer && ctx->ca_file) {
         if (!SSL_CTX_load_verify_locations(ssl_ctx, ctx->ca_file, NULL)) {
             fprintf(stderr, "Failed to set trust anchors.\n");
@@ -764,9 +724,7 @@ CURLcode curl_easy_perform(CURL *curl)
         }
     }
 
-    /*
-     * Open TCP connection with server
-     */
+    // Open TCP connection with server
     if (ctx->use_ipv6) {
 	conn = create_connection_v6(ctx->host_name, ctx->server_port);
     } else {
@@ -791,16 +749,12 @@ CURLcode curl_easy_perform(CURL *curl)
 	goto easy_perform_cleanup;
     }
 
-    /*
-     * PSB requires we log the X509 distinguished name of the peer
-     */
+    // PSB requires we log the X509 distinguished name of the peer
     if (ctx->ssl_verify_peer) {
 	murl_log_peer_cert(ssl);
     }
 
-    /*
-     * Build HTTP request
-     */
+    // Build HTTP request
     memset(tbuf, 0, sizeof(tbuf));
     snprintf(tbuf, TBUF_MAX, "%s %s HTTP/1.0\r\n"
             "Host: %s:%d\r\n"
@@ -810,9 +764,7 @@ CURLcode curl_easy_perform(CURL *curl)
             (ctx->user_agent ? ctx->user_agent : "Murl"));
     strcat(rbuf, tbuf); // FIXME: safe string handling needed
 
-    /*
-     * Add any custom headers requested by the user
-     */
+    // Add any custom headers requested by the user
     if (ctx->headers) {
         hdrs = ctx->headers;
         while (hdrs) {
@@ -823,16 +775,12 @@ CURLcode curl_easy_perform(CURL *curl)
         }
     }
 
-    /*
-     * Set the Content-length header
-     */
+    // Set the Content-length header
     memset(tbuf, 0, sizeof(tbuf));
     snprintf(tbuf, TBUF_MAX, "Content-Length: %d\r\n" "Accept: */*\r\n\r\n", cl);
     strcat(rbuf, tbuf); // FIXME: safe string handling needed
 
-    /*
-     * Send the HTTP request
-     */
+    // Send the HTTP request
     SSL_write(ssl, rbuf, strlen(rbuf));
     SSL_write(ssl, ctx->post_fields, cl);
 
@@ -840,9 +788,7 @@ CURLcode curl_easy_perform(CURL *curl)
     free(rbuf);
     rbuf = NULL;
 
-    /*
-     * Read the HTTP response
-     */
+    // Read the HTTP response
     rv = 1;
     while (rv) {
 	/*
@@ -889,22 +835,16 @@ CURLcode curl_easy_perform(CURL *curl)
 	}
     }
 
-    /*
-     * make sure the data is null terminated
-     */
+    // make sure the data is null terminated
     rbuf[read_cnt] = 0;
 
-    /*
-     * Parse the HTTP response
-     */
+    // Parse the HTTP response
     if (murl_http_parse_response(ctx, rbuf)) {
         crv = CURLE_HTTP2;
 	goto easy_perform_cleanup;
     }
 
-    /*
-     * Send the data back to the user
-     */
+    // Send the data back to the user
     if (ctx->write_func) {
         (ctx->write_func)(ctx->recv_buf, 1, ctx->recv_ctr, ctx->write_ctx);
     }

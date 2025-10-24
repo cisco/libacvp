@@ -34,9 +34,7 @@ extern ACVP_ALG_HANDLER alg_tbl[];
 
 static int acvp_char_to_int(char ch);
 
-/*
- * Basic logging for libacvp
- */
+// Basic logging for libacvp
 void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *func, int line, const char *fmt, ...) {
     va_list arguments;
     int iter = 0, ret = 0;
@@ -480,9 +478,7 @@ ACVP_RESULT is_valid_tf_param(int value) {
 }
 
 #define HASH_ALG_NAME_MAX 12
-/*
- * Local table for matching ACVP_HASH_ALG to name string and vice versa.
- */
+// Local table for matching ACVP_HASH_ALG to name string and vice versa.
 static struct acvp_hash_alg_info hash_alg_tbl[] = {
     { ACVP_SHA1,       ACVP_STR_SHA_1        },
     { ACVP_SHA224,     ACVP_STR_SHA2_224     },
@@ -591,9 +587,7 @@ ACVP_RESULT is_valid_rsa_mod(int value) {
 }
 
 #define EC_CURVE_NAME_MAX 5
-/*
- * Local table for matching ACVP_EC_CURVE to name string and vice versa.
- */
+// Local table for matching ACVP_EC_CURVE to name string and vice versa.
 static struct acvp_ec_curve_info ec_curve_tbl[] = {
     { ACVP_EC_CURVE_P224, "P-224" },
     { ACVP_EC_CURVE_P256, "P-256" },
@@ -1016,9 +1010,7 @@ ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_ma
 
     src_len = strnlen_s(src, ACVP_HEXSTR_MAX);
 
-    /*
-     * Make sure the hex value isn't too large
-     */
+    // Make sure the hex value isn't too large
     if (src_len > (2 * dest_max)) {
         return ACVP_DATA_TOO_LARGE;
     }

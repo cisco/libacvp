@@ -845,9 +845,7 @@ static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
     }
 
     if (dep->url) {
-        /*
-         * This resource has already been verified as existing.
-         */
+        // This resource has already been verified as existing.
         return ACVP_SUCCESS;
     }
 
@@ -859,9 +857,7 @@ static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
         }
         endpoint = first_endpoint;
 
-        /*
-         * Prepare the first query.
-         */
+        // Prepare the first query.
         snprintf(first_endpoint, ACVP_ATTR_URL_MAX, "%s%s",
                  ctx->path_segment, "dependencies?");
 
@@ -1152,9 +1148,7 @@ static ACVP_RESULT query_oe(ACVP_CTX *ctx,
     }
 
     if (oe->url) {
-        /*
-         * This resource has already been verified as existing.
-         */
+        // This resource has already been verified as existing.
         return ACVP_SUCCESS;
     }
 
@@ -1166,9 +1160,7 @@ static ACVP_RESULT query_oe(ACVP_CTX *ctx,
         }
         endpoint = first_endpoint;
 
-        /*
-         * Prepare the first query.
-         */
+        // Prepare the first query.
         snprintf(first_endpoint, ACVP_ATTR_URL_MAX, "%s%s",
                  ctx->path_segment, "oes?");
 
@@ -1238,9 +1230,7 @@ static ACVP_RESULT verify_fips_oe(ACVP_CTX *ctx) {
 
     if (!ctx) return ACVP_NO_CTX;
 
-    /*
-     * First, check the linked Dependencies because some/all of them may already exist.
-     */
+    // First, check the linked Dependencies because some/all of them may already exist.
     rv = verify_fips_oe_dependencies(ctx, &ctx->fips.oe->dependencies);
     if (ACVP_SUCCESS != rv) {
         ACVP_LOG_ERR("Failed to verify linked Dependencies of OE(%u)", ctx->fips.oe->id);
@@ -1603,9 +1593,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
         }
     }
 
-    /*
-     * Query the server DB.
-     */
+    // Query the server DB.
     rv = acvp_transport_get(ctx, endpoint, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to query endpoint");
@@ -1705,9 +1693,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
         }
 
         if (!matched_contact) {
-            /*
-             * We didn't fine a match for this Person.
-             */
+            // We didn't fine a match for this Person.
             goto end;
         }
     }
@@ -1923,9 +1909,7 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
     }
 
     if (vendor->url) {
-        /*
-         * This resource has already been verified as existing.
-         */
+        // This resource has already been verified as existing.
         return ACVP_SUCCESS;
     }
 
@@ -1937,9 +1921,7 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
         }
         endpoint = first_endpoint;
 
-        /*
-         * Prepare the first query.
-         */
+        // Prepare the first query.
         snprintf(first_endpoint, ACVP_ATTR_URL_MAX, "%s%s",
                  ctx->path_segment, "vendors?");
 
@@ -2155,9 +2137,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
         if (vurl) tmp_vendor->url = strdup(vurl);
         if (aurl) tmp_vendor->address.url = strdup(aurl);
 
-        /*
-         * Construct the tmp_vendor->persons
-         */
+        // Construct the tmp_vendor->persons
         contact_urls = json_object_get_array(module_obj, "contactUrls");
         if (contact_urls == NULL)  {
             ACVP_LOG_ERR("No contactUrls object");
@@ -2423,9 +2403,7 @@ static ACVP_RESULT verify_fips_module(ACVP_CTX *ctx) {
 
     if (!ctx) return ACVP_NO_CTX;
 
-    /*
-     * Query the Vendor first.
-     */
+    // Query the Vendor first.
     rv = query_vendor(ctx, ctx->fips.module->vendor, NULL);
     if (ACVP_SUCCESS != rv) {
         ACVP_LOG_ERR("Failed to query the Vendor(%u)", ctx->fips.module->vendor->id);
@@ -2442,9 +2420,7 @@ static ACVP_RESULT verify_fips_module(ACVP_CTX *ctx) {
         return ACVP_INVALID_ARG;
     }
 
-    /*
-     * Query the module to verify sanity
-     */
+    // Query the module to verify sanity
     rv = query_module(ctx, ctx->fips.module, NULL);
     if (ACVP_SUCCESS != rv) {
         ACVP_LOG_ERR("Unable to query the Module(%u)", ctx->fips.module->id);
@@ -3330,9 +3306,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe(ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_oe_oe_new(ctx, oe_id, name);
     if (rv != ACVP_SUCCESS) return rv;
 
-    /*
-     * Parse the dependencies
-     */
+    // Parse the dependencies
     rv = acvp_oe_metadata_parse_oe_dependencies(ctx, obj, oe_id);
     if (ACVP_SUCCESS != rv) return rv;
 
@@ -3486,9 +3460,7 @@ ACVP_RESULT acvp_oe_set_fips_validation_metadata(ACVP_CTX *ctx,
 
     if (!ctx) return ACVP_NO_CTX;
 
-    /*
-     * Check that everything needed for the FIPS validation is sane.
-     */
+    // Check that everything needed for the FIPS validation is sane.
     if (!ctx->fips.metadata_loaded) {
         ACVP_LOG_ERR("User needs to load a valid metadata JSON file via acvp_oe_ingest_metadata()");
         return ACVP_INVALID_ARG;

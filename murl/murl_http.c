@@ -311,9 +311,7 @@ int murl_http_parse_response (SessionHandle *ctx, const char *buf)
 	return 1;
     }
 
-    /*
-     * Initialize the parser
-     */
+    // Initialize the parser
     parser = murl_http_parser_init(HTTP_RESPONSE, msg);
     if (!parser) {
         fprintf(stderr, "murl_http_parser_init failed (%s)\n", __FUNCTION__);
@@ -321,21 +319,15 @@ int murl_http_parse_response (SessionHandle *ctx, const char *buf)
 	return 1;
     }
 
-    /*
-     * Parse the data
-     */
+    // Parse the data
     parsed = murl_http_parse(parser, buf, strlen(buf));
 
-    /*
-     * check that all of it was parsed
-     */
+    // check that all of it was parsed
     rv = (parsed == strlen(buf));
     parsed = murl_http_parse(parser, NULL, 0);
     rv &= (parsed == 0);
 
-    /*
-     * Save the HTTP status code sent by the server
-     */
+    // Save the HTTP status code sent by the server
     ctx->http_status_code = parser->status_code;
     murl_http_parser_free(parser);
 
@@ -358,9 +350,7 @@ int murl_http_parse_response (SessionHandle *ctx, const char *buf)
         return 1;
     }
 
-    /*
-     * Copy the data to the Murl context
-     */
+    // Copy the data to the Murl context
     memcpy(ctx->recv_buf, msg->body, len);
     ctx->recv_buf[len] = 0;
     ctx->recv_ctr += len;

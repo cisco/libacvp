@@ -257,18 +257,14 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
     }
     ACVP_LOG_VERBOSE("    EDDSA mode: %s", mode_str);
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -435,9 +431,7 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             if (alg_id == ACVP_EDDSA_SIGVER) {
                 ACVP_LOG_VERBOSE("          signature: %s", sig);
             }
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -488,9 +482,7 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
 
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_eddsa_release_tc(&stc);
         }
         json_array_append_value(r_garr, r_gval);
