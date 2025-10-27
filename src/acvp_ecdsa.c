@@ -263,6 +263,11 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
         return ACVP_NO_CTX;
     }
 
+    if (!obj) {
+        ACVP_LOG_ERR("No obj for handler operation");
+        return ACVP_MALFORMED_JSON;
+    }
+
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");

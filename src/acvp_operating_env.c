@@ -2618,6 +2618,12 @@ void acvp_oe_free_operating_env(ACVP_CTX *ctx) {
         free_modules(&ctx->op_env.modules);
         free_dependencies(&ctx->op_env.dependencies);
         free_oes(&ctx->op_env.oes);
+
+        /* Reset global ID counters when freeing operating env */
+        glb_dependency_id = 1;
+        glb_vendor_id = 1;
+        glb_module_id = 1;
+        glb_oe_id = 1;
     }
 }
 

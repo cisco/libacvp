@@ -526,7 +526,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     JSON_Object *tmp_obj = NULL;
     JSON_Value *tmp_val = NULL;
     const char *revision = NULL;
-    ACVP_SUB_AES aes_alg;
+    ACVP_SUB_AES aes_alg = 0;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
@@ -672,9 +672,33 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
             json_array_append_number(opts_arr, sl_list->length);
             sl_list = sl_list->next;
         }
-    } else if (aes_alg) {
-        // If cipher is AES, we need keylengths. If TDES, we do not.
-        return ACVP_MISSING_ARG;
+    } else {
+        /* Only AES algorithms require keyLen to be set */
+        switch (aes_alg) {
+        case ACVP_SUB_AES_GCM:
+        case ACVP_SUB_AES_GCM_SIV:
+        case ACVP_SUB_AES_CCM:
+        case ACVP_SUB_AES_ECB:
+        case ACVP_SUB_AES_CBC:
+        case ACVP_SUB_AES_CBC_CS1:
+        case ACVP_SUB_AES_CBC_CS2:
+        case ACVP_SUB_AES_CBC_CS3:
+        case ACVP_SUB_AES_CFB1:
+        case ACVP_SUB_AES_CFB8:
+        case ACVP_SUB_AES_CFB128:
+        case ACVP_SUB_AES_OFB:
+        case ACVP_SUB_AES_CTR:
+        case ACVP_SUB_AES_XTS:
+        case ACVP_SUB_AES_XPN:
+        case ACVP_SUB_AES_KW:
+        case ACVP_SUB_AES_KWP:
+        case ACVP_SUB_AES_GMAC:
+        case ACVP_SUB_AES_FF1:
+        case ACVP_SUB_AES_FF3:
+            return ACVP_MISSING_ARG;
+        default:
+            break;
+        }
     }
 
     // Set the supported tag lengths (for AEAD ciphers)

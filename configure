@@ -673,9 +673,8 @@ BUILD_APP_AS_LIB_FALSE
 BUILD_APP_AS_LIB_TRUE
 UNIT_TEST_SUPPORTED_FALSE
 UNIT_TEST_SUPPORTED_TRUE
-CRITERION_LDFLAGS
-CRITERION_CFLAGS
 CLEANFILES
+AM_CFLAGS
 LIBACVP_CFLAGS
 LIBACVP_LDFLAGS
 LIBCURL_LDFLAGS
@@ -840,6 +839,7 @@ enable_force_static_linking
 with_libcurl_dir
 enable_cflags
 enable_gcov
+enable_unit_tests
 with_criterion_dir
 enable_ssp
 enable_wrapper_library
@@ -1505,6 +1505,8 @@ Optional Features:
                           statically
   --enable-cflags         Flag to indicate use of enhanced CFLAGS
   --enable-gcov           Flag to indicate use of gcov tool
+  --enable-unit-tests     Flag to indicate that the unit tests should be built
+                          in the test directory
   --disable-ssp           Turn off fstack-protector cflag; not all platforms
                           support
   --enable-wrapper-library
@@ -1526,7 +1528,8 @@ Optional Packages:
   --with-libacvp-dir      Path to libacvp install directory, for use when
                           building the app only
   --with-libcurl-dir      enable support for client proxy using libcurl
-  --with-criterion-dir    location of Criterion install folder
+  --with-criterion-dir    DEPRECATED: Use --enable-unit-tests instead. This
+                          option is kept for backwards compatibility.
   --with-ssl-dir          location of OpenSSL install folder
   --with-jent-dir         Path to JENT install directory
   --with-liboqs-dir       Path to liboqs install directory
@@ -12766,6 +12769,7 @@ iut_cflags=""
 iut_ldflags=""
 iut_lib_flags=""
 iut_lib_name=""
+AM_CFLAGS=""
 
 # Option to disable app builds
 # Check whether --enable-app was given.
@@ -12892,13 +12896,26 @@ fi
 
 
 # Unit testing
+# Check whether --enable-unit-tests was given.
+if test ${enable_unit_tests+y}
+then :
+  enableval=$enable_unit_tests; ut="$enableval"
+else $as_nop
+  enable_ut=false
+fi
+
+# Backwards compatibility argument - deprecated
 
 # Check whether --with-criterion-dir was given.
 if test ${with_criterion_dir+y}
 then :
-  withval=$with_criterion_dir; criteriondir="$withval"
-else $as_nop
-  with_criteriondir="no"
+  withval=$with_criterion_dir;
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: --with-criterion-dir is deprecated and will be removed in a future version. Please use --enable-unit-tests instead." >&5
+printf "%s\n" "$as_me: WARNING: --with-criterion-dir is deprecated and will be removed in a future version. Please use --enable-unit-tests instead." >&2;}
+        criteriondir="$withval"
+        ut="yes"
+        enable_ut=true
+
 fi
 
 
@@ -12941,9 +12958,7 @@ fi
 acvp_app_iut=""
 ssl_dir=""
 iut_specified=0;
-# SSL dir only used if building app too
-if test "x$disable_app" = "xno" ; then
-    # ssl installation directory path
+# ssl installation directory path
 
 # Check whether --with-ssl-dir was given.
 if test ${with_ssl_dir+y}
@@ -12951,6 +12966,7 @@ then :
   withval=$with_ssl_dir; ssl_dir="$withval"; use_openssl="yes"
 fi
 
+if test "x$disable_app" = "xno" ; then
 
 
 # Check whether --with-jent-dir was given.
@@ -13115,11 +13131,6 @@ See \`config.log' for more details" "$LINENO" 5; }
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
         done
-
-        #if ssl_dir is set, but acvp_app_iut is not openssl, then set the additional dependency flags
-        if test "x$ssl_dir" != "x" && test "x$acvp_app_iut" != "xopenssl"; then
-            lib_dependencies="${lib_dependencies} -L$ssl_dir/lib -L$ssl_dir/lib64 -lssl -lcrypto"
-        fi
 
         IFS="$tmp_ifs"
         tmp_cflags="$CFLAGS"
@@ -13337,6 +13348,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
     ######################
     # End checks for IUT #
     ######################
+fi
+
+#if ssl_dir is set, but acvp_app_iut is not openssl (or we have app build disabled), then set the additional dependency flags
+if test "x$ssl_dir" != "x" && test "x$acvp_app_iut" != "xopenssl"; then
+    lib_dependencies="${lib_dependencies} -L$ssl_dir/lib -L$ssl_dir/lib64 -lssl -lcrypto"
 fi
 
 if test "x$disable_lib" = "xyes" ; then
@@ -13569,12 +13585,13 @@ else
 fi
 
 if test "x$enable_cflags" != "xfalse" ; then
-    CFLAGS="$CFLAGS -Wcast-align -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels  -Wformat -Wformat-extra-args  -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Wimport -Winvalid-pch -Wmain -Wmissing-braces  -Wmissing-format-attribute -Wmissing-noreturn  -Wmultichar -Wnested-externs -Wnonnull -Wparentheses -Wpointer-arith -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wstrict-prototypes -Wswitch -Wswitch-default -Wtrigraphs  -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable -Wwrite-strings -Wno-pointer-sign  -Wcast-qual -Wfloat-equal  -Wuninitialized -Winline -Wno-error=cast-align -Wbad-function-cast  -Wswitch-enum -Wsystem-headers -Wunused-but-set-variable -Wextra"
+    AM_CFLAGS="$AM_CFLAGS -Wcast-align -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels  -Wformat -Wformat-extra-args  -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Wimport -Winvalid-pch -Wmain -Wmissing-braces  -Wmissing-format-attribute -Wmissing-noreturn  -Wmultichar -Wnested-externs -Wnonnull -Wparentheses -Wpointer-arith -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wstrict-prototypes -Wswitch -Wswitch-default -Wtrigraphs  -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable -Wwrite-strings -Wno-pointer-sign  -Wcast-qual -Wfloat-equal  -Wuninitialized -Winline -Wno-error=cast-align -Wbad-function-cast  -Wswitch-enum -Wsystem-headers -Wunused-but-set-variable -Wextra"
     # Disable GCC-specific warning caused by "suggest-attribute=format" since we use many different compilers and GCC is being presumptuous
     if test "x$GCC" = "xyes"; then
-        CFLAGS="$CFLAGS -Wno-suggest-attribute=format"
+        AM_CFLAGS="$AM_CFLAGS -Wno-suggest-attribute=format"
     fi
 fi
+
 
 if test "x$enable_gcov" != "xfalse" ; then
     CFLAGS="$CFLAGS --coverage"
@@ -13586,14 +13603,8 @@ if test "x$enable_gcov" != "xfalse" ; then
 
 fi
 
-if test "x$with_criterion" != "xno" ; then
-    CRITERION_CFLAGS="-I$criteriondir/include"
 
-    CRITERION_LDFLAGS="-L$criteriondir/lib -lcriterion"
-
-fi
-
- if test "x$with_criteriondir" != "xno"; then
+ if test "x$enable_ut" != "xfalse"; then
   UNIT_TEST_SUPPORTED_TRUE=
   UNIT_TEST_SUPPORTED_FALSE='#'
 else

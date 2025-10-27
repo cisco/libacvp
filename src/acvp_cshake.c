@@ -521,17 +521,9 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
-
-            if (type != ACVP_CSHAKE_TEST_TYPE_MCT) {
-                rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "outLen", &outlen);
-                if (rv != ACVP_SUCCESS) {
-                    goto err;
-                }
-                if (outlen <= 0) {
-                    ACVP_LOG_ERR("Server JSON has non-positive/invalid 'outLen'");
-                    rv = ACVP_TC_INVALID_DATA;
-                    goto err;
-                }
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "outLen", &outlen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
             }
 
             rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "functionName", &function_name);
@@ -564,6 +556,12 @@ ACVP_RESULT acvp_cshake_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             if (msglen < 0) {
                 ACVP_LOG_ERR("Server JSON missing or invalid 'len'");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+
+            if (type != ACVP_CSHAKE_TEST_TYPE_MCT && outlen <= 0) {
+                ACVP_LOG_ERR("Server JSON missing or invalid 'outLen'");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
