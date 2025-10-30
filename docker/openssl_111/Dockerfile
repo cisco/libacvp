@@ -26,16 +26,12 @@ RUN cd curl-7.64.1 && CFLAGS="-O0 -g" ./configure --prefix=$CURL_INSTALL --with-
 
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CURL_INSTALL/lib
 
-# Add Criterion PPA for unit testing
-RUN add-apt-repository ppa:snaipewastaken/ppa
-
 RUN apt-get update && apt-get -y -qq install git \
                                              vim \
                                              emacs \
                                              iputils-ping \
                                              gdb \
-                                             valgrind \
-                                             criterion-dev
+                                             valgrind
 
 USER docker
 CMD ["/bin/bash"]

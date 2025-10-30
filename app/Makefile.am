@@ -55,7 +55,7 @@ bin_PROGRAMS = acvp_app
 
 acvp_app_includedir=$(includedir)/acvp
 acvp_app_SOURCES = ${tmp_sources}
-acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(IUT_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS)
+acvp_app_CFLAGS = $(AM_CFLAGS) -g -fPIE $(LIBACVP_CFLAGS) $(IUT_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS)
 acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) $(IUT_LDFLAGS)
 acvp_app_LDADD =  $(IUT_LIBS) $(ADDL_LIB_DEPENDENCIES)
 
@@ -73,7 +73,7 @@ lib_LTLIBRARIES = libacvp_app.la
 libacvp_app_includedir=${includedir}/acvp
 libacvp_app_la_SOURCES = ${tmp_sources}
 
-AM_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(IUT_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS) -DACVP_APP_LIB_WRAPPER
+AM_CFLAGS+= -g -fPIE $(LIBACVP_CFLAGS) $(IUT_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS) -DACVP_APP_LIB_WRAPPER
 libacvp_app_la_LIBADD = $(LIBACVP_LDFLAGS) $(IUT_LDFLAGS)
 
 libacvp_app_include_HEADERS = $(top_srcdir)/app/libacvp_app.h
