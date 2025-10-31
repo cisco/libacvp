@@ -32,8 +32,8 @@ int initialize_ecdsa_tc(ACVP_CIPHER cipher,
                         char *qy,
                         char *message,
                         char *r,
-                       char *s,
-                       int corrupt) {
+                        char *s,
+                        int corrupt) {
     rv = ACVP_SUCCESS;
     
     memset(stc, 0x0, sizeof(ACVP_ECDSA_TC));

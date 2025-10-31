@@ -47,8 +47,8 @@ int initialize_kas_ffc_tc(ACVP_KAS_FFC_TC *stc,
                           const char *eps,
                           const char *epri,
                           const char *epui,
-                         const char *z,
-                         int corrupt) {
+                          const char *z,
+                          int corrupt) {
     stc->mode = ACVP_KAS_FFC_MODE_COMPONENT;
     stc->md = hash_alg;
     stc->test_type = test_type;

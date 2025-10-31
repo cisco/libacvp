@@ -38,8 +38,8 @@ int initialize_kas_ecc_cdh_tc(ACVP_KAS_ECC_TC *stc,
                               ACVP_KAS_ECC_TEST_TYPE test_type,
                               ACVP_EC_CURVE curve,
                               const char *psx,
-                             const char *psy,
-                             int corrupt) {
+                              const char *psy,
+                              int corrupt) {
     stc->mode = ACVP_KAS_ECC_MODE_CDH;
     stc->curve = curve;
     stc->test_type = test_type;
@@ -93,9 +93,9 @@ int initialize_kas_ecc_comp_tc(ACVP_KAS_ECC_TC *stc,
                                const char *psy,
                                const char *d,
                                const char *pix,
-                              const char *piy,
-                              const char *z,
-                              int corrupt) {
+                               const char *piy,
+                               const char *z,
+                               int corrupt) {
     stc->mode = ACVP_KAS_ECC_MODE_COMPONENT;
     stc->curve = curve;
     stc->md = hash;

@@ -28,8 +28,8 @@ int initialize_pbkdf_tc(ACVP_PBKDF_TC *stc,
                         int iterationCount,
                         int key_len,
                         int salt_len,
-                       int password_len,
-                       int corrupt) {
+                        int password_len,
+                        int corrupt) {
     int tmp;
     int slen;
     int plen;

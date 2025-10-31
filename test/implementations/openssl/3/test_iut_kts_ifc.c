@@ -46,8 +46,8 @@ int initialize_kts_ifc_tc(ACVP_KTS_IFC_TC *stc,
                           const char *e,
                           int modulo, 
                           int llen, 
-                         ACVP_KTS_IFC_TEST_TYPE test_type,
-                         int corrupt) {
+                          ACVP_KTS_IFC_TEST_TYPE test_type,
+                          int corrupt) {
     stc->llen = llen/8;
     stc->modulo = modulo;
     stc->test_type = test_type;

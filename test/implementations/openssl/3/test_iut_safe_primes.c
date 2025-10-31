@@ -33,8 +33,8 @@ int initialize_safe_primes_tc(ACVP_SAFE_PRIMES_TC *stc,
                           ACVP_SAFE_PRIMES_PARAM dgm,
                           const char *x,
                           const char *y,
-                         int result,
-                         int corrupt) {
+                          int result,
+                          int corrupt) {
     stc->test_type = test_type;
     stc->cipher = alg_id;
     stc->result = result;

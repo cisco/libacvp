@@ -41,8 +41,8 @@ int initialize_kdf_tls12_tc(ACVP_KDF_TLS12_TC *stc,
                              const char *pm_secret,
                              const char *session_hash,
                              const char *s_rnd,
-                            const char *c_rnd,
-                            int corrupt) {
+                             const char *c_rnd,
+                             int corrupt) {
     memzero_s(stc, sizeof(ACVP_KDF_TLS12_TC));
     
     if (pm_secret) {

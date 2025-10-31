@@ -43,8 +43,8 @@ int initialize_rsa_sig_tc(ACVP_CIPHER cipher,
                       char *msg,
                       char *signature,
                       char *salt,
-                     int salt_len,
-                     int corrupt) {
+                      int salt_len,
+                      int corrupt) {
     memzero_s(stc, sizeof(ACVP_RSA_SIG_TC));
     
     stc->salt = calloc(ACVP_RSA_SIGNATURE_MAX, sizeof(char));

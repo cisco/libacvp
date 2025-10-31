@@ -45,9 +45,9 @@ int initialize_kdf108_tc(ACVP_KDF108_TC *stc,
                          int key_in_len,
                          int key_out_len,
                          int iv_len,
-                        int counter_len,
-                        int deferred,
-                        int corrupt) {
+                         int counter_len,
+                         int deferred,
+                         int corrupt) {
     memzero_s(stc, sizeof(ACVP_KDF108_TC));
     
     if (key_in) {
