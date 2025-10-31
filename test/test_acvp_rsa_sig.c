@@ -27,73 +27,73 @@ static char cvalue[] = "same";
 static void rsa_siggen_api_setup_helper(void) {
     setup_empty_ctx(&ctx);
 
-        rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGGEN, ACVP_PREREQ_SHA, cvalue);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA256, 0);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512, 0);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
-        rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA256, 0);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512, 0);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
-        rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA256, 0);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512, 0);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGGEN, ACVP_PREREQ_SHA, cvalue);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA256, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA256, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA256, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 }
 
 static void rsa_sigver_api_setup_helper(void) {
     setup_empty_ctx(&ctx);
-    
-        char *expo_str = calloc(7, sizeof(char));
-        strncpy(expo_str, "010001", 7); // RSA_F4
-    
-        rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_sigver_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
-        rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
-        rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA1, 0);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA384, 0);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
-        rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA224, 0);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA1, 0);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
-        rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512, 0);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA224, 0);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        free(expo_str);
+
+    char *expo_str = calloc(7, sizeof(char));
+    strncpy(expo_str, "010001", 7); // RSA_F4
+
+    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA1, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA384, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA224, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA1, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA224, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    free(expo_str);
 }
 
 static void rsa_siggen_api_tear_down_helper(void) {

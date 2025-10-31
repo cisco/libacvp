@@ -84,21 +84,21 @@ static char *api_context = NULL;
  */
 static void transport_send_test_session_reg_setup_helper(void) {
     setup_empty_ctx(&ctx);
-    
-        server = "noserver";
-        port = 443;
-        path_segment = "/acvp/v1/";
-        api_context = "acvp/";
-        ca_chain_file = NULL;
-        cert_file = NULL;
-        key_file = NULL;
 
-        acvp_set_server(ctx, server, port);
-        acvp_set_cacerts(ctx, ca_chain_file);
-        acvp_set_certkey(ctx, cert_file, key_file);
-        acvp_set_path_segment(ctx, path_segment);
-        rv = acvp_set_api_context(ctx, api_context);
-        acvp_set_2fa_callback(ctx, &dummy_totp);
+    server = "noserver";
+    port = 443;
+    path_segment = "/acvp/v1/";
+    api_context = "acvp/";
+    ca_chain_file = NULL;
+    cert_file = NULL;
+    key_file = NULL;
+
+    acvp_set_server(ctx, server, port);
+    acvp_set_cacerts(ctx, ca_chain_file);
+    acvp_set_certkey(ctx, cert_file, key_file);
+    acvp_set_path_segment(ctx, path_segment);
+    rv = acvp_set_api_context(ctx, api_context);
+    acvp_set_2fa_callback(ctx, &dummy_totp);
 }
 
 TEST_SETUP(TRANSPORT_SEND_TEST_SESSION_REG) {

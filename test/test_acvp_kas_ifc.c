@@ -23,39 +23,39 @@ static JSON_Value *val = NULL;
 static char cvalue[] = "same";
 
 static void kas_ifc_api_setup_helper(void) {
-    setup_empty_ctx(&ctx);
-        char *expo_str = calloc(7, sizeof(char));
-        strncpy(expo_str, "010001", 7); // RSA_F4
+setup_empty_ctx(&ctx);
+    char *expo_str = calloc(7, sizeof(char));
+    strncpy(expo_str, "010001", 7); // RSA_F4
 
-        /* Support is for IFC-SSC for hashZ only */
-        rv = acvp_cap_kas_ifc_enable(ctx, ACVP_KAS_IFC_SSC, &dummy_handler_success);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_RSA, cvalue);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_RSADP, cvalue);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_SHA, cvalue);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_DRBG, cvalue);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KAS1, ACVP_KAS_IFC_INITIATOR);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KAS1, ACVP_KAS_IFC_RESPONDER);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 2048);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 3072);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 4096);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_BASIC);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_HASH, ACVP_SHA512);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-        rv = acvp_cap_kas_ifc_set_exponent(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_FIXEDPUBEXP, expo_str);
-        TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    /* Support is for IFC-SSC for hashZ only */
+    rv = acvp_cap_kas_ifc_enable(ctx, ACVP_KAS_IFC_SSC, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_RSA, cvalue);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_RSADP, cvalue);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_SHA, cvalue);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_DRBG, cvalue);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KAS1, ACVP_KAS_IFC_INITIATOR);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KAS1, ACVP_KAS_IFC_RESPONDER);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 2048);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 3072);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 4096);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_BASIC);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_HASH, ACVP_SHA512);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_kas_ifc_set_exponent(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_FIXEDPUBEXP, expo_str);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
-        free(expo_str);
+    free(expo_str);
 }
 
 static void kas_ifc_api_tear_down_helper(void) {

@@ -43,7 +43,7 @@ static ACVP_RESULT dummy_totp_overflow(char **token, int token_max) {
 
 static void free_test_session_setup_helper(void) {
     setup_empty_ctx(&ctx);
-    
+
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
@@ -87,7 +87,7 @@ static void free_test_session_setup_helper(void) {
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
+
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &dummy_handler_success);
@@ -100,7 +100,7 @@ static void free_test_session_setup_helper(void) {
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA1, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
+
     rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_CDH, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_PREREQ_ECDSA, cvalue);
@@ -109,7 +109,7 @@ static void free_test_session_setup_helper(void) {
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_P224);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
+
     rv = acvp_cap_kas_ffc_enable(ctx, ACVP_KAS_FFC_COMP, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kas_ffc_set_prereq(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_PREREQ_HMAC, cvalue);
@@ -124,7 +124,7 @@ static void free_test_session_setup_helper(void) {
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kas_ffc_set_scheme(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_KAS_FFC_DH_EPHEMERAL, ACVP_KAS_FFC_FB, ACVP_SHA224);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
+
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGGEN, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGGEN, ACVP_PREREQ_SHA, cvalue);
@@ -135,7 +135,7 @@ static void free_test_session_setup_helper(void) {
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_GENG, ACVP_DSA_CANONICAL);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
+
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
@@ -144,7 +144,7 @@ static void free_test_session_setup_helper(void) {
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA256, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
+
     rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYGEN, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
@@ -155,7 +155,7 @@ static void free_test_session_setup_helper(void) {
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_SECRET_GEN, ACVP_ECDSA_SECRET_GEN_TEST_CAND);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    
+
     rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_DER_FUNC_ENABLED, 0);
