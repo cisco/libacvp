@@ -128,7 +128,7 @@ TEST_SETUP(TRANSPORT_RETRIEVE_SAMPLE_ANSWERS) {
 
 static void transport_retrieve_sample_answers_tear_down_helper(void) {
     if (ctx) teardown_ctx(&ctx);
-        ctx = NULL;
+    ctx = NULL;
 }
 
 TEST_TEAR_DOWN(TRANSPORT_RETRIEVE_SAMPLE_ANSWERS) {

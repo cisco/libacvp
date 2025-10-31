@@ -30,7 +30,7 @@ static void free_operating_env_setup_helper(void) {
 
 static void free_operating_env_tear_down_helper(void) {
     if (ctx) teardown_ctx(&ctx);
-        ctx = NULL;
+    ctx = NULL;
 }
 
 TEST_SETUP(DEPENDENCY_NEW) {
