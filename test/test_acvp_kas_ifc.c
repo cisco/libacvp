@@ -23,7 +23,7 @@ static JSON_Value *val = NULL;
 static char cvalue[] = "same";
 
 static void kas_ifc_api_setup_helper(void) {
-setup_empty_ctx(&ctx);
+    setup_empty_ctx(&ctx);
     char *expo_str = calloc(7, sizeof(char));
     strncpy(expo_str, "010001", 7); // RSA_F4
 
