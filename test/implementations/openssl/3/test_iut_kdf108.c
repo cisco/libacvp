@@ -1,29 +1,13 @@
 /** @file */
-/*****************************************************************************
-* Copyright (c) 2024, Cisco Systems, Inc.
-* All rights reserved.
+/*
+ * Copyright (c) 2025, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
 //
 // Created by edaw on 2019-01-07.
 //
@@ -33,9 +17,11 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_TEST_CASE *test_case;
-static ACVP_KDF108_TC *kdf108_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_KDF108_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_KDF108_TC *kdf108_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 void free_kdf108_tc(ACVP_KDF108_TC *stc) {
     if (stc->key_in) free(stc->key_in);
@@ -59,11 +45,9 @@ int initialize_kdf108_tc(ACVP_KDF108_TC *stc,
                          int key_in_len,
                          int key_out_len,
                          int iv_len,
-                         int counter_len,
-                         int deferred,
-                         int corrupt) {
-    ACVP_RESULT rv;
-    
+                        int counter_len,
+                        int deferred,
+                        int corrupt) {
     memzero_s(stc, sizeof(ACVP_KDF108_TC));
     
     if (key_in) {
@@ -122,10 +106,11 @@ int initialize_kdf108_tc(ACVP_KDF108_TC *stc,
     return 0;
 }
 
-/*
- * invalid mode in kdf108 tc test case
- */
-Test(APP_KDF108_HANDLER, invalid_mode) {
+TEST_SETUP(APP_KDF108_HANDLER) {}
+TEST_TEAR_DOWN(APP_KDF108_HANDLER) {}
+
+// invalid mode in kdf108 tc test case
+TEST(APP_KDF108_HANDLER, invalid_mode) {
     /* arbitrary non-zero */
     int key_in_len = 8, key_out_len = 8, iv_len = 8, counter_len = 8;
     ACVP_KDF108_MODE kdf_mode = 0;
@@ -141,22 +126,20 @@ Test(APP_KDF108_HANDLER, invalid_mode) {
     if (!initialize_kdf108_tc(kdf108_tc, kdf_mode, mac_mode, counter_location,
             key_in, iv, key_in_len, key_out_len, iv_len, counter_len,
             deferred, corrupt)) {
-        cr_assert_fail("kdf108 init tc failure");
+        TEST_FAIL_MESSAGE("kdf108 init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf108 = kdf108_tc;
     
     rv = app_kdf108_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf108_tc(kdf108_tc);
     free(test_case);
 }
 
-/*
- * invalid mac mode in kdf108 tc test case
- */
-Test(APP_KDF108_HANDLER, invalid_mac_mode) {
+// invalid mac mode in kdf108 tc test case
+TEST(APP_KDF108_HANDLER, invalid_mac_mode) {
     /* arbitrary non-zero */
     int key_in_len = 8, key_out_len = 8, iv_len = 8, counter_len = 8;
     ACVP_KDF108_MODE kdf_mode = ACVP_KDF108_MODE_COUNTER;
@@ -172,22 +155,20 @@ Test(APP_KDF108_HANDLER, invalid_mac_mode) {
     if (!initialize_kdf108_tc(kdf108_tc, kdf_mode, mac_mode, counter_location,
             key_in, iv, key_in_len, key_out_len, iv_len, counter_len,
             deferred, corrupt)) {
-        cr_assert_fail("kdf108 init tc failure");
+        TEST_FAIL_MESSAGE("kdf108 init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf108 = kdf108_tc;
     
     rv = app_kdf108_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf108_tc(kdf108_tc);
     free(test_case);
 }
 
-/*
- * invalid counter location (fixed data order) in kdf108 tc test case
- */
-Test(APP_KDF108_HANDLER, invalid_counter_loc) {
+// invalid counter location (fixed data order) in kdf108 tc test case
+TEST(APP_KDF108_HANDLER, invalid_counter_loc) {
     /* arbitrary non-zero */
     int key_in_len = 8, key_out_len = 8, iv_len = 8, counter_len = 8;
     ACVP_KDF108_MODE kdf_mode = ACVP_KDF108_MODE_COUNTER;
@@ -203,22 +184,20 @@ Test(APP_KDF108_HANDLER, invalid_counter_loc) {
     if (!initialize_kdf108_tc(kdf108_tc, kdf_mode, mac_mode, counter_location,
             key_in, iv, key_in_len, key_out_len, iv_len, counter_len,
             deferred, corrupt)) {
-        cr_assert_fail("kdf108 init tc failure");
+        TEST_FAIL_MESSAGE("kdf108 init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf108 = kdf108_tc;
     
     rv = app_kdf108_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf108_tc(kdf108_tc);
     free(test_case);
 }
 
-/*
- * missing key in in kdf108 tc test case
- */
-Test(APP_KDF108_HANDLER, missing_key_in) {
+// missing key in in kdf108 tc test case
+TEST(APP_KDF108_HANDLER, missing_key_in) {
     /* arbitrary non-zero */
     int key_in_len = 8, key_out_len = 8, iv_len = 8, counter_len = 8;
     ACVP_KDF108_MODE kdf_mode = ACVP_KDF108_MODE_COUNTER;
@@ -234,23 +213,20 @@ Test(APP_KDF108_HANDLER, missing_key_in) {
     if (!initialize_kdf108_tc(kdf108_tc, kdf_mode, mac_mode, counter_location,
             key_in, iv, key_in_len, key_out_len, iv_len, counter_len,
             deferred, corrupt)) {
-        cr_assert_fail("kdf108 init tc failure");
+        TEST_FAIL_MESSAGE("kdf108 init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf108 = kdf108_tc;
     
     rv = app_kdf108_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf108_tc(kdf108_tc);
     free(test_case);
 }
 
-
-/*
- * unallocated answer buffers in kdf108 tc test case
- */
-Test(APP_KDF108_HANDLER, unallocated_ans_bufs) {
+// unallocated answer buffers in kdf108 tc test case
+TEST(APP_KDF108_HANDLER, unallocated_ans_bufs) {
     /* arbitrary non-zero */
     int key_in_len = 8, key_out_len = 8, iv_len = 8, counter_len = 8;
     ACVP_KDF108_MODE kdf_mode = ACVP_KDF108_MODE_COUNTER;
@@ -266,13 +242,13 @@ Test(APP_KDF108_HANDLER, unallocated_ans_bufs) {
     if (!initialize_kdf108_tc(kdf108_tc, kdf_mode, mac_mode, counter_location,
             key_in, iv, key_in_len, key_out_len, iv_len, counter_len,
             deferred, corrupt)) {
-        cr_assert_fail("kdf108 init tc failure");
+        TEST_FAIL_MESSAGE("kdf108 init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf108 = kdf108_tc;
     
     rv = app_kdf108_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf108_tc(kdf108_tc);
     free(test_case);

@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -13,11 +13,13 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
+TEST_GROUP(APP_SAFE_PRIMES_HANDLER);
+
 #if !defined OPENSSL_NO_DSA
 
-static ACVP_TEST_CASE *test_case;
-ACVP_SAFE_PRIMES_TC *safe_primes_tc;
-static ACVP_RESULT rv;
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_SAFE_PRIMES_TC *safe_primes_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 void free_safe_primes_tc(ACVP_SAFE_PRIMES_TC *stc) {
     if (stc->x) free(stc->x);
@@ -31,10 +33,8 @@ int initialize_safe_primes_tc(ACVP_SAFE_PRIMES_TC *stc,
                           ACVP_SAFE_PRIMES_PARAM dgm,
                           const char *x,
                           const char *y,
-                          int result,
-                          int corrupt) {
-    ACVP_RESULT rv;
-    
+                         int result,
+                         int corrupt) {
     stc->test_type = test_type;
     stc->cipher = alg_id;
     stc->result = result;
@@ -76,10 +76,14 @@ err:
     return 0;
 }
 
-/*
- * invalid dgm safe primes handler
- */
-Test(APP_SAFE_PRIMES_HANDLER, invalid_dgm) {
+
+// Empty setup/teardown for groups without fixtures
+
+TEST_SETUP(APP_SAFE_PRIMES_HANDLER) {}
+TEST_TEAR_DOWN(APP_SAFE_PRIMES_HANDLER) {}
+
+// invalid dgm safe primes handler
+TEST(APP_SAFE_PRIMES_HANDLER, invalid_dgm) {
     int corrupt = 0;
     char *x = "aa";
     char *y = "aa";
@@ -87,22 +91,20 @@ Test(APP_SAFE_PRIMES_HANDLER, invalid_dgm) {
     safe_primes_tc = calloc(1, sizeof(ACVP_SAFE_PRIMES_TC));
     
     if (!initialize_safe_primes_tc(safe_primes_tc, ACVP_SAFE_PRIMES_KEYGEN, ACVP_SAFE_PRIMES_TT_VAL, 0, x, y, 0, corrupt)) {
-        cr_assert_fail("safe primes init tc failure");
+        TEST_FAIL_MESSAGE("safe primes init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.safe_primes = safe_primes_tc;
     
     rv = app_safe_primes_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_safe_primes_tc(safe_primes_tc);
     free(test_case);
 }
 
-/*
- * invalid alg_id safe primes handler
- */
-Test(APP_SAFE_PRIMES_HANDLER, invalid_alg_id) {
+// invalid alg_id safe primes handler
+TEST(APP_SAFE_PRIMES_HANDLER, invalid_alg_id) {
     int corrupt = 0;
     char *x = "aa";
     char *y = "aa";
@@ -110,23 +112,20 @@ Test(APP_SAFE_PRIMES_HANDLER, invalid_alg_id) {
     safe_primes_tc = calloc(1, sizeof(ACVP_SAFE_PRIMES_TC));
     
     if (!initialize_safe_primes_tc(safe_primes_tc, ACVP_AES_CBC, ACVP_SAFE_PRIMES_TT_VAL, ACVP_SAFE_PRIMES_FFDHE2048, x, y, 0, corrupt)) {
-        cr_assert_fail("safe primes init tc failure");
+        TEST_FAIL_MESSAGE("safe primes init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.safe_primes = safe_primes_tc;
     
     rv = app_safe_primes_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_safe_primes_tc(safe_primes_tc);
     free(test_case);
 }
 
-
-/*
- * unallocated answer buffers safe primes handler
- */
-Test(APP_SAFE_PRIMES_HANDLER, unallocated_ans_bufs) {
+// unallocated answer buffers safe primes handler
+TEST(APP_SAFE_PRIMES_HANDLER, unallocated_ans_bufs) {
     int corrupt = 1;
     char *x = "aa";
     char *y = "aa";
@@ -134,22 +133,20 @@ Test(APP_SAFE_PRIMES_HANDLER, unallocated_ans_bufs) {
     safe_primes_tc = calloc(1, sizeof(ACVP_SAFE_PRIMES_TC));
     
     if (!initialize_safe_primes_tc(safe_primes_tc, ACVP_SAFE_PRIMES_KEYVER, ACVP_SAFE_PRIMES_TT_VAL, ACVP_SAFE_PRIMES_FFDHE2048, x, y, 0, corrupt)) {
-        cr_assert_fail("safe primes init tc failure");
+        TEST_FAIL_MESSAGE("safe primes init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.safe_primes = safe_primes_tc;
     
     rv = app_safe_primes_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_safe_primes_tc(safe_primes_tc);
     free(test_case);
 }
 #if 0
-/*
- * No results from key verify
- */
-Test(APP_SAFE_PRIMES_HANDLER, result) {
+// No results from key verify
+TEST(APP_SAFE_PRIMES_HANDLER, result) {
     int corrupt = 0;
     char *x = "aa";
     char *y = "aa";
@@ -157,17 +154,16 @@ Test(APP_SAFE_PRIMES_HANDLER, result) {
     safe_primes_tc = calloc(1, sizeof(ACVP_SAFE_PRIMES_TC));
     
     if (!initialize_safe_primes_tc(safe_primes_tc, ACVP_SAFE_PRIMES_KEYVER, ACVP_SAFE_PRIMES_TT_VAL, ACVP_SAFE_PRIMES_FFDHE2048, x, y, 2, corrupt)) {
-        cr_assert_fail("safe primes init tc failure");
+        TEST_FAIL_MESSAGE("safe primes init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.safe_primes = safe_primes_tc;
     
     rv = app_safe_primes_handler(test_case);
-    cr_assert_neq(safe_primes_tc->result, 2);
+    TEST_ASSERT_NOT_EQUAL(2, safe_primes_tc->result);
     
     free_safe_primes_tc(safe_primes_tc);
     free(test_case);
 }
 #endif
 #endif
-

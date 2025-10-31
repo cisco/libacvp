@@ -149,6 +149,7 @@ AC_ARG_ENABLE([unit-tests],
     [Flag to indicate that the unit tests should be built in the test directory])],
     [ut="$enableval"],
     [enable_ut=false])
+
 # Backwards compatibility argument - deprecated
 AC_ARG_WITH([criterion-dir],
     [AS_HELP_STRING([--with-criterion-dir],

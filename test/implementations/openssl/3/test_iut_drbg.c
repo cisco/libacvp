@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -13,9 +13,11 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_TEST_CASE *test_case;
-ACVP_DRBG_TC *drbg_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_DRBG_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_DRBG_TC *drbg_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 void free_drbg_tc(ACVP_DRBG_TC *stc) {
     if (stc->drb) free(stc->drb);
@@ -41,8 +43,6 @@ int initialize_drbg_tc(ACVP_DRBG_TC *drbg_tc, int alg_id, int mode_id,
                        unsigned int entropy_len, unsigned int nonce_len, unsigned int drb_len,
                        unsigned int der_func_enabled, unsigned int pred_resist_enabled,
                        unsigned int reseed, int corrupt) {
-    ACVP_RESULT rv;
-
     if (!corrupt) {
         drbg_tc->drb = calloc(ACVP_DRB_BYTE_MAX, sizeof(unsigned char));
         if (!drbg_tc->drb) { goto err; }
@@ -185,10 +185,10 @@ err:
     return 0;
 }
 
-/*
- * bad cipher
- */
-Test(APP_DRBG_HANDLER, bad_cipher) {
+TEST_SETUP(APP_DRBG_HANDLER) {}
+TEST_TEAR_DOWN(APP_DRBG_HANDLER) {}
+
+TEST(APP_DRBG_HANDLER, bad_cipher) {
     char *ad0 = "AD4D53F913CEF2A6";
     char *ent0 = "CAEA62F10D1D2D25A9B682D4925CCF11BA7FB1B7FCC42C722475F1BF8ED38552";
     char *ad1 = "69CE80C1549A3393";
@@ -208,22 +208,20 @@ Test(APP_DRBG_HANDLER, bad_cipher) {
             64, 64, 256, //additional_input_len, perso_len, entropy_len
             64, 128, //nonce_len, drb_len (output)
             1, 0, 1, 0)) { //der_func_enabled, pred_resist_enabled, reseed, corrupt
-        cr_assert_fail("drbg init tc failure");
+        TEST_FAIL_MESSAGE("drbg init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.drbg = drbg_tc;
 
     rv = app_drbg_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_drbg_tc(drbg_tc);
     free(test_case);
 }
 
-/*
- * bad mode
- */
-Test(APP_DRBG_HANDLER, bad_mode) {
+// bad mode
+TEST(APP_DRBG_HANDLER, bad_mode) {
     char *ad0 = NULL;
     char *ent0 = NULL;
     char *ad1 = "16A682A659754C5E08CD6F52C07263A0";
@@ -243,12 +241,12 @@ Test(APP_DRBG_HANDLER, bad_mode) {
             128, 64, 256, //additional_input_len, perso_len, entropy_len
             64, 256, //nonce_len, drb_len (output)
             1, 1, 1, 0)) { //der_func_enabled, pred_resist_enabled, reseed, corrupt
-        cr_assert_fail("drbg init tc failure");
+        TEST_FAIL_MESSAGE("drbg init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.drbg = drbg_tc;
     rv = app_drbg_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     free_drbg_tc(drbg_tc);
 
     drbg_tc = calloc(1, sizeof(ACVP_DRBG_TC));
@@ -260,11 +258,11 @@ Test(APP_DRBG_HANDLER, bad_mode) {
             128, 64, 256, //additional_input_len, perso_len, entropy_len
             64, 256, //nonce_len, drb_len (output)
             1, 1, 1, 0)) { //der_func_enabled, pred_resist_enabled, reseed, corrupt
-        cr_assert_fail("drbg init tc failure");
+        TEST_FAIL_MESSAGE("drbg init tc failure");
     }
     test_case->tc.drbg = drbg_tc;
     rv = app_drbg_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     free_drbg_tc(drbg_tc);
 
     drbg_tc = calloc(1, sizeof(ACVP_DRBG_TC));
@@ -276,20 +274,18 @@ Test(APP_DRBG_HANDLER, bad_mode) {
             128, 64, 256, //additional_input_len, perso_len, entropy_len
             64, 256, //nonce_len, drb_len (output)
             1, 1, 1, 0)) { //der_func_enabled, pred_resist_enabled, reseed, corrupt
-        cr_assert_fail("drbg init tc failure");
+        TEST_FAIL_MESSAGE("drbg init tc failure");
     }
     test_case->tc.drbg = drbg_tc;
     rv = app_drbg_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     free_drbg_tc(drbg_tc);
 
     free(test_case);
 }
 
-/*
- * bad alloc for output
- */
-Test(APP_DRBG_HANDLER, bad_alloc_out) {
+// bad alloc for output
+TEST(APP_DRBG_HANDLER, bad_alloc_out) {
     char *ad0 = "EF430757010779411CB741268DBB8E626BD12975ACFBAD95";
     char *ent0 = "CAEA62F10D1D2D25E3A967F6C22971DFA67BD28853C0FFACD348F84CEBCD198E";
     char *ad1 = "262C0BD1CFD95F9E5AD8B30B9695815C7ED43728EB20D1F3";
@@ -309,22 +305,20 @@ Test(APP_DRBG_HANDLER, bad_alloc_out) {
             192, 256, 256, //additional_input_len, perso_len, entropy_len
             128, 0, //nonce_len, drb_len (output)
             1, 0, 1, 1)) { //der_func_enabled, pred_resist_enabled, reseed, corrupt
-        cr_assert_fail("drbg init tc failure");
+        TEST_FAIL_MESSAGE("drbg init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.drbg = drbg_tc;
 
     rv = app_drbg_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_drbg_tc(drbg_tc);
     free(test_case);
 }
 
-/*
- * Missing a (currently) required entropy value
- */
-Test(APP_DRBG_HANDLER, missing_entropy) {
+// Missing a (currently) required entropy value
+TEST(APP_DRBG_HANDLER, missing_entropy) {
     char *ad0 = "3D9597588DEC8519F848676B952CD66ABE0D2D056ED6386418309B63614540F9";
     char *ent0 = "700BF362EEDCFDFB1A984949B8B2FD8BA17015BFB3FB0EF85C6F4DAE931D7C59";
     char *ad1 = "70CC3371476CC53D969FBACEE004B123D20CD9BA95D6C52F5CCB3073A025212E";
@@ -344,22 +338,20 @@ Test(APP_DRBG_HANDLER, missing_entropy) {
             256, 256, 256, //additional_input_len, perso_len, entropy_len
             128, 256, //nonce_len, drb_len (output)
             1, 1, 0, 0)) { //der_func_enabled, pred_resist_enabled, reseed, corrupt
-        cr_assert_fail("drbg init tc failure");
+        TEST_FAIL_MESSAGE("drbg init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.drbg = drbg_tc;
 
     rv = app_drbg_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_drbg_tc(drbg_tc);
     free(test_case);
 }
 
-/*
- * Missing perso value
- */
-Test(APP_DRBG_HANDLER, no_perso) {
+// Missing perso value
+TEST(APP_DRBG_HANDLER, no_perso) {
     char *ad0 = NULL;
     char *ent0 = NULL;
     char *ad1 = "70CC3371476CC53D969FBACEE004B123D20CD9BA95D6C52F5CCB3073A025212E";
@@ -379,13 +371,13 @@ Test(APP_DRBG_HANDLER, no_perso) {
             256, 256, 256, //additional_input_len, perso_len, entropy_len
             128, 256, //nonce_len, drb_len (output)
             1, 1, 1, 0)) { //der_func_enabled, pred_resist_enabled, reseed, corrupt
-        cr_assert_fail("drbg init tc failure");
+        TEST_FAIL_MESSAGE("drbg init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.drbg = drbg_tc;
 
     rv = app_drbg_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_drbg_tc(drbg_tc);
     free(test_case);

@@ -1,29 +1,13 @@
 /** @file */
-/*****************************************************************************
-* Copyright (c) 2024, Cisco Systems, Inc.
-* All rights reserved.
+/*
+ * Copyright (c) 2025, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
 //
 // Created by edaw on 2019-01-07.
 //
@@ -33,9 +17,11 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_TEST_CASE *test_case;
-static ACVP_KDF135_SSH_TC *kdf135_ssh_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_KDF135_SSH_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_KDF135_SSH_TC *kdf135_ssh_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 void free_kdf135_ssh_tc(ACVP_KDF135_SSH_TC *stc) {
     if (stc->shared_secret_k) free(stc->shared_secret_k);
@@ -67,7 +53,6 @@ int initialize_kdf135_ssh_tc(ACVP_KDF135_SSH_TC *stc,
                              int corrupt) {
     unsigned int shared_secret_len = 0;
     unsigned int session_id_len = 0;
-    ACVP_RESULT rv;
     
     memzero_s(stc, sizeof(ACVP_KDF135_SSH_TC));
     
@@ -128,10 +113,11 @@ int initialize_kdf135_ssh_tc(ACVP_KDF135_SSH_TC *stc,
     return 0;
 }
 
-/*
- * invalid hash alg in kdf135_ssh tc test case
- */
-Test(APP_KDF135_SSH_HANDLER, invalid_hash_alg) {
+TEST_SETUP(APP_KDF135_SSH_HANDLER) {}
+TEST_TEAR_DOWN(APP_KDF135_SSH_HANDLER) {}
+
+// invalid hash alg in kdf135_ssh tc test case
+TEST(APP_KDF135_SSH_HANDLER, invalid_hash_alg) {
     /* arbitrary non-zero */
     int e_key_len = 8, i_key_len = 8, iv_len = 8, hash_len = 8;
     char *shared_secret_k = "aa";
@@ -143,22 +129,20 @@ Test(APP_KDF135_SSH_HANDLER, invalid_hash_alg) {
     
     if (!initialize_kdf135_ssh_tc(kdf135_ssh_tc, 0, e_key_len, i_key_len, iv_len, hash_len,
             shared_secret_k, hash_h, session_id, corrupt)) {
-        cr_assert_fail("kdf135 ssh init tc failure");
+        TEST_FAIL_MESSAGE("kdf135 ssh init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf135_ssh = kdf135_ssh_tc;
     
     rv = app_kdf135_ssh_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf135_ssh_tc(kdf135_ssh_tc);
     free(test_case);
 }
 
-/*
- * missing shared secret k in kdf135_ssh tc test case
- */
-Test(APP_KDF135_SSH_HANDLER, missing_ssk) {
+// missing shared secret k in kdf135_ssh tc test case
+TEST(APP_KDF135_SSH_HANDLER, missing_ssk) {
     /* arbitrary non-zero */
     int e_key_len = 8, i_key_len = 8, iv_len = 8, hash_len = 8;
     char *shared_secret_k = NULL;
@@ -170,22 +154,20 @@ Test(APP_KDF135_SSH_HANDLER, missing_ssk) {
     
     if (!initialize_kdf135_ssh_tc(kdf135_ssh_tc, ACVP_SHA256, e_key_len, i_key_len, iv_len, hash_len,
             shared_secret_k, hash_h, session_id, corrupt)) {
-        cr_assert_fail("kdf135 ssh init tc failure");
+        TEST_FAIL_MESSAGE("kdf135 ssh init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf135_ssh = kdf135_ssh_tc;
     
     rv = app_kdf135_ssh_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf135_ssh_tc(kdf135_ssh_tc);
     free(test_case);
 }
 
-/*
- * missing hash h in kdf135_ssh tc test case
- */
-Test(APP_KDF135_SSH_HANDLER, missing_hash_h) {
+// missing hash h in kdf135_ssh tc test case
+TEST(APP_KDF135_SSH_HANDLER, missing_hash_h) {
     /* arbitrary non-zero */
     int e_key_len = 8, i_key_len = 8, iv_len = 8, hash_len = 8;
     char *shared_secret_k = "aa";
@@ -197,22 +179,20 @@ Test(APP_KDF135_SSH_HANDLER, missing_hash_h) {
     
     if (!initialize_kdf135_ssh_tc(kdf135_ssh_tc, ACVP_SHA256, e_key_len, i_key_len, iv_len, hash_len,
             shared_secret_k, hash_h, session_id, corrupt)) {
-        cr_assert_fail("kdf135 ssh init tc failure");
+        TEST_FAIL_MESSAGE("kdf135 ssh init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf135_ssh = kdf135_ssh_tc;
     
     rv = app_kdf135_ssh_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf135_ssh_tc(kdf135_ssh_tc);
     free(test_case);
 }
 
-/*
- * missing session id in kdf135_ssh tc test case
- */
-Test(APP_KDF135_SSH_HANDLER, missing_session_id) {
+// missing session id in kdf135_ssh tc test case
+TEST(APP_KDF135_SSH_HANDLER, missing_session_id) {
     /* arbitrary non-zero */
     int e_key_len = 8, i_key_len = 8, iv_len = 8, hash_len = 8;
     char *shared_secret_k = "aa";
@@ -224,22 +204,20 @@ Test(APP_KDF135_SSH_HANDLER, missing_session_id) {
     
     if (!initialize_kdf135_ssh_tc(kdf135_ssh_tc, ACVP_SHA256, e_key_len, i_key_len, iv_len, hash_len,
             shared_secret_k, hash_h, session_id, corrupt)) {
-        cr_assert_fail("kdf135 ssh init tc failure");
+        TEST_FAIL_MESSAGE("kdf135 ssh init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf135_ssh = kdf135_ssh_tc;
     
     rv = app_kdf135_ssh_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf135_ssh_tc(kdf135_ssh_tc);
     free(test_case);
 }
 
-/*
- * unallocated answer bufs in kdf135_ssh tc test case
- */
-Test(APP_KDF135_SSH_HANDLER, unallocated_ans_bufs) {
+// unallocated answer bufs in kdf135_ssh tc test case
+TEST(APP_KDF135_SSH_HANDLER, unallocated_ans_bufs) {
     /* arbitrary non-zero */
     int e_key_len = 8, i_key_len = 8, iv_len = 8, hash_len = 8;
     char *shared_secret_k = "aa";
@@ -251,13 +229,13 @@ Test(APP_KDF135_SSH_HANDLER, unallocated_ans_bufs) {
     
     if (!initialize_kdf135_ssh_tc(kdf135_ssh_tc, ACVP_SHA256, e_key_len, i_key_len, iv_len, hash_len,
             shared_secret_k, hash_h, session_id, corrupt)) {
-        cr_assert_fail("kdf135 ssh init tc failure");
+        TEST_FAIL_MESSAGE("kdf135 ssh init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf135_ssh = kdf135_ssh_tc;
     
     rv = app_kdf135_ssh_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf135_ssh_tc(kdf135_ssh_tc);
     free(test_case);

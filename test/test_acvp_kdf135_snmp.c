@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,23 +8,53 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
 #include "ut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx;
+TEST_GROUP(Kdf135SnmpApi);
+TEST_GROUP(Kdf135SnmpFail);
+TEST_GROUP(Kdf135SnmpFunc);
+
+static ACVP_CTX *ctx = NULL;
+static ACVP_RESULT rv = 0;
+static JSON_Object *obj = NULL;
+static JSON_Value *val = NULL;
 static char cvalue[] = "same";
 
-/*
- * Test kdf135 SNMP handler API inputs
- */
-Test(Kdf135SnmpApi, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
+TEST_SETUP(Kdf135SnmpApi) {
     setup_empty_ctx(&ctx);
+}
 
+TEST_TEAR_DOWN(Kdf135SnmpApi) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(Kdf135SnmpFail) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(Kdf135SnmpFail) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(Kdf135SnmpFunc) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(Kdf135SnmpFunc) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST(Kdf135SnmpApi, null_ctx) {
     val = json_parse_file("json/kdf135_snmp/kdf135_snmp1.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -35,50 +65,39 @@ Test(Kdf135SnmpApi, null_ctx) {
 
     /* Test with unregistered ctx */
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
 
     /* Enable capabilites */
     rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_snmp_set_engid(ctx, ACVP_KDF135_SNMP, "AB37BDE5657AB");
-    cr_assert(rv == ACVP_SUCCESS);
-
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     /* Test with NULL ctx */
     rv  = acvp_kdf135_snmp_kat_handler(NULL, obj);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     /* Test with NULL JSON object */
     rv  = acvp_kdf135_snmp_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
-
-    teardown_ctx(&ctx);
-    json_value_free(val);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
-/*
- * Test kdf135 SNMP handler functionally
- */
-Test(Kdf135SnmpFunc, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
+// Test kdf135 SNMP handler functionally
+TEST(Kdf135SnmpFunc, null_ctx) {
 
     /* Enable capabilites */
     rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_snmp_set_engid(ctx, ACVP_KDF135_SNMP, "AB37BDE5657AB");
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     /* This is a proper JSON, positive test */
     val = json_parse_file("json/kdf135_snmp/kdf135_snmp1.json");
@@ -89,9 +108,8 @@ Test(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
-
 
     /* This is a corrupt JSON, missing engineId */
     val = json_parse_file("json/kdf135_snmp/kdf135_snmp2.json");
@@ -102,7 +120,7 @@ Test(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
     
 
@@ -115,7 +133,7 @@ Test(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, password does not match passwordLength */
@@ -127,7 +145,7 @@ Test(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, password not in test case */
@@ -139,7 +157,7 @@ Test(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, no tests */
@@ -151,7 +169,7 @@ Test(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, no testGroups */
@@ -163,7 +181,7 @@ Test(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, no tcId */
@@ -175,7 +193,7 @@ Test(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, corrupt algorithm */
@@ -187,7 +205,7 @@ Test(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
 
     /* This is a corrupt JSON, no tgId */
@@ -199,32 +217,22 @@ Test(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
-
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
-/*
- * The key: crypto handler operation fails on first call
- */
-Test(Kdf135SnmpFail, cryptoFail1) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
+// The key: crypto handler operation fails on first call
+TEST(Kdf135SnmpFail, cryptoFail1) {
+    force_handler_failure = 1;
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_snmp_set_engid(ctx, ACVP_KDF135_SNMP, "AB37BDE5657AB");
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     val = json_parse_file("json/kdf135_snmp/kdf135_snmp1.json");
     
@@ -236,30 +244,23 @@ Test(Kdf135SnmpFail, cryptoFail1) {
     counter_set = 0;
     counter_fail = 0; /* fail on first iteration */
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
-    json_value_free(val);
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
+    force_handler_failure = 0;
 }
 
-/*
- * The key: crypto handler operation fails on last crypto call
- */
-Test(Kdf135SnmpFail, cryptoFail2) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
+// The key: crypto handler operation fails on last crypto call
+TEST(Kdf135SnmpFail, cryptoFail2) {
+    force_handler_failure = 1;
 
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_snmp_set_engid(ctx, ACVP_KDF135_SNMP, "AB37BDE5657AB");
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     val = json_parse_file("json/kdf135_snmp/kdf135_snmp1.json");
     
@@ -271,30 +272,22 @@ Test(Kdf135SnmpFail, cryptoFail2) {
     counter_set = 0;
     counter_fail = 9; /* fail on tenth iteration */
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
-    json_value_free(val);
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
+    force_handler_failure = 0;
 }
 
-/*
- * The key:"engineId" is missing in secong tg
- */
-Test(Kdf135SnmpFail, tcidFail) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
+// The key:"engineId" is missing in secong tg
+TEST(Kdf135SnmpFail, tcidFail) {
 
     /* Enable capabilites */
     rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_snmp_set_engid(ctx, ACVP_KDF135_SNMP, "AB37BDE5657AB");
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     val = json_parse_file("json/kdf135_snmp/kdf135_snmp11.json");
     
@@ -304,30 +297,21 @@ Test(Kdf135SnmpFail, tcidFail) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
-    json_value_free(val);
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
 }
 
-/*
- * The key:"password" is missing in eighth tc
- */
-Test(Kdf135SnmpFail, tcFail) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
+// The key:"password" is missing in eighth tc
+TEST(Kdf135SnmpFail, tcFail) {
 
     /* Enable capabilites */
     rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_snmp_set_engid(ctx, ACVP_KDF135_SNMP, "AB37BDE5657AB");
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     val = json_parse_file("json/kdf135_snmp/kdf135_snmp12.json");
     
@@ -337,8 +321,5 @@ Test(Kdf135SnmpFail, tcFail) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
-    json_value_free(val);
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
 }
-

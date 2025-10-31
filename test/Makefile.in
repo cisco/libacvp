@@ -90,7 +90,16 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 noinst_PROGRAMS = runtest$(EXEEXT)
-@LIB_NOT_SUPPORTED_FALSE@am__append_1 = create_session.c \
+
+# Define APP_NOT_SUPPORTED if app is disabled
+@APP_NOT_SUPPORTED_TRUE@am__append_1 = -DAPP_NOT_SUPPORTED
+
+# Define LIB_NOT_SUPPORTED if lib is disabled
+@LIB_NOT_SUPPORTED_TRUE@am__append_2 = -DLIB_NOT_SUPPORTED
+
+# Only build library tests if library is being built
+@LIB_NOT_SUPPORTED_FALSE@am__append_3 = run_lib_tests.c \
+@LIB_NOT_SUPPORTED_FALSE@      create_session.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_utils.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_drbg.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_dsa.c \
@@ -126,10 +135,11 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_kda.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_kmac.c
 
-@LIB_NOT_SUPPORTED_FALSE@am__append_2 = $(LIBCURL_CFLAGS)
-@LIB_NOT_SUPPORTED_FALSE@am__append_3 = $(LIBCURL_LDFLAGS)
-@APP_NOT_SUPPORTED_FALSE@am__append_4 = app_common.c
-@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@am__append_5 = implementations/openssl/3/test_iut_aes.c \
+@LIB_NOT_SUPPORTED_FALSE@am__append_4 = $(LIBCURL_CFLAGS)
+@LIB_NOT_SUPPORTED_FALSE@am__append_5 = $(LIBCURL_LDFLAGS)
+@APP_NOT_SUPPORTED_FALSE@am__append_6 = app_common.c
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@am__append_7 = implementations/openssl/3/run_app_tests.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_aes.c \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_cmac.c \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_des.c \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_drbg.c \
@@ -151,7 +161,7 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_kts_ifc.c \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_pbkdf.c
 
-@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@am__append_6 = ../app/implementations/openssl/3/acvp_app-iut.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@am__append_8 = ../app/implementations/openssl/3/acvp_app-iut.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_utils.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-fp_30X.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-fp_312.o \
@@ -178,15 +188,15 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_ml_kem.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_slh_dsa.o
 
-@APP_IUT_LIBOQS_TRUE@@APP_NOT_SUPPORTED_FALSE@am__append_7 = ../app/implementations/liboqs/acvp_app-iut.o \
+@APP_IUT_LIBOQS_TRUE@@APP_NOT_SUPPORTED_FALSE@am__append_9 = ../app/implementations/liboqs/acvp_app-iut.o \
 @APP_IUT_LIBOQS_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/liboqs/acvp_app-iut_ml_kem.o \
 @APP_IUT_LIBOQS_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/liboqs/acvp_app-iut_ml_dsa.o
 
-@APP_IUT_JENT_TRUE@@APP_NOT_SUPPORTED_FALSE@am__append_8 = ../app/implementations/jitter_entropy/acvp_app-iut.o
-@APP_NOT_SUPPORTED_FALSE@am__append_9 = $(IUT_CFLAGS) -I../app
-@APP_NOT_SUPPORTED_FALSE@am__append_10 = $(IUT_LDFLAGS)
-@APP_NOT_SUPPORTED_FALSE@am__append_11 = $(APP_LINK) $(IUT_LIBS)
-@APP_NOT_SUPPORTED_FALSE@am__append_12 = app_common.h
+@APP_IUT_JENT_TRUE@@APP_NOT_SUPPORTED_FALSE@am__append_10 = ../app/implementations/jitter_entropy/acvp_app-iut.o
+@APP_NOT_SUPPORTED_FALSE@am__append_11 = $(IUT_CFLAGS) -I../app
+@APP_NOT_SUPPORTED_FALSE@am__append_12 = $(IUT_LDFLAGS)
+@APP_NOT_SUPPORTED_FALSE@am__append_13 = $(APP_LINK) $(IUT_LIBS)
+@APP_NOT_SUPPORTED_FALSE@am__append_14 = app_common.h
 subdir = test
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -201,7 +211,8 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
-am__runtest_SOURCES_DIST = ut_common.c create_session.c \
+am__runtest_SOURCES_DIST = run_all_tests.c ut_common.c unity/unity.c \
+	unity/unity_fixture.c run_lib_tests.c create_session.c \
 	test_acvp_utils.c test_acvp_drbg.c test_acvp_dsa.c \
 	test_acvp_hmac.c test_acvp_kdf135_ssh.c \
 	test_acvp_kdf135_snmp.c test_acvp_kdf135_x963.c \
@@ -216,7 +227,8 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 	test_acvp_ecdsa.c test_acvp_kas_ecc.c test_acvp_kas_ifc.c \
 	test_acvp_kts_ifc.c test_acvp_kas_ffc.c \
 	test_acvp_safe_primes.c test_acvp_kda.c test_acvp_kmac.c \
-	app_common.c implementations/openssl/3/test_iut_aes.c \
+	app_common.c implementations/openssl/3/run_app_tests.c \
+	implementations/openssl/3/test_iut_aes.c \
 	implementations/openssl/3/test_iut_cmac.c \
 	implementations/openssl/3/test_iut_des.c \
 	implementations/openssl/3/test_iut_drbg.c \
@@ -237,7 +249,9 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 	implementations/openssl/3/test_iut_kdf135_ssh.c \
 	implementations/openssl/3/test_iut_kts_ifc.c \
 	implementations/openssl/3/test_iut_pbkdf.c
+am__dirstamp = $(am__leading_dot)dirstamp
 @LIB_NOT_SUPPORTED_FALSE@am__objects_1 =  \
+@LIB_NOT_SUPPORTED_FALSE@	runtest-run_lib_tests.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-create_session.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_utils.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_drbg.$(OBJEXT) \
@@ -274,8 +288,8 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kda.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kmac.$(OBJEXT)
 @APP_NOT_SUPPORTED_FALSE@am__objects_2 = runtest-app_common.$(OBJEXT)
-am__dirstamp = $(am__leading_dot)dirstamp
-@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@am__objects_3 = implementations/openssl/3/runtest-test_iut_aes.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@am__objects_3 = implementations/openssl/3/runtest-run_app_tests.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_aes.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_cmac.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_des.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_drbg.$(OBJEXT) \
@@ -296,7 +310,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_kdf135_ssh.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_kts_ifc.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_pbkdf.$(OBJEXT)
-am_runtest_OBJECTS = runtest-ut_common.$(OBJEXT) $(am__objects_1) \
+am_runtest_OBJECTS = runtest-run_all_tests.$(OBJEXT) \
+	runtest-ut_common.$(OBJEXT) unity/runtest-unity.$(OBJEXT) \
+	unity/runtest-unity_fixture.$(OBJEXT) $(am__objects_1) \
 	$(am__objects_2) $(am__objects_3)
 runtest_OBJECTS = $(am_runtest_OBJECTS)
 am__DEPENDENCIES_1 =
@@ -328,6 +344,8 @@ depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/runtest-app_common.Po \
 	./$(DEPDIR)/runtest-create_session.Po \
+	./$(DEPDIR)/runtest-run_all_tests.Po \
+	./$(DEPDIR)/runtest-run_lib_tests.Po \
 	./$(DEPDIR)/runtest-test_acvp.Po \
 	./$(DEPDIR)/runtest-test_acvp_aes.Po \
 	./$(DEPDIR)/runtest-test_acvp_build_register.Po \
@@ -363,6 +381,7 @@ am__depfiles_remade = ./$(DEPDIR)/runtest-app_common.Po \
 	./$(DEPDIR)/runtest-test_acvp_transport.Po \
 	./$(DEPDIR)/runtest-test_acvp_utils.Po \
 	./$(DEPDIR)/runtest-ut_common.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-run_app_tests.Po \
 	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Po \
 	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Po \
 	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Po \
@@ -383,7 +402,9 @@ am__depfiles_remade = ./$(DEPDIR)/runtest-app_common.Po \
 	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_pbkdf.Po \
 	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Po \
 	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Po \
-	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Po
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Po \
+	unity/$(DEPDIR)/runtest-unity.Po \
+	unity/$(DEPDIR)/runtest-unity_fixture.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -410,7 +431,8 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-am__runtest_HEADERS_DIST = ut_common.h app_common.h
+am__runtest_HEADERS_DIST = ut_common.h unity/unity_internals.h \
+	unity/unity_fixture_internals.h app_common.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -463,7 +485,7 @@ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 ADDL_LIB_DEPENDENCIES = @ADDL_LIB_DEPENDENCIES@
 AMTAR = @AMTAR@
-AM_CFLAGS = @AM_CFLAGS@
+AM_CFLAGS = @AM_CFLAGS@ -Wno-nested-externs
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
@@ -594,26 +616,31 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-runtest_SOURCES = ut_common.c $(am__append_1) $(am__append_4) \
-	$(am__append_5)
+runtest_SOURCES = run_all_tests.c ut_common.c unity/unity.c \
+	unity/unity_fixture.c $(am__append_3) $(am__append_6) \
+	$(am__append_7)
 tmp_cflags = -g -O0 -Wall -DNO_SSL_DL $(SAFEC_CFLAGS) \
-	$(CRITERION_CFLAGS) $(LIBACVP_CFLAGS) -I../include \
-	$(am__append_2) $(am__append_9)
-tmp_ldflags = $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS) \
-	$(am__append_3) $(am__append_10)
+	$(LIBACVP_CFLAGS) -I../include $(am__append_1) $(am__append_2) \
+	$(am__append_4) $(am__append_11)
+tmp_ldflags = $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS) $(am__append_5) \
+	$(am__append_12)
 @APP_NOT_SUPPORTED_FALSE@APP_LINK = ../app/acvp_app-app_cli.o \
 @APP_NOT_SUPPORTED_FALSE@	../app/acvp_app-app_utils.o \
 @APP_NOT_SUPPORTED_FALSE@	../app/totp/acvp_app-hmac_sha256.o \
 @APP_NOT_SUPPORTED_FALSE@	../app/totp/acvp_app-sha256.o \
 @APP_NOT_SUPPORTED_FALSE@	../app/totp/acvp_app-totp.o \
-@APP_NOT_SUPPORTED_FALSE@	$(am__append_6) $(am__append_7) \
-@APP_NOT_SUPPORTED_FALSE@	$(am__append_8)
-runtest_CFLAGS = ${tmp_cflags}
+@APP_NOT_SUPPORTED_FALSE@	$(am__append_8) $(am__append_9) \
+@APP_NOT_SUPPORTED_FALSE@	$(am__append_10)
+
+# UNITY_FIXTURE_NO_EXTRAS disables reliance on Unity's memory checking (Use valgrind if you want!)
+# Disabling nested-externs warning for Unity framework files as it is designed in a way that those warnings are inevitable
+runtest_CFLAGS = ${tmp_cflags} -DUNITY_FIXTURE_NO_EXTRAS
 runtest_LDFLAGS = ${tmp_ldflags}
-ldadd = $(ADDL_LIB_DEPENDENCIES) $(am__append_11)
+ldadd = $(ADDL_LIB_DEPENDENCIES) $(am__append_13)
 runtest_LDADD = $(ldadd)
 runtestdir = 
-runtest_HEADERS = ut_common.h $(am__append_12)
+runtest_HEADERS = ut_common.h unity/unity_internals.h \
+	unity/unity_fixture_internals.h $(am__append_14)
 all: all-am
 
 .SUFFIXES:
@@ -656,12 +683,25 @@ clean-noinstPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+unity/$(am__dirstamp):
+	@$(MKDIR_P) unity
+	@: > unity/$(am__dirstamp)
+unity/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) unity/$(DEPDIR)
+	@: > unity/$(DEPDIR)/$(am__dirstamp)
+unity/runtest-unity.$(OBJEXT): unity/$(am__dirstamp) \
+	unity/$(DEPDIR)/$(am__dirstamp)
+unity/runtest-unity_fixture.$(OBJEXT): unity/$(am__dirstamp) \
+	unity/$(DEPDIR)/$(am__dirstamp)
 implementations/openssl/3/$(am__dirstamp):
 	@$(MKDIR_P) implementations/openssl/3
 	@: > implementations/openssl/3/$(am__dirstamp)
 implementations/openssl/3/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) implementations/openssl/3/$(DEPDIR)
 	@: > implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-run_app_tests.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
 implementations/openssl/3/runtest-test_iut_aes.$(OBJEXT):  \
 	implementations/openssl/3/$(am__dirstamp) \
 	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
@@ -733,12 +773,15 @@ runtest$(EXEEXT): $(runtest_OBJECTS) $(runtest_DEPENDENCIES) $(EXTRA_runtest_DEP
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f implementations/openssl/3/*.$(OBJEXT)
+	-rm -f unity/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-app_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-create_session.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-run_all_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-run_lib_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_aes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_build_register.Po@am__quote@ # am--include-marker
@@ -774,6 +817,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_transport.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-ut_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-run_app_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Po@am__quote@ # am--include-marker
@@ -795,6 +839,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@unity/$(DEPDIR)/runtest-unity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@unity/$(DEPDIR)/runtest-unity_fixture.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -826,6 +872,20 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
+runtest-run_all_tests.o: run_all_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-run_all_tests.o -MD -MP -MF $(DEPDIR)/runtest-run_all_tests.Tpo -c -o runtest-run_all_tests.o `test -f 'run_all_tests.c' || echo '$(srcdir)/'`run_all_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-run_all_tests.Tpo $(DEPDIR)/runtest-run_all_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='run_all_tests.c' object='runtest-run_all_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-run_all_tests.o `test -f 'run_all_tests.c' || echo '$(srcdir)/'`run_all_tests.c
+
+runtest-run_all_tests.obj: run_all_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-run_all_tests.obj -MD -MP -MF $(DEPDIR)/runtest-run_all_tests.Tpo -c -o runtest-run_all_tests.obj `if test -f 'run_all_tests.c'; then $(CYGPATH_W) 'run_all_tests.c'; else $(CYGPATH_W) '$(srcdir)/run_all_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-run_all_tests.Tpo $(DEPDIR)/runtest-run_all_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='run_all_tests.c' object='runtest-run_all_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-run_all_tests.obj `if test -f 'run_all_tests.c'; then $(CYGPATH_W) 'run_all_tests.c'; else $(CYGPATH_W) '$(srcdir)/run_all_tests.c'; fi`
+
 runtest-ut_common.o: ut_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-ut_common.o -MD -MP -MF $(DEPDIR)/runtest-ut_common.Tpo -c -o runtest-ut_common.o `test -f 'ut_common.c' || echo '$(srcdir)/'`ut_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-ut_common.Tpo $(DEPDIR)/runtest-ut_common.Po
@@ -839,6 +899,48 @@ runtest-ut_common.obj: ut_common.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ut_common.c' object='runtest-ut_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-ut_common.obj `if test -f 'ut_common.c'; then $(CYGPATH_W) 'ut_common.c'; else $(CYGPATH_W) '$(srcdir)/ut_common.c'; fi`
+
+unity/runtest-unity.o: unity/unity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT unity/runtest-unity.o -MD -MP -MF unity/$(DEPDIR)/runtest-unity.Tpo -c -o unity/runtest-unity.o `test -f 'unity/unity.c' || echo '$(srcdir)/'`unity/unity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) unity/$(DEPDIR)/runtest-unity.Tpo unity/$(DEPDIR)/runtest-unity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='unity/unity.c' object='unity/runtest-unity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o unity/runtest-unity.o `test -f 'unity/unity.c' || echo '$(srcdir)/'`unity/unity.c
+
+unity/runtest-unity.obj: unity/unity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT unity/runtest-unity.obj -MD -MP -MF unity/$(DEPDIR)/runtest-unity.Tpo -c -o unity/runtest-unity.obj `if test -f 'unity/unity.c'; then $(CYGPATH_W) 'unity/unity.c'; else $(CYGPATH_W) '$(srcdir)/unity/unity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) unity/$(DEPDIR)/runtest-unity.Tpo unity/$(DEPDIR)/runtest-unity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='unity/unity.c' object='unity/runtest-unity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o unity/runtest-unity.obj `if test -f 'unity/unity.c'; then $(CYGPATH_W) 'unity/unity.c'; else $(CYGPATH_W) '$(srcdir)/unity/unity.c'; fi`
+
+unity/runtest-unity_fixture.o: unity/unity_fixture.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT unity/runtest-unity_fixture.o -MD -MP -MF unity/$(DEPDIR)/runtest-unity_fixture.Tpo -c -o unity/runtest-unity_fixture.o `test -f 'unity/unity_fixture.c' || echo '$(srcdir)/'`unity/unity_fixture.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) unity/$(DEPDIR)/runtest-unity_fixture.Tpo unity/$(DEPDIR)/runtest-unity_fixture.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='unity/unity_fixture.c' object='unity/runtest-unity_fixture.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o unity/runtest-unity_fixture.o `test -f 'unity/unity_fixture.c' || echo '$(srcdir)/'`unity/unity_fixture.c
+
+unity/runtest-unity_fixture.obj: unity/unity_fixture.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT unity/runtest-unity_fixture.obj -MD -MP -MF unity/$(DEPDIR)/runtest-unity_fixture.Tpo -c -o unity/runtest-unity_fixture.obj `if test -f 'unity/unity_fixture.c'; then $(CYGPATH_W) 'unity/unity_fixture.c'; else $(CYGPATH_W) '$(srcdir)/unity/unity_fixture.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) unity/$(DEPDIR)/runtest-unity_fixture.Tpo unity/$(DEPDIR)/runtest-unity_fixture.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='unity/unity_fixture.c' object='unity/runtest-unity_fixture.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o unity/runtest-unity_fixture.obj `if test -f 'unity/unity_fixture.c'; then $(CYGPATH_W) 'unity/unity_fixture.c'; else $(CYGPATH_W) '$(srcdir)/unity/unity_fixture.c'; fi`
+
+runtest-run_lib_tests.o: run_lib_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-run_lib_tests.o -MD -MP -MF $(DEPDIR)/runtest-run_lib_tests.Tpo -c -o runtest-run_lib_tests.o `test -f 'run_lib_tests.c' || echo '$(srcdir)/'`run_lib_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-run_lib_tests.Tpo $(DEPDIR)/runtest-run_lib_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='run_lib_tests.c' object='runtest-run_lib_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-run_lib_tests.o `test -f 'run_lib_tests.c' || echo '$(srcdir)/'`run_lib_tests.c
+
+runtest-run_lib_tests.obj: run_lib_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-run_lib_tests.obj -MD -MP -MF $(DEPDIR)/runtest-run_lib_tests.Tpo -c -o runtest-run_lib_tests.obj `if test -f 'run_lib_tests.c'; then $(CYGPATH_W) 'run_lib_tests.c'; else $(CYGPATH_W) '$(srcdir)/run_lib_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-run_lib_tests.Tpo $(DEPDIR)/runtest-run_lib_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='run_lib_tests.c' object='runtest-run_lib_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-run_lib_tests.obj `if test -f 'run_lib_tests.c'; then $(CYGPATH_W) 'run_lib_tests.c'; else $(CYGPATH_W) '$(srcdir)/run_lib_tests.c'; fi`
 
 runtest-create_session.o: create_session.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-create_session.o -MD -MP -MF $(DEPDIR)/runtest-create_session.Tpo -c -o runtest-create_session.o `test -f 'create_session.c' || echo '$(srcdir)/'`create_session.c
@@ -1344,6 +1446,20 @@ runtest-app_common.obj: app_common.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-app_common.obj `if test -f 'app_common.c'; then $(CYGPATH_W) 'app_common.c'; else $(CYGPATH_W) '$(srcdir)/app_common.c'; fi`
 
+implementations/openssl/3/runtest-run_app_tests.o: implementations/openssl/3/run_app_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-run_app_tests.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-run_app_tests.Tpo -c -o implementations/openssl/3/runtest-run_app_tests.o `test -f 'implementations/openssl/3/run_app_tests.c' || echo '$(srcdir)/'`implementations/openssl/3/run_app_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-run_app_tests.Tpo implementations/openssl/3/$(DEPDIR)/runtest-run_app_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/run_app_tests.c' object='implementations/openssl/3/runtest-run_app_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-run_app_tests.o `test -f 'implementations/openssl/3/run_app_tests.c' || echo '$(srcdir)/'`implementations/openssl/3/run_app_tests.c
+
+implementations/openssl/3/runtest-run_app_tests.obj: implementations/openssl/3/run_app_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-run_app_tests.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-run_app_tests.Tpo -c -o implementations/openssl/3/runtest-run_app_tests.obj `if test -f 'implementations/openssl/3/run_app_tests.c'; then $(CYGPATH_W) 'implementations/openssl/3/run_app_tests.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/run_app_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-run_app_tests.Tpo implementations/openssl/3/$(DEPDIR)/runtest-run_app_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/run_app_tests.c' object='implementations/openssl/3/runtest-run_app_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-run_app_tests.obj `if test -f 'implementations/openssl/3/run_app_tests.c'; then $(CYGPATH_W) 'implementations/openssl/3/run_app_tests.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/run_app_tests.c'; fi`
+
 implementations/openssl/3/runtest-test_iut_aes.o: implementations/openssl/3/test_iut_aes.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_aes.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Tpo -c -o implementations/openssl/3/runtest-test_iut_aes.o `test -f 'implementations/openssl/3/test_iut_aes.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_aes.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Po
@@ -1785,6 +1901,8 @@ distclean-generic:
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
 	-rm -f implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
 	-rm -f implementations/openssl/3/$(am__dirstamp)
+	-rm -f unity/$(DEPDIR)/$(am__dirstamp)
+	-rm -f unity/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -1797,6 +1915,8 @@ clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/runtest-app_common.Po
 	-rm -f ./$(DEPDIR)/runtest-create_session.Po
+	-rm -f ./$(DEPDIR)/runtest-run_all_tests.Po
+	-rm -f ./$(DEPDIR)/runtest-run_lib_tests.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_aes.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_build_register.Po
@@ -1832,6 +1952,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_transport.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_utils.Po
 	-rm -f ./$(DEPDIR)/runtest-ut_common.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-run_app_tests.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Po
@@ -1853,6 +1974,8 @@ distclean: distclean-am
 	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Po
+	-rm -f unity/$(DEPDIR)/runtest-unity.Po
+	-rm -f unity/$(DEPDIR)/runtest-unity_fixture.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1900,6 +2023,8 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/runtest-app_common.Po
 	-rm -f ./$(DEPDIR)/runtest-create_session.Po
+	-rm -f ./$(DEPDIR)/runtest-run_all_tests.Po
+	-rm -f ./$(DEPDIR)/runtest-run_lib_tests.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_aes.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_build_register.Po
@@ -1935,6 +2060,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_transport.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_utils.Po
 	-rm -f ./$(DEPDIR)/runtest-ut_common.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-run_app_tests.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Po
@@ -1956,6 +2082,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Po
+	-rm -f unity/$(DEPDIR)/runtest-unity.Po
+	-rm -f unity/$(DEPDIR)/runtest-unity_fixture.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

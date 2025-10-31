@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -17,9 +17,11 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_TEST_CASE *test_case;
-ACVP_KAS_ECC_TC *kas_ecc_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_KAS_ECC_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_KAS_ECC_TC *kas_ecc_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 void free_kas_ecc_tc(ACVP_KAS_ECC_TC *stc) {
     if (stc->chash) free(stc->chash);
@@ -36,10 +38,8 @@ int initialize_kas_ecc_cdh_tc(ACVP_KAS_ECC_TC *stc,
                               ACVP_KAS_ECC_TEST_TYPE test_type,
                               ACVP_EC_CURVE curve,
                               const char *psx,
-                              const char *psy,
-                              int corrupt) {
-    ACVP_RESULT rv;
-    
+                             const char *psy,
+                             int corrupt) {
     stc->mode = ACVP_KAS_ECC_MODE_CDH;
     stc->curve = curve;
     stc->test_type = test_type;
@@ -93,11 +93,9 @@ int initialize_kas_ecc_comp_tc(ACVP_KAS_ECC_TC *stc,
                                const char *psy,
                                const char *d,
                                const char *pix,
-                               const char *piy,
-                               const char *z,
-                               int corrupt) {
-    ACVP_RESULT rv;
-    
+                              const char *piy,
+                              const char *z,
+                              int corrupt) {
     stc->mode = ACVP_KAS_ECC_MODE_COMPONENT;
     stc->curve = curve;
     stc->md = hash;
@@ -186,12 +184,15 @@ int initialize_kas_ecc_comp_tc(ACVP_KAS_ECC_TC *stc,
     return 0;
 }
 
+TEST_SETUP(APP_KAS_ECC_HANDLER) {}
+TEST_TEAR_DOWN(APP_KAS_ECC_HANDLER) {}
+
 /*
  * invalid curve kas ecc handler
  * this code is shared in the handler between the two
  * modes, so no need to test both initializers
  */
-Test(APP_KAS_ECC_HANDLER, invalid_curve) {
+TEST(APP_KAS_ECC_HANDLER, invalid_curve) {
     int corrupt = 0;
     int curve = 0;
     char *psx = "aa";
@@ -201,22 +202,20 @@ Test(APP_KAS_ECC_HANDLER, invalid_curve) {
     
     if (!initialize_kas_ecc_cdh_tc(kas_ecc_tc, ACVP_KAS_ECC_TT_VAL, curve,
             psx, psy, corrupt)) {
-        cr_assert_fail("kas ecc init tc failure");
+        TEST_FAIL_MESSAGE("kas ecc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ecc = kas_ecc_tc;
     
     rv = app_kas_ecc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ecc_tc(kas_ecc_tc);
     free(test_case);
 }
 
-/*
- * invalid hash alg kas ecc comp handler
- */
-Test(APP_KAS_ECC_HANDLER, invalid_hash_ecc_comp) {
+// invalid hash alg kas ecc comp handler
+TEST(APP_KAS_ECC_HANDLER, invalid_hash_ecc_comp) {
     int corrupt = 0;
     int curve = ACVP_EC_CURVE_B283;
     char *psx = "aa";
@@ -231,13 +230,13 @@ Test(APP_KAS_ECC_HANDLER, invalid_hash_ecc_comp) {
     
     if (!initialize_kas_ecc_comp_tc(kas_ecc_tc, ACVP_KAS_ECC_TT_VAL, curve, hash_alg,
             psx, psy, d, pix, piy, z, corrupt)) {
-        cr_assert_fail("kas ecc init tc failure");
+        TEST_FAIL_MESSAGE("kas ecc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ecc = kas_ecc_tc;
     
     rv = app_kas_ecc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ecc_tc(kas_ecc_tc);
     free(test_case);
@@ -248,7 +247,7 @@ Test(APP_KAS_ECC_HANDLER, invalid_hash_ecc_comp) {
  * this code is shared in the handler between the two
  * modes, so no need to test both initializers
  */
-Test(APP_KAS_ECC_HANDLER, missing_psx) {
+TEST(APP_KAS_ECC_HANDLER, missing_psx) {
     int corrupt = 0;
     int curve = ACVP_EC_CURVE_B571;
     char *psx = NULL;
@@ -258,13 +257,13 @@ Test(APP_KAS_ECC_HANDLER, missing_psx) {
     
     if (!initialize_kas_ecc_cdh_tc(kas_ecc_tc, ACVP_KAS_ECC_TT_VAL, curve,
             psx, psy, corrupt)) {
-        cr_assert_fail("kas ecc init tc failure");
+        TEST_FAIL_MESSAGE("kas ecc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ecc = kas_ecc_tc;
     
     rv = app_kas_ecc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ecc_tc(kas_ecc_tc);
     free(test_case);
@@ -275,7 +274,7 @@ Test(APP_KAS_ECC_HANDLER, missing_psx) {
  * this code is shared in the handler between the two
  * modes, so no need to test both initializers
  */
-Test(APP_KAS_ECC_HANDLER, missing_psy) {
+TEST(APP_KAS_ECC_HANDLER, missing_psy) {
     int corrupt = 0;
     int curve = ACVP_EC_CURVE_B571;
     char *psx = "aa";
@@ -285,22 +284,20 @@ Test(APP_KAS_ECC_HANDLER, missing_psy) {
     
     if (!initialize_kas_ecc_cdh_tc(kas_ecc_tc, ACVP_KAS_ECC_TT_AFT, curve,
             psx, psy, corrupt)) {
-        cr_assert_fail("kas ecc init tc failure");
+        TEST_FAIL_MESSAGE("kas ecc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ecc = kas_ecc_tc;
     
     rv = app_kas_ecc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ecc_tc(kas_ecc_tc);
     free(test_case);
 }
 
-/*
- * missing pix kas ecc comp handler
- */
-Test(APP_KAS_ECC_HANDLER, missing_pix) {
+// missing pix kas ecc comp handler
+TEST(APP_KAS_ECC_HANDLER, missing_pix) {
     int corrupt = 0;
     int curve = ACVP_EC_CURVE_B283;
     char *psx = "aa";
@@ -315,22 +312,20 @@ Test(APP_KAS_ECC_HANDLER, missing_pix) {
     
     if (!initialize_kas_ecc_comp_tc(kas_ecc_tc, ACVP_KAS_ECC_TT_VAL, curve, hash_alg,
             psx, psy, d, pix, piy, z, corrupt)) {
-        cr_assert_fail("kas ecc init tc failure");
+        TEST_FAIL_MESSAGE("kas ecc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ecc = kas_ecc_tc;
     
     rv = app_kas_ecc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ecc_tc(kas_ecc_tc);
     free(test_case);
 }
 
-/*
- * missing piy kas ecc comp handler
- */
-Test(APP_KAS_ECC_HANDLER, missing_piy) {
+// missing piy kas ecc comp handler
+TEST(APP_KAS_ECC_HANDLER, missing_piy) {
     int corrupt = 0;
     int curve = ACVP_EC_CURVE_B283;
     char *psx = "aa";
@@ -345,13 +340,13 @@ Test(APP_KAS_ECC_HANDLER, missing_piy) {
     
     if (!initialize_kas_ecc_comp_tc(kas_ecc_tc, ACVP_KAS_ECC_TT_VAL, curve, hash_alg,
             psx, psy, d, pix, piy, z, corrupt)) {
-        cr_assert_fail("kas ecc init tc failure");
+        TEST_FAIL_MESSAGE("kas ecc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ecc = kas_ecc_tc;
     
     rv = app_kas_ecc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ecc_tc(kas_ecc_tc);
     free(test_case);

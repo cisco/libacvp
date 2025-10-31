@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -17,9 +17,11 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_TEST_CASE *test_case;
-ACVP_KAS_FFC_TC *kas_ffc_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_KAS_FFC_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_KAS_FFC_TC *kas_ffc_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 #if !defined OPENSSL_NO_DSA
 
@@ -45,10 +47,8 @@ int initialize_kas_ffc_tc(ACVP_KAS_FFC_TC *stc,
                           const char *eps,
                           const char *epri,
                           const char *epui,
-                          const char *z,
-                          int corrupt) {
-    ACVP_RESULT rv;
-    
+                         const char *z,
+                         int corrupt) {
     stc->mode = ACVP_KAS_FFC_MODE_COMPONENT;
     stc->md = hash_alg;
     stc->test_type = test_type;
@@ -146,10 +146,10 @@ err:
     return 0;
 }
 
-/*
- * invalid hash alg kas ffc handler
- */
-Test(APP_KAS_FFC_HANDLER, invalid_hash_alg) {
+TEST_SETUP(APP_KAS_FFC_HANDLER) {}
+TEST_TEAR_DOWN(APP_KAS_FFC_HANDLER) {}
+
+TEST(APP_KAS_FFC_HANDLER, invalid_hash_alg) {
     int corrupt = 0;
     int hash_alg = 1;
     char *p = "aa";
@@ -164,22 +164,20 @@ Test(APP_KAS_FFC_HANDLER, invalid_hash_alg) {
     
     if (!initialize_kas_ffc_tc(kas_ffc_tc, hash_alg, ACVP_KAS_FFC_TT_VAL, p, q, g,
             ps, epri, epui, z, corrupt)) {
-        cr_assert_fail("kas ffc init tc failure");
+        TEST_FAIL_MESSAGE("kas ffc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ffc = kas_ffc_tc;
     
     rv = app_kas_ffc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ffc_tc(kas_ffc_tc);
     free(test_case);
 }
 
-/*
- * missing p kas ffc handler
- */
-Test(APP_KAS_FFC_HANDLER, missing_p) {
+// missing p kas ffc handler
+TEST(APP_KAS_FFC_HANDLER, missing_p) {
     int corrupt = 0;
     int hash_alg = ACVP_SHA384;
     char *p = NULL;
@@ -194,22 +192,20 @@ Test(APP_KAS_FFC_HANDLER, missing_p) {
     
     if (!initialize_kas_ffc_tc(kas_ffc_tc, hash_alg, ACVP_KAS_FFC_TT_VAL, p, q, g,
             ps, epri, epui, z, corrupt)) {
-        cr_assert_fail("kas ffc init tc failure");
+        TEST_FAIL_MESSAGE("kas ffc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ffc = kas_ffc_tc;
     
     rv = app_kas_ffc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ffc_tc(kas_ffc_tc);
     free(test_case);
 }
 
-/*
- * missing q kas ffc handler
- */
-Test(APP_KAS_FFC_HANDLER, missing_q) {
+// missing q kas ffc handler
+TEST(APP_KAS_FFC_HANDLER, missing_q) {
     int corrupt = 0;
     int hash_alg = ACVP_SHA384;
     char *p = "aa";
@@ -224,22 +220,20 @@ Test(APP_KAS_FFC_HANDLER, missing_q) {
     
     if (!initialize_kas_ffc_tc(kas_ffc_tc, hash_alg, ACVP_KAS_FFC_TT_VAL, p, q, g,
             ps, epri, epui, z, corrupt)) {
-    cr_assert_fail("kas ffc init tc failure");
+    TEST_FAIL_MESSAGE("kas ffc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ffc = kas_ffc_tc;
     
     rv = app_kas_ffc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ffc_tc(kas_ffc_tc);
     free(test_case);
 }
 
-/*
- * missing g kas ffc handler
- */
-Test(APP_KAS_FFC_HANDLER, missing_g) {
+// missing g kas ffc handler
+TEST(APP_KAS_FFC_HANDLER, missing_g) {
     int corrupt = 0;
     int hash_alg = ACVP_SHA384;
     char *p = "aa";
@@ -254,22 +248,20 @@ Test(APP_KAS_FFC_HANDLER, missing_g) {
     
     if (!initialize_kas_ffc_tc(kas_ffc_tc, hash_alg, ACVP_KAS_FFC_TT_VAL, p, q, g,
             ps, epri, epui, z, corrupt)) {
-        cr_assert_fail("kas ffc init tc failure");
+        TEST_FAIL_MESSAGE("kas ffc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ffc = kas_ffc_tc;
     
     rv = app_kas_ffc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ffc_tc(kas_ffc_tc);
     free(test_case);
 }
 
-/*
- * missing eps kas ffc handler
- */
-Test(APP_KAS_FFC_HANDLER, missing_eps) {
+// missing eps kas ffc handler
+TEST(APP_KAS_FFC_HANDLER, missing_eps) {
     int corrupt = 0;
     int hash_alg = ACVP_SHA384;
     char *p = "aa";
@@ -284,22 +276,20 @@ Test(APP_KAS_FFC_HANDLER, missing_eps) {
     
     if (!initialize_kas_ffc_tc(kas_ffc_tc, hash_alg, ACVP_KAS_FFC_TT_VAL, p, q, g,
             ps, epri, epui, z, corrupt)) {
-        cr_assert_fail("kas ffc init tc failure");
+        TEST_FAIL_MESSAGE("kas ffc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ffc = kas_ffc_tc;
     
     rv = app_kas_ffc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ffc_tc(kas_ffc_tc);
     free(test_case);
 }
 
-/*
- * missing epri kas ffc handler
- */
-Test(APP_KAS_FFC_HANDLER, missing_epri) {
+// missing epri kas ffc handler
+TEST(APP_KAS_FFC_HANDLER, missing_epri) {
     int corrupt = 0;
     int hash_alg = ACVP_SHA384;
     char *p = "aa";
@@ -314,22 +304,20 @@ Test(APP_KAS_FFC_HANDLER, missing_epri) {
     
     if (!initialize_kas_ffc_tc(kas_ffc_tc, hash_alg, ACVP_KAS_FFC_TT_VAL, p, q, g,
             ps, epri, epui, z, corrupt)) {
-        cr_assert_fail("kas ffc init tc failure");
+        TEST_FAIL_MESSAGE("kas ffc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ffc = kas_ffc_tc;
     
     rv = app_kas_ffc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ffc_tc(kas_ffc_tc);
     free(test_case);
 }
 
-/*
- * missing epui kas ffc handler
- */
-Test(APP_KAS_FFC_HANDLER, missing_epui) {
+// missing epui kas ffc handler
+TEST(APP_KAS_FFC_HANDLER, missing_epui) {
     int corrupt = 0;
     int hash_alg = ACVP_SHA384;
     char *p = "aa";
@@ -344,13 +332,13 @@ Test(APP_KAS_FFC_HANDLER, missing_epui) {
     
     if (!initialize_kas_ffc_tc(kas_ffc_tc, hash_alg, ACVP_KAS_FFC_TT_VAL, p, q, g,
             ps, epri, epui, z, corrupt)) {
-        cr_assert_fail("kas ffc init tc failure");
+        TEST_FAIL_MESSAGE("kas ffc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ffc = kas_ffc_tc;
     
     rv = app_kas_ffc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ffc_tc(kas_ffc_tc);
     free(test_case);
@@ -360,7 +348,7 @@ Test(APP_KAS_FFC_HANDLER, missing_epui) {
  * missing z kas ffc handler
  * only valid for AFT test types
  */
-Test(APP_KAS_FFC_HANDLER, missing_z) {
+TEST(APP_KAS_FFC_HANDLER, missing_z) {
     int corrupt = 0;
     int hash_alg = ACVP_SHA384;
     char *p = "aa";
@@ -375,22 +363,20 @@ Test(APP_KAS_FFC_HANDLER, missing_z) {
     
     if (!initialize_kas_ffc_tc(kas_ffc_tc, hash_alg, ACVP_KAS_ECC_TT_AFT, p, q, g,
             ps, epri, epui, z, corrupt)) {
-        cr_assert_fail("kas ffc init tc failure");
+        TEST_FAIL_MESSAGE("kas ffc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ffc = kas_ffc_tc;
     
     rv = app_kas_ffc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ffc_tc(kas_ffc_tc);
     free(test_case);
 }
 
-/*
- * missing dgm kas ffc handler
- */
-Test(APP_KAS_FFC_HANDLER, missing_dgm) {
+// missing dgm kas ffc handler
+TEST(APP_KAS_FFC_HANDLER, missing_dgm) {
     int corrupt = 0;
     int hash_alg = ACVP_SHA384;
     char *p = "aa";
@@ -405,7 +391,7 @@ Test(APP_KAS_FFC_HANDLER, missing_dgm) {
     
     if (!initialize_kas_ffc_tc(kas_ffc_tc, hash_alg, ACVP_KAS_ECC_TT_AFT, p, q, g,
             ps, epri, epui, z, corrupt)) {
-        cr_assert_fail("kas ffc init tc failure");
+        TEST_FAIL_MESSAGE("kas ffc init tc failure");
     }
     kas_ffc_tc->dgm = 0;    
 
@@ -413,16 +399,14 @@ Test(APP_KAS_FFC_HANDLER, missing_dgm) {
     test_case->tc.kas_ffc = kas_ffc_tc;
     
     rv = app_kas_ffc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ffc_tc(kas_ffc_tc);
     free(test_case);
 }
 
-/*
- * unallocated answer buffers kas ffc handler
- */
-Test(APP_KAS_FFC_HANDLER, unallocated_ans_bufs) {
+// unallocated answer buffers kas ffc handler
+TEST(APP_KAS_FFC_HANDLER, unallocated_ans_bufs) {
     int corrupt = 1;
     int hash_alg = ACVP_SHA384;
     char *p = "aa";
@@ -437,13 +421,13 @@ Test(APP_KAS_FFC_HANDLER, unallocated_ans_bufs) {
     
     if (!initialize_kas_ffc_tc(kas_ffc_tc, hash_alg, ACVP_KAS_FFC_TT_VAL, p, q, g,
             ps, epri, epui, z, corrupt)) {
-        cr_assert_fail("kas ffc init tc failure");
+        TEST_FAIL_MESSAGE("kas ffc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ffc = kas_ffc_tc;
     
     rv = app_kas_ffc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kas_ffc_tc(kas_ffc_tc);
     free(test_case);

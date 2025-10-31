@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,173 +8,167 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
 #include "ut_common.h"
 #include "acvp/acvp_lcl.h"
+
+TEST_GROUP(DES_API);
+TEST_GROUP(DES_CAPABILITY);
+TEST_GROUP(DES_HANDLER);
 
 static ACVP_CTX *ctx = NULL;
 static ACVP_RESULT rv = 0;
 static JSON_Object *obj = NULL;
 static JSON_Value *val = NULL;
 
-static void setup(void) {
-    setup_empty_ctx(&ctx);
-
-    /*
-     * Enable 3DES-CBC
-     */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    /*
-     * Enable TDES-CTR
-     */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CTR, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_INCR, 1);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_OVRFLW, 1);
-    cr_assert(rv == ACVP_SUCCESS);
-}
-
-static void setup_fail(void) {
-    setup_empty_ctx(&ctx);
-
-    /*
-     * Enable 3DES-CBC
-     */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
-    cr_assert(rv == ACVP_SUCCESS);
-
-
-    /*
-     * Enable TDES-CTR
-     */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CTR, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_INCR, 1);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_OVRFLW, 1);
-    cr_assert(rv == ACVP_SUCCESS);
-}
-
-static void teardown(void) {
+/* Setup/Teardown helper functions */
+static void des_api_tear_down_helper(void) {
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
     if (ctx) teardown_ctx(&ctx);
 }
 
-/*
- * Test capabilites API.
- */
-Test(DES_CAPABILITY, good) {
+TEST_SETUP(DES_API) {
     setup_empty_ctx(&ctx);
 
-    /*
-     * Enable 3DES-ECB
-     */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_ECB, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    /*
-     * Enable 3DES-CBC
-     */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
+    // Enable 3DES-CBC
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
-    /*
-     * Enable 3DES-OFB
-     */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_OFB, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    /*
-     * Enable 3DES-CFB64
-     */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CFB64, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    /*
-     * Enable 3DES-CFB8
-     */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CFB8, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    /*
-     * Enable 3DES-CFB1
-     */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CFB1, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
-    cr_assert(rv == ACVP_SUCCESS);
-
-
-    /*
-     * Enable TDES-CTR
-     */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CTR, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
+    // Enable TDES-CTR
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CTR, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_INCR, 1);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_OVRFLW, 1);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+}
+
+TEST_TEAR_DOWN(DES_API) {
+    des_api_tear_down_helper();
+}
+
+TEST_SETUP(DES_CAPABILITY) {}
+TEST_TEAR_DOWN(DES_CAPABILITY) {}
+
+TEST_SETUP(DES_HANDLER) {
+    setup_empty_ctx(&ctx);
+
+    // Enable 3DES-CBC
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // Enable TDES-CTR
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CTR, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_INCR, 1);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_OVRFLW, 1);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+}
+
+TEST_TEAR_DOWN(DES_HANDLER) {
+    des_api_tear_down_helper();
+}
+
+/* Test cases */
+TEST(DES_CAPABILITY, good) {
+    // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    // Enable 3DES-ECB
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_ECB, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // Enable 3DES-CBC
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // Enable 3DES-OFB
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_OFB, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // Enable 3DES-CFB64
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CFB64, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // Enable 3DES-CFB8
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CFB8, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // Enable 3DES-CFB1
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CFB1, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // Enable TDES-CTR
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CTR, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_INCR, 1);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_OVRFLW, 1);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     teardown_ctx(&ctx);
 }
 
-/*
- * Test the KAT handler API.
- * The ctx is empty (no capabilities), expecting failure.
- */
-Test(DES_API, empty_ctx) {
+TEST(DES_API, empty_ctx) {
+    // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
     setup_empty_ctx(&ctx);
 
     val = json_parse_file("json/des/des.json");
@@ -186,18 +180,15 @@ Test(DES_API, empty_ctx) {
     }
 
     rv  = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
     json_value_free(val);
+    val = NULL;
 
 end:
     if (ctx) teardown_ctx(&ctx);
 }
 
-/*
- * Test KAT handler API.
- * The ctx is NULL, expecting failure.
- */
-Test(DES_API, null_ctx) {
+TEST(DES_API, null_ctx) {
     val = json_parse_file("json/des/des.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -208,25 +199,17 @@ Test(DES_API, null_ctx) {
 
     /* Test with NULL JSON object */
     rv  = acvp_des_kat_handler(NULL, obj);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * Test the KAT handler API.
- * The obj is null, expecting failure.
- */
-Test(DES_API, null_json_obj, .init = setup, .fini = teardown) {
+TEST(DES_API, null_json_obj) {
     rv  = acvp_des_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
-/*
- * This is a good JSON.
- * Expecting success.
- */
-Test(DES_HANDLER, good, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, good) {
     val = json_parse_file("json/des/des.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -235,15 +218,12 @@ Test(DES_HANDLER, good, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"algorithm" is wrong.
- */
-Test(DES_HANDLER, wrong_algorithm, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, wrong_algorithm) {
     val = json_parse_file("json/des/des_1.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -252,15 +232,12 @@ Test(DES_HANDLER, wrong_algorithm, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"direction" is missing.
- */
-Test(DES_HANDLER, missing_direction, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, missing_direction) {
     val = json_parse_file("json/des/des_2.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -269,15 +246,12 @@ Test(DES_HANDLER, missing_direction, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"direction" is wrong.
- */
-Test(DES_HANDLER, wrong_direction, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, wrong_direction) {
     val = json_parse_file("json/des/des_3.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -286,15 +260,12 @@ Test(DES_HANDLER, wrong_direction, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"testType" is missing.
- */
-Test(DES_HANDLER, missing_testType, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, missing_testType) {
     val = json_parse_file("json/des/des_4.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -303,15 +274,12 @@ Test(DES_HANDLER, missing_testType, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"testType" is wrong.
- */
-Test(DES_HANDLER, wrong_testType, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, wrong_testType) {
     val = json_parse_file("json/des/des_5.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -320,15 +288,12 @@ Test(DES_HANDLER, wrong_testType, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"key1" is missing.
- */
-Test(DES_HANDLER, missing_key1, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, missing_key1) {
     val = json_parse_file("json/des/des_6.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -337,15 +302,12 @@ Test(DES_HANDLER, missing_key1, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"key1" string is wrong length.
- */
-Test(DES_HANDLER, wrong_key1, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, wrong_key1) {
     val = json_parse_file("json/des/des_7.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -354,15 +316,12 @@ Test(DES_HANDLER, wrong_key1, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"key2" is missing.
- */
-Test(DES_HANDLER, missing_key2, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, missing_key2) {
     val = json_parse_file("json/des/des_8.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -371,15 +330,12 @@ Test(DES_HANDLER, missing_key2, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"key2" string is wrong length.
- */
-Test(DES_HANDLER, wrong_key2, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, wrong_key2) {
     val = json_parse_file("json/des/des_9.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -388,15 +344,12 @@ Test(DES_HANDLER, wrong_key2, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"key3" is missing.
- */
-Test(DES_HANDLER, missing_key3, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, missing_key3) {
     val = json_parse_file("json/des/des_10.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -405,15 +358,12 @@ Test(DES_HANDLER, missing_key3, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"key3" string is wrong length.
- */
-Test(DES_HANDLER, wrong_key3, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, wrong_key3) {
     val = json_parse_file("json/des/des_11.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -422,15 +372,12 @@ Test(DES_HANDLER, wrong_key3, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"pt" is missing.
- */
-Test(DES_HANDLER, missing_pt, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, missing_pt) {
     val = json_parse_file("json/des/des_12.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -439,15 +386,12 @@ Test(DES_HANDLER, missing_pt, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"pt" string is too long.
- */
-Test(DES_HANDLER, wrong_pt, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, wrong_pt) {
     val = json_parse_file("json/des/des_13.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -456,15 +400,12 @@ Test(DES_HANDLER, wrong_pt, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"ct" is missing.
- */
-Test(DES_HANDLER, missing_ct, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, missing_ct) {
     val = json_parse_file("json/des/des_14.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -473,15 +414,12 @@ Test(DES_HANDLER, missing_ct, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"ct" string is too long.
- */
-Test(DES_HANDLER, wrong_ct, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, wrong_ct) {
     val = json_parse_file("json/des/des_15.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -490,15 +428,12 @@ Test(DES_HANDLER, wrong_ct, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"iv" is missing.
- */
-Test(DES_HANDLER, missing_iv, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, missing_iv) {
     val = json_parse_file("json/des/des_16.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -507,15 +442,12 @@ Test(DES_HANDLER, missing_iv, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"iv" string is wrong length.
- */
-Test(DES_HANDLER, wrong_iv, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, wrong_iv) {
     val = json_parse_file("json/des/des_17.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -524,15 +456,12 @@ Test(DES_HANDLER, wrong_iv, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"tgId" string is missing.
- */
-Test(DES_HANDLER, missing_tgid, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, missing_tgid) {
     val = json_parse_file("json/des/des_18.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -541,15 +470,12 @@ Test(DES_HANDLER, missing_tgid, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The boolean for "incrementalCounter" is missing/not a boolean for DES-CTR
- */
-Test(DES_HANDLER, bad_inc_ctr, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, bad_inc_ctr) {
     val = json_parse_file("json/des/des_19.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -558,15 +484,12 @@ Test(DES_HANDLER, bad_inc_ctr, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The boolean for "overflowCounter" is missing/not a boolean for DES-CTR
- */
-Test(DES_HANDLER, bad_ovrflw_ctr, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, bad_ovrflw_ctr) {
     val = json_parse_file("json/des/des_20.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -575,15 +498,12 @@ Test(DES_HANDLER, bad_ovrflw_ctr, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * Missing tg info in last tg
- */
-Test(DES_HANDLER, tgLast, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, tgLast) {
     val = json_parse_file("json/des/des_21.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -592,15 +512,12 @@ Test(DES_HANDLER, tgLast, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * Missing field in last tc
- */
-Test(DES_HANDLER, tcLast, .init = setup, .fini = teardown) {
+TEST(DES_HANDLER, tcLast) {
     val = json_parse_file("json/des/des_22.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -609,15 +526,17 @@ Test(DES_HANDLER, tcLast, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-/*
- * This is a good JSON.
- * Will fail as defined by the counter values.
- */
-Test(DES_HANDLER, cryptoFail1, .init = setup_fail, .fini = teardown) {
+TEST(DES_HANDLER, cryptoFail1) {
+    // Enable failure mode for this test (originally used setup_fail)
+    force_handler_failure = 1;
+    counter_set = 0;
+    counter_fail = 0;
+
     val = json_parse_file("json/des/des.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -629,15 +548,20 @@ Test(DES_HANDLER, cryptoFail1, .init = setup_fail, .fini = teardown) {
     counter_fail = 0; /* fail on first iteration of AFT */
 
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
     json_value_free(val);
+    val = NULL;
+    
+    // Reset failure mode
+    force_handler_failure = 0;
 }
 
-/*
- * This is a good JSON.
- * Will fail as defined by the counter values.
- */
-Test(DES_HANDLER, cryptoFail2, .init = setup_fail, .fini = teardown) {
+TEST(DES_HANDLER, cryptoFail2) {
+    // Enable failure mode for this test (originally used setup_fail)
+    force_handler_failure = 1;
+    counter_set = 0;
+    counter_fail = 0;
+
     val = json_parse_file("json/des/des.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -649,15 +573,20 @@ Test(DES_HANDLER, cryptoFail2, .init = setup_fail, .fini = teardown) {
     counter_fail = 5;  /* fail on 6th iteration of AFT */
 
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
     json_value_free(val);
+    val = NULL;
+    
+    // Reset failure mode
+    force_handler_failure = 0;
 }
 
-/*
- * This is a good JSON.
- * Will fail as defined by the counter values.
- */
-Test(DES_HANDLER, cryptoFail3, .init = setup_fail, .fini = teardown) {
+TEST(DES_HANDLER, cryptoFail3) {
+    // Enable failure mode for this test (originally used setup_fail)
+    force_handler_failure = 1;
+    counter_set = 0;
+    counter_fail = 0;
+
     val = json_parse_file("json/des/des.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -669,15 +598,20 @@ Test(DES_HANDLER, cryptoFail3, .init = setup_fail, .fini = teardown) {
     counter_fail = 490; /* fail on first iteration of MCT */
 
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
     json_value_free(val);
+    val = NULL;
+    
+    // Reset failure mode
+    force_handler_failure = 0;
 }
 
-/*
- * This is a good JSON.
- * Will fail as defined by the counter values.
- */
-Test(DES_HANDLER, cryptoFail4, .init = setup_fail, .fini = teardown) {
+TEST(DES_HANDLER, cryptoFail4) {
+    // Enable failure mode for this test (originally used setup_fail)
+    force_handler_failure = 1;
+    counter_set = 0;
+    counter_fail = 0;
+
     val = json_parse_file("json/des/des.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -689,8 +623,10 @@ Test(DES_HANDLER, cryptoFail4, .init = setup_fail, .fini = teardown) {
     counter_fail = 495; /* fail on sixth iteration of MCT */
 
     rv = acvp_des_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
     json_value_free(val);
+    val = NULL;
+    
+    // Reset failure mode
+    force_handler_failure = 0;
 }
-
-

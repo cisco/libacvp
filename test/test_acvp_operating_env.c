@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,166 +8,227 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
 #include "ut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx = NULL;
-static ACVP_RESULT rv;
+TEST_GROUP(DEPENDENCY_NEW);
+TEST_GROUP(FIPS_VALIDATION_METADATA);
+TEST_GROUP(FREE_OPERATING_ENV);
+TEST_GROUP(INGEST_METADATA);
+TEST_GROUP(MODULE_NEW);
+TEST_GROUP(MODULE_SET_TYPE_VERSION_DESC);
+TEST_GROUP(OE_NEW);
+TEST_GROUP(OE_SET_DEPENDENCY);
+TEST_GROUP(VERIFY_FIPS_OPERATING_ENV);
 
-static void setup(void) {
+static ACVP_CTX *ctx = NULL;
+static ACVP_RESULT rv = 0;
+
+static void free_operating_env_setup_helper(void) {
     setup_empty_ctx(&ctx);
 }
 
-static void teardown(void) {
+static void free_operating_env_tear_down_helper(void) {
     if (ctx) teardown_ctx(&ctx);
-    ctx = NULL;
+        ctx = NULL;
 }
 
-/*
- * Test  acvp_oe_free_operating_env
- */
-Test(FREE_OPERATING_ENV, free_operating_env, .init = setup, .fini = teardown) {
+TEST_SETUP(DEPENDENCY_NEW) {
+    free_operating_env_setup_helper();
+}
+
+TEST_TEAR_DOWN(DEPENDENCY_NEW) {
+    free_operating_env_tear_down_helper();
+}
+
+TEST_SETUP(FIPS_VALIDATION_METADATA) {
+    free_operating_env_setup_helper();
+}
+
+TEST_TEAR_DOWN(FIPS_VALIDATION_METADATA) {
+    free_operating_env_tear_down_helper();
+}
+
+TEST_SETUP(FREE_OPERATING_ENV) {
+    free_operating_env_setup_helper();
+}
+
+TEST_TEAR_DOWN(FREE_OPERATING_ENV) {
+    free_operating_env_tear_down_helper();
+}
+
+TEST_SETUP(INGEST_METADATA) {
+    free_operating_env_setup_helper();
+}
+
+TEST_TEAR_DOWN(INGEST_METADATA) {
+    free_operating_env_tear_down_helper();
+}
+
+TEST_SETUP(MODULE_NEW) {
+    free_operating_env_setup_helper();
+}
+
+TEST_TEAR_DOWN(MODULE_NEW) {
+    free_operating_env_tear_down_helper();
+}
+
+TEST_SETUP(MODULE_SET_TYPE_VERSION_DESC) {
+    free_operating_env_setup_helper();
+}
+
+TEST_TEAR_DOWN(MODULE_SET_TYPE_VERSION_DESC) {
+    free_operating_env_tear_down_helper();
+}
+
+TEST_SETUP(OE_NEW) {
+    free_operating_env_setup_helper();
+}
+
+TEST_TEAR_DOWN(OE_NEW) {
+    free_operating_env_tear_down_helper();
+}
+
+TEST_SETUP(OE_SET_DEPENDENCY) {
+    free_operating_env_setup_helper();
+}
+
+TEST_TEAR_DOWN(OE_SET_DEPENDENCY) {
+    free_operating_env_tear_down_helper();
+}
+
+TEST_SETUP(VERIFY_FIPS_OPERATING_ENV) {
+    free_operating_env_setup_helper();
+}
+
+TEST_TEAR_DOWN(VERIFY_FIPS_OPERATING_ENV) {
+    free_operating_env_tear_down_helper();
+}
+
+// Test  acvp_oe_free_operating_env
+TEST(FREE_OPERATING_ENV, free_operating_env) {
 
     acvp_oe_free_operating_env(NULL);
     acvp_oe_free_operating_env(ctx);
 }
 
-/*
- * Test  acvp_oe_ingest_metadata
- */
-Test(INGEST_METADATA, ingest_metadata, .init = setup, .fini = teardown) {
+// Test  acvp_oe_ingest_metadata
+TEST(INGEST_METADATA, ingest_metadata) {
 
     rv = acvp_oe_ingest_metadata(NULL, "json/meta.json");
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     rv = acvp_oe_ingest_metadata(ctx, NULL);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
 
     rv = acvp_oe_ingest_metadata(ctx, "invalid.json");
-    cr_assert(rv == ACVP_JSON_ERR);
+    TEST_ASSERT_EQUAL(ACVP_JSON_ERR, rv);
 
     rv = acvp_oe_ingest_metadata(ctx, "json/meta.json");
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
 }
 
-/*
- * Test  acvp_oe_set_fips_validation_metadata
- */
-Test(FIPS_VALIDATION_METADATA, set_fips_validation_metadata, .init = setup, .fini = teardown) {
-
+// Test  acvp_oe_set_fips_validation_metadata
+TEST(FIPS_VALIDATION_METADATA, set_fips_validation_metadata) {
 
     rv = acvp_oe_set_fips_validation_metadata(NULL, 1, 1);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     rv = acvp_oe_set_fips_validation_metadata(ctx, 1, 1);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 
     rv = acvp_oe_set_fips_validation_metadata(ctx, 0, 0);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 
     rv = acvp_oe_set_fips_validation_metadata(ctx, 1, 0);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 
     rv = acvp_oe_set_fips_validation_metadata(ctx, 0, 1);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 
 }
 
-/*
- * Test  acvp_verify_fips_validation_metadata
- */
-Test(VERIFY_FIPS_OPERATING_ENV, verify_fips_operating_env, .init = setup, .fini = teardown) {
+// Test  acvp_verify_fips_validation_metadata
+TEST(VERIFY_FIPS_OPERATING_ENV, verify_fips_operating_env) {
 
     rv = acvp_verify_fips_validation_metadata(NULL);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     rv = acvp_oe_ingest_metadata(ctx, "json/meta.json");
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     rv = acvp_oe_set_fips_validation_metadata(ctx, 1, 1);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     rv = acvp_verify_fips_validation_metadata(ctx);
 #ifdef ACVP_OFFLINE
-    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_TRANSPORT_FAIL, rv);
 #else
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
 #endif
 }
 
-/*
- * Test  acvp_oe_dependency_new
- */
-Test(DEPENDENCY_NEW, dependency_new, .init = setup, .fini = teardown) {
+// Test  acvp_oe_dependency_new
+TEST(DEPENDENCY_NEW, dependency_new) {
 
     rv = acvp_oe_dependency_new(NULL, 1);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     rv = acvp_oe_dependency_new(ctx, 0);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 
     rv = acvp_oe_dependency_new(ctx, 1);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
 }
 
-
-/*
- * Test  acvp_oe_oe_new
- */
-Test(OE_NEW, oe_new, .init = setup, .fini = teardown) {
+// Test  acvp_oe_oe_new
+TEST(OE_NEW, oe_new) {
 
     rv = acvp_oe_oe_new(NULL, 1, "name");
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     rv = acvp_oe_oe_new(ctx, 0, "name");
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 
     rv = acvp_oe_oe_new(ctx, 1, NULL);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
 
     rv = acvp_oe_oe_new(ctx, 1, "name");
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
 }
 
-/*
- * Test  acvp_oe_oe_set_dependency
- */
-Test(OE_SET_DEPENDENCY, oe_set_dependency, .init = setup, .fini = teardown) {
+// Test  acvp_oe_oe_set_dependency
+TEST(OE_SET_DEPENDENCY, oe_set_dependency) {
 
     rv = acvp_oe_oe_set_dependency(NULL, 1, 1);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     rv = acvp_oe_oe_set_dependency(ctx, 1, 1);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 
 }
 
-/*
- * Test  acvp_oe_module_new
- */
-Test(MODULE_NEW, module_new, .init = setup, .fini = teardown) {
+// Test  acvp_oe_module_new
+TEST(MODULE_NEW, module_new) {
 
     rv = acvp_oe_module_new(NULL, 1, "name");
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     rv = acvp_oe_module_new(ctx, 1, "name");
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 
 }
 
-/*
- * Test  acvp_oe_module_set_type_version_desc
- */
-Test(MODULE_SET_TYPE_VERSION_DESC, module_set_type_version_desc, .init = setup, .fini = teardown) {
+// Test  acvp_oe_module_set_type_version_desc
+TEST(MODULE_SET_TYPE_VERSION_DESC, module_set_type_version_desc) {
 
     rv = acvp_oe_module_set_type_version_desc(NULL, 1, "type", "ver", "desc");
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     rv = acvp_oe_module_set_type_version_desc(ctx, 1, "type", "ver", "desc");
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 
 }

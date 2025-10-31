@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -14,9 +14,11 @@
 #include "acvp/acvp_lcl.h"
 #include "acvp/acvp.h"
 
-static ACVP_TEST_CASE *test_case;
-ACVP_KMAC_TC *kmac_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_KMAC_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_KMAC_TC *kmac_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 int initialize_kmac_tc(ACVP_KMAC_TC *kmac_tc, int alg_id, ACVP_KMAC_TESTTYPE type,
                        int xof, int custom_is_hex, char *mac, int mac_len, char *msg, char *key,
@@ -97,8 +99,11 @@ void free_kmac_tc(ACVP_KMAC_TC *kmac_tc) {
     memset(kmac_tc, 0x0, sizeof(ACVP_KMAC_TC));
 }
 
+TEST_SETUP(APP_KMAC_HANDLER) {}
+TEST_TEAR_DOWN(APP_KMAC_HANDLER) {}
+
 /* missing msg in kmac tc test case */
-Test(APP_KMAC_HANDLER, missing_msg) {
+TEST(APP_KMAC_HANDLER, missing_msg) {
     char *msg = NULL;
     char *key = "aaaa";
     char *custom = "aaaa";
@@ -106,13 +111,13 @@ Test(APP_KMAC_HANDLER, missing_msg) {
     kmac_tc = calloc(1, sizeof(ACVP_KMAC_TC));
     
     if (!initialize_kmac_tc(kmac_tc, ACVP_KMAC_128, ACVP_KMAC_TEST_TYPE_AFT, 0, 0, NULL, 32, msg, key, custom, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kmac = kmac_tc;
     
     rv = app_kmac_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kmac_tc(kmac_tc);
     free(kmac_tc);
@@ -120,7 +125,7 @@ Test(APP_KMAC_HANDLER, missing_msg) {
 }
 
 /* missing key in kmac tc test case */
-Test(APP_KMAC_HANDLER, missing_key) {
+TEST(APP_KMAC_HANDLER, missing_key) {
     char *msg = "aaaa";
     char *key = NULL;
     char *custom = "aaaa";
@@ -128,13 +133,13 @@ Test(APP_KMAC_HANDLER, missing_key) {
     kmac_tc = calloc(1, sizeof(ACVP_KMAC_TC));
 
     if (!initialize_kmac_tc(kmac_tc, ACVP_KMAC_128, ACVP_KMAC_TEST_TYPE_AFT, 0, 0, NULL, 32, msg, key, custom, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kmac = kmac_tc;
     
     rv = app_kmac_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kmac_tc(kmac_tc);
     free(kmac_tc);
@@ -142,7 +147,7 @@ Test(APP_KMAC_HANDLER, missing_key) {
 }
 
 /* missing mac data (for MVT) in kmac tc test case */
-Test(APP_KMAC_HANDLER, missing_mac_mvt) {
+TEST(APP_KMAC_HANDLER, missing_mac_mvt) {
     char *msg = "aaaa";
     char *key = "aaaa";
     char *custom = "aaaa";
@@ -150,22 +155,21 @@ Test(APP_KMAC_HANDLER, missing_mac_mvt) {
     kmac_tc = calloc(1, sizeof(ACVP_KMAC_TC));
     
     if (!initialize_kmac_tc(kmac_tc, ACVP_KMAC_128, ACVP_KMAC_TEST_TYPE_MVT, 0, 0, NULL, 32, msg, key, custom, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kmac = kmac_tc;
     
     rv = app_kmac_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kmac_tc(kmac_tc);
     free(kmac_tc);
     free(test_case);
 }
 
-
 /* no maclen given for AFT */
-Test(APP_KMAC_HANDLER, missing_maclen) {
+TEST(APP_KMAC_HANDLER, missing_maclen) {
     char *msg = "aaaa";
     char *key = "aaaa";
     char *custom = "aaaa";
@@ -173,13 +177,13 @@ Test(APP_KMAC_HANDLER, missing_maclen) {
     kmac_tc = calloc(1, sizeof(ACVP_KMAC_TC));
     
     if (!initialize_kmac_tc(kmac_tc, ACVP_KMAC_128, ACVP_KMAC_TEST_TYPE_AFT, 0, 0, NULL, 0, msg, key, custom, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kmac = kmac_tc;
     
     rv = app_kmac_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kmac_tc(kmac_tc);
     free(kmac_tc);
@@ -187,20 +191,20 @@ Test(APP_KMAC_HANDLER, missing_maclen) {
 }
 
 /* Custom len is provided, but no customization buffer */
-Test(APP_KMAC_HANDLER, missing_customization) {
+TEST(APP_KMAC_HANDLER, missing_customization) {
     char *msg = "aaaa";
     char *key = "aaaa";
 
     kmac_tc = calloc(1, sizeof(ACVP_KMAC_TC));
     
     if (!initialize_kmac_tc(kmac_tc, ACVP_KMAC_128, ACVP_KMAC_TEST_TYPE_AFT, 0, 0, NULL, 32, msg, key, NULL, 2)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kmac = kmac_tc;
     
     rv = app_kmac_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kmac_tc(kmac_tc);
     free(kmac_tc);
@@ -209,7 +213,8 @@ Test(APP_KMAC_HANDLER, missing_customization) {
 
 /* the pointer for mac should be allocated by the library (for AFT). here we don't allocate it and test to see 
    if the handler gracefully handles it */
-Test(APP_KMAC_HANDLER, mem_not_allocated) {
+
+TEST(APP_KMAC_HANDLER, mem_not_allocated) {
     char *key = "aaaa";
     char *msg = "aaaa";
     char *custom = "aaaa";
@@ -217,13 +222,13 @@ Test(APP_KMAC_HANDLER, mem_not_allocated) {
     kmac_tc = calloc(1, sizeof(ACVP_KMAC_TC));
 
     if (!initialize_kmac_tc(kmac_tc, ACVP_KMAC_128, ACVP_KMAC_TEST_TYPE_AFT, 0, 0, NULL, 32, msg, key, custom, 1)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kmac = kmac_tc;
 
     rv = app_kmac_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kmac_tc(kmac_tc);
     free(kmac_tc);

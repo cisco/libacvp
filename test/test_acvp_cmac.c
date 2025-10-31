@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,9 +8,12 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
 #include "ut_common.h"
 #include "acvp/acvp_lcl.h"
+
+TEST_GROUP(CMAC_AES_CAPABILITY);
+TEST_GROUP(CMAC_API);
+TEST_GROUP(CMAC_TDES_CAPABILITY);
 
 static ACVP_CTX *ctx = NULL;
 static ACVP_RESULT rv = 0;
@@ -18,88 +21,89 @@ static JSON_Object *obj = NULL;
 static JSON_Value *val = NULL;
 static char cvalue[] = "same";
 
-static void setup(void) {
+// Empty setup/teardown for groups without fixtures
+TEST_SETUP(CMAC_AES_CAPABILITY) {}
+TEST_TEAR_DOWN(CMAC_AES_CAPABILITY) {
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(CMAC_API) {
     setup_empty_ctx(&ctx);
     
     rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     
     rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_TDES, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     
 }
 
-static void setup_fail(void) {
-    setup_empty_ctx(&ctx);
-    
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_TDES, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    
-}
-
-static void teardown(void) {
+TEST_TEAR_DOWN(CMAC_API) {
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
     if (ctx) teardown_ctx(&ctx);
 }
 
-/*
- * Test capabilites API.
- */
-Test(CMAC_AES_CAPABILITY, good) {
+TEST_SETUP(CMAC_TDES_CAPABILITY) {}
+TEST_TEAR_DOWN(CMAC_TDES_CAPABILITY) {}
+
+// Test capabilites API.
+TEST(CMAC_AES_CAPABILITY, good) {
+    // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
     setup_empty_ctx(&ctx);
 
     rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_cmac_set_domain(ctx, ACVP_CMAC_AES, ACVP_CMAC_MSGLEN, 0, 65536, 8);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_MACLEN, 128);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_DIRECTION_GEN, 1);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_DIRECTION_VER, 1);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_KEYLEN, 192);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     teardown_ctx(&ctx);
 }
 
-/*
- * Test capabilites API.
- */
-Test(CMAC_TDES_CAPABILITY, good) {
+// Test capabilites API.
+TEST(CMAC_TDES_CAPABILITY, good) {
+    // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
     setup_empty_ctx(&ctx);
     
     rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_TDES, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_cmac_set_domain(ctx, ACVP_CMAC_TDES, ACVP_CMAC_MSGLEN, 0, 65536, 8);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_MACLEN, 64);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_DIRECTION_GEN, 1);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_DIRECTION_VER, 1);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_KEYING_OPTION, 1);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     
     teardown_ctx(&ctx);
 }
@@ -108,7 +112,10 @@ Test(CMAC_TDES_CAPABILITY, good) {
  * Test the KAT handler API.
  * The ctx is empty (no capabilities), expecting failure.
  */
-Test(CMAC_API, empty_ctx) {
+TEST(CMAC_API, empty_ctx) {
+    // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
     setup_empty_ctx(&ctx);
 
     val = json_parse_file("json/cmac/cmac_aes.json");
@@ -120,8 +127,9 @@ Test(CMAC_API, empty_ctx) {
     }
 
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
     json_value_free(val);
+    val = NULL;
 
 end:
     if (ctx) teardown_ctx(&ctx);
@@ -131,7 +139,7 @@ end:
  * Test KAT handler API.
  * The ctx is NULL, expecting failure.
  */
-Test(CMAC_API, null_ctx) {
+TEST(CMAC_API, null_ctx) {
     val = json_parse_file("json/cmac/cmac_aes.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -142,25 +150,25 @@ Test(CMAC_API, null_ctx) {
 
     /* Test with NULL JSON object */
     rv  = acvp_cmac_kat_handler(NULL, obj);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
     json_value_free(val);
+    val = NULL;
 }
-
 
 /*
  * Test the KAT handler API.
  * The obj is null, expecting failure.
  */
-Test(CMAC_API, null_json_obj, .init = setup, .fini = teardown) {
+TEST(CMAC_API, null_json_obj) {
     rv  = acvp_cmac_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
 /*
  * This is a good JSON.
  * Expecting success.
  */
-Test(CMAC_API, good_aes, .init = setup, .fini = teardown) {
+TEST(CMAC_API, good_aes) {
     val = json_parse_file("json/cmac/cmac_aes.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -169,16 +177,16 @@ Test(CMAC_API, good_aes, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
+    val = NULL;
 }
-
 
 /*
  * This is a good JSON.
  * Expecting success.
  */
-Test(CMAC_API, good_tdes, .init = setup, .fini = teardown) {
+TEST(CMAC_API, good_tdes) {
     val = json_parse_file("json/cmac/cmac_tdes.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -187,15 +195,13 @@ Test(CMAC_API, good_tdes, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"algorithm" is wrong.
- */
-Test(CMAC_API, wrong_algorithm, .init = setup, .fini = teardown) {
+// The value for key:"algorithm" is wrong.
+TEST(CMAC_API, wrong_algorithm) {
     val = json_parse_file("json/cmac/cmac_aes_1.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -204,15 +210,13 @@ Test(CMAC_API, wrong_algorithm, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"direction" is missing.
- */
-Test(CMAC_API, missing_direction, .init = setup, .fini = teardown) {
+// The value for key:"direction" is missing.
+TEST(CMAC_API, missing_direction) {
     val = json_parse_file("json/cmac/cmac_aes_2.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -221,15 +225,13 @@ Test(CMAC_API, missing_direction, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"direction" is wrong.
- */
-Test(CMAC_API, wrong_direction, .init = setup, .fini = teardown) {
+// The value for key:"direction" is wrong.
+TEST(CMAC_API, wrong_direction) {
     val = json_parse_file("json/cmac/cmac_aes_3.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -238,15 +240,13 @@ Test(CMAC_API, wrong_direction, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"keyLen" is missing.
- */
-Test(CMAC_API, missing_keyLen, .init = setup, .fini = teardown) {
+// The key:"keyLen" is missing.
+TEST(CMAC_API, missing_keyLen) {
     val = json_parse_file("json/cmac/cmac_aes_4.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -255,16 +255,13 @@ Test(CMAC_API, missing_keyLen, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-
-/*
- * The key:"msgLen" is missing with non-empty msg.
- */
-Test(CMAC_API, missing_msgLen, .init = setup, .fini = teardown) {
+// The key:"msgLen" is missing with non-empty msg.
+TEST(CMAC_API, missing_msgLen) {
     val = json_parse_file("json/cmac/cmac_aes_5.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -273,15 +270,13 @@ Test(CMAC_API, missing_msgLen, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"macLen" is missing.
- */
-Test(CMAC_API, missing_macLen, .init = setup, .fini = teardown) {
+// The key:"macLen" is missing.
+TEST(CMAC_API, missing_macLen) {
     val = json_parse_file("json/cmac/cmac_aes_6.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -290,15 +285,13 @@ Test(CMAC_API, missing_macLen, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"key" is missing.
- */
-Test(CMAC_API, missing_key_aes, .init = setup, .fini = teardown) {
+// The key:"key" is missing.
+TEST(CMAC_API, missing_key_aes) {
     val = json_parse_file("json/cmac/cmac_aes_7.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -307,15 +300,13 @@ Test(CMAC_API, missing_key_aes, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"msg" is missing with nonzero msglen
- */
-Test(CMAC_API, missing_msg, .init = setup, .fini = teardown) {
+// The key:"msg" is missing with nonzero msglen
+TEST(CMAC_API, missing_msg) {
     val = json_parse_file("json/cmac/cmac_aes_8.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -324,15 +315,13 @@ Test(CMAC_API, missing_msg, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"mac" is missing.
- */
-Test(CMAC_API, missing_mac, .init = setup, .fini = teardown) {
+// The key:"mac" is missing.
+TEST(CMAC_API, missing_mac) {
     val = json_parse_file("json/cmac/cmac_aes_9.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -341,15 +330,13 @@ Test(CMAC_API, missing_mac, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The length of "key" is wrong.
- */
-Test(CMAC_API, key_wrong_length, .init = setup, .fini = teardown) {
+// The length of "key" is wrong.
+TEST(CMAC_API, key_wrong_length) {
     val = json_parse_file("json/cmac/cmac_aes_10.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -358,15 +345,13 @@ Test(CMAC_API, key_wrong_length, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"keyingOption" is missing.
- */
-Test(CMAC_API, missing_keyingOption_tdes, .init = setup, .fini = teardown) {
+// The key:"keyingOption" is missing.
+TEST(CMAC_API, missing_keyingOption_tdes) {
     val = json_parse_file("json/cmac/cmac_tdes_1.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -375,16 +360,13 @@ Test(CMAC_API, missing_keyingOption_tdes, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-
-/*
- * The key:"keyingOption" is wrong.
- */
-Test(CMAC_API, wrong_keyingOption_tdes, .init = setup, .fini = teardown) {
+// The key:"keyingOption" is wrong.
+TEST(CMAC_API, wrong_keyingOption_tdes) {
     val = json_parse_file("json/cmac/cmac_tdes_2.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -393,15 +375,13 @@ Test(CMAC_API, wrong_keyingOption_tdes, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"key1" is missing.
- */
-Test(CMAC_API, missing_key1_tdes, .init = setup, .fini = teardown) {
+// The key:"key1" is missing.
+TEST(CMAC_API, missing_key1_tdes) {
     val = json_parse_file("json/cmac/cmac_tdes_3.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -410,15 +390,13 @@ Test(CMAC_API, missing_key1_tdes, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"key2" is missing.
- */
-Test(CMAC_API, missing_key2_tdes, .init = setup, .fini = teardown) {
+// The key:"key2" is missing.
+TEST(CMAC_API, missing_key2_tdes) {
     val = json_parse_file("json/cmac/cmac_tdes_4.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -427,15 +405,13 @@ Test(CMAC_API, missing_key2_tdes, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"key3" is missing.
- */
-Test(CMAC_API, missing_key3_tdes, .init = setup, .fini = teardown) {
+// The key:"key3" is missing.
+TEST(CMAC_API, missing_key3_tdes) {
     val = json_parse_file("json/cmac/cmac_tdes_5.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -444,16 +420,13 @@ Test(CMAC_API, missing_key3_tdes, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-
-/*
- * The value for key:"msg" is too long
- */
-Test(CMAC_API, msg_too_long, .init = setup, .fini = teardown) {
+// The value for key:"msg" is too long
+TEST(CMAC_API, msg_too_long) {
     val = json_parse_file("json/cmac/cmac_tdes_6.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -462,15 +435,13 @@ Test(CMAC_API, msg_too_long, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The length of "key1" is wrong
- */
-Test(CMAC_API, key1_wrong_length, .init = setup, .fini = teardown) {
+// The length of "key1" is wrong
+TEST(CMAC_API, key1_wrong_length) {
     val = json_parse_file("json/cmac/cmac_tdes_7.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -479,15 +450,13 @@ Test(CMAC_API, key1_wrong_length, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The length of "key2" is wrong
- */
-Test(CMAC_API, key2_wrong_length, .init = setup, .fini = teardown) {
+// The length of "key2" is wrong
+TEST(CMAC_API, key2_wrong_length) {
     val = json_parse_file("json/cmac/cmac_tdes_8.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -496,15 +465,13 @@ Test(CMAC_API, key2_wrong_length, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The length of "key3" is wrong
- */
-Test(CMAC_API, key3_wrong_length, .init = setup, .fini = teardown) {
+// The length of "key3" is wrong
+TEST(CMAC_API, key3_wrong_length) {
     val = json_parse_file("json/cmac/cmac_tdes_9.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -513,15 +480,13 @@ Test(CMAC_API, key3_wrong_length, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The length of "tgId" is missing
- */
-Test(CMAC_API, tgid_missing, .init = setup, .fini = teardown) {
+// The length of "tgId" is missing
+TEST(CMAC_API, tgid_missing) {
     val = json_parse_file("json/cmac/cmac_tdes_10.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -530,17 +495,17 @@ Test(CMAC_API, tgid_missing, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-/*
- * The key: crypto handler operation fails on last crypto call
- */
-Test(CMAC_API, cryptoFail1, .init = setup_fail, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key: crypto handler operation fails on last crypto call
+TEST(CMAC_API, cryptoFail1) {
+    // Enable failure mode for this test (originally used setup_fail)
+    force_handler_failure = 1;
+    counter_set = 0;
+    counter_fail = 0;
 
     val = json_parse_file("json/cmac/cmac_aes.json");
     
@@ -552,17 +517,20 @@ Test(CMAC_API, cryptoFail1, .init = setup_fail, .fini = teardown) {
     counter_set = 0;
     counter_fail = 0; /* fail on first iteration */
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
     json_value_free(val);
+    val = NULL;
+    
+    // Reset failure mode
+    force_handler_failure = 0;
 }
 
-/*
- * The key: crypto handler operation fails on last crypto call
- */
-Test(CMAC_API, cryptoFail2, .init = setup_fail, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key: crypto handler operation fails on last crypto call
+TEST(CMAC_API, cryptoFail2) {
+    // Enable failure mode for this test (originally used setup_fail)
+    force_handler_failure = 1;
+    counter_set = 0;
+    counter_fail = 0;
 
     val = json_parse_file("json/cmac/cmac_aes.json");
     
@@ -574,17 +542,20 @@ Test(CMAC_API, cryptoFail2, .init = setup_fail, .fini = teardown) {
     counter_set = 0;
     counter_fail = 12; /* fail on last iteration */
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
     json_value_free(val);
+    val = NULL;
+    
+    // Reset failure mode
+    force_handler_failure = 0;
 }
 
-/*
- * The key: crypto handler operation fails on last crypto call
- */
-Test(CMAC_API, cryptoFail3, .init = setup_fail, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key: crypto handler operation fails on last crypto call
+TEST(CMAC_API, cryptoFail3) {
+    // Enable failure mode for this test (originally used setup_fail)
+    force_handler_failure = 1;
+    counter_set = 0;
+    counter_fail = 0;
 
     val = json_parse_file("json/cmac/cmac_tdes.json");
     
@@ -596,17 +567,20 @@ Test(CMAC_API, cryptoFail3, .init = setup_fail, .fini = teardown) {
     counter_set = 0;
     counter_fail = 0; /* fail on first iteration */
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
     json_value_free(val);
+    val = NULL;
+    
+    // Reset failure mode
+    force_handler_failure = 0;
 }
 
-/*
- * The key: crypto handler operation fails on last crypto call
- */
-Test(CMAC_API, cryptoFail4, .init = setup_fail, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key: crypto handler operation fails on last crypto call
+TEST(CMAC_API, cryptoFail4) {
+    // Enable failure mode for this test (originally used setup_fail)
+    force_handler_failure = 1;
+    counter_set = 0;
+    counter_fail = 0;
 
     val = json_parse_file("json/cmac/cmac_tdes.json");
     
@@ -618,17 +592,16 @@ Test(CMAC_API, cryptoFail4, .init = setup_fail, .fini = teardown) {
     counter_set = 0;
     counter_fail = 11; /* fail on last iteration */
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
     json_value_free(val);
+    val = NULL;
+    
+    // Reset failure mode
+    force_handler_failure = 0;
 }
 
-/*
- * The key:"keyLen" is missing in last tg
- */
-Test(CMAC_API, tgFail1, .init = setup, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key:"keyLen" is missing in last tg
+TEST(CMAC_API, tgFail1) {
 
     val = json_parse_file("json/cmac/cmac_aes_11.json");
     
@@ -638,17 +611,13 @@ Test(CMAC_API, tgFail1, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-/*
- * The key:"mac" is missing in last tc
- */
-Test(CMAC_API, tcFail1, .init = setup, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key:"mac" is missing in last tc
+TEST(CMAC_API, tcFail1) {
 
     val = json_parse_file("json/cmac/cmac_aes_12.json");
     
@@ -658,17 +627,13 @@ Test(CMAC_API, tcFail1, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-/*
- * The key:"keyingOption" is missing in last tg
- */
-Test(CMAC_API, tgFail2, .init = setup, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key:"keyingOption" is missing in last tg
+TEST(CMAC_API, tgFail2) {
 
     val = json_parse_file("json/cmac/cmac_tdes_11.json");
     
@@ -678,17 +643,13 @@ Test(CMAC_API, tgFail2, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-/*
- * The key:"mac" is missing in last tc
- */
-Test(CMAC_API, tcFail2, .init = setup, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key:"mac" is missing in last tc
+TEST(CMAC_API, tcFail2) {
 
     val = json_parse_file("json/cmac/cmac_tdes_12.json");
     
@@ -698,7 +659,7 @@ Test(CMAC_API, tcFail2, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
-

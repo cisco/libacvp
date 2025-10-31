@@ -1,38 +1,23 @@
 /** @file */
-/*****************************************************************************
-* Copyright (c) 2024, Cisco Systems, Inc.
-* All rights reserved.
-
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
+/*
+ * Copyright (c) 2025, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
 #include "ut_common.h"
 #include "app_common.h"
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_TEST_CASE *test_case;
-static ACVP_PBKDF_TC *pbkdf_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_PBKDF_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_PBKDF_TC *pbkdf_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 int initialize_pbkdf_tc(ACVP_PBKDF_TC *stc,
                         unsigned int tc_id,
@@ -43,9 +28,8 @@ int initialize_pbkdf_tc(ACVP_PBKDF_TC *stc,
                         int iterationCount,
                         int key_len,
                         int salt_len,
-                        int password_len,
-                        int corrupt) {
-    ACVP_RESULT rv;
+                       int password_len,
+                       int corrupt) {
     int tmp;
     int slen;
     int plen;
@@ -62,7 +46,7 @@ int initialize_pbkdf_tc(ACVP_PBKDF_TC *stc,
     stc->hmac_type = hmacAlg;
     stc->test_type = testType;
     stc->key_len = key_len;
-
+    stc->tc_id = tc_id;
 
     //copy password (string) to TC
     if (stc->password && password) {
@@ -103,10 +87,11 @@ void free_pbkdf_tc(ACVP_PBKDF_TC *stc) {
     stc = NULL;
 }
 
-/*
- * missing test case
- */
-Test(APP_PBKDF_HANDLER, missing_test_case) {
+TEST_SETUP(APP_PBKDF_HANDLER) {}
+TEST_TEAR_DOWN(APP_PBKDF_HANDLER) {}
+
+// missing test case
+TEST(APP_PBKDF_HANDLER, missing_test_case) {
     pbkdf_tc = calloc(1, sizeof(ACVP_PBKDF_TC));
 
     if (!initialize_pbkdf_tc(pbkdf_tc,
@@ -120,24 +105,21 @@ Test(APP_PBKDF_HANDLER, missing_test_case) {
                              194,
                              105, 0)) {
 
-        cr_assert_fail("pbkdf init tc failure");
+        TEST_FAIL_MESSAGE("pbkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.pbkdf = pbkdf_tc;
     
     rv = app_pbkdf_handler(NULL);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_pbkdf_tc(pbkdf_tc);
     free(test_case);
 }
 
-
-/*
- * missing pbkdf_tc
- */
-Test(APP_PBKDF_HANDLER, missing_pbkdf_tc) {
+// missing pbkdf_tc
+TEST(APP_PBKDF_HANDLER, missing_pbkdf_tc) {
     pbkdf_tc = calloc(1, sizeof(ACVP_PBKDF_TC));
 
     if (!initialize_pbkdf_tc(pbkdf_tc,
@@ -151,24 +133,21 @@ Test(APP_PBKDF_HANDLER, missing_pbkdf_tc) {
                              194,
                              105, 0)) {
 
-        cr_assert_fail("pbkdf init tc failure");
+        TEST_FAIL_MESSAGE("pbkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.pbkdf = NULL;
     
     rv = app_pbkdf_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_pbkdf_tc(pbkdf_tc);
     free(test_case);
 }
 
-
-/*
- * missing hmacAlg in pbkdf tc test case
- */
-Test(APP_PBKDF_HANDLER, missing_hmacAlg) {
+// missing hmacAlg in pbkdf tc test case
+TEST(APP_PBKDF_HANDLER, missing_hmacAlg) {
 
     pbkdf_tc = calloc(1, sizeof(ACVP_PBKDF_TC));
 
@@ -183,23 +162,21 @@ Test(APP_PBKDF_HANDLER, missing_hmacAlg) {
                              194,
                              105, 0)) {
 
-        cr_assert_fail("pbkdf init tc failure");
+        TEST_FAIL_MESSAGE("pbkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.pbkdf = pbkdf_tc;
     
     rv = app_pbkdf_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_pbkdf_tc(pbkdf_tc);
     free(test_case);
 }
 
-/*
- * missing salt in pbkdf tc test case
- */
-Test(APP_PBKDF_HANDLER, missing_salt) {
+// missing salt in pbkdf tc test case
+TEST(APP_PBKDF_HANDLER, missing_salt) {
     pbkdf_tc = calloc(1, sizeof(ACVP_PBKDF_TC));
 
     if (!initialize_pbkdf_tc(pbkdf_tc,
@@ -213,23 +190,21 @@ Test(APP_PBKDF_HANDLER, missing_salt) {
                              194,
                              105, 0)) {
 
-        cr_assert_fail("pbkdf init tc failure");
+        TEST_FAIL_MESSAGE("pbkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.pbkdf = pbkdf_tc;
     
     rv = app_pbkdf_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_pbkdf_tc(pbkdf_tc);
     free(test_case);
 }
 
-/*
- * missing salt length in pbkdf tc test case
- */
-Test(APP_PBKDF_HANDLER, missing_saltlen) {
+// missing salt length in pbkdf tc test case
+TEST(APP_PBKDF_HANDLER, missing_saltlen) {
     pbkdf_tc = calloc(1, sizeof(ACVP_PBKDF_TC));
 
     if (!initialize_pbkdf_tc(pbkdf_tc,
@@ -243,23 +218,21 @@ Test(APP_PBKDF_HANDLER, missing_saltlen) {
                              0,
                              105, 0)) {
 
-        cr_assert_fail("pbkdf init tc failure");
+        TEST_FAIL_MESSAGE("pbkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.pbkdf = pbkdf_tc;
     
     rv = app_pbkdf_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_pbkdf_tc(pbkdf_tc);
     free(test_case);
 }
 
-/*
- * missing password in pbkdf tc test case
- */
-Test(APP_PBKDF_HANDLER, missing_password) {
+// missing password in pbkdf tc test case
+TEST(APP_PBKDF_HANDLER, missing_password) {
     pbkdf_tc = calloc(1, sizeof(ACVP_PBKDF_TC));
 
     if (!initialize_pbkdf_tc(pbkdf_tc,
@@ -273,23 +246,21 @@ Test(APP_PBKDF_HANDLER, missing_password) {
                              194,
                              105, 0)) {
 
-        cr_assert_fail("pbkdf init tc failure");
+        TEST_FAIL_MESSAGE("pbkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.pbkdf = pbkdf_tc;
     
     rv = app_pbkdf_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_pbkdf_tc(pbkdf_tc);
     free(test_case);
 }
 
-/*
- * missing pw_len in pbkdf tc test case
- */
-Test(APP_PBKDF_HANDLER, missing_pwlen) {
+// missing pw_len in pbkdf tc test case
+TEST(APP_PBKDF_HANDLER, missing_pwlen) {
     pbkdf_tc = calloc(1, sizeof(ACVP_PBKDF_TC));
 
     if (!initialize_pbkdf_tc(pbkdf_tc,
@@ -303,23 +274,21 @@ Test(APP_PBKDF_HANDLER, missing_pwlen) {
                              194,
                              0, 0)) {
 
-        cr_assert_fail("pbkdf init tc failure");
+        TEST_FAIL_MESSAGE("pbkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.pbkdf = pbkdf_tc;
     
     rv = app_pbkdf_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_pbkdf_tc(pbkdf_tc);
     free(test_case);
 }
 
-/*
- * missing iteration in pbkdf tc test case
- */
-Test(APP_PBKDF_HANDLER, missing_iteration) {
+// missing iteration in pbkdf tc test case
+TEST(APP_PBKDF_HANDLER, missing_iteration) {
     pbkdf_tc = calloc(1, sizeof(ACVP_PBKDF_TC));
 
     if (!initialize_pbkdf_tc(pbkdf_tc,
@@ -333,23 +302,21 @@ Test(APP_PBKDF_HANDLER, missing_iteration) {
                              194,
                              105, 0)) {
 
-        cr_assert_fail("pbkdf init tc failure");
+        TEST_FAIL_MESSAGE("pbkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.pbkdf = pbkdf_tc;
     
     rv = app_pbkdf_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_pbkdf_tc(pbkdf_tc);
     free(test_case);
 }
 
-/*
- * missing key output allocation in pbkdf tc test case
- */
-Test(APP_PBKDF_HANDLER, missing_key) {
+// missing key output allocation in pbkdf tc test case
+TEST(APP_PBKDF_HANDLER, missing_key) {
     pbkdf_tc = calloc(1, sizeof(ACVP_PBKDF_TC));
 
     if (!initialize_pbkdf_tc(pbkdf_tc,
@@ -363,23 +330,21 @@ Test(APP_PBKDF_HANDLER, missing_key) {
                              194,
                              105, 1)) {
 
-        cr_assert_fail("pbkdf init tc failure");
+        TEST_FAIL_MESSAGE("pbkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.pbkdf = pbkdf_tc;
     
     rv = app_pbkdf_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_pbkdf_tc(pbkdf_tc);
     free(test_case);
 }
 
-/*
- * missing key_len in pbkdf tc test case
- */
-Test(APP_PBKDF_HANDLER, missing_keylen) {
+// missing key_len in pbkdf tc test case
+TEST(APP_PBKDF_HANDLER, missing_keylen) {
     pbkdf_tc = calloc(1, sizeof(ACVP_PBKDF_TC));
 
     if (!initialize_pbkdf_tc(pbkdf_tc,
@@ -393,14 +358,14 @@ Test(APP_PBKDF_HANDLER, missing_keylen) {
                              194,
                              105, 0)) {
 
-        cr_assert_fail("pbkdf init tc failure");
+        TEST_FAIL_MESSAGE("pbkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.pbkdf = pbkdf_tc;
     
     rv = app_pbkdf_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_pbkdf_tc(pbkdf_tc);
     free(test_case);
