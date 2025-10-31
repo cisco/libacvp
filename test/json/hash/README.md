@@ -26,4 +26,3 @@ The value for key:"tgId" is missing in the last test_group
 
 #### hash\_8.json
 The value for key:last AFT tcId "msg" is missing
-

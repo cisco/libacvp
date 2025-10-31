@@ -1,10 +1,26 @@
 noinst_PROGRAMS = runtest
-runtest_SOURCES = ut_common.c
-tmp_cflags = -g -O0 -Wall -DNO_SSL_DL $(SAFEC_CFLAGS) $(CRITERION_CFLAGS) $(LIBACVP_CFLAGS) -I../include
-tmp_ldflags= $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS)
+runtest_SOURCES = run_all_tests.c \
+                  ut_common.c \
+                  unity/unity.c \
+                  unity/unity_fixture.c
 
+tmp_cflags = -g -O0 -Wall -DNO_SSL_DL $(SAFEC_CFLAGS) $(LIBACVP_CFLAGS) -I../include
+tmp_ldflags= $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS)
+
+# Define APP_NOT_SUPPORTED if app is disabled
+if APP_NOT_SUPPORTED
+tmp_cflags += -DAPP_NOT_SUPPORTED
+endif
+
+# Define LIB_NOT_SUPPORTED if lib is disabled
+if LIB_NOT_SUPPORTED
+tmp_cflags += -DLIB_NOT_SUPPORTED
+endif
+
+# Only build library tests if library is being built
 if ! LIB_NOT_SUPPORTED
-runtest_SOURCES += create_session.c \
+runtest_SOURCES += run_lib_tests.c \
+      create_session.c \
       test_acvp_utils.c \
       test_acvp_drbg.c \
       test_acvp_dsa.c \
@@ -55,7 +71,8 @@ APP_LINK = ../app/acvp_app-app_cli.o \
 runtest_SOURCES += app_common.c
 
 if APP_IUT_OPENSSL_3
-runtest_SOURCES += implementations/openssl/3/test_iut_aes.c \
+runtest_SOURCES += implementations/openssl/3/run_app_tests.c \
+                   implementations/openssl/3/test_iut_aes.c \
                    implementations/openssl/3/test_iut_cmac.c \
                    implementations/openssl/3/test_iut_des.c \
                    implementations/openssl/3/test_iut_drbg.c \
@@ -120,8 +137,11 @@ tmp_cflags += $(IUT_CFLAGS) -I../app
 tmp_ldflags += $(IUT_LDFLAGS)
 endif
 
-runtest_CFLAGS = ${tmp_cflags}
+# UNITY_FIXTURE_NO_EXTRAS disables reliance on Unity's memory checking (Use valgrind if you want!)
+# Disabling nested-externs warning for Unity framework files as it is designed in a way that those warnings are inevitable
+runtest_CFLAGS = ${tmp_cflags} -DUNITY_FIXTURE_NO_EXTRAS
 runtest_LDFLAGS = ${tmp_ldflags}
+AM_CFLAGS += -Wno-nested-externs
 
 ldadd = $(ADDL_LIB_DEPENDENCIES)
 if ! APP_NOT_SUPPORTED
@@ -130,8 +150,10 @@ endif
 runtest_LDADD = $(ldadd)
 
 runtestdir=
-runtest_HEADERS = ut_common.h
+runtest_HEADERS = ut_common.h \
+                  unity/unity_internals.h \
+                  unity/unity_fixture_internals.h
+
 if ! APP_NOT_SUPPORTED
 runtest_HEADERS += app_common.h
 endif
-

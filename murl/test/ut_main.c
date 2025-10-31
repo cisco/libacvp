@@ -14,9 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "ut_lcl.h"
 
 
-/*
- * Sample test app that shows how to use Murl
- */
+// Sample test app that shows how to use Murl
 int main(int argc, char **argv)
 {
     int rv = 0;

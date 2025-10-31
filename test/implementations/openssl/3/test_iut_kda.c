@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -13,10 +13,13 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_TEST_CASE *test_case;
-ACVP_KDA_HKDF_TC *kda_hkdf_tc;
-ACVP_KDA_ONESTEP_TC *kda_onestep_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_KDA_HKDF_HANDLER);
+TEST_GROUP(APP_KDA_ONESTEP_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_KDA_HKDF_TC *kda_hkdf_tc = NULL;
+static ACVP_KDA_ONESTEP_TC *kda_onestep_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 void free_kda_hkdf_tc(ACVP_KDA_HKDF_TC *stc) {
     if (stc->salt) free(stc->salt);
@@ -68,8 +71,6 @@ int initialize_kda_hkdf_tc(ACVP_KDA_HKDF_TC *stc,
                             ACVP_KDA_ENCODING encoding,
                             ACVP_KDA_PATTERN_CANDIDATE *fixedArr,
                             ACVP_KDA_TEST_TYPE test_type) {
-    
-    ACVP_RESULT rv;
     stc->type = test_type;
     stc->hmacAlg = hmac_alg;
     stc->l = l / 8;
@@ -212,8 +213,6 @@ int initialize_kda_onestep_tc(ACVP_KDA_ONESTEP_TC *stc,
                                     ACVP_KDA_ENCODING encoding,
                                     ACVP_KDA_PATTERN_CANDIDATE *fixedArr,
                                     ACVP_KDA_TEST_TYPE test_type) {
-    ACVP_RESULT rv;
-
     stc->type = test_type;
     stc->aux_function = aux_function;
     stc->l = l / 8;
@@ -335,7 +334,13 @@ err:
     return 0;
 }
 
-Test(APP_KDA_HKDF_HANDLER, invalid_encoding) {
+TEST_SETUP(APP_KDA_HKDF_HANDLER) {}
+TEST_TEAR_DOWN(APP_KDA_HKDF_HANDLER) {}
+
+TEST_SETUP(APP_KDA_ONESTEP_HANDLER) {}
+TEST_TEAR_DOWN(APP_KDA_ONESTEP_HANDLER) {}
+
+TEST(APP_KDA_HKDF_HANDLER, invalid_encoding) {
     char *salt = "aa";
     char *z = "aa";
     char *uPartyId = "aa";
@@ -348,20 +353,20 @@ Test(APP_KDA_HKDF_HANDLER, invalid_encoding) {
                                 NULL, NULL, NULL, NULL, NULL, 1024, 256, 
                                 ACVP_KDA_MAC_SALT_METHOD_DEFAULT, 0,
                                 pat, ACVP_KDA_TT_AFT)) {
-        cr_assert_fail("kda hkdf init tc failure");
+        TEST_FAIL_MESSAGE("kda hkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kda_hkdf = kda_hkdf_tc;
 
     rv = app_kda_hkdf_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kda_hkdf_tc(kda_hkdf_tc);
     free(test_case);
 }
 
-Test(APP_KDA_HKDF_HANDLER, invalid_pattern) {
+TEST(APP_KDA_HKDF_HANDLER, invalid_pattern) {
     char *salt = "aa";
     char *z = "aa";
     char *uPartyId = "aa";
@@ -374,20 +379,20 @@ Test(APP_KDA_HKDF_HANDLER, invalid_pattern) {
                                 NULL, NULL, NULL, NULL, NULL, 1024, 256, 
                                 ACVP_KDA_MAC_SALT_METHOD_DEFAULT, ACVP_KDA_ENCODING_CONCAT,
                                 pat, ACVP_KDA_TT_AFT)) {
-        cr_assert_fail("kda hkdf init tc failure");
+        TEST_FAIL_MESSAGE("kda hkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kda_hkdf = kda_hkdf_tc;
 
     rv = app_kda_hkdf_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kda_hkdf_tc(kda_hkdf_tc);
     free(test_case);
 }
 
-Test(APP_KDA_HKDF_HANDLER, invalid_alg) {
+TEST(APP_KDA_HKDF_HANDLER, invalid_alg) {
     char *salt = "aaaa";
     char *z = "aaaa";
     char *uPartyId = "aaaa";
@@ -400,21 +405,21 @@ Test(APP_KDA_HKDF_HANDLER, invalid_alg) {
                                 NULL, NULL, NULL, NULL, NULL, 1024, 256, 
                                 ACVP_KDA_MAC_SALT_METHOD_DEFAULT, ACVP_KDA_ENCODING_CONCAT,
                                 pat, ACVP_KDA_TT_AFT)) {
-        cr_assert_fail("kda hkdf init tc failure");
+        TEST_FAIL_MESSAGE("kda hkdf init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kda_hkdf = kda_hkdf_tc;
 
     rv = app_kda_hkdf_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kda_hkdf_tc(kda_hkdf_tc);
     free(test_case);
 }
 
 //onestep
-Test(APP_KDA_ONESTEP_HANDLER, invalid_encoding) {
+TEST(APP_KDA_ONESTEP_HANDLER, invalid_encoding) {
     char *z = "aa";
     char *uPartyId = "aa";
     char *vPartyId = "aa";
@@ -426,20 +431,20 @@ Test(APP_KDA_ONESTEP_HANDLER, invalid_encoding) {
                                 NULL, NULL, NULL, NULL, NULL, 1024, 256, 
                                 ACVP_KDA_MAC_SALT_METHOD_DEFAULT, 0,
                                 pat, ACVP_KDA_TT_AFT)) {
-        cr_assert_fail("kda onestep init tc failure");
+        TEST_FAIL_MESSAGE("kda onestep init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kda_onestep = kda_onestep_tc;
 
     rv = app_kda_onestep_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kda_onestep_tc(kda_onestep_tc);
     free(test_case);
 }
 
-Test(APP_KDA_ONESTEP_HANDLER, invalid_pattern) {
+TEST(APP_KDA_ONESTEP_HANDLER, invalid_pattern) {
     char *salt = "aa";
     char *z = "aa";
     char *uPartyId = "aa";
@@ -452,20 +457,20 @@ Test(APP_KDA_ONESTEP_HANDLER, invalid_pattern) {
                                 NULL, NULL, NULL, NULL, NULL, 1024, 256, 
                                 ACVP_KDA_MAC_SALT_METHOD_DEFAULT, ACVP_KDA_ENCODING_CONCAT,
                                 pat, ACVP_KDA_TT_AFT)) {
-        cr_assert_fail("kda onestep init tc failure");
+        TEST_FAIL_MESSAGE("kda onestep init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kda_onestep = kda_onestep_tc;
 
     rv = app_kda_onestep_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kda_onestep_tc(kda_onestep_tc);
     free(test_case);
 }
 
-Test(APP_KDA_ONESTEP_HANDLER, invalid_alg) {
+TEST(APP_KDA_ONESTEP_HANDLER, invalid_alg) {
     char *salt = "aaaa";
     char *z = "aaaa";
     char *uPartyId = "aaaa";
@@ -478,14 +483,14 @@ Test(APP_KDA_ONESTEP_HANDLER, invalid_alg) {
                                 NULL, NULL, NULL, NULL, NULL, 1024, 256, 
                                 ACVP_KDA_MAC_SALT_METHOD_DEFAULT, ACVP_KDA_ENCODING_CONCAT,
                                 pat, ACVP_KDA_TT_AFT)) {
-        cr_assert_fail("kda_onestep init tc failure");
+        TEST_FAIL_MESSAGE("kda_onestep init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kda_onestep = kda_onestep_tc;
 
     rv = app_kda_onestep_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kda_onestep_tc(kda_onestep_tc);
     free(test_case);

@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,9 +8,15 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
 #include "ut_common.h"
 #include "acvp/acvp_lcl.h"
+
+TEST_GROUP(RSA_SIGGEN_API);
+TEST_GROUP(RSA_SIGGEN_CAPABILITY);
+TEST_GROUP(RSA_SIGGEN_HANDLER);
+TEST_GROUP(RSA_SIGVER_API);
+TEST_GROUP(RSA_SIGVER_CAPABILITY);
+TEST_GROUP(RSA_SIGVER_HANDLER);
 
 static ACVP_CTX *ctx = NULL;
 static ACVP_RESULT rv = 0;
@@ -18,185 +24,161 @@ static JSON_Object *obj = NULL;
 static JSON_Value *val = NULL;
 static char cvalue[] = "same";
 
-static void setup_siggen(void) {
+static void rsa_siggen_api_setup_helper(void) {
     setup_empty_ctx(&ctx);
 
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGGEN, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA256, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA256, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA256, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 }
 
-static void setup_siggen_fail(void) {
+static void rsa_sigver_api_setup_helper(void) {
     setup_empty_ctx(&ctx);
 
-    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGGEN, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA256, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA256, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA256, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-}
-
-static void setup_sigver(void) {
-    setup_empty_ctx(&ctx);
-    
     char *expo_str = calloc(7, sizeof(char));
     strncpy(expo_str, "010001", 7); // RSA_F4
-    
+
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
-    cr_assert(rv == ACVP_SUCCESS);
-    
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA1, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA384, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA224, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA1, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA224, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    free(expo_str);
-}
-static void setup_sigver_fail(void) {
-    setup_empty_ctx(&ctx);
-    
-    char *expo_str = calloc(7, sizeof(char));
-    strncpy(expo_str, "010001", 7); // RSA_F4
-    
-    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_sigver_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA1, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA384, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA224, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA1, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA224, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     free(expo_str);
 }
 
-static void teardown(void) {
+static void rsa_siggen_api_tear_down_helper(void) {
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
     if (ctx) teardown_ctx(&ctx);
 }
 
-/*
- * Test capabilites API.
- */
-Test(RSA_SIGGEN_CAPABILITY, good) {
+TEST_SETUP(RSA_SIGGEN_API) {
+    rsa_siggen_api_setup_helper();
+}
+
+TEST_TEAR_DOWN(RSA_SIGGEN_API) {
+    rsa_siggen_api_tear_down_helper();
+}
+
+TEST_SETUP(RSA_SIGGEN_CAPABILITY) {}
+
+TEST_TEAR_DOWN(RSA_SIGGEN_CAPABILITY) {
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(RSA_SIGGEN_HANDLER) {
+    rsa_siggen_api_setup_helper();
+}
+
+TEST_TEAR_DOWN(RSA_SIGGEN_HANDLER) {
+    rsa_siggen_api_tear_down_helper();
+}
+
+TEST_SETUP(RSA_SIGVER_API) {
+    rsa_sigver_api_setup_helper();
+}
+
+TEST_TEAR_DOWN(RSA_SIGVER_API) {
+    rsa_siggen_api_tear_down_helper();
+}
+
+TEST_SETUP(RSA_SIGVER_CAPABILITY) {}
+TEST_TEAR_DOWN(RSA_SIGVER_CAPABILITY) {}
+
+TEST_SETUP(RSA_SIGVER_HANDLER) {
+    rsa_sigver_api_setup_helper();
+}
+
+TEST_TEAR_DOWN(RSA_SIGVER_HANDLER) {
+    rsa_siggen_api_tear_down_helper();
+}
+
+// Test capabilites API.
+TEST(RSA_SIGGEN_CAPABILITY, good) {
+    // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
     setup_empty_ctx(&ctx);
 
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGGEN, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA256, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA256, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA256, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     teardown_ctx(&ctx);
 }
@@ -205,7 +187,10 @@ Test(RSA_SIGGEN_CAPABILITY, good) {
  * Test the KAT handler API.
  * The ctx is empty (no capabilities), expecting failure.
  */
-Test(RSA_SIGGEN_API, empty_ctx) {
+TEST(RSA_SIGGEN_API, empty_ctx) {
+    // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
     setup_empty_ctx(&ctx);
 
     val = json_parse_file("json/rsa/rsa_siggen.json");
@@ -217,8 +202,9 @@ Test(RSA_SIGGEN_API, empty_ctx) {
     }
 
     rv  = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
     json_value_free(val);
+    val = NULL;
 
 end:
     if (ctx) teardown_ctx(&ctx);
@@ -228,7 +214,7 @@ end:
  * Test KAT handler API.
  * The ctx is NULL, expecting failure.
  */
-Test(RSA_SIGGEN_API, null_ctx) {
+TEST(RSA_SIGGEN_API, null_ctx) {
     val = json_parse_file("json/rsa/rsa_siggen.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -239,25 +225,25 @@ Test(RSA_SIGGEN_API, null_ctx) {
 
     /* Test with NULL JSON object */
     rv  = acvp_rsa_siggen_kat_handler(NULL, obj);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
     json_value_free(val);
+    val = NULL;
 }
-
 
 /*
  * Test the KAT handler API.
  * The obj is null, expecting failure.
  */
-Test(RSA_SIGGEN_API, null_json_obj, .init = setup_siggen, .fini = teardown) {
+TEST(RSA_SIGGEN_API, null_json_obj) {
     rv  = acvp_rsa_siggen_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
 /*
  * This is a good JSON.
  * Expecting success.
  */
-Test(RSA_SIGGEN_HANDLER, good, .init = setup_siggen, .fini = teardown) {
+TEST(RSA_SIGGEN_HANDLER, good) {
     val = json_parse_file("json/rsa/rsa_siggen.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -266,15 +252,13 @@ Test(RSA_SIGGEN_HANDLER, good, .init = setup_siggen, .fini = teardown) {
         return;
     }
     rv = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"algorithm" is wrong.
- */
-Test(RSA_SIGGEN_HANDLER, wrong_algorithm, .init = setup_siggen, .fini = teardown) {
+// The value for key:"algorithm" is wrong.
+TEST(RSA_SIGGEN_HANDLER, wrong_algorithm) {
     val = json_parse_file("json/rsa/rsa_siggen_1.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -283,15 +267,13 @@ Test(RSA_SIGGEN_HANDLER, wrong_algorithm, .init = setup_siggen, .fini = teardown
         return;
     }
     rv = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"mode" is missing.
- */
-Test(RSA_SIGGEN_HANDLER, missing_mode, .init = setup_siggen, .fini = teardown) {
+// The key:"mode" is missing.
+TEST(RSA_SIGGEN_HANDLER, missing_mode) {
     val = json_parse_file("json/rsa/rsa_siggen_2.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -300,15 +282,13 @@ Test(RSA_SIGGEN_HANDLER, missing_mode, .init = setup_siggen, .fini = teardown) {
         return;
     }
     rv = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"mode" is wrong.
- */
-Test(RSA_SIGGEN_HANDLER, wrong_mode, .init = setup_siggen, .fini = teardown) {
+// The value for key:"mode" is wrong.
+TEST(RSA_SIGGEN_HANDLER, wrong_mode) {
     val = json_parse_file("json/rsa/rsa_siggen_3.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -317,15 +297,13 @@ Test(RSA_SIGGEN_HANDLER, wrong_mode, .init = setup_siggen, .fini = teardown) {
         return;
     }
     rv = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"sigType" is missing.
- */
-Test(RSA_SIGGEN_HANDLER, missing_sigType, .init = setup_siggen, .fini = teardown) {
+// The key:"sigType" is missing.
+TEST(RSA_SIGGEN_HANDLER, missing_sigType) {
     val = json_parse_file("json/rsa/rsa_siggen_4.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -334,15 +312,13 @@ Test(RSA_SIGGEN_HANDLER, missing_sigType, .init = setup_siggen, .fini = teardown
         return;
     }
     rv = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"hashAlg" is missing.
- */
-Test(RSA_SIGGEN_HANDLER, missing_hashAlg, .init = setup_siggen, .fini = teardown) {
+// The key:"hashAlg" is missing.
+TEST(RSA_SIGGEN_HANDLER, missing_hashAlg) {
     val = json_parse_file("json/rsa/rsa_siggen_5.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -351,15 +327,13 @@ Test(RSA_SIGGEN_HANDLER, missing_hashAlg, .init = setup_siggen, .fini = teardown
         return;
     }
     rv = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"modulo" is missing.
- */
-Test(RSA_SIGGEN_HANDLER, missing_mod, .init = setup_siggen, .fini = teardown) {
+// The value for key:"modulo" is missing.
+TEST(RSA_SIGGEN_HANDLER, missing_mod) {
     val = json_parse_file("json/rsa/rsa_siggen_6.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -368,15 +342,13 @@ Test(RSA_SIGGEN_HANDLER, missing_mod, .init = setup_siggen, .fini = teardown) {
         return;
     }
     rv = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"modulo" is wrong.
- */
-Test(RSA_SIGGEN_HANDLER, wrong_mod, .init = setup_siggen, .fini = teardown) {
+// The value for key:"modulo" is wrong.
+TEST(RSA_SIGGEN_HANDLER, wrong_mod) {
     val = json_parse_file("json/rsa/rsa_siggen_7.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -385,15 +357,13 @@ Test(RSA_SIGGEN_HANDLER, wrong_mod, .init = setup_siggen, .fini = teardown) {
         return;
     }
     rv = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"message" is missing.
- */
-Test(RSA_SIGGEN_HANDLER, missing_message, .init = setup_siggen, .fini = teardown) {
+// The key:"message" is missing.
+TEST(RSA_SIGGEN_HANDLER, missing_message) {
     val = json_parse_file("json/rsa/rsa_siggen_8.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -402,15 +372,13 @@ Test(RSA_SIGGEN_HANDLER, missing_message, .init = setup_siggen, .fini = teardown
         return;
     }
     rv  = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"tcId" is missing.
- */
-Test(RSA_SIGGEN_HANDLER, missing_tcId, .init = setup_siggen, .fini = teardown) {
+// The key:"tcId" is missing.
+TEST(RSA_SIGGEN_HANDLER, missing_tcId) {
     val = json_parse_file("json/rsa/rsa_siggen_9.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -419,15 +387,13 @@ Test(RSA_SIGGEN_HANDLER, missing_tcId, .init = setup_siggen, .fini = teardown) {
         return;
     }
     rv  = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"message" is too long.
- */
-Test(RSA_SIGGEN_HANDLER, message_too_long, .init = setup_siggen, .fini = teardown) {
+// The value for key:"message" is too long.
+TEST(RSA_SIGGEN_HANDLER, message_too_long) {
     val = json_parse_file("json/rsa/rsa_siggen_10.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -436,51 +402,52 @@ Test(RSA_SIGGEN_HANDLER, message_too_long, .init = setup_siggen, .fini = teardow
         return;
     }
     rv  = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * Test capabilites API.
- */
-Test(RSA_SIGVER_CAPABILITY, good) {
+// Test capabilites API.
+TEST(RSA_SIGVER_CAPABILITY, good) {
+    // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
     setup_empty_ctx(&ctx);
     char *expo_str = calloc(7, sizeof(char));
     strncpy(expo_str, "010001", 7); // RSA_F4
     
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA1, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA384, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA224, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA1, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA224, 0);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     free(expo_str);    
     teardown_ctx(&ctx);
 }
@@ -489,7 +456,10 @@ Test(RSA_SIGVER_CAPABILITY, good) {
  * Test the KAT handler API.
  * The ctx is empty (no capabilities), expecting failure.
  */
-Test(RSA_SIGVER_API, empty_ctx) {
+TEST(RSA_SIGVER_API, empty_ctx) {
+    // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
     setup_empty_ctx(&ctx);
     
     val = json_parse_file("json/rsa/rsa_sigver.json");
@@ -501,8 +471,9 @@ Test(RSA_SIGVER_API, empty_ctx) {
     }
     
     rv  = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
     json_value_free(val);
+    val = NULL;
    
 end:
     if (ctx) teardown_ctx(&ctx);
@@ -512,7 +483,7 @@ end:
  * Test KAT handler API.
  * The ctx is NULL, expecting failure.
  */
-Test(RSA_SIGVER_API, null_ctx) {
+TEST(RSA_SIGVER_API, null_ctx) {
     val = json_parse_file("json/rsa/rsa_sigver.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -523,25 +494,25 @@ Test(RSA_SIGVER_API, null_ctx) {
     
     /* Test with NULL JSON object */
     rv  = acvp_rsa_sigver_kat_handler(NULL, obj);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
     json_value_free(val);
+    val = NULL;
 }
-
 
 /*
  * Test the KAT handler API.
  * The obj is null, expecting failure.
  */
-Test(RSA_SIGVER_API, null_json_obj, .init = setup_sigver, .fini = teardown) {
+TEST(RSA_SIGVER_API, null_json_obj) {
     rv  = acvp_rsa_sigver_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
 /*
  * This is a good JSON.
  * Expecting success.
  */
-Test(RSA_SIGVER_HANDLER, good, .init = setup_sigver, .fini = teardown) {
+TEST(RSA_SIGVER_HANDLER, good) {
     val = json_parse_file("json/rsa/rsa_sigver.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -550,15 +521,13 @@ Test(RSA_SIGVER_HANDLER, good, .init = setup_sigver, .fini = teardown) {
         return;
     }
     rv = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"e" is missing
- */
-Test(RSA_SIGVER_HANDLER, missing_e, .init = setup_sigver, .fini = teardown) {
+// The key:"e" is missing
+TEST(RSA_SIGVER_HANDLER, missing_e) {
     val = json_parse_file("json/rsa/rsa_sigver_1.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -567,15 +536,13 @@ Test(RSA_SIGVER_HANDLER, missing_e, .init = setup_sigver, .fini = teardown) {
         return;
     }
     rv = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"n" is missing
- */
-Test(RSA_SIGVER_HANDLER, missing_n, .init = setup_sigver, .fini = teardown) {
+// The key:"n" is missing
+TEST(RSA_SIGVER_HANDLER, missing_n) {
     val = json_parse_file("json/rsa/rsa_sigver_2.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -584,15 +551,13 @@ Test(RSA_SIGVER_HANDLER, missing_n, .init = setup_sigver, .fini = teardown) {
         return;
     }
     rv = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"signature" is missing
- */
-Test(RSA_SIGVER_HANDLER, missing_signature, .init = setup_sigver, .fini = teardown) {
+// The key:"signature" is missing
+TEST(RSA_SIGVER_HANDLER, missing_signature) {
     val = json_parse_file("json/rsa/rsa_sigver_3.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -601,15 +566,13 @@ Test(RSA_SIGVER_HANDLER, missing_signature, .init = setup_sigver, .fini = teardo
         return;
     }
     rv = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The key:"signature" is too long
- */
-Test(RSA_SIGVER_HANDLER, invalid_signature_len, .init = setup_sigver, .fini = teardown) {
+// The key:"signature" is too long
+TEST(RSA_SIGVER_HANDLER, invalid_signature_len) {
     val = json_parse_file("json/rsa/rsa_sigver_4.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -618,15 +581,13 @@ Test(RSA_SIGVER_HANDLER, invalid_signature_len, .init = setup_sigver, .fini = te
         return;
     }
     rv = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"e" is too long
- */
-Test(RSA_SIGVER_HANDLER, invalid_e_len, .init = setup_sigver, .fini = teardown) {
+// The value for key:"e" is too long
+TEST(RSA_SIGVER_HANDLER, invalid_e_len) {
     val = json_parse_file("json/rsa/rsa_sigver_5.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -635,15 +596,13 @@ Test(RSA_SIGVER_HANDLER, invalid_e_len, .init = setup_sigver, .fini = teardown) 
         return;
     }
     rv = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"n" is too long
- */
-Test(RSA_SIGVER_HANDLER, invalid_n_len, .init = setup_sigver, .fini = teardown) {
+// The value for key:"n" is too long
+TEST(RSA_SIGVER_HANDLER, invalid_n_len) {
     val = json_parse_file("json/rsa/rsa_sigver_6.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -652,15 +611,13 @@ Test(RSA_SIGVER_HANDLER, invalid_n_len, .init = setup_sigver, .fini = teardown) 
         return;
     }
     rv = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/*
- * The value for key:"tgId" is missing
- */
-Test(RSA_SIGVER_HANDLER, missing_tgid, .init = setup_sigver, .fini = teardown) {
+// The value for key:"tgId" is missing
+TEST(RSA_SIGVER_HANDLER, missing_tgid) {
     val = json_parse_file("json/rsa/rsa_sigver_7.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -669,17 +626,17 @@ Test(RSA_SIGVER_HANDLER, missing_tgid, .init = setup_sigver, .fini = teardown) {
         return;
     }
     rv = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-/*
- * The key: crypto handler operation fails on last crypto call
- */
-Test(RSA_SIGGEN_HANDLER, cryptoFail1, .init = setup_siggen_fail, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key: crypto handler operation fails on last crypto call
+TEST(RSA_SIGGEN_HANDLER, cryptoFail1) {
+    // Enable failure mode for this test (originally used setup_fail)
+    force_handler_failure = 1;
+    counter_set = 0;
+    counter_fail = 0;
 
     val = json_parse_file("json/rsa/rsa_siggen.json");
     
@@ -691,17 +648,20 @@ Test(RSA_SIGGEN_HANDLER, cryptoFail1, .init = setup_siggen_fail, .fini = teardow
     counter_set = 0;
     counter_fail = 0; /* fail on first iteration */
     rv  = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
     json_value_free(val);
+    val = NULL;
+    
+    // Reset failure mode
+    force_handler_failure = 0;
 }
 
-/*
- * The key: crypto handler operation fails on last crypto call
- */
-Test(RSA_SIGGEN_HANDLER, cryptoFail2, .init = setup_siggen_fail, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key: crypto handler operation fails on last crypto call
+TEST(RSA_SIGGEN_HANDLER, cryptoFail2) {
+    // Enable failure mode for this test (originally used setup_fail)
+    force_handler_failure = 1;
+    counter_set = 0;
+    counter_fail = 0;
 
     val = json_parse_file("json/rsa/rsa_siggen.json");
     
@@ -713,17 +673,16 @@ Test(RSA_SIGGEN_HANDLER, cryptoFail2, .init = setup_siggen_fail, .fini = teardow
     counter_set = 0;
     counter_fail = 1; /* fail on last iteration */
     rv  = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
     json_value_free(val);
+    val = NULL;
+    
+    // Reset failure mode
+    force_handler_failure = 0;
 }
 
-/*
- * The key:"hashAlg" is missing in last tg
- */
-Test(RSA_SIGGEN_HANDLER, tgFail1, .init = setup_siggen, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key:"hashAlg" is missing in last tg
+TEST(RSA_SIGGEN_HANDLER, tgFail1) {
 
     val = json_parse_file("json/rsa/rsa_siggen_11.json");
     
@@ -733,17 +692,13 @@ Test(RSA_SIGGEN_HANDLER, tgFail1, .init = setup_siggen, .fini = teardown) {
         return;
     }
     rv  = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-/*
- * The key:"message" is missing in last tc
- */
-Test(RSA_SIGGEN_HANDLER, tcFail1, .init = setup_siggen, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key:"message" is missing in last tc
+TEST(RSA_SIGGEN_HANDLER, tcFail1) {
 
     val = json_parse_file("json/rsa/rsa_siggen_12.json");
     
@@ -753,17 +708,17 @@ Test(RSA_SIGGEN_HANDLER, tcFail1, .init = setup_siggen, .fini = teardown) {
         return;
     }
     rv  = acvp_rsa_siggen_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-/*
- * The key: crypto handler operation fails on last crypto call
- */
-Test(RSA_SIGVER_HANDLER, cryptoFail1, .init = setup_sigver_fail, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key: crypto handler operation fails on last crypto call
+TEST(RSA_SIGVER_HANDLER, cryptoFail1) {
+    // Enable failure mode for this test (originally used setup_fail)
+    force_handler_failure = 1;
+    counter_set = 0;
+    counter_fail = 0;
 
     val = json_parse_file("json/rsa/rsa_sigver.json");
     
@@ -775,17 +730,20 @@ Test(RSA_SIGVER_HANDLER, cryptoFail1, .init = setup_sigver_fail, .fini = teardow
     counter_set = 0;
     counter_fail = 0; /* fail on first iteration */
     rv  = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
     json_value_free(val);
+    val = NULL;
+    
+    // Reset failure mode
+    force_handler_failure = 0;
 }
 
-/*
- * The key: crypto handler operation fails on last crypto call
- */
-Test(RSA_SIGVER_HANDLER, cryptoFail2, .init = setup_sigver_fail, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key: crypto handler operation fails on last crypto call
+TEST(RSA_SIGVER_HANDLER, cryptoFail2) {
+    // Enable failure mode for this test (originally used setup_fail)
+    force_handler_failure = 1;
+    counter_set = 0;
+    counter_fail = 0;
 
     val = json_parse_file("json/rsa/rsa_sigver.json");
     
@@ -797,17 +755,16 @@ Test(RSA_SIGVER_HANDLER, cryptoFail2, .init = setup_sigver_fail, .fini = teardow
     counter_set = 0;
     counter_fail = 2; /* fail on last iteration */
     rv  = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
     json_value_free(val);
+    val = NULL;
+    
+    // Reset failure mode
+    force_handler_failure = 0;
 }
 
-/*
- * The key:"hashAlg" is missing in last tg
- */
-Test(RSA_SIGVER_HANDLER, tgFail1, .init = setup_sigver, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key:"hashAlg" is missing in last tg
+TEST(RSA_SIGVER_HANDLER, tgFail1) {
 
     val = json_parse_file("json/rsa/rsa_sigver_8.json");
     
@@ -817,17 +774,13 @@ Test(RSA_SIGVER_HANDLER, tgFail1, .init = setup_sigver, .fini = teardown) {
         return;
     }
     rv  = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-/*
- * The key:"message" is missing in last tc
- */
-Test(RSA_SIGVER_HANDLER, tcFail1, .init = setup_sigver, .fini = teardown) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key:"message" is missing in last tc
+TEST(RSA_SIGVER_HANDLER, tcFail1) {
 
     val = json_parse_file("json/rsa/rsa_sigver_9.json");
     
@@ -837,7 +790,7 @@ Test(RSA_SIGVER_HANDLER, tcFail1, .init = setup_sigver, .fini = teardown) {
         return;
     }
     rv  = acvp_rsa_sigver_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
+    val = NULL;
 }
-

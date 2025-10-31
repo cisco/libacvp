@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -17,9 +17,11 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_TEST_CASE *test_case;
-ACVP_ECDSA_TC *ecdsa_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_ECDSA_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_ECDSA_TC *ecdsa_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 int initialize_ecdsa_tc(ACVP_CIPHER cipher,
                         ACVP_ECDSA_TC *stc,
@@ -32,7 +34,7 @@ int initialize_ecdsa_tc(ACVP_CIPHER cipher,
                         char *r,
                         char *s,
                         int corrupt) {
-    ACVP_RESULT rv = ACVP_SUCCESS;
+    rv = ACVP_SUCCESS;
     
     memset(stc, 0x0, sizeof(ACVP_ECDSA_TC));
     
@@ -128,54 +130,48 @@ void free_ecdsa_tc(ACVP_ECDSA_TC *stc) {
     memset(stc, 0x0, sizeof(ACVP_ECDSA_TC));
 }
 
-// cipher, ecdsa tc, curve, secret gen mode, hash_alg, qx, qy, message, r, s, corrupt
+TEST_SETUP(APP_ECDSA_HANDLER) {}
+TEST_TEAR_DOWN(APP_ECDSA_HANDLER) {}
 
-/*
- * missing ec curve in ecdsa tc test case
- */
-Test(APP_ECDSA_HANDLER, missing_curve_app) {
+TEST(APP_ECDSA_HANDLER, missing_curve_app) {
     ecdsa_tc = calloc(1, sizeof(ACVP_ECDSA_TC));
     
     if (!initialize_ecdsa_tc(ACVP_ECDSA_KEYGEN, ecdsa_tc, 0, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, ACVP_SHA256,
                              NULL, NULL, NULL, NULL, NULL, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     free(test_case);
     free(ecdsa_tc);
 }
 
-/*
- * hash alg in ecdsa tc test case
- */
-Test(APP_ECDSA_HANDLER, missing_hash_alg_app) {
+// hash alg in ecdsa tc test case
+TEST(APP_ECDSA_HANDLER, missing_hash_alg_app) {
     ecdsa_tc = calloc(1, sizeof(ACVP_ECDSA_TC));
     
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGGEN, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, 0,
         NULL, NULL, NULL, NULL, NULL, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     free(test_case);
     free(ecdsa_tc);
 }
 
-/*
- * missing qx or qy in keyver in ecdsa tc test case
- */
-Test(APP_ECDSA_HANDLER, missing_keyver_qx_qy) {
+// missing qx or qy in keyver in ecdsa tc test case
+TEST(APP_ECDSA_HANDLER, missing_keyver_qx_qy) {
     ecdsa_tc = calloc(1, sizeof(ACVP_ECDSA_TC));
     char qx[] = "aaaa";
     char qy[] = "aaaa";
@@ -183,13 +179,13 @@ Test(APP_ECDSA_HANDLER, missing_keyver_qx_qy) {
     /* both are missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_KEYVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, 0,
         NULL, NULL, NULL, NULL, NULL, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     if (test_case) free(test_case);
@@ -197,13 +193,13 @@ Test(APP_ECDSA_HANDLER, missing_keyver_qx_qy) {
     /* qy is missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_KEYVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, 0,
         qx, NULL, NULL, NULL, NULL, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     if (test_case) free(test_case);
@@ -211,44 +207,40 @@ Test(APP_ECDSA_HANDLER, missing_keyver_qx_qy) {
     /* qx is missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_KEYVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, 0,
         NULL, qy, NULL, NULL, NULL, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     if (test_case) free(test_case);
     free(ecdsa_tc);
 }
 
-/*
- * missing message in siggen ecdsa tc test case
- */
-Test(APP_ECDSA_HANDLER, missing_siggen_msg) {
+// missing message in siggen ecdsa tc test case
+TEST(APP_ECDSA_HANDLER, missing_siggen_msg) {
     ecdsa_tc = calloc(1, sizeof(ACVP_ECDSA_TC));
     
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGGEN, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, 0,
         NULL, NULL, NULL, NULL, NULL, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     free(test_case);
     free(ecdsa_tc);
 }
 
-/*
- * missing message in sigver ecdsa tc test case
- */
-Test(APP_ECDSA_HANDLER, missing_sigver_msg) {
+// missing message in sigver ecdsa tc test case
+TEST(APP_ECDSA_HANDLER, missing_sigver_msg) {
     char r[] = "aaaa";
     char s[] = "aaaa";
     char qx[] = "aaaa";
@@ -257,23 +249,21 @@ Test(APP_ECDSA_HANDLER, missing_sigver_msg) {
     
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, ACVP_SHA256,
         qx, qy, NULL, r, s, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     free(test_case);
     free(ecdsa_tc);
 }
 
-/*
- * missing r or s in sigver in ecdsa tc test case
- */
-Test(APP_ECDSA_HANDLER, missing_sigver_r_s) {
+// missing r or s in sigver in ecdsa tc test case
+TEST(APP_ECDSA_HANDLER, missing_sigver_r_s) {
     ecdsa_tc = calloc(1, sizeof(ACVP_ECDSA_TC));
     char qx[] = "aaaa";
     char qy[] = "aaaa";
@@ -284,13 +274,13 @@ Test(APP_ECDSA_HANDLER, missing_sigver_r_s) {
     /* both are missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, ACVP_SHA256,
         qx, qy, msg, NULL, NULL, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     if (test_case) free(test_case);
@@ -298,13 +288,13 @@ Test(APP_ECDSA_HANDLER, missing_sigver_r_s) {
     /* r is missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, ACVP_SHA256,
             qx, qy, msg, NULL, s, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     if (test_case) free(test_case);
@@ -312,23 +302,21 @@ Test(APP_ECDSA_HANDLER, missing_sigver_r_s) {
     /* s is missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, ACVP_SHA256,
         qx, qy, msg, r, NULL, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     if (test_case) free(test_case);
     free(ecdsa_tc);
 }
 
-/*
- * missing qx or qy in sigver in ecdsa tc test case
- */
-Test(APP_ECDSA_HANDLER, missing_sigver_qx_qy) {
+// missing qx or qy in sigver in ecdsa tc test case
+TEST(APP_ECDSA_HANDLER, missing_sigver_qx_qy) {
     ecdsa_tc = calloc(1, sizeof(ACVP_ECDSA_TC));
     char qx[] = "aaaa";
     char qy[] = "aaaa";
@@ -339,13 +327,13 @@ Test(APP_ECDSA_HANDLER, missing_sigver_qx_qy) {
     /* both are missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, 0,
         NULL, NULL, msg, r, s, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     if (test_case) free(test_case);
@@ -353,13 +341,13 @@ Test(APP_ECDSA_HANDLER, missing_sigver_qx_qy) {
     /* qy is missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, 0,
         qx, NULL, msg, r, s, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     if (test_case) free(test_case);
@@ -367,13 +355,13 @@ Test(APP_ECDSA_HANDLER, missing_sigver_qx_qy) {
     /* qx is missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, 0,
         NULL, qy, msg, r, s, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.ecdsa = ecdsa_tc;
     
     rv = app_ecdsa_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_ecdsa_tc(ecdsa_tc);
     if (test_case) free(test_case);
