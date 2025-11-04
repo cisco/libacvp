@@ -19,7 +19,7 @@
         "keyLen": 128,
         "ivLen": 105,
         "tgId": 999,
-        "ptLen": 192,
+        "payloadLen": 192,
         "direction": "encrypt",
         "aadLen": 0
       },
@@ -38,7 +38,6 @@
         "keyLen": 128,
         "ivLen": 56,
         "tgId": 999,
-        "ptLen": 0,
         "direction": "decrypt",
         "aadLen": 0
       }

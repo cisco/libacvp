@@ -190,7 +190,7 @@ TEST(HASH_HANDLER, missing_testType) {
         return;
     }
     rv = acvp_hash_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -220,7 +220,7 @@ TEST(HASH_HANDLER, missing_msg) {
         return;
     }
     rv = acvp_hash_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -250,7 +250,7 @@ TEST(HASH_HANDLER, missing_tgId) {
         return;
     }
     rv = acvp_hash_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -265,7 +265,7 @@ TEST(HASH_HANDLER, missing_lasttgId) {
         return;
     }
     rv = acvp_hash_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -280,7 +280,7 @@ TEST(HASH_HANDLER, missing_lasttcId) {
         return;
     }
     rv = acvp_hash_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

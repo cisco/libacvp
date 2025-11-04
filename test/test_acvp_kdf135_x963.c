@@ -294,7 +294,7 @@ TEST(Kdf135x963Func4, missing) {
         return;
     }
     rv  = acvp_kdf135_x963_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     
 }
 
@@ -318,7 +318,7 @@ TEST(Kdf135x963Func5, missing) {
         return;
     }
     rv  = acvp_kdf135_x963_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     
 }
 
@@ -342,7 +342,7 @@ TEST(Kdf135x963Func6, missing) {
         return;
     }
     rv  = acvp_kdf135_x963_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     
 }
 
@@ -390,7 +390,7 @@ TEST(Kdf135x963Func8, missing) {
         return;
     }
     rv  = acvp_kdf135_x963_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     
 }
 
@@ -414,7 +414,7 @@ TEST(Kdf135x963Func9, missing) {
         return;
     }
     rv  = acvp_kdf135_x963_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     
 }
 
@@ -438,7 +438,7 @@ TEST(Kdf135x963Func10, missing) {
         return;
     }
     rv  = acvp_kdf135_x963_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     
 }
 
@@ -462,7 +462,7 @@ TEST(Kdf135x963Func11, missing) {
         return;
     }
     rv  = acvp_kdf135_x963_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     
 }
 
@@ -486,7 +486,7 @@ TEST(Kdf135x963Func11, missing_tgid) {
         return;
     }
     rv  = acvp_kdf135_x963_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 
 }
 
@@ -561,7 +561,7 @@ TEST(Kdf135x963Fail, tgFail) {
         return;
     }
     rv  = acvp_kdf135_x963_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
 // The key:"z" is missing in last tc
@@ -583,5 +583,5 @@ TEST(Kdf135x963Fail, tcFail) {
         return;
     }
     rv  = acvp_kdf135_x963_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }

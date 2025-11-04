@@ -250,7 +250,7 @@ TEST(KDF_TLS13_HANDLER, no_hmacalg) {
         return;
     }
     rv  = acvp_kdf_tls13_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -280,7 +280,7 @@ TEST(KDF_TLS13_HANDLER, no_runningmode) {
         return;
     }
     rv  = acvp_kdf_tls13_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -310,7 +310,7 @@ TEST(KDF_TLS13_HANDLER, no_testtype) {
         return;
     }
     rv  = acvp_kdf_tls13_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -325,7 +325,7 @@ TEST(KDF_TLS13_HANDLER, no_tcid) {
         return;
     }
     rv  = acvp_kdf_tls13_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -340,7 +340,7 @@ TEST(KDF_TLS13_HANDLER, no_hcr) {
         return;
     }
     rv  = acvp_kdf_tls13_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -355,7 +355,7 @@ TEST(KDF_TLS13_HANDLER, no_hsr) {
         return;
     }
     rv  = acvp_kdf_tls13_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -370,7 +370,7 @@ TEST(KDF_TLS13_HANDLER, no_fcr) {
         return;
     }
     rv  = acvp_kdf_tls13_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -385,7 +385,7 @@ TEST(KDF_TLS13_HANDLER, no_fsr) {
         return;
     }
     rv  = acvp_kdf_tls13_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -400,7 +400,7 @@ TEST(KDF_TLS13_HANDLER, no_psk) {
         return;
     }
     rv  = acvp_kdf_tls13_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -415,7 +415,7 @@ TEST(KDF_TLS13_HANDLER, no_dhe) {
         return;
     }
     rv  = acvp_kdf_tls13_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

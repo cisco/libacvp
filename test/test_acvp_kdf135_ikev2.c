@@ -215,7 +215,7 @@ TEST(KDF135_IKEV2_HANDLER, missing_hashAlg) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -245,7 +245,7 @@ TEST(KDF135_IKEV2_HANDLER, missing_nInitLength) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -290,7 +290,7 @@ TEST(KDF135_IKEV2_HANDLER, missing_nRespLength) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -335,7 +335,7 @@ TEST(KDF135_IKEV2_HANDLER, missing_dhLength) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -380,7 +380,7 @@ TEST(KDF135_IKEV2_HANDLER, missing_derivedKeyingMaterialLength) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -425,7 +425,7 @@ TEST(KDF135_IKEV2_HANDLER, missing_nInit) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -455,7 +455,7 @@ TEST(KDF135_IKEV2_HANDLER, missing_nResp) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -485,7 +485,7 @@ TEST(KDF135_IKEV2_HANDLER, missing_spiInit) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -515,7 +515,7 @@ TEST(KDF135_IKEV2_HANDLER, missing_spiResp) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -545,7 +545,7 @@ TEST(KDF135_IKEV2_HANDLER, missing_gir) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -575,7 +575,7 @@ TEST(KDF135_IKEV2_HANDLER, missing_girNew) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -605,7 +605,7 @@ TEST(KDF135_IKEV2_HANDLER, missing_tgId) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -671,7 +671,7 @@ TEST(Kdf135ikeV2Fail, tgFail) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -687,7 +687,7 @@ TEST(Kdf135ikeV2Fail, tcFail) {
         return;
     }
     rv  = acvp_kdf135_ikev2_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

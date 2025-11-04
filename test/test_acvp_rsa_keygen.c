@@ -244,7 +244,7 @@ TEST(RSA_KEYGEN_HANDLER, missing_infoGeneratedByServer) {
         return;
     }
     rv = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -259,7 +259,7 @@ TEST(RSA_KEYGEN_HANDLER, missing_pubExpMode) {
         return;
     }
     rv = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -289,7 +289,7 @@ TEST(RSA_KEYGEN_HANDLER, missing_fixedPubExp) {
         return;
     }
     rv  = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -304,7 +304,7 @@ TEST(RSA_KEYGEN_HANDLER, missing_keyFormat) {
         return;
     }
     rv  = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -334,7 +334,7 @@ TEST(RSA_KEYGEN_HANDLER, missing_randPQ) {
         return;
     }
     rv  = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -364,7 +364,7 @@ TEST(RSA_KEYGEN_HANDLER, missing_primeTest) {
         return;
     }
     rv  = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -394,7 +394,7 @@ TEST(RSA_KEYGEN_HANDLER, missing_modulo) {
         return;
     }
     rv = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -424,7 +424,7 @@ TEST(RSA_KEYGEN_HANDLER, missing_hashAlg) {
         return;
     }
     rv = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -454,7 +454,7 @@ TEST(RSA_KEYGEN_HANDLER, missing_e) {
         return;
     }
     rv = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -499,7 +499,7 @@ TEST(RSA_KEYGEN_HANDLER, missing_seed) {
         return;
     }
     rv = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -529,7 +529,7 @@ TEST(RSA_KEYGEN_HANDLER, missing_tgid) {
         return;
     }
     rv = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -595,7 +595,7 @@ TEST(RSA_KEYGEN_HANDLER, tgFail1) {
         return;
     }
     rv  = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -611,7 +611,7 @@ TEST(RSA_KEYGEN_HANDLER, tcFail1) {
         return;
     }
     rv  = acvp_rsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

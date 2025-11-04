@@ -253,7 +253,7 @@ TEST(KDF_TLS12_HANDLER, missing_hashAlg) {
         return;
     }
     rv  = acvp_kdf_tls12_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -289,7 +289,7 @@ TEST(KDF_TLS12_HANDLER, missing_preMasterSecretLength) {
         return;
     }
     rv  = acvp_kdf_tls12_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -307,7 +307,7 @@ TEST(KDF_TLS12_HANDLER, missing_keyBlockLength) {
         return;
     }
     rv  = acvp_kdf_tls12_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -343,7 +343,7 @@ TEST(KDF_TLS12_HANDLER, missing_preMasterSecret) {
         return;
     }
     rv  = acvp_kdf_tls12_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -361,7 +361,7 @@ TEST(KDF_TLS12_HANDLER, missing_sessionHash) {
         return;
     }
     rv  = acvp_kdf_tls12_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -379,7 +379,7 @@ TEST(KDF_TLS12_HANDLER, missing_clientRandom) {
         return;
     }
     rv  = acvp_kdf_tls12_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -397,7 +397,7 @@ TEST(KDF_TLS12_HANDLER, missing_serverRandom) {
         return;
     }
     rv  = acvp_kdf_tls12_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -415,7 +415,7 @@ TEST(KDF_TLS12_HANDLER, missing_tgId) {
         return;
     }
     rv  = acvp_kdf_tls12_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

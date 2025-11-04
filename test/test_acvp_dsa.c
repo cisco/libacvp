@@ -344,7 +344,7 @@ TEST(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include n */
@@ -356,7 +356,7 @@ TEST(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include hashAlg */
@@ -368,7 +368,7 @@ TEST(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include pqMode */
@@ -404,7 +404,7 @@ TEST(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include q */
@@ -416,7 +416,7 @@ TEST(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include domainSeed */
@@ -428,7 +428,7 @@ TEST(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include index */
@@ -440,7 +440,7 @@ TEST(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Positive test case for coverage */
@@ -464,7 +464,7 @@ TEST(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Missing tgId */
@@ -476,7 +476,7 @@ TEST(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Missing tgId */
@@ -488,7 +488,7 @@ TEST(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
 // Test DSA KEYGEN handler API inputs
@@ -560,7 +560,7 @@ TEST(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include n */
@@ -572,7 +572,7 @@ TEST(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Positive test case for coverage */
@@ -608,7 +608,7 @@ TEST(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 
     json_value_free(val);
 
@@ -621,7 +621,7 @@ TEST(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 
     json_value_free(val);
 
@@ -634,7 +634,7 @@ TEST(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
 // Test DSA SIGGEN handler API inputs
@@ -706,7 +706,7 @@ TEST(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include n */
@@ -718,7 +718,7 @@ TEST(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include hashAlg */
@@ -730,7 +730,7 @@ TEST(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include message */
@@ -742,7 +742,7 @@ TEST(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tests */
@@ -754,7 +754,7 @@ TEST(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include testGroup */
@@ -778,7 +778,7 @@ TEST(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tgId */
@@ -790,7 +790,7 @@ TEST(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, missing field in last tgId */
@@ -802,7 +802,7 @@ TEST(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, missing field in last tcId */
@@ -814,7 +814,7 @@ TEST(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
 // Test DSA SIGVER handler API inputs
@@ -940,7 +940,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include n */
@@ -952,7 +952,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include hashAlg */
@@ -964,7 +964,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include message */
@@ -976,7 +976,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tests */
@@ -988,7 +988,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include testGroup */
@@ -1000,7 +1000,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1012,7 +1012,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1024,7 +1024,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1036,7 +1036,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1049,7 +1049,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1061,7 +1061,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1085,7 +1085,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tgId */
@@ -1097,7 +1097,7 @@ TEST(DsaSigVerFunc, null_ctx) {
     return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, missing field in last tgId */
@@ -1109,7 +1109,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, missing field in last tcId */
@@ -1121,7 +1121,7 @@ TEST(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
 // Test DSA PQGVER handler API inputs
@@ -1247,7 +1247,7 @@ TEST(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include n */
@@ -1259,7 +1259,7 @@ TEST(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include hashAlg */
@@ -1271,7 +1271,7 @@ TEST(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include message */
@@ -1295,7 +1295,7 @@ TEST(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include testGroup */
@@ -1307,7 +1307,7 @@ TEST(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1319,7 +1319,7 @@ TEST(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
 #if 0
@@ -1345,7 +1345,7 @@ TEST(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1357,7 +1357,7 @@ TEST(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1369,7 +1369,7 @@ TEST(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tgId */
@@ -1381,7 +1381,7 @@ TEST(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 
     json_value_free(val);
 
@@ -1394,7 +1394,7 @@ TEST(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 
     json_value_free(val);
 
@@ -1407,7 +1407,7 @@ TEST(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
 /*

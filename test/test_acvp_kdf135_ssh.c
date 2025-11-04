@@ -149,7 +149,7 @@ TEST(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, missing hashAlg */
@@ -161,7 +161,7 @@ TEST(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, failed to include k */
@@ -173,7 +173,7 @@ TEST(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, failed to include h */
@@ -185,7 +185,7 @@ TEST(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, failed to include session_id */
@@ -197,7 +197,7 @@ TEST(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* This is a corrupt JSON, corrupt algorithm */
@@ -221,7 +221,7 @@ TEST(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* This is a corrupt JSON, failed to include testGroups */
@@ -233,7 +233,7 @@ TEST(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* This is a corrupt JSON, failed to include tc_id */
@@ -245,7 +245,7 @@ TEST(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* This is a proper JSON, positive test AES-128 thru 256 SHA-224 thru SHA-512 */
@@ -269,7 +269,7 @@ TEST(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
 // The key: crypto handler operation fails on last crypto call
@@ -391,7 +391,7 @@ TEST(Kdf135SshFail, tcidFail) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
 // The key:"h" is missing in last tc
@@ -429,5 +429,5 @@ TEST(Kdf135SshFail, tcFail) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }

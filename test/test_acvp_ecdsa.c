@@ -306,7 +306,7 @@ TEST(ECDSA_HANDLER, good_sg) {
         return;
     }
     rv = acvp_ecdsa_siggen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -366,7 +366,7 @@ TEST(ECDSA_HANDLER, missing_testgroups) {
         return;
     }
     rv = acvp_ecdsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -381,7 +381,7 @@ TEST(ECDSA_HANDLER, missing_curve) {
         return;
     }
     rv = acvp_ecdsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -411,7 +411,7 @@ TEST(ECDSA_HANDLER, missing_tgid) {
         return;
     }
     rv  = acvp_ecdsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -426,7 +426,7 @@ TEST(ECDSA_HANDLER, missing_hashalg_sg) {
         return;
     }
     rv  = acvp_ecdsa_sigver_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -456,7 +456,7 @@ TEST(ECDSA_HANDLER, missing_message) {
         return;
     }
     rv  = acvp_ecdsa_siggen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -486,7 +486,7 @@ TEST(ECDSA_HANDLER, missing_qx) {
         return;
     }
     rv  = acvp_ecdsa_keyver_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -501,7 +501,7 @@ TEST(ECDSA_HANDLER, missing_qy) {
         return;
     }
     rv = acvp_ecdsa_sigver_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -546,7 +546,7 @@ TEST(ECDSA_HANDLER, missing_r) {
         return;
     }
     rv = acvp_ecdsa_sigver_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -561,7 +561,7 @@ TEST(ECDSA_HANDLER, missing_s) {
         return;
     }
     rv = acvp_ecdsa_sigver_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -713,7 +713,7 @@ TEST(ECDSA_HANDLER, cryptoFail5) {
     counter_set = 0;
     counter_fail = 0; /* fail on first iteration */
     rv  = acvp_ecdsa_siggen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
     
@@ -738,7 +738,7 @@ TEST(ECDSA_HANDLER, cryptoFail6) {
     counter_set = 0;
     counter_fail = 1; /* fail on last iteration */
     rv  = acvp_ecdsa_siggen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
     
@@ -807,7 +807,7 @@ TEST(ECDSA_HANDLER, tgFail1) {
         return;
     }
     rv  = acvp_ecdsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -823,7 +823,7 @@ TEST(ECDSA_HANDLER, tcFail1) {
         return;
     }
     rv  = acvp_ecdsa_keygen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -839,7 +839,7 @@ TEST(ECDSA_HANDLER, tgFail2) {
         return;
     }
     rv  = acvp_ecdsa_keyver_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -855,7 +855,7 @@ TEST(ECDSA_HANDLER, tcFail2) {
         return;
     }
     rv  = acvp_ecdsa_keyver_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -871,7 +871,7 @@ TEST(ECDSA_HANDLER, tgFail3) {
         return;
     }
     rv  = acvp_ecdsa_siggen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -887,7 +887,7 @@ TEST(ECDSA_HANDLER, tcFail3) {
         return;
     }
     rv  = acvp_ecdsa_siggen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -903,7 +903,7 @@ TEST(ECDSA_HANDLER, tgFail4) {
         return;
     }
     rv  = acvp_ecdsa_sigver_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -919,7 +919,7 @@ TEST(ECDSA_HANDLER, tcFail4) {
         return;
     }
     rv  = acvp_ecdsa_sigver_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

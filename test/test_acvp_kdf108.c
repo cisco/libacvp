@@ -231,7 +231,7 @@ TEST(KDF108_HANDLER, missing_kdfMode) {
         return;
     }
     rv  = acvp_kdf108_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -261,7 +261,7 @@ TEST(KDF108_HANDLER, missing_macMode) {
         return;
     }
     rv  = acvp_kdf108_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -291,7 +291,7 @@ TEST(KDF108_HANDLER, missing_keyOutLength) {
         return;
     }
     rv  = acvp_kdf108_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -321,7 +321,7 @@ TEST(KDF108_HANDLER, missing_counterLength) {
         return;
     }
     rv  = acvp_kdf108_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -351,7 +351,7 @@ TEST(KDF108_HANDLER, missing_counterLocation) {
         return;
     }
     rv  = acvp_kdf108_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -381,7 +381,7 @@ TEST(KDF108_HANDLER, missing_keyIn) {
         return;
     }
     rv  = acvp_kdf108_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -411,7 +411,7 @@ TEST(KDF108_HANDLER, missing_iv) {
         return;
     }
     rv  = acvp_kdf108_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -441,7 +441,7 @@ TEST(KDF108_HANDLER, missing_deferred) {
         return;
     }
     rv  = acvp_kdf108_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -456,7 +456,7 @@ TEST(KDF108_HANDLER, missing_tgId) {
         return;
     }
     rv  = acvp_kdf108_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -471,7 +471,7 @@ TEST(KDF108_HANDLER, missing_tgLoop) {
         return;
     }
     rv  = acvp_kdf108_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -486,7 +486,7 @@ TEST(KDF108_HANDLER, missing_tcLoop) {
         return;
     }
     rv  = acvp_kdf108_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

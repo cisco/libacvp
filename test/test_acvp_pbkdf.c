@@ -237,7 +237,7 @@ TEST(PBKDF_HANDLER, no_hmacalg) {
         return;
     }
     rv  = acvp_pbkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -282,7 +282,7 @@ TEST(PBKDF_HANDLER, no_testtype) {
         return;
     }
     rv  = acvp_pbkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -297,7 +297,7 @@ TEST(PBKDF_HANDLER, no_tcid) {
         return;
     }
     rv  = acvp_pbkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -317,7 +317,7 @@ TEST(PBKDF_HANDLER, bad_keylen) {
     val = NULL;
 }
 
-// The key:"keyLen" is missing/too low.
+// The key:"keyLen" is missing.
 TEST(PBKDF_HANDLER, no_keylen) {
     val = json_parse_file("json/pbkdf/pbkdf_9.json");
 
@@ -327,7 +327,7 @@ TEST(PBKDF_HANDLER, no_keylen) {
         return;
     }
     rv  = acvp_pbkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -357,7 +357,7 @@ TEST(PBKDF_HANDLER, no_salt) {
         return;
     }
     rv  = acvp_pbkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -402,7 +402,7 @@ TEST(PBKDF_HANDLER, no_password) {
         return;
     }
     rv  = acvp_pbkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -447,7 +447,7 @@ TEST(PBKDF_HANDLER, no_iterationCount) {
         return;
     }
     rv  = acvp_pbkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -462,7 +462,7 @@ TEST(PBKDF_HANDLER, bad_salt_2) {
         return;
     }
     rv  = acvp_pbkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
