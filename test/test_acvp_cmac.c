@@ -225,7 +225,7 @@ TEST(CMAC_API, missing_direction) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -255,7 +255,7 @@ TEST(CMAC_API, missing_keyLen) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -270,7 +270,7 @@ TEST(CMAC_API, missing_msgLen) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -285,7 +285,7 @@ TEST(CMAC_API, missing_macLen) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -300,7 +300,7 @@ TEST(CMAC_API, missing_key_aes) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -330,7 +330,7 @@ TEST(CMAC_API, missing_mac) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -360,7 +360,7 @@ TEST(CMAC_API, missing_keyingOption_tdes) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -390,7 +390,7 @@ TEST(CMAC_API, missing_key1_tdes) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -405,7 +405,7 @@ TEST(CMAC_API, missing_key2_tdes) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -420,7 +420,7 @@ TEST(CMAC_API, missing_key3_tdes) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -495,7 +495,7 @@ TEST(CMAC_API, tgid_missing) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -611,7 +611,7 @@ TEST(CMAC_API, tgFail1) {
         return;
     }
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -627,7 +627,7 @@ TEST(CMAC_API, tcFail1) {
         return;
     }
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -643,7 +643,7 @@ TEST(CMAC_API, tgFail2) {
         return;
     }
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -659,7 +659,7 @@ TEST(CMAC_API, tcFail2) {
         return;
     }
     rv  = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

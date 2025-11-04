@@ -204,7 +204,7 @@ TEST(KDF135_SRTP_HANDLER, missing_aesKeyLength) {
         return;
     }
     rv  = acvp_kdf135_srtp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -219,7 +219,7 @@ TEST(KDF135_SRTP_HANDLER, missing_kdr) {
         return;
     }
     rv  = acvp_kdf135_srtp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -234,7 +234,7 @@ TEST(KDF135_SRTP_HANDLER, missing_masterKey) {
         return;
     }
     rv  = acvp_kdf135_srtp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -249,7 +249,7 @@ TEST(KDF135_SRTP_HANDLER, missing_index) {
         return;
     }
     rv  = acvp_kdf135_srtp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -264,7 +264,7 @@ TEST(KDF135_SRTP_HANDLER, missing_srtcpIndex) {
         return;
     }
     rv  = acvp_kdf135_srtp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -279,7 +279,7 @@ TEST(KDF135_SRTP_HANDLER, missing_tgId) {
         return;
     }
     rv  = acvp_kdf135_srtp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -345,7 +345,7 @@ TEST(Kdf135SrtpFail, tcidFail) {
         return;
     }
     rv  = acvp_kdf135_srtp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -361,7 +361,7 @@ TEST(Kdf135SrtpFail, tcFail) {
         return;
     }
     rv  = acvp_kdf135_srtp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

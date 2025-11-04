@@ -1280,7 +1280,7 @@ TEST(AES_HANDLER, missing_keyLen) {
         return;
     }
     rv = acvp_aes_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -1646,7 +1646,7 @@ TEST(AES_HANDLER, missing_gid) {
 }
 
 // The boolean for "incrementalCounter" is missing/not a boolean
-TEST(AES_HANDLER, bad_inc_ctr) {
+TEST(AES_HANDLER, missing_inc_ctr) {
     val = json_parse_file("json/aes/aes_31.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -1655,13 +1655,13 @@ TEST(AES_HANDLER, bad_inc_ctr) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
 
 // The boolean for "overflowCounter" is missing/not a boolean
-TEST(AES_HANDLER, bad_ovrflw_ctr) {
+TEST(AES_HANDLER, missing_ovrflw_ctr) {
     val = json_parse_file("json/aes/aes_32.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -1670,7 +1670,7 @@ TEST(AES_HANDLER, bad_ovrflw_ctr) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

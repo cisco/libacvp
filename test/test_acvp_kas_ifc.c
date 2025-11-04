@@ -237,7 +237,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_testType) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -267,7 +267,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_hashFunctionZ) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -297,7 +297,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_p) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -312,7 +312,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_q) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -327,7 +327,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_d) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -342,7 +342,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_e) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -357,7 +357,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_n) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -372,7 +372,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_serverc) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -387,7 +387,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_servere) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -402,7 +402,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_c) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -417,7 +417,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_z) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -448,7 +448,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_scheme) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -463,7 +463,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_kasrole) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -478,7 +478,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_keygen) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -493,7 +493,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_modulo) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -508,7 +508,7 @@ TEST(KAS_IFC_SSC_HANDLER, missing_fixedpub) {
         return;
     }
     rv = acvp_kas_ifc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

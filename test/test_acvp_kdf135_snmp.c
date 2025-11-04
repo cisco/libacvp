@@ -120,7 +120,7 @@ TEST(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
 
@@ -133,7 +133,7 @@ TEST(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, password does not match passwordLength */
@@ -157,7 +157,7 @@ TEST(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, no tests */
@@ -169,7 +169,7 @@ TEST(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, no testGroups */
@@ -181,7 +181,7 @@ TEST(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, no tcId */
@@ -193,7 +193,7 @@ TEST(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, corrupt algorithm */
@@ -217,7 +217,7 @@ TEST(Kdf135SnmpFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
 // The key: crypto handler operation fails on first call
@@ -297,7 +297,7 @@ TEST(Kdf135SnmpFail, tcidFail) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
 // The key:"password" is missing in eighth tc
@@ -321,5 +321,5 @@ TEST(Kdf135SnmpFail, tcFail) {
         return;
     }
     rv  = acvp_kdf135_snmp_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }

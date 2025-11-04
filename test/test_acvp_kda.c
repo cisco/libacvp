@@ -410,7 +410,7 @@ TEST(KDA_HKDF_HANDLER, missing_type) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -438,7 +438,7 @@ TEST(KDA_HKDF_HANDLER, missing_kdfConfiguration) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -492,7 +492,7 @@ TEST(KDA_HKDF_HANDLER, missing_saltmethod) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -520,7 +520,7 @@ TEST(KDA_HKDF_HANDLER, missing_fixedinfoencoding) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -548,7 +548,7 @@ TEST(KDA_HKDF_HANDLER, missing_hmacalg) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -576,7 +576,7 @@ TEST(KDA_HKDF_HANDLER, missing_fixedinfopattern) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -662,7 +662,7 @@ TEST(KDA_HKDF_HANDLER, missing_z) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -676,7 +676,7 @@ TEST(KDA_HKDF_HANDLER, missing_fixedinfopartyu) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -690,7 +690,7 @@ TEST(KDA_HKDF_HANDLER, missing_upartyid) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -704,7 +704,7 @@ TEST(KDA_HKDF_HANDLER, missing_fixedinfopartyv) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -718,7 +718,7 @@ TEST(KDA_HKDF_HANDLER, missing_vpartyid) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -732,7 +732,7 @@ TEST(KDA_HKDF_HANDLER, missing_algorithmid) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -746,7 +746,7 @@ TEST(KDA_HKDF_HANDLER, missing_label) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -760,7 +760,7 @@ TEST(KDA_HKDF_HANDLER, missing_context) {
         return;
     }
     rv = acvp_kda_hkdf_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -819,7 +819,7 @@ TEST(KDA_ONESTEP_HANDLER, missing_auxfunction) {
         return;
     }
     rv = acvp_kda_onestep_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

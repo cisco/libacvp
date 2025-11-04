@@ -384,7 +384,7 @@ TEST(KAS_ECC_CDH_HANDLER, missing_testType) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -414,7 +414,7 @@ TEST(KAS_ECC_CDH_HANDLER, missing_curve) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -444,7 +444,7 @@ TEST(KAS_ECC_CDH_HANDLER, missing_publicServerX) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -474,7 +474,7 @@ TEST(KAS_ECC_CDH_HANDLER, missing_publicServerY) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -557,7 +557,7 @@ TEST(KAS_ECC_COMP_HANDLER, missing_testType) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -587,7 +587,7 @@ TEST(KAS_ECC_COMP_HANDLER, missing_curve) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -617,7 +617,7 @@ TEST(KAS_ECC_COMP_HANDLER, missing_hashAlg) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -647,7 +647,7 @@ TEST(KAS_ECC_COMP_HANDLER, missing_ephemeralPublicServerX) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -677,7 +677,7 @@ TEST(KAS_ECC_COMP_HANDLER, missing_ephemeralPublicServerY) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -707,7 +707,7 @@ TEST(KAS_ECC_COMP_HANDLER, missing_ephemeralPrivateIut) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -737,7 +737,7 @@ TEST(KAS_ECC_COMP_HANDLER, missing_ephemeralPublicIutX) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -767,7 +767,7 @@ TEST(KAS_ECC_COMP_HANDLER, missing_ephemeralPublicIutY) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -797,7 +797,7 @@ TEST(KAS_ECC_COMP_HANDLER, missing_hashZIut) {
         return;
     }
     rv = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -928,7 +928,7 @@ TEST(KAS_ECC_CDH_HANDLER, tgFail1) {
         return;
     }
     rv  = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -944,7 +944,7 @@ TEST(KAS_ECC_CDH_HANDLER, tcFail1) {
         return;
     }
     rv  = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -960,7 +960,7 @@ TEST(KAS_ECC_COMP_HANDLER, tgFail1) {
         return;
     }
     rv  = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -976,7 +976,7 @@ TEST(KAS_ECC_COMP_HANDLER, tcFail1) {
         return;
     }
     rv  = acvp_kas_ecc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -1029,7 +1029,7 @@ TEST(KAS_ECC_SSC_HANDLER, missing_testType) {
         return;
     }
     rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -1059,7 +1059,7 @@ TEST(KAS_ECC_SSC_HANDLER, missing_curve) {
         return;
     }
     rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -1089,7 +1089,7 @@ TEST(KAS_ECC_SSC_HANDLER, missing_hashFunctionZ) {
         return;
     }
     rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -1119,7 +1119,7 @@ TEST(KAS_ECC_SSC_HANDLER, missing_ephemeralPublicServerX) {
         return;
     }
     rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -1149,7 +1149,7 @@ TEST(KAS_ECC_SSC_HANDLER, missing_ephemeralPublicServerY) {
         return;
     }
     rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -1179,7 +1179,7 @@ TEST(KAS_ECC_SSC_HANDLER, missing_ephemeralPrivateIut) {
         return;
     }
     rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -1194,7 +1194,7 @@ TEST(KAS_ECC_SSC_HANDLER, missing_ephemeralPublicIutX) {
         return;
     }
     rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -1209,7 +1209,7 @@ TEST(KAS_ECC_SSC_HANDLER, missing_ephemeralPublicIutY) {
         return;
     }
     rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

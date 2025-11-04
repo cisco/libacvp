@@ -55,8 +55,8 @@ TEST_GROUP_RUNNER(AES_HANDLER) {
     RUN_TEST_CASE(AES_HANDLER, missing_aad);
     RUN_TEST_CASE(AES_HANDLER, long_aad);
     RUN_TEST_CASE(AES_HANDLER, missing_gid);
-    RUN_TEST_CASE(AES_HANDLER, bad_inc_ctr);
-    RUN_TEST_CASE(AES_HANDLER, bad_ovrflw_ctr);
+    RUN_TEST_CASE(AES_HANDLER, missing_inc_ctr);
+    RUN_TEST_CASE(AES_HANDLER, missing_ovrflw_ctr);
     RUN_TEST_CASE(AES_HANDLER, tgLast);
     RUN_TEST_CASE(AES_HANDLER, tcLast);
     RUN_TEST_CASE(AES_HANDLER, cryptoFail1);

@@ -200,7 +200,7 @@ TEST(HmacFunc, null_ctx) {
         return;
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -213,7 +213,7 @@ TEST(HmacFunc, null_ctx) {
         return;
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -226,7 +226,7 @@ TEST(HmacFunc, null_ctx) {
         return;
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -239,7 +239,7 @@ TEST(HmacFunc, null_ctx) {
         return;
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -252,7 +252,7 @@ TEST(HmacFunc, null_ctx) {
         return;
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -304,7 +304,7 @@ TEST(HmacFunc, null_ctx) {
         return;
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -317,7 +317,7 @@ TEST(HmacFunc, null_ctx) {
         return;
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -330,7 +330,7 @@ TEST(HmacFunc, null_ctx) {
         return;
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -343,7 +343,7 @@ TEST(HmacFunc, null_ctx) {
         return;
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -369,7 +369,7 @@ TEST(HmacFunc, null_ctx) {
         return;
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -382,7 +382,7 @@ TEST(HmacFunc, null_ctx) {
         return;
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -395,7 +395,7 @@ TEST(HmacFunc, null_ctx) {
         return;
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 
     teardown_ctx(&ctx);
     json_value_free(val);

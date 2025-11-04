@@ -246,7 +246,7 @@ TEST(DES_HANDLER, missing_direction) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -274,7 +274,7 @@ TEST(DES_HANDLER, missing_testType) {
         return;
     }
     rv = acvp_des_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -302,7 +302,7 @@ TEST(DES_HANDLER, missing_key1) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -330,7 +330,7 @@ TEST(DES_HANDLER, missing_key2) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -358,7 +358,7 @@ TEST(DES_HANDLER, missing_key3) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -386,7 +386,7 @@ TEST(DES_HANDLER, missing_pt) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -414,7 +414,7 @@ TEST(DES_HANDLER, missing_ct) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -442,7 +442,7 @@ TEST(DES_HANDLER, missing_iv) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -484,7 +484,7 @@ TEST(DES_HANDLER, bad_inc_ctr) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -498,7 +498,7 @@ TEST(DES_HANDLER, bad_ovrflw_ctr) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -512,7 +512,7 @@ TEST(DES_HANDLER, tgLast) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -526,7 +526,7 @@ TEST(DES_HANDLER, tcLast) {
         return;
     }
     rv  = acvp_des_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

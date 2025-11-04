@@ -425,7 +425,7 @@ TEST(DRBG_HANDLER, missing_mode) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -455,7 +455,7 @@ TEST(DRBG_HANDLER, missing_predResistance) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -470,7 +470,7 @@ TEST(DRBG_HANDLER, missing_derFunc) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -485,7 +485,7 @@ TEST(DRBG_HANDLER, missing_entropyInputLen) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -530,7 +530,7 @@ TEST(DRBG_HANDLER, missing_nonceLen) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -590,7 +590,7 @@ TEST(DRBG_HANDLER, missing_returnedBitsLen) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -635,7 +635,7 @@ TEST(DRBG_HANDLER, missing_persoString) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -665,7 +665,7 @@ TEST(DRBG_HANDLER, missing_entropyInput) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -695,7 +695,7 @@ TEST(DRBG_HANDLER, missing_nonce) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -725,7 +725,7 @@ TEST(DRBG_HANDLER, missing_otherInput) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -755,7 +755,7 @@ TEST(DRBG_HANDLER, missing_additionalInput_oi0) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -785,7 +785,7 @@ TEST(DRBG_HANDLER, missing_entropyInput_oi0) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -815,7 +815,7 @@ TEST(DRBG_HANDLER, missing_additionalInput_oi1) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -845,7 +845,7 @@ TEST(DRBG_HANDLER, missing_entropyInput_oi1) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -926,7 +926,7 @@ TEST(DRBG_HANDDLER, tgFail1) {
         return;
     }
     rv  = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -942,7 +942,7 @@ TEST(DRBG_HANDDLER, tcFail1) {
         return;
     }
     rv  = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

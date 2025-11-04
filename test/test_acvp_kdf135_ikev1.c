@@ -207,7 +207,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_hashAlg) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -237,7 +237,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_authenticationMethod) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -267,7 +267,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_nInitLength) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -312,7 +312,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_nRespLength) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -357,7 +357,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_dhLength) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -402,7 +402,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_preSharedKeyLength) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -447,7 +447,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_nInit) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -477,7 +477,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_nResp) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -507,7 +507,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_ckyInit) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -537,7 +537,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_ckyResp) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -567,7 +567,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_gxy) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -597,7 +597,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_preSharedKey) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -627,7 +627,7 @@ TEST(KDF135_IKEV1_HANDLER, missing_tgId) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -693,7 +693,7 @@ TEST(Kdf135ikeV1Fail, tgFail) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -709,7 +709,7 @@ TEST(Kdf135ikeV1Fail, tcFail) {
         return;
     }
     rv  = acvp_kdf135_ikev1_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

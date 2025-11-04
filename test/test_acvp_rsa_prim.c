@@ -265,7 +265,7 @@ TEST(RSA_DECPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -276,7 +276,7 @@ TEST(RSA_DECPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -287,7 +287,7 @@ TEST(RSA_DECPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -298,7 +298,7 @@ TEST(RSA_DECPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -309,7 +309,7 @@ TEST(RSA_DECPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -320,7 +320,7 @@ TEST(RSA_DECPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 
     json_value_free(val);
     val = NULL;
@@ -381,7 +381,7 @@ TEST(RSA_SIGPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -392,7 +392,7 @@ TEST(RSA_SIGPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -403,7 +403,7 @@ TEST(RSA_SIGPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -414,7 +414,7 @@ TEST(RSA_SIGPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -426,7 +426,7 @@ TEST(RSA_SIGPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -437,7 +437,7 @@ TEST(RSA_SIGPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 
@@ -448,7 +448,7 @@ TEST(RSA_SIGPRIM_API, error_paths) {
         goto end;
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 

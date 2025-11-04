@@ -237,7 +237,7 @@ TEST(SAFE_PRIMES_HANDLER, missing_tg) {
         return;
     }
     rv = acvp_safe_primes_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -251,7 +251,7 @@ TEST(SAFE_PRIMES_HANDLER, missing_tc) {
         return;
     }
     rv = acvp_safe_primes_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -265,7 +265,7 @@ TEST(SAFE_PRIMES_HANDLER, missing_dgm) {
         return;
     }
     rv = acvp_safe_primes_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -293,7 +293,7 @@ TEST(SAFE_PRIMES_HANDLER, missing_y) {
         return;
     }
     rv = acvp_safe_primes_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -307,7 +307,7 @@ TEST(SAFE_PRIMES_HANDLER, missing_x) {
         return;
     }
     rv = acvp_safe_primes_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -321,7 +321,7 @@ TEST(SAFE_PRIMES_HANDLER, missing_testtype) {
         return;
     }
     rv = acvp_safe_primes_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

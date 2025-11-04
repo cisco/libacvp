@@ -224,9 +224,7 @@ TEST(KMAC_API, missing_hex_customization) {
     val = NULL;
 }
 
-/* The key:"msgLen" is missing. 0 is acceptable length and API returns 0, but it mis-matches read length
-   so it will return invalid instead of missing data. */
-
+/* The key:"msgLen" is missing. */
 TEST(KMAC_API, missing_msgLen) {
     val = json_parse_file("json/kmac/kmac_6.json");
     
@@ -236,7 +234,7 @@ TEST(KMAC_API, missing_msgLen) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
