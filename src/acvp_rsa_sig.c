@@ -325,7 +325,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
             goto err;
         }
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "modulo", &mod);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "modulo", &mod);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }

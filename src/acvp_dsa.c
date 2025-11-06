@@ -698,12 +698,12 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "l", &l);
+    rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "l", &l);
     if (rv != ACVP_SUCCESS) {
         return rv;
     }
 
-    rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "n", &n);
+    rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "n", &n);
     if (rv != ACVP_SUCCESS) {
         return rv;
     }

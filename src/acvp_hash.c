@@ -537,7 +537,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
         if (test_type == ACVP_HASH_TEST_TYPE_MCT) {
             if (alg_id == ACVP_HASH_SHAKE_128 || alg_id == ACVP_HASH_SHAKE_256) {
-                rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "minOutLen", &min_xof_len);
+                rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "minOutLen", &min_xof_len);
                 if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
@@ -547,7 +547,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-                rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "maxOutLen", &max_xof_len);
+                rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "maxOutLen", &max_xof_len);
                 if (rv != ACVP_SUCCESS) {
                     goto err;
                 }

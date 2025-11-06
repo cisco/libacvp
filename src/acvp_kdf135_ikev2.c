@@ -313,7 +313,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "nInitLength", &init_nonce_len);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "nInitLength", &init_nonce_len);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
@@ -324,7 +324,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "nRespLength", &resp_nonce_len);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "nRespLength", &resp_nonce_len);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }

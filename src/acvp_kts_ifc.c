@@ -332,7 +332,7 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
             goto err;
         }
 
-        rv = acvp_tc_json_get_int(ctx, stc->cipher, groupobj, "modulo", &modulo);
+        rv = acvp_tc_json_get_uint(ctx, stc->cipher, groupobj, "modulo", &modulo);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }

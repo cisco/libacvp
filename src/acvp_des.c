@@ -37,8 +37,8 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     unsigned int ct_len,
                                     ACVP_CIPHER alg_id,
                                     ACVP_SYM_CIPH_DIR dir,
-                                    unsigned int incr_ctr,
-                                    unsigned int ovrflw_ctr,
+                                    int incr_ctr,
+                                    int ovrflw_ctr,
                                     unsigned int keyingOption);
 
 static ACVP_RESULT acvp_des_release_tc(ACVP_SYM_CIPHER_TC *stc);
@@ -645,7 +645,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result = NULL;
     const char *test_type_str = NULL, *dir_str = NULL;
     unsigned int tc_id = 0, keylen = 0, keyingOption = 0;
-    unsigned int ovrflw_ctr = 0, incr_ctr = 0;  // assume false
+    int ovrflw_ctr = 0, incr_ctr = 0;  // assume false - booleans are int
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -753,7 +753,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         // get keyingOption if it exists. Otherwise it remains set to 0, which means not applicable.
         if (json_object_get_value(groupobj, "keyingOption")) {
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "keyingOption", &keyingOption);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "keyingOption", &keyingOption);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -1106,8 +1106,8 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     unsigned int ct_len,
                                     ACVP_CIPHER alg_id,
                                     ACVP_SYM_CIPH_DIR dir,
-                                    unsigned int incr_ctr,
-                                    unsigned int ovrflw_ctr,
+                                    int incr_ctr,
+                                    int ovrflw_ctr,
                                     unsigned int keyingOption) {
     ACVP_RESULT rv;
 

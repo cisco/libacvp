@@ -284,7 +284,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tg_id);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "tgId", &tg_id);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }

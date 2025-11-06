@@ -540,7 +540,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
         if (old_rev) {
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "modulo", &mod);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "modulo", &mod);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -550,7 +550,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "totalTestCases", &total);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "totalTestCases", &total);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -559,7 +559,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "totalFailingCases", &fail);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "totalFailingCases", &fail);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -570,7 +570,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             pass = total - fail;
         } else {
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "modulo", &mod);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "modulo", &mod);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -951,7 +951,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         if (old_rev) {
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "modulus", &mod);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "modulus", &mod);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -966,7 +966,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
         } else {
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "modulo", &mod);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "modulo", &mod);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }

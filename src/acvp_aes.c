@@ -776,7 +776,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "radix", &radix);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "radix", &radix);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -797,7 +797,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "keyLen", &keylen);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "keyLen", &keylen);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
@@ -819,7 +819,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM || alg_id == ACVP_AES_GMAC ||
                 alg_id == ACVP_AES_GCM_SIV || alg_id == ACVP_AES_XPN) {
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "ivLen", &ivlen);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "ivLen", &ivlen);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -878,7 +878,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "aadLen", &aadlen);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "aadLen", &aadlen);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -889,7 +889,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tagLen", &taglen);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "tagLen", &taglen);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -911,7 +911,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         case ACVP_SUB_AES_XPN:
         case ACVP_SUB_AES_KW:
         case ACVP_SUB_AES_KWP:
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "payloadLen", &paylen);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "payloadLen", &paylen);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -965,7 +965,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "saltLen", &saltLen);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "saltLen", &saltLen);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -1044,7 +1044,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_AES_FF1 || alg_id == ACVP_AES_FF3) {
-                rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tweakLen", &ivlen);
+                rv = acvp_tc_json_get_uint(ctx, alg_id, testobj, "tweakLen", &ivlen);
                 if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
@@ -1062,7 +1062,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_AES_CFB1) {
-                rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "payloadLen", &datalen);
+                rv = acvp_tc_json_get_uint(ctx, alg_id, testobj, "payloadLen", &datalen);
                 if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
@@ -1075,7 +1075,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_AES_XTS) {
-                rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "dataUnitLen", &dataUnitLen);
+                rv = acvp_tc_json_get_uint(ctx, alg_id, testobj, "dataUnitLen", &dataUnitLen);
                 if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
