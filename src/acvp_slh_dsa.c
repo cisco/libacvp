@@ -369,7 +369,7 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tg_id);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "tgId", &tg_id);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
@@ -452,7 +452,7 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("Found new SLH-DSA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", &tc_id);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, testobj, "tcId", &tc_id);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }

@@ -268,12 +268,12 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         r_tarr = json_object_get_array(r_gobj, "tests");
 
         if (alg_id == ACVP_CMAC_AES) {
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "keyLen", &keyLen);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "keyLen", &keyLen);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
         } else if (alg_id == ACVP_CMAC_TDES) {
-            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "keyingOption", &keyingOption);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "keyingOption", &keyingOption);
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
@@ -317,13 +317,13 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             verify = 0;
         }
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "msgLen", &msglen);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "msgLen", &msglen);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
         msglen = msglen / 8;
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "macLen", &maclen);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "macLen", &maclen);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }

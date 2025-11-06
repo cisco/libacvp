@@ -1290,8 +1290,8 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int tag_len;
     unsigned int salt_len;
     unsigned int mct_index;  //!< used to identify init vs. update
-    unsigned int incr_ctr;
-    unsigned int ovrflw_ctr;
+    int incr_ctr;
+    int ovrflw_ctr;
     unsigned int keyingOption; /**< For some TDES, indicates keyingOption.
                                  * 1 is 3 key TDES. 2 is 2-key TDES, supported
                                  * for decrypt only. 0 indicates is not applicable */

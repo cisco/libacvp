@@ -120,6 +120,27 @@ err:
     return rv;
 }
 
+ACVP_RESULT acvp_tc_json_get_uint(ACVP_CTX *ctx, ACVP_CIPHER alg_id,
+                                   JSON_Object *obj, const char *key,
+                                   unsigned int *out) {
+    int tmp_val = 0;
+    ACVP_RESULT rv = ACVP_INTERNAL_ERR;
+
+    rv = acvp_tc_json_get_int(ctx, alg_id, obj, key, &tmp_val);
+    if (rv != ACVP_SUCCESS) {
+        return rv;
+    }
+
+    if (tmp_val < 0) {
+        ACVP_LOG_ERR("[%s] Server JSON field '%s' has negative value (%d), expected unsigned",
+                     acvp_lookup_cipher_name(alg_id), key, tmp_val);
+        return ACVP_TC_INVALID_DATA;
+    }
+
+    *out = (unsigned int)tmp_val;
+    return ACVP_SUCCESS;
+}
+
 // Parse and validate a boolean field from JSON
 ACVP_RESULT acvp_tc_json_get_boolean(ACVP_CTX *ctx, ACVP_CIPHER alg_id,
                                       JSON_Object *obj, const char *key,

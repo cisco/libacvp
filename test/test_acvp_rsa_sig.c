@@ -357,7 +357,7 @@ TEST(RSA_SIGGEN_HANDLER, wrong_mod) {
         return;
     }
     rv = acvp_rsa_siggen_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

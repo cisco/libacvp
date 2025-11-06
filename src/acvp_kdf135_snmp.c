@@ -136,7 +136,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "passwordLength", &p_len);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "passwordLength", &p_len);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }

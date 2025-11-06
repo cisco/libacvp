@@ -181,7 +181,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "entropyInputLen", &entropy_len);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "entropyInputLen", &entropy_len);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
@@ -193,7 +193,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "nonceLen", &nonce_len);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "nonceLen", &nonce_len);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
@@ -208,7 +208,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "persoStringLen", &perso_string_len);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "persoStringLen", &perso_string_len);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
@@ -219,7 +219,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "returnedBitsLen", &drb_len);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "returnedBitsLen", &drb_len);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
@@ -230,7 +230,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "additionalInputLen", &additional_input_len);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "additionalInputLen", &additional_input_len);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }

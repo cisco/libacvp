@@ -198,17 +198,17 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "msgLen", &msglen);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "msgLen", &msglen);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "keyLen", &keylen);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "keyLen", &keylen);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
-        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "macLen", &maclen);
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "macLen", &maclen);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
