@@ -49,7 +49,7 @@ libacvp_la_SOURCES =  acvp.c \
                     acvp_ml_kem.c \
                     acvp_slh_dsa.c
 
-libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBCURL_LDFLAGS)
+libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBCURL_LDFLAGS) $(ADDL_LIB_DEPENDENCIES)
 libacvp_includedir=$(includedir)/acvp
 libacvp_include_HEADERS = $(top_srcdir)/include/acvp/acvp.h
 noinst_HEADERS = $(top_srcdir)/include/acvp/acvp_lcl.h \

@@ -176,6 +176,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_la_DEPENDENCIES =  \
 @BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) \
 @BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1)
 am__libacvp_app_la_SOURCES_DIST = app_main.c app_cli.c app_utils.c \
 	app_lcl.h totp/totp.c totp/hmac_sha256.c totp/sha256.c \
@@ -614,7 +615,7 @@ tmp_sources = app_main.c app_cli.c app_utils.c app_lcl.h totp/totp.c \
 @BUILD_APP_AS_LIB_TRUE@lib_LTLIBRARIES = libacvp_app.la
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_includedir = ${includedir}/acvp
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_la_SOURCES = ${tmp_sources}
-@BUILD_APP_AS_LIB_TRUE@libacvp_app_la_LIBADD = $(LIBACVP_LDFLAGS) $(IUT_LDFLAGS)
+@BUILD_APP_AS_LIB_TRUE@libacvp_app_la_LIBADD = $(LIBACVP_LDFLAGS) $(IUT_LDFLAGS) $(ADDL_LIB_DEPENDENCIES)
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_include_HEADERS = $(top_srcdir)/app/libacvp_app.h
 all: all-am
 
