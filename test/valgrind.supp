@@ -1,0 +1,85 @@
+# Valgrind suppressions file for libacvp
+# These suppressions handle expected "leaks" from external dependencies
+# Suppressions added to this file should only address false positives or reported
+# leaks from external dependencies which are not problematic or are un-actionable
+
+# OpenSSL provider loading
+{
+   dlopen_strdup_58bytes
+   Memcheck:Leak
+   match-leak-kinds:reachable
+   fun:malloc
+   fun:malloc
+   fun:strdup
+   fun:_dl_map_object
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+}
+
+# OpenSSL provider loading
+{
+   dlopen_new_object_malloc_58bytes
+   Memcheck:Leak
+   match-leak-kinds:reachable
+   fun:malloc
+   fun:malloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+}
+
+# OpenSSL provider loading
+{
+   dlopen_check_versions_192bytes
+   Memcheck:Leak
+   match-leak-kinds:reachable
+   fun:calloc
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen_implementation
+   fun:dlopen@@GLIBC_2.34
+}
+
+# OpenSSL provider loading
+{
+   dlopen_new_object_calloc_1298bytes
+   Memcheck:Leak
+   match-leak-kinds:reachable
+   fun:calloc
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+}

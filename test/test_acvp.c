@@ -677,7 +677,9 @@ TEST(PROCESS_TESTS, run_vectors_from_file) {
 
     rv = acvp_run_vectors_from_file(ctx, "json/req.json", "json/rsp1.json");
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-
+    if (rv == ACVP_SUCCESS) {
+        remove("json/rsp1.json");
+    }
 }
 
 // Test acvp_upload_vectors_from_file

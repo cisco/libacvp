@@ -307,7 +307,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KW_MODE, ACVP_SYM_KW_INVERSE);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 524288, 128);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 4096, 64);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
@@ -330,7 +330,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_DOMAIN_PTLEN, 8, 524288, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_DOMAIN_PTLEN, 8, 4096, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
     // Enable AES-XTS 128 and 256 bit key
