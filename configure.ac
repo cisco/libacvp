@@ -250,6 +250,10 @@ if test "x$enable_offline" != "xfalse"; then
     AC_SEARCH_LIBS([gzdopen], [z], [lib_dependencies="${lib_dependencies} -lz "], [], [])
 fi
 
+# Check for math library (used for certain functions in the library/app)
+AC_SEARCH_LIBS([floor], [m], [lib_dependencies="${lib_dependencies} -lm "],
+               [AC_MSG_FAILURE([Cannot find math library (libm) - required])], [])
+
 if test "x$disable_app" = "xno" ; then
     ##########################################################
     # Begin checks for IUT. Only one of these should be done #

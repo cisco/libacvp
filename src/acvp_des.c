@@ -867,6 +867,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     unsigned int tmp_pt_len = 0;
                     rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "payloadLen", (int *)&tmp_pt_len);
                     if (rv != ACVP_SUCCESS) {
+                        free(key);
                         goto err;
                     }
                     if (tmp_pt_len) {
@@ -896,6 +897,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     unsigned int tmp_ct_len = 0;
                     rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "payloadLen", (int *)&tmp_ct_len);
                     if (rv != ACVP_SUCCESS) {
+                        free(key);
                         goto err;
                     }
                     if (tmp_ct_len) {
@@ -955,6 +957,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             // Key has been copied, we can free here
             free(key);
+            key = NULL;
 
             // If Monte Carlo start that here
             if (stc.test_type == ACVP_SYM_TEST_TYPE_MCT) {

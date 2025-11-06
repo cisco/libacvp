@@ -1423,7 +1423,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         case ACVP_SUB_AES_KW:
             switch (parm) {
             case ACVP_SYM_CIPH_DOMAIN_PTLEN:
-                if (min >= 128 && max <= 524288 && increment % 8 == 0) {
+                if (min >= 128 && max <= 4096 && increment % 64 == 0) {
                     retval = ACVP_SUCCESS;
                 }
                 break;
@@ -1438,7 +1438,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         case ACVP_SUB_AES_KWP:
             switch (parm) {
             case ACVP_SYM_CIPH_DOMAIN_PTLEN:
-                if (min >= 0 && max <= 524288) {
+                if (min >= 8 && max <= 4096 && increment % 8 == 0) {
                     retval = ACVP_SUCCESS;
                 }
                 break;
@@ -1583,11 +1583,10 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         }
     } else if (tdes_alg) {
         switch (tdes_alg) {
-        case ACVP_SUB_TDES_CTR:
         case ACVP_SUB_TDES_KW:
             switch (parm) {
             case ACVP_SYM_CIPH_DOMAIN_PTLEN:
-                if (min >= 0 && max <= 65536) {
+                if (min >= 64 && max <= 4096 && increment % 32 == 0) {
                     retval = ACVP_SUCCESS;
                 }
                 break;
@@ -1610,6 +1609,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         case ACVP_SUB_TDES_CFBP1:
         case ACVP_SUB_TDES_CFBP8:
         case ACVP_SUB_TDES_CFBP64:
+        case ACVP_SUB_TDES_CTR:
             switch (parm) {
             case ACVP_SYM_CIPH_DOMAIN_PTLEN:
                 if (min >= 0 && max <= 65536) {
