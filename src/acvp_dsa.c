@@ -1208,6 +1208,11 @@ static ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
                 acvp_dsa_release_tc(stc);
                 return rv;
             }
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "domainSeed", &seed);
+            if (rv != ACVP_SUCCESS) {
+                acvp_dsa_release_tc(stc);
+                return rv;
+            }
             break;
 
         default:

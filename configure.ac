@@ -13,7 +13,7 @@
 #
 
 m4_define([libacvp_major_version], [2])
-m4_define([libacvp_minor_version], [2])
+m4_define([libacvp_minor_version], [3])
 m4_define([libacvp_micro_version], [0])
 AC_INIT([libacvp],[libacvp_major_version.libacvp_minor_version.libacvp_micro_version],[https://github.com/cisco/libacvp/issues])
 
