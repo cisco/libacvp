@@ -1,38 +1,23 @@
 /** @file */
-/*****************************************************************************
-* Copyright (c) 2024, Cisco Systems, Inc.
-* All rights reserved.
-
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
+/*
+ * Copyright (c) 2025, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
 #include "ut_common.h"
 #include "app_common.h"
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_TEST_CASE *test_case;
-static ACVP_KDF_TLS13_TC *kdf_tls13_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_TLS13_KDF_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_KDF_TLS13_TC *kdf_tls13_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 void free_kdf_tls13_tc(ACVP_KDF_TLS13_TC *stc) {
     if (stc->psk) free(stc->psk);
@@ -67,8 +52,6 @@ int initialize_kdf_tls13_tc(ACVP_KDF_TLS13_TC *stc,
                             const char *fin_s_hello_rand,
                             const char *fin_c_hello_rand,
                             int corrupt) {
-    ACVP_RESULT rv;
-    
     memzero_s(stc, sizeof(ACVP_KDF_TLS13_TC));
     
     if (psk) {
@@ -167,10 +150,11 @@ int initialize_kdf_tls13_tc(ACVP_KDF_TLS13_TC *stc,
     return 0;
 }
 
-/*
- * invalid_runmode in kdf_tls13 tc test case
- */
-Test(APP_TLS13_KDF_HANDLER, invalid_runmode1) {
+TEST_SETUP(APP_TLS13_KDF_HANDLER) {}
+TEST_TEAR_DOWN(APP_TLS13_KDF_HANDLER) {}
+
+// invalid_runmode in kdf_tls13 tc test case
+TEST(APP_TLS13_KDF_HANDLER, invalid_runmode1) {
     char *psk = "aa";
     char *dhe = "aa";
     char *s_hello_rand = "aa";
@@ -185,22 +169,20 @@ Test(APP_TLS13_KDF_HANDLER, invalid_runmode1) {
     if (!initialize_kdf_tls13_tc(kdf_tls13_tc, running_mode, ACVP_SHA256, psk, 
                                  dhe, s_hello_rand, c_hello_rand, 
                                  fin_s_hello_rand, fin_c_hello_rand, corrupt)) {
-        cr_assert_fail("tls13 kdf init tc failure");
+        TEST_FAIL_MESSAGE("tls13 kdf init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf_tls13 = kdf_tls13_tc;
     
     rv = app_kdf_tls13_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf_tls13_tc(kdf_tls13_tc);
     free(test_case);
 }
 
-/*
- * invalid_runmode in kdf_tls13 tc test case
- */
-Test(APP_TLS13_KDF_HANDLER, invalid_runmode2) {
+// invalid_runmode in kdf_tls13 tc test case
+TEST(APP_TLS13_KDF_HANDLER, invalid_runmode2) {
     char *psk = NULL;
     char *dhe = "aa";
     char *s_hello_rand = "aa";
@@ -215,22 +197,20 @@ Test(APP_TLS13_KDF_HANDLER, invalid_runmode2) {
     if (!initialize_kdf_tls13_tc(kdf_tls13_tc, running_mode, ACVP_SHA256, psk, 
                                  dhe, s_hello_rand, c_hello_rand, 
                                  fin_s_hello_rand, fin_c_hello_rand, corrupt)) {
-        cr_assert_fail("tls13 kdf init tc failure");
+        TEST_FAIL_MESSAGE("tls13 kdf init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf_tls13 = kdf_tls13_tc;
     
     rv = app_kdf_tls13_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf_tls13_tc(kdf_tls13_tc);
     free(test_case);
 }
 
-/*
- * invalid_runmode in kdf_tls13 tc test case
- */
-Test(APP_TLS13_KDF_HANDLER, invalid_runmode3) {
+// invalid_runmode in kdf_tls13 tc test case
+TEST(APP_TLS13_KDF_HANDLER, invalid_runmode3) {
     char *psk = "aa";
     char *dhe = "aa";
     char *s_hello_rand = "aa";
@@ -245,22 +225,20 @@ Test(APP_TLS13_KDF_HANDLER, invalid_runmode3) {
     if (!initialize_kdf_tls13_tc(kdf_tls13_tc, running_mode, ACVP_SHA256, psk, 
                                  dhe, s_hello_rand, c_hello_rand, 
                                  fin_s_hello_rand, fin_c_hello_rand, corrupt)) {
-        cr_assert_fail("tls13 kdf init tc failure");
+        TEST_FAIL_MESSAGE("tls13 kdf init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf_tls13 = kdf_tls13_tc;
     
     rv = app_kdf_tls13_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf_tls13_tc(kdf_tls13_tc);
     free(test_case);
 }
 
-/*
- * invalid_runmode in kdf_tls13 tc test case
- */
-Test(APP_TLS13_KDF_HANDLER, invalid_runmode4) {
+// invalid_runmode in kdf_tls13 tc test case
+TEST(APP_TLS13_KDF_HANDLER, invalid_runmode4) {
     char *psk = NULL;
     char *dhe = NULL;
     char *s_hello_rand = "aa";
@@ -275,22 +253,20 @@ Test(APP_TLS13_KDF_HANDLER, invalid_runmode4) {
     if (!initialize_kdf_tls13_tc(kdf_tls13_tc, running_mode, ACVP_SHA256, psk, 
                                  dhe, s_hello_rand, c_hello_rand, 
                                  fin_s_hello_rand, fin_c_hello_rand, corrupt)) {
-        cr_assert_fail("tls13 kdf init tc failure");
+        TEST_FAIL_MESSAGE("tls13 kdf init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf_tls13 = kdf_tls13_tc;
     
     rv = app_kdf_tls13_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf_tls13_tc(kdf_tls13_tc);
     free(test_case);
 }
 
-/*
- * invalid hash alg in kdf_tls13 tc test case
- */
-Test(APP_TLS13_KDF_HANDLER, invalid_hash_alg) {
+// invalid hash alg in kdf_tls13 tc test case
+TEST(APP_TLS13_KDF_HANDLER, invalid_hash_alg) {
 
     char *psk = "aa";
     char *dhe = "aa";
@@ -306,22 +282,20 @@ Test(APP_TLS13_KDF_HANDLER, invalid_hash_alg) {
     if (!initialize_kdf_tls13_tc(kdf_tls13_tc, running_mode, ACVP_SHA512, psk, 
                                  dhe, s_hello_rand, c_hello_rand, 
                                  fin_s_hello_rand, fin_c_hello_rand, corrupt)) {
-        cr_assert_fail("tls13 kdf init tc failure");
+        TEST_FAIL_MESSAGE("tls13 kdf init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf_tls13 = kdf_tls13_tc;
     
     rv = app_kdf_tls13_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf_tls13_tc(kdf_tls13_tc);
     free(test_case);
 }
 
-/*
- * missing_psk in kdf_tls13 tc test case
- */
-Test(APP_TLS13_KDF_HANDLER, missing_psk) {
+// missing_psk in kdf_tls13 tc test case
+TEST(APP_TLS13_KDF_HANDLER, missing_psk) {
     
     char *psk = NULL;
     char *dhe = "aa";
@@ -337,22 +311,20 @@ Test(APP_TLS13_KDF_HANDLER, missing_psk) {
     if (!initialize_kdf_tls13_tc(kdf_tls13_tc, running_mode, ACVP_SHA256, psk, 
                                  dhe, s_hello_rand, c_hello_rand, 
                                  fin_s_hello_rand, fin_c_hello_rand, corrupt)) {
-        cr_assert_fail("tls13 kdf init tc failure");
+        TEST_FAIL_MESSAGE("tls13 kdf init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf_tls13 = kdf_tls13_tc;
     
     rv = app_kdf_tls13_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf_tls13_tc(kdf_tls13_tc);
     free(test_case);
 }
 
-/*
- * missing_s_hello_rand in kdf_tls13 tc test case
- */
-Test(APP_TLS13_KDF_HANDLER, missing_s_hello_rand) {
+// missing_s_hello_rand in kdf_tls13 tc test case
+TEST(APP_TLS13_KDF_HANDLER, missing_s_hello_rand) {
 
     char *psk = "aa";
     char *dhe = "aa";
@@ -368,22 +340,20 @@ Test(APP_TLS13_KDF_HANDLER, missing_s_hello_rand) {
     if (!initialize_kdf_tls13_tc(kdf_tls13_tc, running_mode, ACVP_SHA256, psk, 
                                  dhe, s_hello_rand, c_hello_rand, 
                                  fin_s_hello_rand, fin_c_hello_rand, corrupt)) {
-        cr_assert_fail("tls13 kdf init tc failure");
+        TEST_FAIL_MESSAGE("tls13 kdf init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf_tls13 = kdf_tls13_tc;
     
     rv = app_kdf_tls13_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf_tls13_tc(kdf_tls13_tc);
     free(test_case);
 }
 
-/*
- * missing_c_hello_rand in kdf_tls13 tc test case
- */
-Test(APP_TLS13_KDF_HANDLER, missing_c_hello_rand) {
+// missing_c_hello_rand in kdf_tls13 tc test case
+TEST(APP_TLS13_KDF_HANDLER, missing_c_hello_rand) {
     
     char *psk = "aa";
     char *dhe = "aa";
@@ -399,22 +369,20 @@ Test(APP_TLS13_KDF_HANDLER, missing_c_hello_rand) {
     if (!initialize_kdf_tls13_tc(kdf_tls13_tc, running_mode, ACVP_SHA256, psk, 
                                  dhe, s_hello_rand, c_hello_rand, 
                                  fin_s_hello_rand, fin_c_hello_rand, corrupt)) {
-        cr_assert_fail("tls13 kdf init tc failure");
+        TEST_FAIL_MESSAGE("tls13 kdf init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf_tls13 = kdf_tls13_tc;
     
     rv = app_kdf_tls13_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf_tls13_tc(kdf_tls13_tc);
     free(test_case);
 }
 
-/*
- * missing_fin_c_hello_rand in kdf_tls13 tc test case
- */
-Test(APP_TLS13_KDF_HANDLER, missing_fin_c_hello_rand) {
+// missing_fin_c_hello_rand in kdf_tls13 tc test case
+TEST(APP_TLS13_KDF_HANDLER, missing_fin_c_hello_rand) {
     
     char *psk = "aa";
     char *dhe = "aa";
@@ -430,22 +398,20 @@ Test(APP_TLS13_KDF_HANDLER, missing_fin_c_hello_rand) {
     if (!initialize_kdf_tls13_tc(kdf_tls13_tc, running_mode, ACVP_SHA256, psk, 
                                  dhe, s_hello_rand, c_hello_rand, 
                                  fin_s_hello_rand, fin_c_hello_rand, corrupt)) {
-        cr_assert_fail("tls13 kdf init tc failure");
+        TEST_FAIL_MESSAGE("tls13 kdf init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf_tls13 = kdf_tls13_tc;
     
     rv = app_kdf_tls13_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf_tls13_tc(kdf_tls13_tc);
     free(test_case);
 }
 
-/*
- * missing_fin_s_hello_rand in kdf_tls13 tc test case
- */
-Test(APP_TLS13_KDF_HANDLER, missing_fin_s_hello_rand) {
+// missing_fin_s_hello_rand in kdf_tls13 tc test case
+TEST(APP_TLS13_KDF_HANDLER, missing_fin_s_hello_rand) {
 
     char *psk = "aa";
     char *dhe = "aa";
@@ -461,22 +427,20 @@ Test(APP_TLS13_KDF_HANDLER, missing_fin_s_hello_rand) {
     if (!initialize_kdf_tls13_tc(kdf_tls13_tc, running_mode, ACVP_SHA256, psk, 
                                  dhe, s_hello_rand, c_hello_rand, 
                                  fin_s_hello_rand, fin_c_hello_rand, corrupt)) {
-        cr_assert_fail("tls13 kdf init tc failure");
+        TEST_FAIL_MESSAGE("tls13 kdf init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf_tls13 = kdf_tls13_tc;
     
     rv = app_kdf_tls13_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf_tls13_tc(kdf_tls13_tc);
     free(test_case);
 }
 
-/*
- * unallocated answer buffers in kdf_tls13 tc test case
- */
-Test(APP_TLS13_KDF_HANDLER, unallocated_ans_bufs) {
+// unallocated answer buffers in kdf_tls13 tc test case
+TEST(APP_TLS13_KDF_HANDLER, unallocated_ans_bufs) {
 
     char *psk = "aa";
     char *dhe = "aa";
@@ -492,13 +456,13 @@ Test(APP_TLS13_KDF_HANDLER, unallocated_ans_bufs) {
     if (!initialize_kdf_tls13_tc(kdf_tls13_tc, running_mode, ACVP_SHA256, psk, 
                                  dhe, s_hello_rand, c_hello_rand, 
                                  fin_s_hello_rand, fin_c_hello_rand, corrupt)) {
-        cr_assert_fail("tls13 kdf init tc failure");
+        TEST_FAIL_MESSAGE("tls13 kdf init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kdf_tls13 = kdf_tls13_tc;
     
     rv = app_kdf_tls13_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kdf_tls13_tc(kdf_tls13_tc);
     free(test_case);

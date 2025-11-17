@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -17,9 +17,11 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_TEST_CASE *test_case;
-ACVP_RSA_SIG_TC *rsa_sig_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_RSA_SIG_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_RSA_SIG_TC *rsa_sig_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 void free_rsa_sig_tc(ACVP_RSA_SIG_TC *stc) {
     if (stc->msg) { free(stc->msg); }
@@ -43,8 +45,6 @@ int initialize_rsa_sig_tc(ACVP_CIPHER cipher,
                       char *salt,
                       int salt_len,
                       int corrupt) {
-    ACVP_RESULT rv;
-    
     memzero_s(stc, sizeof(ACVP_RSA_SIG_TC));
     
     stc->salt = calloc(ACVP_RSA_SIGNATURE_MAX, sizeof(char));
@@ -122,10 +122,11 @@ err:
     return 0;
 }
 
-/*
- * invalid hash alg rsa sig handler
- */
-Test(APP_RSA_SIG_HANDLER, invalid_hash_alg) {
+TEST_SETUP(APP_RSA_SIG_HANDLER) {}
+TEST_TEAR_DOWN(APP_RSA_SIG_HANDLER) {}
+
+// invalid hash alg rsa sig handler
+TEST(APP_RSA_SIG_HANDLER, invalid_hash_alg) {
     ACVP_CIPHER cipher = ACVP_RSA_SIGGEN;
     int tgid = 0;
     int mod = 2048;
@@ -144,16 +145,14 @@ Test(APP_RSA_SIG_HANDLER, invalid_hash_alg) {
     if (!initialize_rsa_sig_tc(cipher, rsa_sig_tc, tgid, sig_type,
             mod, hash_alg, e, n, msg, signature, salt, salt_len,
             corrupt)) {
-        cr_assert_fail("rsa sig init tc failure");
+        TEST_FAIL_MESSAGE("rsa sig init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.rsa_sig = rsa_sig_tc;
     
     rv = app_rsa_sig_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_rsa_sig_tc(rsa_sig_tc);
     free(test_case);
 }
-
-

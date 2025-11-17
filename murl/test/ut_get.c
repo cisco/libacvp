@@ -100,8 +100,8 @@ static int test_murl_http_get(char *url)
      * Add the test arguments to the URL
      */
     for (i=0; i<TEST_ARG_CNT; i++) {
-	sprintf(tmp, "%s=%s&", test_args[i].arg_name, test_args[i].arg_val); 
-	new_url = strcat(new_url, tmp);  
+	sprintf(tmp, "%s=%s&", test_args[i].arg_name, test_args[i].arg_val);
+	new_url = strcat(new_url, tmp);
     }
 
     printf("\tGET URL: %s\n", new_url);
@@ -127,7 +127,7 @@ static int test_murl_http_get(char *url)
     curl_easy_perform(hnd);
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
@@ -150,7 +150,7 @@ static int test_murl_http_get(char *url)
 }
 
 /*
- * This routine will parse the http_reponse value that was recieved
+ * This routine will parse the http_response value that was received
  * from the HTTPS test server.  It will compare the POSTed data
  * received from the server with the POST data we sent to the
  * server.  If they match, this routine returns zero. Otherwise
@@ -202,7 +202,7 @@ json_parse_cleanup:
 
 /*
  * Performs a simple HTTP GET operation.
- * 
+ *
  * returns 0 on success, non-zero on failure.
  */
 static int test_murl_simple_get ()
@@ -211,7 +211,7 @@ static int test_murl_simple_get ()
     int rv = 1;
 
     printf("Starting simple HTTP GET test...\n");
-    
+
     http_resp = test_murl_http_get("https://httpbin.org/get");
 
     if (http_resp != 200) {
@@ -241,7 +241,7 @@ static int test_murl_simple_get ()
 /*
  * Performs a simple HTTP GET operation with
  * custom headers.
- * 
+ *
  * returns 0 on success, non-zero on failure.
  */
 static int test_murl_headers_get()
@@ -282,7 +282,7 @@ static int test_murl_headers_get()
     curl_easy_perform(hnd);
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
     printf("HTTP status from server: %d\n", (int)http_code);
@@ -327,9 +327,9 @@ static int test_murl_headers_get()
 }
 
 /*
- * This function performs an HTTP GET using httpbin.org 
+ * This function performs an HTTP GET using httpbin.org
  * while omitting the trailing slash on the URL.
- * This improves code coverage of the URL parser in libmurl. 
+ * This improves code coverage of the URL parser in libmurl.
  *
  * Returns zero on success, non-zero on failure
  */
@@ -362,7 +362,7 @@ static int test_murl_missing_slash(void)
     }
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
     if (http_code != 200) {

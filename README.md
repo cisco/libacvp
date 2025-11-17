@@ -11,10 +11,23 @@
 ```
 
 ## License
+
+**SPDX-License-Identifier: Apache-2.0**
+
 Libacvp is licensed under the Apache License 2.0, which means that
 you are free to get and use it for commercial and non-commercial
-purposes as long as you fulfill its conditions. See the LICENSE
-file for details.
+purposes as long as you fulfill its conditions. See the project
+root's LICENSE file for details.
+
+### Third-Party Components
+
+This project includes components from other projects with compatible licenses:
+
+| Component | License | Location | Source |
+|-----------|---------|----------|--------|
+| Unity Test Framework | MIT | `test/unity/LICENSE` | https://github.com/ThrowTheSwitch/Unity/ |
+| Klib ketopt | MIT | `app/ketopt.h` | https://github.com/attractivechaos/klib/ |
+
 
 
 ## Recent Changes
@@ -71,7 +84,6 @@ production environment.
 * gcc
 * make
 * curl (or substitution)
-* libcriterion (for unit tests only)
 * doxygen (for building documentation only)
 
 Curl is used for sending REST calls to the ACVP server.
@@ -253,8 +265,7 @@ libacvp can be linked to acvp_app statically as well; acvp_app will link to othe
 dependencies as described above under `other build options`.
 
 ## Testing
-Move to the test/ directory and see the README.md there. The tests depend upon
-a C test framework called Criterion, found here: https://github.com/Snaipe/Criterion
+Move to the test/ directory and see the README.md there.
 
 
 ## Contributing

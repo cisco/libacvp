@@ -24,10 +24,10 @@
 * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-/**
+/*
  * NOTE: This header is only use when building acvp_app as a library. It allows
  * other development systems with proprietary setups (e.g. xcode) to easily integrate
- * acvp_app's crpyto processing code without  as much overhead and the need to frequently 
+ * acvp_app's crypto processing code without as much overhead and the need to frequently
  * update. It is only developed to be use with static offline builds, and NOT intended to
  * be used inside production code or products.
  */

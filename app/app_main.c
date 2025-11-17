@@ -71,7 +71,7 @@ static void setup_session_parameters(void) {
     printf("\n");
 }
 
-/* libacvp calls this function for status updates, debugs, warnings, and errors. */
+// libacvp calls this function for status updates, debugs, warnings, and errors.
 static ACVP_RESULT progress(char *msg, ACVP_LOG_LVL level) {
 
     printf("[ACVP]");
@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
     APP_CONFIG cfg;
     int diff = 0;
 
-    //TODO: this shouldn't need to be non-const
+    // TODO: this shouldn't need to be non-const
     strncpy_s(value, JSON_STRING_LENGTH, "same", 4);
 
     memset_s(&cfg, sizeof(APP_CONFIG), 0, sizeof(APP_CONFIG));
@@ -156,21 +156,21 @@ int main(int argc, char **argv) {
         goto end;
     }
 
-    /* Next we specify the ACVP server address */
+    // Next we specify the ACVP server address
     rv = acvp_set_server(ctx, server, port);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set server/port\n");
         goto end;
     }
 
-    /* Set the api context prefix if needed */
+    // Set the api context prefix if needed
     rv = acvp_set_api_context(ctx, api_context);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set URI prefix\n");
         goto end;
     }
 
-    /* Set the path segment prefix if needed */
+    // Set the path segment prefix if needed
     rv = acvp_set_path_segment(ctx, path_segment);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set URI prefix\n");
@@ -266,7 +266,7 @@ int main(int argc, char **argv) {
             goto end;
         }
     } else {
-        /* Call the registration code for the given IUT */
+        // Call the registration code for the given IUT
         rv = iut_register_capabilities(ctx, &cfg);
         if (rv != ACVP_SUCCESS) {
             printf("Failure occurred while registering capabilities for given implementation\n");
@@ -323,7 +323,7 @@ int main(int argc, char **argv) {
     if (cfg.fips_validation) {
         unsigned int module_id = 1, oe_id = 1;
 
-        /* Provide the metadata needed for a FIPS validation. */
+        // Provide the metadata needed for a FIPS validation.
         rv = acvp_oe_ingest_metadata(ctx, cfg.validation_metadata_file);
         if (rv != ACVP_SUCCESS) {
             printf("Failed to read validation_metadata_file\n");
@@ -346,12 +346,12 @@ int main(int argc, char **argv) {
        goto end;
     }
 
-    /* PUT without algorithms submits put_filename for validation using save JWT and testSession ID */
+    // PUT without algorithms submits put_filename for validation using save JWT and testSession ID
     if (cfg.empty_alg && cfg.put) {
          rv = acvp_put_data_from_file(ctx, cfg.put_filename);
          goto end;
     }
-    /* PUT with alg testing will submit put_filename with module/oe information */
+    // PUT with alg testing will submit put_filename with module/oe information
     if (!cfg.empty_alg && cfg.put) {
         rv = acvp_mark_as_put_after_test(ctx, cfg.put_filename);
         if (rv != ACVP_SUCCESS) {
@@ -359,12 +359,12 @@ int main(int argc, char **argv) {
             goto end;
         }
     }
-    
+
     if (cfg.get_results) {
         rv = acvp_get_results_from_server(ctx, cfg.session_file);
         goto end;
     }
-    
+
     if (cfg.resume_session) {
         rv = acvp_resume_test_session(ctx, cfg.session_file, cfg.fips_validation);
         goto end;
@@ -387,7 +387,7 @@ int main(int argc, char **argv) {
         }
         goto end;
     }
-    
+
     /*
      * Run the test session.
      * Perform a FIPS validation on this test session if specified.

@@ -14,7 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #ifndef UT_LCL_H
 #define UT_LCL_H
 
-//TODO: this assumes the unit test will be run from the 
+//TODO: this assumes the unit test will be run from the
 //      top level murl directory
 #define PUBLIC_ROOTS "../certs/mozzila_trust_anchors.pem"
 #define LOG_RESULT(rv) \
@@ -25,9 +25,7 @@ int test_murl_post(void);
 int test_murl_get(void);
 int test_murl_tls(void);
 
-/*
- * Utility functions 
- */
+// Utility functions
 int test_murl_locate_ipv6_address(char *address, int max_addr);
 
 #endif

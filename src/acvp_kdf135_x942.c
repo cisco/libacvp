@@ -19,7 +19,7 @@
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
@@ -155,9 +155,9 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
 
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_X942_TC stc;
@@ -191,16 +191,14 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_ERR("Server JSON missing 'mode'");
         return ACVP_MISSING_ARG;
     }
-    
+
     alg_id = acvp_lookup_cipher_w_mode_index(alg_str, mode_str);
     if (alg_id != ACVP_KDF135_X942) {
         ACVP_LOG_ERR("Server JSON invalid 'algorithm' or 'mode'");
         return ACVP_INVALID_ARG;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.kdf135_x942 = &stc;
     stc.cipher = alg_id;
 
@@ -210,18 +208,14 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -229,10 +223,8 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_object_set_string(r_vs, "mode", "ansix9.42");
 
-    groups = json_object_get_array(obj, "testGroups");
-    if (!groups) {
-        ACVP_LOG_ERR("Failed to include testGroups.");
-        rv = ACVP_MISSING_ARG;
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
         goto err;
     }
 
@@ -251,27 +243,24 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        kdf_type_str = json_object_get_string(groupobj, "kdfType");
-        if (!kdf_type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'kdfType'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "kdfType", &kdf_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
-        strncmp_s(kdf_type_str, 14, "DER", 3, &diff);
+
+        strncmp_s(kdf_type_str, 13, "DER", 3, &diff);
         if (!diff) {
             kdf_type = ACVP_KDF_X942_KDF_TYPE_DER;
        } else {
-            strncmp_s(kdf_type_str, 14, "concatentation", 14, &diff);
+            strncmp_s(kdf_type_str, 13, "concatenation", 13, &diff);
             if (!diff) {
                 kdf_type = ACVP_KDF_X942_KDF_TYPE_CONCAT;
             } else {
@@ -281,23 +270,20 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
        }
 
-        hash_alg_str = json_object_get_string(groupobj, "hashAlg");
-        if (!hash_alg_str) {
-            ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &hash_alg_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         hash_alg = acvp_lookup_hash_alg(hash_alg_str);
         if (!hash_alg) {
             ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
             rv = ACVP_INVALID_ARG;
             goto err;
         }
-    
-        oid = json_object_get_string(groupobj, "oid");
-        if (!oid) {
-            ACVP_LOG_ERR("Server JSON missing 'oid'");
-            rv = ACVP_MISSING_ARG;
+
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "oid", &oid);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -306,10 +292,8 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("         hashAlg: %s", hash_alg_str);
         ACVP_LOG_VERBOSE("             OID: %s", oid);
 
-        tests = json_object_get_array(groupobj, "tests");
-        if (!tests) {
-            ACVP_LOG_ERR("Failed to include tests.");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -325,19 +309,16 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
-            if (!tc_id) {
-                ACVP_LOG_ERR("Server JSON missing 'tcId'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            zz = json_object_get_string(testobj, "zz");
-            if (!zz) {
-                ACVP_LOG_ERR("Server JSON missing 'zz'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "zz", &zz);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             len = strnlen_s(zz, ACVP_KDF135_X942_STR_MAX + 1);
             if (len > ACVP_KDF135_X942_STR_MAX) {
                 ACVP_LOG_ERR("Server JSON invalid 'zz' (max = %d, given = %d)", ACVP_KDF135_X942_STR_MAX, len);
@@ -345,10 +326,8 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            key_len = json_object_get_number(testobj, "keyLen");
-            if (!key_len) {
-                ACVP_LOG_ERR("Server JSON missing 'keyLen'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "keyLen", &key_len);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
             if (key_len < 1 || key_len > ACVP_KDF135_X942_BIT_MAX) {
@@ -357,12 +336,11 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            party_u = json_object_get_string(testobj, "partyUInfo");
-            if (!party_u) {
-                ACVP_LOG_ERR("Server JSON missing 'partyUInfo'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "partyUInfo", &party_u);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             len = strnlen_s(party_u, ACVP_KDF135_X942_STR_MAX + 1);
             if (len > ACVP_KDF135_X942_STR_MAX) {
                 ACVP_LOG_ERR("Server JSON invalid 'partyUInfo' (max = %d, given = %d)", ACVP_KDF135_X942_STR_MAX, len);
@@ -370,12 +348,11 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            party_v = json_object_get_string(testobj, "partyVInfo");
-            if (!party_v) {
-                ACVP_LOG_ERR("Server JSON missing 'partyVInfo'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "partyVInfo", &party_v);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             len = strnlen_s(party_v, ACVP_KDF135_X942_STR_MAX + 1);
             if (len > ACVP_KDF135_X942_STR_MAX) {
                 ACVP_LOG_ERR("Server JSON invalid 'partyVInfo' (max = %d, given = %d)", ACVP_KDF135_X942_STR_MAX, len);
@@ -383,12 +360,11 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            supp_pub = json_object_get_string(testobj, "suppPubInfo");
-            if (!supp_pub) {
-                ACVP_LOG_ERR("Server JSON missing 'suppPubInfo'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "suppPubInfo", &supp_pub);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             len = strnlen_s(supp_pub, ACVP_KDF135_X942_STR_MAX + 1);
             if (len > ACVP_KDF135_X942_STR_MAX) {
                 ACVP_LOG_ERR("Server JSON invalid 'suppPubInfo' (max = %d, given = %d)", ACVP_KDF135_X942_STR_MAX, len);
@@ -396,12 +372,11 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            supp_priv = json_object_get_string(testobj, "suppPrivInfo");
-            if (!supp_priv) {
-                ACVP_LOG_ERR("Server JSON missing 'suppPrivInfo'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "suppPrivInfo", &supp_priv);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             len = strnlen_s(supp_priv, ACVP_KDF135_X942_STR_MAX + 1);
             if (len > ACVP_KDF135_X942_STR_MAX) {
                 ACVP_LOG_ERR("Server JSON invalid 'suppPrivInfo' (max = %d, given = %d)", ACVP_KDF135_X942_STR_MAX, len);
@@ -418,9 +393,7 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("      suppPubInfo: %s", supp_pub);
             ACVP_LOG_VERBOSE("     suppPrivInfo: %s", supp_priv);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -439,31 +412,27 @@ ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if ((cap->crypto_handler)(&tc)) {
-                ACVP_LOG_ERR("crypto module failed the KDF X942 operation");
+                ACVP_LOG_ERR("Crypto module failed the KDF X942 operation");
                 acvp_kdf135_x942_release_tc(&stc);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
                 goto err;
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             rv = acvp_kdf135_x942_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 acvp_kdf135_x942_release_tc(&stc);
                 json_value_free(r_tval);
                 goto err;
             }
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_kdf135_x942_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

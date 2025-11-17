@@ -44,6 +44,3 @@ The key:"serverRandom" is missing.
 
 #### tls12_14.json
 The key:"tgId" is missing.
-
-
-

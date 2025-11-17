@@ -159,7 +159,7 @@ static ACVP_RESULT acvp_safe_primes_init_tc(ACVP_CTX *ctx,
 ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;
@@ -169,8 +169,8 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Object *testobj = NULL;
     JSON_Array *groups;
     JSON_Array *tests, *r_tarr = NULL;
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_TEST_CASE tc;
     ACVP_SAFE_PRIMES_TC stc;
@@ -209,9 +209,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_INVALID_ARG;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.safe_primes = &stc;
     memzero_s(&stc, sizeof(ACVP_SAFE_PRIMES_TC));
 
@@ -221,18 +219,14 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -240,7 +234,10 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_object_set_string(r_vs, "mode", mode_str);
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -253,22 +250,19 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tg_id = json_object_get_number(groupobj, "tgId");
-        if (!tg_id) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tg_id);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tg_id);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        dgm_str = json_object_get_string(groupobj, "safePrimeGroup");
-        if (!dgm_str) {
-            ACVP_LOG_ERR("Server JSON missing 'safePrimeGroup'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "safePrimeGroup", &dgm_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         dgm = acvp_convert_dgm_string(dgm_str);
         if (!dgm) {
             ACVP_LOG_ERR("safePrimeGroup invalid");
@@ -287,11 +281,14 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = ACVP_INVALID_ARG;
             goto err;
         }
-    
+
         switch (alg) {
         case ACVP_SUB_SAFE_PRIMES_KEYGEN:
 
-            tests = json_object_get_array(groupobj, "tests");
+            rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             t_cnt = json_array_get_count(tests);
 
             for (j = 0; j < t_cnt; j++) {
@@ -299,17 +296,14 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_VERBOSE("Found new SAFE-PRIMES test vector...");
                 testval = json_array_get_value(tests, j);
                 testobj = json_value_get_object(testval);
-                tc_id = json_object_get_number(testobj, "tcId");
-                if (!tc_id) {
-                    ACVP_LOG_ERR("Server JSON missing 'tcId'");
-                    rv = ACVP_MISSING_ARG;
+
+                rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
-                test_type_str = json_object_get_string(groupobj, "testType");
-                if (!test_type_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'testType'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &test_type_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
@@ -319,9 +313,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-                /*
-                 * Create a new test case in the response
-                 */
+                // Create a new test case in the response
                 r_tval = json_value_init_object();
                 r_tobj = json_value_get_object(r_tval);
 
@@ -330,7 +322,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                  * Setup the test case data that will be passed down to
                  * the crypto module.
                  */
-                rv = acvp_safe_primes_init_tc(ctx, tg_id, tc_id, alg_id, 
+                rv = acvp_safe_primes_init_tc(ctx, tg_id, tc_id, alg_id,
                                               &stc, dgm, x, y, test_type);
                 if (rv != ACVP_SUCCESS) {
                     acvp_safe_primes_release_tc(&stc);
@@ -338,38 +330,37 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                /* Process the current KAT test vector... */
+                // Process the current KAT test vector...
                 if ((cap->crypto_handler)(&tc)) {
                     acvp_safe_primes_release_tc(&stc);
-                    ACVP_LOG_ERR("crypto module failed the operation");
+                    ACVP_LOG_ERR("Crypto module failed the operation");
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     json_value_free(r_tval);
                     goto err;
                 }
 
-                /*
-                 * Output the test case results using JSON
-                 */
+                // Output the test case results using JSON
                 rv = acvp_safe_primes_output_tc(ctx, &stc, r_tobj);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in KAS-FFC module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     acvp_safe_primes_release_tc(&stc);
                     json_value_free(r_tval);
                     goto err;
                 }
 
-                /*
-                 * Release all the memory associated with the test case
-                 */
+                // Release all the memory associated with the test case
                 acvp_safe_primes_release_tc(&stc);
 
-                /* Append the test response value to array */
+                // Append the test response value to array
                 json_array_append_value(r_tarr, r_tval);
             }
             break;
-        
+
         case ACVP_SUB_SAFE_PRIMES_KEYVER:
-            tests = json_object_get_array(groupobj, "tests");
+            rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             t_cnt = json_array_get_count(tests);
 
             for (j = 0; j < t_cnt; j++) {
@@ -377,18 +368,14 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_VERBOSE("Found new SAFE-PRIMES test vector...");
                 testval = json_array_get_value(tests, j);
                 testobj = json_value_get_object(testval);
-                tc_id = json_object_get_number(testobj, "tcId");
-                if (!tc_id) {
-                    ACVP_LOG_ERR("Server JSON missing 'tcId'");
-                    rv = ACVP_MISSING_ARG;
+
+                rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
-
-                test_type_str = json_object_get_string(groupobj, "testType");
-                if (!test_type_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'testType'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &test_type_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
@@ -398,27 +385,21 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-                /*
-                 * Create a new test case in the response
-                 */
+                // Create a new test case in the response
                 r_tval = json_value_init_object();
                 r_tobj = json_value_get_object(r_tval);
 
                 json_object_set_number(r_tobj, "tcId", tc_id);
 
 
-                x = json_object_get_string(testobj, "x");
-                if (!x) {
-                    ACVP_LOG_ERR("Server JSON missing 'x'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "x", &x);
+                if (rv != ACVP_SUCCESS) {
                     json_value_free(r_tval);
                     goto err;
                 }
 
-                y = json_object_get_string(testobj, "y");
-                if (!y) {
-                    ACVP_LOG_ERR("Server JSON missing 'y'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "y", &y);
+                if (rv != ACVP_SUCCESS) {
                     json_value_free(r_tval);
                     goto err;
                 }
@@ -427,7 +408,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                  * Setup the test case data that will be passed down to
                  * the crypto module.
                  */
-                 rv = acvp_safe_primes_init_tc(ctx, tg_id, tc_id, alg_id, 
+                 rv = acvp_safe_primes_init_tc(ctx, tg_id, tc_id, alg_id,
                                                &stc, dgm, x, y, test_type);
                 if (rv != ACVP_SUCCESS) {
                     acvp_safe_primes_release_tc(&stc);
@@ -435,32 +416,28 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                /* Process the current KAT test vector... */
+                // Process the current KAT test vector...
                 if ((cap->crypto_handler)(&tc)) {
                     acvp_safe_primes_release_tc(&stc);
-                    ACVP_LOG_ERR("crypto module failed the operation");
+                    ACVP_LOG_ERR("Crypto module failed the operation");
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     json_value_free(r_tval);
                     goto err;
                 }
 
-                /*
-                 * Output the test case results using JSON
-                 */
+                // Output the test case results using JSON
                 rv = acvp_safe_primes_output_tc(ctx, &stc, r_tobj);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in KAS-FFC module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     acvp_safe_primes_release_tc(&stc);
                     json_value_free(r_tval);
                     goto err;
                 }
 
-                /*
-                 * Release all the memory associated with the test case
-                 */
+                // Release all the memory associated with the test case
                 acvp_safe_primes_release_tc(&stc);
 
-                /* Append the test response value to array */
+                // Append the test response value to array
                 json_array_append_value(r_tarr, r_tval);
             }
             break;

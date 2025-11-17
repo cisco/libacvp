@@ -19,7 +19,7 @@
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
@@ -55,13 +55,13 @@ static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
         } else {
             json_object_set_string(tc_rsp, "iutHashZ", tmp);
         }
-        /* for KAS1, z is just iutZ. For KAS2, its the combined z. */
+        // for KAS1, z is just iutZ. For KAS2, its the combined z.
         if (stc->md == ACVP_NO_SHA) {
             json_object_set_string(tc_rsp, "z", tmp);
         } else {
             json_object_set_string(tc_rsp, "hashZ", tmp);
         }
-    } else { /* if role = responder */
+    } else { // if role = responder
         if (stc->scheme == ACVP_KAS_IFC_KAS2) {
             rv = acvp_bin_to_hexstr(stc->iut_ct_z, stc->iut_ct_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
             if (rv != ACVP_SUCCESS) {
@@ -133,7 +133,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
     rv = 0;
     int diff = 1, len = 0;
     unsigned char *merge = NULL;
-    /* For initiator tests, check the encapsulated Z. For responder tests, check the decapsulated Z. */
+    // For initiator tests, check the encapsulated Z. For responder tests, check the decapsulated Z.
     if (stc->kas_role == ACVP_KAS_IFC_INITIATOR) {
         if (stc->iut_ct_z_len == stc->provided_ct_z_len) {
             memcmp_s(stc->iut_ct_z, stc->iut_ct_z_len, stc->provided_ct_z, stc->provided_ct_z_len, &diff);
@@ -450,9 +450,9 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
     JSON_Array *tests, *r_tarr = NULL;
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
-    /* KAS key vals */
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
+    // KAS key vals
     const char *p = NULL, *q = NULL, *n = NULL, *d = NULL, *e = NULL, *dmp1 = NULL, *dmq1 = NULL, *iqmp = NULL;
     const char *server_n = NULL, *server_e = NULL;
     const char *pub_exp = NULL, *kas_role = NULL, *scheme_str = NULL, *hash = NULL;
@@ -469,7 +469,10 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
     ACVP_KAS_IFC_PARAM scheme = ACVP_KAS_IFC_KAS1;
     ACVP_KAS_IFC_KEYGEN key_gen = 0;
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, stc->cipher, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -483,10 +486,8 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, stc->cipher, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -494,10 +495,8 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
         r_tarr = json_object_get_array(r_gobj, "tests");
 
 
-        test_type_str = json_object_get_string(groupobj, "testType");
-        if (!test_type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "testType", &test_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -508,10 +507,8 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             goto err;
         }
 
-        key_gen_str = json_object_get_string(groupobj, "keyGenerationMethod");
-        if (!key_gen_str) {
-            ACVP_LOG_ERR("Server JSON missing 'keyGenerationMethod'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "keyGenerationMethod", &key_gen_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -522,24 +519,21 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             goto err;
         }
 
-        scheme_str = json_object_get_string(groupobj, "scheme");
-        if (!scheme_str) {
-            ACVP_LOG_ERR("Server JSON missing 'scheme'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "scheme", &scheme_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         strcmp_s("KAS1", 4, scheme_str, &diff);
         if (!diff) scheme = ACVP_KAS_IFC_KAS1;
         strcmp_s("KAS2", 4, scheme_str, &diff);
         if (!diff) scheme = ACVP_KAS_IFC_KAS2;
 
 
-        //If the user doesn't specify a hash function, neither does the server
+        // If the user doesn't specify a hash function, neither does the server
         if (cap && cap->cap.kas_ifc_cap && cap->cap.kas_ifc_cap->hash != ACVP_NO_SHA) {
-            hash = json_object_get_string(groupobj, "hashFunctionZ");
-            if (!hash) {
-                ACVP_LOG_ERR("Server JSON missing 'hashFunctionZ'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "hashFunctionZ", &hash);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -568,10 +562,8 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             }
         }
 
-        kas_role = json_object_get_string(groupobj, "kasRole");
-        if (!kas_role) {
-            ACVP_LOG_ERR("Server JSON missing 'kasRole'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "kasRole", &kas_role);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -580,17 +572,13 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
         strcmp_s("responder", 9, kas_role, &diff);
         if (!diff) role = ACVP_KAS_IFC_RESPONDER;
 
-        pub_exp = json_object_get_string(groupobj, "fixedPubExp");
-        if (!pub_exp) {
-            ACVP_LOG_ERR("Server JSON missing 'fixedPubExp'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, stc->cipher, groupobj, "fixedPubExp", &pub_exp);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
-        modulo = json_object_get_number(groupobj, "modulo");
-        if (!modulo) {
-            ACVP_LOG_ERR("Server JSON missing 'modulo'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_uint(ctx, stc->cipher, groupobj, "modulo", &modulo);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -605,7 +593,10 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("         modulo: %d", modulo);
         ACVP_LOG_VERBOSE("           role: %d", role);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, stc->cipher, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
@@ -613,15 +604,18 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("Found new KAS-IFC Component test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
+
+            rv = acvp_tc_json_get_int(ctx, stc->cipher, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             if (role == ACVP_KAS_IFC_RESPONDER || scheme == ACVP_KAS_IFC_KAS2) {
-                p = json_object_get_string(testobj, "iutP");
-                if (!p) {
-                    ACVP_LOG_ERR("Server JSON missing 'iutP'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "iutP", &p);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(p, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
                     ACVP_LOG_ERR("p too long, max allowed=(%d)",
                                   ACVP_KAS_IFC_STR_MAX);
@@ -629,12 +623,11 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                     goto err;
                 }
 
-                q = json_object_get_string(testobj, "iutQ");
-                if (!q) {
-                    ACVP_LOG_ERR("Server JSON missing 'iutQ'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "iutQ", &q);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(q, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
                     ACVP_LOG_ERR("q too long, max allowed=(%d)",
                                   ACVP_KAS_IFC_STR_MAX);
@@ -649,12 +642,11 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                     goto err;
                 }
 
-                n = json_object_get_string(testobj, "iutN");
-                if (!n) {
-                    ACVP_LOG_ERR("Server JSON missing 'iutN'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "iutN", &n);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(n, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
                     ACVP_LOG_ERR("n too long, max allowed=(%d)",
                                   ACVP_KAS_IFC_STR_MAX);
@@ -662,12 +654,11 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                     goto err;
                 }
 
-                e = json_object_get_string(testobj, "iutE");
-                if (!e) {
-                    ACVP_LOG_ERR("Server JSON missing 'iutE'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "iutE", &e);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(e, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) {
                     ACVP_LOG_ERR("e too long, max allowed=(%d)",
                                   ACVP_KAS_IFC_STR_MAX);
@@ -676,36 +667,35 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                 }
 
                 if (key_gen == ACVP_KAS_IFC_RSAKPG1_CRT || key_gen == ACVP_KAS_IFC_RSAKPG2_CRT) {
-                    dmp1 = json_object_get_string(testobj, "iutDmp1");
-                    if (!dmp1) {
-                        ACVP_LOG_ERR("Server JSON missing 'iutDmp1'");
-                        rv = ACVP_MISSING_ARG;
+                    rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "iutDmp1", &dmp1);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
+
                     if (strnlen_s(dmp1, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
                         ACVP_LOG_ERR("dmp1 too long, max allowed=(%d)",
                                     ACVP_KAS_IFC_STR_MAX);
                         rv = ACVP_INVALID_ARG;
                         goto err;
                     }
-                    dmq1 = json_object_get_string(testobj, "iutDmq1");
-                    if (!dmq1) {
-                        ACVP_LOG_ERR("Server JSON missing 'iutDmq1'");
-                        rv = ACVP_MISSING_ARG;
+
+                    rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "iutDmq1", &dmq1);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
+
                     if (strnlen_s(dmq1, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
                         ACVP_LOG_ERR("dmq1 too long, max allowed=(%d)",
                                     ACVP_KAS_IFC_STR_MAX);
                         rv = ACVP_INVALID_ARG;
                         goto err;
                     }
-                    iqmp = json_object_get_string(testobj, "iutIqmp");
-                    if (!iqmp) {
-                        ACVP_LOG_ERR("Server JSON missing 'iutIqmp'");
-                        rv = ACVP_MISSING_ARG;
+
+                    rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "iutIqmp", &iqmp);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
+
                     if (strnlen_s(iqmp, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
                         ACVP_LOG_ERR("iqmp too long, max allowed=(%d)",
                                     ACVP_KAS_IFC_STR_MAX);
@@ -715,22 +705,19 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                 }
 
                 if (key_gen != ACVP_KAS_IFC_RSAKPG1_CRT && key_gen != ACVP_KAS_IFC_RSAKPG2_CRT) {
-                    d = json_object_get_string(testobj, "iutD");
-                    if (!d) {
-                        ACVP_LOG_ERR("Server JSON missing 'iutD'");
-                        rv = ACVP_MISSING_ARG;
+                    rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "iutD", &d);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                 }
             }
 
             if (role == ACVP_KAS_IFC_INITIATOR || scheme == ACVP_KAS_IFC_KAS2) {
-                server_n = json_object_get_string(testobj, "serverN");
-                if (!server_n) {
-                    ACVP_LOG_ERR("Server JSON missing 'serverN'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "serverN", &server_n);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(server_n, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
                     ACVP_LOG_ERR("serverN too long, max allowed=(%d)",
                                   ACVP_KAS_IFC_STR_MAX);
@@ -738,12 +725,11 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                     goto err;
                 }
 
-                server_e = json_object_get_string(testobj, "serverE");
-                if (!server_e) {
-                    ACVP_LOG_ERR("Server JSON missing 'serverE'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "serverE", &server_e);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(server_e, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
                     ACVP_LOG_ERR("serverE too long, max allowed=(%d)",
                                   ACVP_KAS_IFC_STR_MAX);
@@ -753,12 +739,11 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             }
 
             if (role == ACVP_KAS_IFC_RESPONDER || scheme == ACVP_KAS_IFC_KAS2) {
-                server_ct_z = json_object_get_string(testobj, "serverC");
-                if (!server_ct_z) {
-                    ACVP_LOG_ERR("Server JSON missing 'serverC'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "serverC", &server_ct_z);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(server_ct_z, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
                     ACVP_LOG_ERR("serverC too long, max allowed=(%d)",
                                   ACVP_KAS_IFC_STR_MAX);
@@ -768,24 +753,23 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             }
 
             if (scheme == ACVP_KAS_IFC_KAS2) {
-                server_n = json_object_get_string(testobj, "serverN");
-                if (!server_n) {
-                    ACVP_LOG_ERR("Server JSON missing 'serverN'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "serverN", &server_n);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(server_n, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
                     ACVP_LOG_ERR("n too long, max allowed=(%d)",
                                 ACVP_KAS_IFC_STR_MAX);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-                server_e = json_object_get_string(testobj, "serverE");
-                if (!server_e) {
-                    ACVP_LOG_ERR("Server JSON missing 'serverE'");
-                    rv = ACVP_MISSING_ARG;
+
+                rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "serverE", &server_e);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(server_e, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) {
                     ACVP_LOG_ERR("e too long, max allowed=(%d)",
                                 ACVP_KAS_IFC_STR_MAX);
@@ -797,8 +781,8 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             /**
              * Z values can get messy. iutZ and z are the same for KAS1 cases, but for KAS2,
              * z is serverZ || iutZ. Ideally, serverZ would be specified separately in these cases
-             * for SSC since SSC should not really cover how the z values are combined in KAS2; handle 
-             * concatenation ourselves in library for convenience. 
+             * for SSC since SSC should not really cover how the z values are combined in KAS2; handle
+             * concatenation ourselves in library for convenience.
              */
             if (test_type == ACVP_KAS_IFC_TT_VAL) {
                 if (scheme == ACVP_KAS_IFC_KAS1) {
@@ -817,12 +801,11 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                 }
 
                 if (role == ACVP_KAS_IFC_INITIATOR  || scheme == ACVP_KAS_IFC_KAS2) {
-                    ct_z = json_object_get_string(testobj, "iutC");
-                    if (!ct_z) {
-                        ACVP_LOG_ERR("Server JSON missing 'iutC'");
-                        rv = ACVP_MISSING_ARG;
+                    rv = acvp_tc_json_get_string(ctx, stc->cipher, testobj, "iutC", &ct_z);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
+
                     if (strnlen_s(ct_z, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
                         ACVP_LOG_ERR("c too long, max allowed=(%d)",
                                       ACVP_KAS_IFC_STR_MAX);
@@ -863,9 +846,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             }
             ACVP_LOG_VERBOSE("              c: %s", ct_z);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -883,36 +864,32 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                 goto err;
             }
 
-            /* Process the current KAT test vector... */
+            // Process the current KAT test vector...
             if ((cap->crypto_handler)(tc)) {
                 acvp_kas_ifc_release_tc(stc);
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
                 goto err;
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             if (stc->test_type == ACVP_KAS_IFC_TT_VAL) {
                 rv = acvp_kas_ifc_ssc_val_output_tc(stc, r_tobj);
             } else {
                 rv = acvp_kas_ifc_ssc_output_tc(ctx, stc, r_tobj);
             }
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in KAS-IFC module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 acvp_kas_ifc_release_tc(stc);
                 json_value_free(r_tval);
                 goto err;
             }
 
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_kas_ifc_release_tc(stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);
@@ -929,7 +906,7 @@ err:
 ACVP_RESULT acvp_kas_ifc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;
@@ -951,24 +928,18 @@ ACVP_RESULT acvp_kas_ifc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.kas_ifc = &stc;
     memzero_s(&stc, sizeof(ACVP_KAS_IFC_TC));
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");

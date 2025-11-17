@@ -21,7 +21,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
@@ -206,9 +206,9 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_RSA_SIG_TC stc;
     ACVP_TEST_CASE tc;
@@ -231,7 +231,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
 
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
-        ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
+        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return ACVP_MALFORMED_JSON;
     }
 
@@ -262,24 +262,20 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
-        ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
+        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return ACVP_UNSUPPORTED_OP;
     }
 
     ACVP_LOG_VERBOSE("    RSA mode: %s", mode_str);
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct.");
+        ACVP_LOG_ERR("Failed to create JSON response struct. ");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -287,7 +283,10 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
     }
     json_object_set_string(r_vs, "mode", mode_str);
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -305,25 +304,20 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        /*
-         * Get a reference to the abstracted test case
-         */
-        sig_type_str = json_object_get_string(groupobj, "sigType");
-        if (!sig_type_str) {
-            ACVP_LOG_ERR("Missing sigType from rsa_siggen json");
-            rv = ACVP_MISSING_ARG;
+        // Get a reference to the abstracted test case
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "sigType", &sig_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         sig_type = read_sig_type(sig_type_str);
         if (!sig_type) {
             ACVP_LOG_ERR("Server JSON invalid 'sigType'");
@@ -331,10 +325,8 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
             goto err;
         }
 
-        mod = json_object_get_number(groupobj, "modulo");
-        if (!mod) {
-            ACVP_LOG_ERR("Server JSON missing 'modulo'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "modulo", &mod);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         if (mod != 1024 && mod != 1536 && mod != 2048 && mod != 3072 && mod != 4096) {
@@ -343,12 +335,11 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
             goto err;
         }
 
-        hash_alg_str = json_object_get_string(groupobj, "hashAlg");
-        if (!hash_alg_str) {
-            ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &hash_alg_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         hash_alg = acvp_lookup_hash_alg(hash_alg_str);
         if (!hash_alg || (alg_id == ACVP_RSA_SIGGEN && hash_alg == ACVP_SHA1)) {
             ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
@@ -356,13 +347,17 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
             goto err;
         }
 
-        salt_len = json_object_get_number(groupobj, "saltLen");
+        // Note: saltLen can be 0, which is valid for non-PSS modes
+        if (sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "saltLen", (int *)&salt_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+        }
 
         if (!old_rev && sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
-            mask_str = json_object_get_string(groupobj, "maskFunction");
-            if (!mask_str) {
-                ACVP_LOG_ERR("Server JSON missing 'maskFunction'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "maskFunction", &mask_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -375,13 +370,16 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
         }
 
         if (alg_id == ACVP_RSA_SIGVER) {
-            e_str = json_object_get_string(groupobj, "e");
-            n_str = json_object_get_string(groupobj, "n");
-            if (!e_str || !n_str) {
-                ACVP_LOG_ERR("Missing e|n from server json");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "e", &e_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "n", &n_str);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+
             if ((strnlen_s(e_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) ||
                 (strnlen_s(n_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX)) {
                 ACVP_LOG_ERR("server provided e or n of invalid length");
@@ -398,42 +396,39 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
             ACVP_LOG_VERBOSE("             mask: %s", mask_str);
         }
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
             ACVP_LOG_VERBOSE("Found new RSA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
-            if (!tc_id) {
-                ACVP_LOG_ERR("Missing tc_id");
-                rv = ACVP_MALFORMED_JSON;
+
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
             ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            /*
-             * Get a reference to the abstracted test case
-             */
+            // Get a reference to the abstracted test case
 
-            msg = json_object_get_string(testobj, "message");
-            if (!msg) {
-                ACVP_LOG_ERR("Missing 'message' from server json");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "message", &msg);
+            if (rv != ACVP_SUCCESS) {
                 json_value_free(r_tval);
                 goto err;
             }
+
             json_msglen = strnlen_s(msg, ACVP_RSA_MSGLEN_MAX + 1);
             if (json_msglen > ACVP_RSA_MSGLEN_MAX) {
                 ACVP_LOG_ERR("'message' too long in server json");
@@ -445,13 +440,12 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
 
 
             if (alg_id == ACVP_RSA_SIGVER) {
-                tmp_signature = json_object_get_string(testobj, "signature");
-                if (!tmp_signature) {
-                    ACVP_LOG_ERR("Missing 'signature' from server json");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "signature", &tmp_signature);
+                if (rv != ACVP_SUCCESS) {
                     json_value_free(r_tval);
                     goto err;
                 }
+
                 json_siglen = strnlen_s(tmp_signature, ACVP_RSA_SIGNATURE_MAX + 1);
                 if (json_siglen > ACVP_RSA_SIGNATURE_MAX) {
                     ACVP_LOG_ERR("'signature' too long in server json");
@@ -460,7 +454,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
                     goto err;
                 }
 
-                signature = calloc(mod/4 +1, sizeof(char));                    
+                signature = calloc(mod/4 +1, sizeof(char));
                 if (!signature) {
                     ACVP_LOG_ERR("Unable to malloc for signature");
                     rv = ACVP_MALLOC_FAIL;
@@ -485,10 +479,10 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
                                       n_str, msg, signature, salt, salt_len);
             free(signature);
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
-                    ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                    ACVP_LOG_ERR("Crypto module failed the operation");
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     json_value_free(r_tval);
                     goto err;
@@ -523,22 +517,18 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
                 free(tmp);
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             rv = acvp_rsa_sig_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 json_value_free(r_tval);
                 goto err;
             }
 
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_rsa_siggen_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

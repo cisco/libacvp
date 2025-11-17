@@ -37,7 +37,7 @@ int get_nid_for_curve(ACVP_EC_CURVE curve) {
     case ACVP_EC_CURVE_P224:
         return NID_secp224r1;
     case ACVP_EC_CURVE_P256:
-        return NID_X9_62_prime256v1; /* OpenSSL omits the secp names since these are the same thing */
+        return NID_X9_62_prime256v1; // OpenSSL omits the secp names since these are the same thing
     case ACVP_EC_CURVE_P384:
         return NID_secp384r1;
     case ACVP_EC_CURVE_P521:
@@ -291,7 +291,7 @@ const char *get_provider_version(const char *provider_name) {
     for (i = 0; i < sk_OSSL_PROVIDER_num(providers); i++) {
         prov = sk_OSSL_PROVIDER_value(providers, i);
 
-        /* Get names and versions for each provider, compare name against what we are looking for */
+        // Get names and versions for each provider, compare name against what we are looking for
         params[0] = OSSL_PARAM_construct_utf8_ptr(OSSL_PROV_PARAM_NAME, &name, 0);
         params[1] = OSSL_PARAM_construct_utf8_ptr(OSSL_PROV_PARAM_VERSION, &version, 0);
         params[2] = OSSL_PARAM_construct_end();
@@ -310,9 +310,9 @@ end:
     if (providers) sk_OSSL_PROVIDER_free(providers);
     return ret;
 }
-/* End OpenSSL code */
+// End OpenSSL code
 
-/* Converts a provider version string in the format MAJOR.MINOR.PATCH to an integer in the format (major * 1000000) + (minor * 10000) + patch */
+// Converts a provider version string in the format MAJOR.MINOR.PATCH to an integer in the format (major * 1000000) + (minor * 10000) + patch
 int provider_ver_str_to_int(const char *str) {
     int major = 0, minor = 0, patch = 0, result = 0;
 
@@ -322,11 +322,11 @@ int provider_ver_str_to_int(const char *str) {
 
     result = sscanf(str, "%d.%d.%d", &major, &minor, &patch);
 
-    if (result != 3) { /* Check if the parsing was successful */
+    if (result != 3) { // Check if the parsing was successful
         return -1;
     }
 
-    /* Ensure that the version components are within a valid range */
+    // Ensure that the version components are within a valid range
     if (major < 0 || major > 99) {
         return -1;
     }

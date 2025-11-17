@@ -14,7 +14,7 @@
 #include "app_lcl.h"
 #include "safe_lib.h"
 
-//TODO: This shouldn't need to be set
+// TODO: This shouldn't need to be set
 char value[JSON_STRING_LENGTH];
 
 void print_version_info(APP_CONFIG *cfg) {

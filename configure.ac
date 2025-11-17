@@ -13,9 +13,9 @@
 #
 
 m4_define([libacvp_major_version], [2])
-m4_define([libacvp_minor_version], [2])
+m4_define([libacvp_minor_version], [3])
 m4_define([libacvp_micro_version], [0])
-AC_INIT([libacvp], [libacvp_major_version.libacvp_minor_version.libacvp_micro_version], [https://github.com/cisco/libacvp/issues])
+AC_INIT([libacvp],[libacvp_major_version.libacvp_minor_version.libacvp_micro_version],[https://github.com/cisco/libacvp/issues])
 
 # Safety checks in case user overwritten --srcdir
 SUBDIRS=src
@@ -35,8 +35,15 @@ AM_INIT_AUTOMAKE([subdir-objects -Wall -Werror foreign])
 
 # Check for C compiler
 AC_PROG_CC
+# Require C99 or newer standard support
+AS_IF([test "x$ac_cv_prog_cc_c99" = "xno"],
+      [AC_MSG_ERROR([C99 or newer compiler support is required])])
+
+# Helper to test if compiler accepts -c and -o together
 AM_PROG_CC_C_O
+# Required macro for using archiver
 AM_PROG_AR
+# Initiate libtool - runs many host identification checks, etc
 LT_INIT
 # We can add more checks in this section
 AC_CANONICAL_HOST
@@ -69,6 +76,7 @@ iut_cflags=""
 iut_ldflags=""
 iut_lib_flags=""
 iut_lib_name=""
+AM_CFLAGS=""
 
 # Option to disable app builds
 AC_ARG_ENABLE([app],
@@ -136,11 +144,23 @@ AC_ARG_ENABLE([gcov],
 [enable_gcov=false])
 
 # Unit testing
+AC_ARG_ENABLE([unit-tests],
+    [AS_HELP_STRING([--enable-unit-tests],
+    [Flag to indicate that the unit tests should be built in the test directory])],
+    [ut="$enableval"],
+    [enable_ut=false])
+
+# Backwards compatibility argument - deprecated
 AC_ARG_WITH([criterion-dir],
     [AS_HELP_STRING([--with-criterion-dir],
-    [location of Criterion install folder])],
-    [criteriondir="$withval"],
-    [with_criteriondir="no"])
+    [DEPRECATED: Use --enable-unit-tests instead. This option is kept for backwards compatibility.])],
+    [
+        AC_MSG_WARN([--with-criterion-dir is deprecated and will be removed in a future version. Please use --enable-unit-tests instead.])
+        criteriondir="$withval"
+        ut="yes"
+        enable_ut=true
+    ],
+    [])
 
 # Disable SSP, in case a platform does not support it
 AC_MSG_CHECKING([disable ssp])
@@ -171,14 +191,13 @@ AC_ARG_ENABLE([wrapper-library],
 acvp_app_iut=""
 ssl_dir=""
 iut_specified=0;
-# SSL dir only used if building app too 
+# ssl installation directory path
+AC_ARG_WITH([ssl-dir],
+    [AS_HELP_STRING([--with-ssl-dir],
+    [location of OpenSSL install folder])],
+    [ssl_dir="$withval"; use_openssl="yes"],
+    [])
 if test "x$disable_app" = "xno" ; then
-    # ssl installation directory path
-    AC_ARG_WITH([ssl-dir],
-        [AS_HELP_STRING([--with-ssl-dir],
-        [location of OpenSSL install folder])],
-        [ssl_dir="$withval"; use_openssl="yes"],
-        [])
 
     AC_ARG_WITH([jent-dir],
         [AS_HELP_STRING([--with-jent-dir],
@@ -211,9 +230,7 @@ fi
 # End reading arguments. Begin testing presence of libs and setting certain make vars. #
 ########################################################################################
 
-##
 # Set the CFLAGS
-##
 CFLAGS="$CFLAGS -Wall -D_FORTIFY_SOURCE=2"
 
 # Hold onto the LIBS variable before AC_SEARCH_LIBS modifies it
@@ -232,6 +249,10 @@ fi
 if test "x$enable_offline" != "xfalse"; then
     AC_SEARCH_LIBS([gzdopen], [z], [lib_dependencies="${lib_dependencies} -lz "], [], [])
 fi
+
+# Check for math library (used for certain functions in the library/app)
+AC_SEARCH_LIBS([floor], [m], [lib_dependencies="${lib_dependencies} -lm "],
+               [AC_MSG_FAILURE([Cannot find math library (libm) - required])], [])
 
 if test "x$disable_app" = "xno" ; then
     ##########################################################
@@ -272,11 +293,6 @@ if test "x$disable_app" = "xno" ; then
             fi
             AC_MSG_RESULT(yes)
         done
-
-        #if ssl_dir is set, but acvp_app_iut is not openssl, then set the additional dependency flags
-        if test "x$ssl_dir" != "x" && test "x$acvp_app_iut" != "xopenssl"; then
-            lib_dependencies="${lib_dependencies} -L$ssl_dir/lib -L$ssl_dir/lib64 -lssl -lcrypto"
-        fi
 
         IFS="$tmp_ifs"
         tmp_cflags="$CFLAGS"
@@ -335,6 +351,11 @@ if test "x$disable_app" = "xno" ; then
     ######################
     # End checks for IUT #
     ######################
+fi
+
+#if ssl_dir is set, but acvp_app_iut is not openssl (or we have app build disabled), then set the additional dependency flags
+if test "x$ssl_dir" != "x" && test "x$acvp_app_iut" != "xopenssl"; then
+    lib_dependencies="${lib_dependencies} -L$ssl_dir/lib -L$ssl_dir/lib64 -lssl -lcrypto"
 fi
 
 if test "x$disable_lib" = "xyes" ; then
@@ -419,8 +440,13 @@ else
 fi
 
 if test "x$enable_cflags" != "xfalse" ; then
-    CFLAGS="$CFLAGS -Wcast-align -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels  -Wformat -Wformat-extra-args  -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Wimport -Winvalid-pch -Wmain -Wmissing-braces  -Wmissing-format-attribute -Wmissing-noreturn  -Wmultichar -Wnested-externs -Wnonnull -Wparentheses -Wpointer-arith -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wstrict-prototypes -Wswitch -Wswitch-default -Wtrigraphs  -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable -Wwrite-strings -Wno-pointer-sign  -Wcast-qual -Wfloat-equal  -Wuninitialized -Winline -Wno-error=cast-align -Wbad-function-cast  -Wswitch-enum -Wsystem-headers -Wunused-but-set-variable -Wextra"
+    AM_CFLAGS="$AM_CFLAGS -Wcast-align -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels  -Wformat -Wformat-extra-args  -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Wimport -Winvalid-pch -Wmain -Wmissing-braces  -Wmissing-format-attribute -Wmissing-noreturn  -Wmultichar -Wnested-externs -Wnonnull -Wparentheses -Wpointer-arith -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wstrict-prototypes -Wswitch -Wswitch-default -Wtrigraphs  -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable -Wwrite-strings -Wno-pointer-sign  -Wcast-qual -Wfloat-equal  -Wuninitialized -Winline -Wno-error=cast-align -Wbad-function-cast  -Wswitch-enum -Wsystem-headers -Wunused-but-set-variable -Wextra"
+    # Disable GCC-specific warning caused by "suggest-attribute=format" since we use many different compilers and GCC is being presumptuous
+    if test "x$GCC" = "xyes"; then
+        AM_CFLAGS="$AM_CFLAGS -Wno-suggest-attribute=format"
+    fi
 fi
+AC_SUBST([AM_CFLAGS])
 
 if test "x$enable_gcov" != "xfalse" ; then
     CFLAGS="$CFLAGS --coverage"
@@ -432,12 +458,8 @@ if test "x$enable_gcov" != "xfalse" ; then
   AC_SUBST(CLEANFILES)
 fi
 
-if test "x$with_criterion" != "xno" ; then
-    AC_SUBST([CRITERION_CFLAGS], "-I$criteriondir/include")
-    AC_SUBST([CRITERION_LDFLAGS], "-L$criteriondir/lib -lcriterion")
-fi
 
-AM_CONDITIONAL([UNIT_TEST_SUPPORTED], [test "x$with_criteriondir" != "xno"])
+AM_CONDITIONAL([UNIT_TEST_SUPPORTED], [test "x$enable_ut" != "xfalse"])
 
 AM_CONDITIONAL([BUILD_APP_AS_LIB], [test "x$wrap_lib" != "xfalse"])
 

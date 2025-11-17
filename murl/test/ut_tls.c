@@ -21,7 +21,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <murl/murl.h>
 #include "parson.h"
 #include "ut_lcl.h"
-#include <sys/types.h> 
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 
@@ -45,8 +45,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /*
  * Some globals for our little internal TLS server that's used
  * for some test cases.  We can only handle a single incoming
- * connection at any time, limiting test cases to be 
- * done sequentially. 
+ * connection at any time, limiting test cases to be
+ * done sequentially.
  */
 static int server_running;
 static char *server_cert;
@@ -70,9 +70,9 @@ static int create_server_connection()
      * Lookup the local address we'll use to bind too
      */
     memset(&hints, '\0', sizeof(struct addrinfo));
-    hints.ai_family = server_ip_family; 
+    hints.ai_family = server_ip_family;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE; 
+    hints.ai_flags = AI_PASSIVE;
     snprintf(portstr, sizeof(portstr), "%u", SERVER_PORT);
     rc = getaddrinfo(NULL, portstr, &hints, &aiptr);
     if (rc) {
@@ -99,7 +99,7 @@ static int create_server_connection()
             exit(1);
         }
 	/*
-	 * Bind to the socket 
+	 * Bind to the socket
 	 */
         rc = bind(server_sock, ai->ai_addr, ai->ai_addrlen);
         if (rc == -1) {
@@ -145,7 +145,7 @@ static void* tls_server_thread (void *arg)
     /*
      * Create a TLS server context.  Here we use the SSLv23 method.
      * This method will attempt to negotiate the highest TLS version
-     * supported by both the client and the server.  
+     * supported by both the client and the server.
      * If you want to enforce a specific TLS version, then use one
      * of the other methods, such as TLSv12_server_method().
      */
@@ -157,8 +157,8 @@ static void* tls_server_thread (void *arg)
     }
     SSL_CTX_set_mode(ssl_ctx, SSL_MODE_AUTO_RETRY);
     /*
-     * Specify the certificate chain the server will send during the 
-     * TLS handshake. 
+     * Specify the certificate chain the server will send during the
+     * TLS handshake.
      */
     if (SSL_CTX_use_certificate_chain_file(ssl_ctx, server_cert) != 1) {
 	printf("Failed to load server certificate chain\n");
@@ -176,8 +176,8 @@ static void* tls_server_thread (void *arg)
 #if 0
     /*
      * The following is optional, but required when doing TLS
-     * client authentication.  This specifies the trusted root certificates 
-     * that will be used for verifying the TLS peer.  
+     * client authentication.  This specifies the trusted root certificates
+     * that will be used for verifying the TLS peer.
      */
     if (!SSL_CTX_load_verify_locations(ssl_ctx, CACERTS, NULL)) {
 	printf("Failed to load trusted root certs\n");
@@ -201,7 +201,7 @@ static void* tls_server_thread (void *arg)
     /*
      * Now that we have everything ready, let's start waiting for
      * a client to contact us.  Normally we might using a pthread
-     * or some other construct to avoid blocking on the main 
+     * or some other construct to avoid blocking on the main
      * thread while waiting for an incoming connection.  This
      * code is simply a contrived example, we will wait on the
      * main thread for an incoming connection.
@@ -221,7 +221,7 @@ static void* tls_server_thread (void *arg)
     rv = SSL_read(ssl, buf, sizeof(buf));
     if (rv > 0) {
 	/*
-	 * make sure the data is null terminated 
+	 * make sure the data is null terminated
 	 */
 	buf[rv] = 0;
 	printf("Received text: %s\n", buf);
@@ -237,7 +237,7 @@ static void* tls_server_thread (void *arg)
     }
 
     /*
-     * When your application is done with the TLS session, 
+     * When your application is done with the TLS session,
      * invoke SSL_shutdown to close the session.  Also be
      * sure to free any resources you allocated for the context.
      */
@@ -289,7 +289,7 @@ static void test_murl_stop_server(void)
 
 /*
  * This function performs an HTTP GET using root certs
- * not bound to the server certificate.  It is expected 
+ * not bound to the server certificate.  It is expected
  * that the TLS connectino will fail.
  *
  * Returns zero on success, non-zero on failure
@@ -332,7 +332,7 @@ static int test_murl_untrusted_server(void)
 
 /*
  * This function performs an HTTP GET using a server that
- * doesn't have the key usage set properly in it's 
+ * doesn't have the key usage set properly in it's
  * certificate.  Murl should fail the TLS connection.
  *
  * Returns zero on success, non-zero on failure
@@ -513,8 +513,8 @@ static int test_murl_chain_depth(void)
 }
 
 /*
- * This function performs an HTTP GET using a local server 
- * listening on an IPv6 address. 
+ * This function performs an HTTP GET using a local server
+ * listening on an IPv6 address.
  *
  * Returns zero on success, non-zero on failure
  */
@@ -576,7 +576,7 @@ static int test_murl_ipv6_address(void)
     }
 
     /*
-     * Get the HTTP reponse status code from the server
+     * Get the HTTP response status code from the server
      * Our little dummy server should always return a 404.
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);

@@ -18,6 +18,7 @@ tmp_sources += implementations/openssl/3/iut.c \
                implementations/openssl/3/registrations/non_fips.c \
                implementations/openssl/3/registrations/fp_340.c \
                implementations/openssl/3/registrations/fp_350.c \
+               implementations/openssl/3/registrations/fp_4X.c \
                implementations/openssl/3/iut_aes.c \
                implementations/openssl/3/iut_cmac.c \
                implementations/openssl/3/iut_des.c \
@@ -30,6 +31,7 @@ tmp_sources += implementations/openssl/3/iut.c \
                implementations/openssl/3/iut_kdf.c \
                implementations/openssl/3/iut_kda.c \
                implementations/openssl/3/iut_kmac.c \
+               implementations/openssl/3/iut_cshake.c \
                implementations/openssl/3/iut_rsa.c \
                implementations/openssl/3/iut_hash.c \
                implementations/openssl/3/iut_ml_dsa.c \
@@ -53,7 +55,7 @@ bin_PROGRAMS = acvp_app
 
 acvp_app_includedir=$(includedir)/acvp
 acvp_app_SOURCES = ${tmp_sources}
-acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(IUT_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS)
+acvp_app_CFLAGS = $(AM_CFLAGS) -g -fPIE $(LIBACVP_CFLAGS) $(IUT_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS)
 acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) $(IUT_LDFLAGS)
 acvp_app_LDADD =  $(IUT_LIBS) $(ADDL_LIB_DEPENDENCIES)
 
@@ -71,8 +73,8 @@ lib_LTLIBRARIES = libacvp_app.la
 libacvp_app_includedir=${includedir}/acvp
 libacvp_app_la_SOURCES = ${tmp_sources}
 
-AM_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(IUT_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS) -DACVP_APP_LIB_WRAPPER
-libacvp_app_la_LIBADD = $(LIBACVP_LDFLAGS) $(IUT_LDFLAGS)
+AM_CFLAGS+= -g -fPIE $(LIBACVP_CFLAGS) $(IUT_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS) -DACVP_APP_LIB_WRAPPER
+libacvp_app_la_LIBADD = $(LIBACVP_LDFLAGS) $(IUT_LDFLAGS) $(ADDL_LIB_DEPENDENCIES)
 
 libacvp_app_include_HEADERS = $(top_srcdir)/app/libacvp_app.h
 

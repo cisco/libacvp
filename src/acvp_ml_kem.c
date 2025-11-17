@@ -19,7 +19,7 @@
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
@@ -59,7 +59,8 @@ static ACVP_RESULT acvp_ml_kem_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         json_object_set_string(tc_rsp, "dk", tmp);
         break;
     case ACVP_SUB_ML_KEM_XCAP:
-        if (stc->type == ACVP_ML_KEM_TESTTYPE_AFT) {
+        switch (stc->function) {
+            case ACVP_ML_KEM_FUNCTION_ENCAPSULATE:
             memzero_s(tmp, ACVP_ML_KEM_TMP_STR_MAX);
             rv = acvp_bin_to_hexstr(stc->c, stc->c_len, tmp, ACVP_ML_KEM_TMP_STR_MAX);
             if (rv != ACVP_SUCCESS) {
@@ -67,14 +68,27 @@ static ACVP_RESULT acvp_ml_kem_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
                 goto end;
             }
             json_object_set_string(tc_rsp, "c", tmp);
+            // fallthru
+        case ACVP_ML_KEM_FUNCTION_DECAPSULATE:
+		    memzero_s(tmp, ACVP_ML_KEM_TMP_STR_MAX);
+		    rv = acvp_bin_to_hexstr(stc->k, stc->k_len, tmp, ACVP_ML_KEM_TMP_STR_MAX);
+		    if (rv != ACVP_SUCCESS) {
+		        ACVP_LOG_ERR("Hex conversion failure (k)");
+		        goto end;
+		    }
+		    json_object_set_string(tc_rsp, "k", tmp);
+            break;
+        case ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK:
+        case ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK:
+            json_object_set_boolean(tc_rsp, "testPassed", stc->keycheck_disposition);
+            rv = ACVP_SUCCESS;
+            break;
+        case ACVP_ML_KEM_FUNCTION_NONE:
+        case ACVP_ML_KEM_FUNCTION_MAX:
+        default:
+            rv = ACVP_INTERNAL_ERR;
+            break;
         }
-        memzero_s(tmp, ACVP_ML_KEM_TMP_STR_MAX);
-        rv = acvp_bin_to_hexstr(stc->k, stc->k_len, tmp, ACVP_ML_KEM_TMP_STR_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (k)");
-            goto end;
-        }
-        json_object_set_string(tc_rsp, "k", tmp);
         break;
     default:
         rv = ACVP_INTERNAL_ERR;
@@ -129,7 +143,7 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
     stc->param_set = param_set;
     stc->function = function;
 
-    /* dk and ek are outputs for keygen, and inputs for encap/decap */
+    // dk and ek are outputs for keygen, and inputs for encap/decap
     stc->dk = calloc(ACVP_ML_KEM_TMP_BYTE_MAX, sizeof(unsigned char));
     if (!stc->dk) {
         goto err;
@@ -141,8 +155,7 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
     }
 
     /**
-     * For Keygen, we have d and z values. for encap/decap, AFT has ek and m values, while VAL
-     * has dk and c values. dk is constant across a test group, but we include it in every case
+     * Load additional values by operation type
      */
     if (cipher == ACVP_ML_KEM_KEYGEN) {
         stc->d = calloc(ACVP_ML_KEM_TMP_BYTE_MAX, sizeof(unsigned char));
@@ -174,13 +187,8 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
             goto err;
         }
 
-        if (type == ACVP_ML_KEM_TESTTYPE_AFT) {
-            rv = acvp_hexstr_to_bin(ek, stc->ek, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->ek_len));
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (ek)");
-                return rv;
-            }
-
+        switch (function) {
+        case ACVP_ML_KEM_FUNCTION_ENCAPSULATE:
             stc->m = calloc(ACVP_ML_KEM_TMP_BYTE_MAX, sizeof(unsigned char));
             if (!stc->m) {
                 goto err;
@@ -190,18 +198,33 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Hex conversion failure (m)");
                 return rv;
             }
-        } else {
-            rv = acvp_hexstr_to_bin(dk, stc->dk, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->dk_len));
+            // fallthru
+        case ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK:
+            rv = acvp_hexstr_to_bin(ek, stc->ek, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->ek_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (dk)");
+                ACVP_LOG_ERR("Hex conversion failure (ek)");
                 return rv;
             }
-
+            break;
+        case ACVP_ML_KEM_FUNCTION_DECAPSULATE:
             rv = acvp_hexstr_to_bin(c, stc->c, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->c_len));
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (c)");
                 return rv;
             }
+            // fallthru
+        case ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK:
+            rv = acvp_hexstr_to_bin(dk, stc->dk, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->dk_len));
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex conversion failure (dk)");
+                return rv;
+            }
+            break;
+        case ACVP_ML_KEM_FUNCTION_NONE:
+        case ACVP_ML_KEM_FUNCTION_MAX:
+        default:
+            ACVP_LOG_ERR("Bad function type (%d)", function);
+            return rv;
         }
     }
 
@@ -222,11 +245,17 @@ static ACVP_ML_KEM_TESTTYPE read_test_type(const char *str) {
     strcmp_s("VAL", 3, str, &diff);
     if (!diff) return ACVP_ML_KEM_TESTTYPE_VAL;
 
-    return 0;
+    return ACVP_ML_KEM_TESTTYPE_NONE;
 }
 
 static ACVP_ML_KEM_FUNCTION read_function(const char *str) {
     int diff = 1;
+
+    strcmp_s("encapsulationKeyCheck", 21, str, &diff);
+    if (!diff) return ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK;
+
+    strcmp_s("decapsulationKeyCheck", 21, str, &diff);
+    if (!diff) return ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK;
 
     strcmp_s("encapsulation", 13, str, &diff);
     if (!diff) return ACVP_ML_KEM_FUNCTION_ENCAPSULATE;
@@ -234,7 +263,7 @@ static ACVP_ML_KEM_FUNCTION read_function(const char *str) {
     strcmp_s("decapsulation", 13, str, &diff);
     if (!diff) return ACVP_ML_KEM_FUNCTION_DECAPSULATE;
 
-    return 0;
+    return ACVP_ML_KEM_FUNCTION_NONE;
 }
 
 ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
@@ -255,9 +284,9 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap = NULL;
     ACVP_ML_KEM_TC stc;
     ACVP_TEST_CASE tc;
@@ -279,7 +308,7 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
-        ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
+        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return ACVP_MALFORMED_JSON;
     }
 
@@ -299,19 +328,19 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
-        ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
+        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return ACVP_UNSUPPORTED_OP;
     }
     ACVP_LOG_VERBOSE("    ML-KEM mode: %s", mode_str);
 
-    /* Create ACVP array for response */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct.");
+        ACVP_LOG_ERR("Failed to create JSON response struct. ");
         return rv;
     }
 
-    /* Start to build the JSON response */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -319,10 +348,8 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_object_set_string(r_vs, "mode", mode_str);
 
-    groups = json_object_get_array(obj, "testGroups");
-    if (!groups) {
-        ACVP_LOG_ERR("Missing testGroups from server JSON");
-        rv = ACVP_MALFORMED_JSON;
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
         goto err;
     }
     g_cnt = json_array_get_count(groups);
@@ -338,20 +365,16 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tg_id = json_object_get_number(groupobj, "tgId");
-        if (!tg_id) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "tgId", &tg_id);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tg_id);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        type_str = json_object_get_string(groupobj, "testType");
-        if (!type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         type = read_test_type(type_str);
@@ -361,10 +384,8 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        param_set_str = json_object_get_string(groupobj, "parameterSet");
-        if (!param_set_str) {
-            ACVP_LOG_ERR("Server JSON missing 'parameterSet'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "parameterSet", &param_set_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         param_set = acvp_lookup_ml_kem_param_set(param_set_str);
@@ -375,10 +396,8 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         if (alg_id == ACVP_ML_KEM_XCAP) {
-            func_str = json_object_get_string(groupobj, "function");
-            if (!func_str) {
-                ACVP_LOG_ERR("Server JSON missing 'function'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "function", &func_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
             function = read_function(func_str);
@@ -397,8 +416,15 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         if (func_str) {
             ACVP_LOG_VERBOSE("             function: %s", func_str);
         }
+        if (dk_str) {
+            ACVP_LOG_VERBOSE("                   dk: %s", dk_str);
+        }
 
-        tests = json_object_get_array(groupobj, "tests");
+
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
             ACVP_LOG_ERR("Test array count is zero");
@@ -410,51 +436,53 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("Found new ML-KEM test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_uint(ctx, alg_id, testobj, "tcId", &tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             if (alg_id == ACVP_ML_KEM_KEYGEN) {
-                d_str = json_object_get_string(testobj, "d");
-                if (!d_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'd'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "d", &d_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
-                z_str = json_object_get_string(testobj, "z");
-                if (!z_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'z'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "z", &z_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
-            } else { /* else is encap/decap */
-                if (type == ACVP_ML_KEM_TESTTYPE_AFT) {
-                    ek_str = json_object_get_string(testobj, "ek");
-                    if (!ek_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'ek'");
-                        rv = ACVP_MISSING_ARG;
+            } else { // else is encap/decap/keycheck
+                switch (function) {
+                case ACVP_ML_KEM_FUNCTION_ENCAPSULATE:
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "m", &m_str);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
-
-                    m_str = json_object_get_string(testobj, "m");
-                    if (!m_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'm'");
-                        rv = ACVP_MISSING_ARG;
+                    // fallthru
+                case ACVP_ML_KEM_FUNCTION_ENC_KEYCHECK:
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "ek", &ek_str);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
-                } else {
-                    dk_str = json_object_get_string(testobj, "dk");
-                    if (!dk_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'dk'");
-                        rv = ACVP_MISSING_ARG;
+                    break;
+                case ACVP_ML_KEM_FUNCTION_DECAPSULATE:
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "c", &c_str);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
-
-                    c_str = json_object_get_string(testobj, "c");
-                    if (!c_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'c'");
-                        rv = ACVP_MISSING_ARG;
+                    // fallthru
+                case ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK:
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "dk", &dk_str);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
+                    break;
+                case ACVP_ML_KEM_FUNCTION_NONE:
+                case ACVP_ML_KEM_FUNCTION_MAX:
+                default:
+                    ACVP_LOG_ERR("Invalid ML-KEM Function (%d)", function);
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
                 }
             }
 
@@ -479,7 +507,7 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_VERBOSE("                   dk: %s", dk_str);
             }
 
-            /* Create a new test case in the response */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -488,10 +516,10 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_ml_kem_init_tc(ctx, &stc, alg_id, tc_id, tg_id, type, param_set, function,
                                   d_str, z_str, dk_str, ek_str, m_str, c_str);
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
-                    ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                    ACVP_LOG_ERR("Crypto module failed the operation");
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     json_value_free(r_tval);
                     goto err;
@@ -502,18 +530,18 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Output the test case results using JSON */
+            // Output the test case results using JSON
             rv = acvp_ml_kem_output_tc(ctx, alg_id, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 json_value_free(r_tval);
                 goto err;
             }
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
 
-            /* Release all the memory associated with the test case */
+            // Release all the memory associated with the test case
             acvp_ml_kem_release_tc(&stc);
         }
         json_array_append_value(r_garr, r_gval);

@@ -98,6 +98,7 @@ host_triplet = @host@
 @APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/registrations/non_fips.c \
 @APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/registrations/fp_340.c \
 @APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/registrations/fp_350.c \
+@APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/registrations/fp_4X.c \
 @APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/iut_aes.c \
 @APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/iut_cmac.c \
 @APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/iut_des.c \
@@ -110,6 +111,7 @@ host_triplet = @host@
 @APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/iut_kdf.c \
 @APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/iut_kda.c \
 @APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/iut_kmac.c \
+@APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/iut_cshake.c \
 @APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/iut_rsa.c \
 @APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/iut_hash.c \
 @APP_IUT_OPENSSL_3_TRUE@               implementations/openssl/3/iut_ml_dsa.c \
@@ -126,6 +128,7 @@ host_triplet = @host@
 @BUILD_APP_AS_LIB_FALSE@@FORCE_STATIC_TRUE@am__append_4 = -all-static
 @BUILDING_OFFLINE_FALSE@@BUILD_APP_AS_LIB_FALSE@am__append_5 = $(LIBCURL_LDFLAGS)
 @BUILDING_OFFLINE_FALSE@@BUILD_APP_AS_LIB_FALSE@am__append_6 = $(LIBCURL_CFLAGS)
+@BUILD_APP_AS_LIB_TRUE@am__append_7 = -g -fPIE $(LIBACVP_CFLAGS) $(IUT_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS) -DACVP_APP_LIB_WRAPPER
 subdir = app
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -173,6 +176,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_la_DEPENDENCIES =  \
 @BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) \
 @BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1)
 am__libacvp_app_la_SOURCES_DIST = app_main.c app_cli.c app_utils.c \
 	app_lcl.h totp/totp.c totp/hmac_sha256.c totp/sha256.c \
@@ -185,6 +189,7 @@ am__libacvp_app_la_SOURCES_DIST = app_main.c app_cli.c app_utils.c \
 	implementations/openssl/3/registrations/non_fips.c \
 	implementations/openssl/3/registrations/fp_340.c \
 	implementations/openssl/3/registrations/fp_350.c \
+	implementations/openssl/3/registrations/fp_4X.c \
 	implementations/openssl/3/iut_aes.c \
 	implementations/openssl/3/iut_cmac.c \
 	implementations/openssl/3/iut_des.c \
@@ -197,6 +202,7 @@ am__libacvp_app_la_SOURCES_DIST = app_main.c app_cli.c app_utils.c \
 	implementations/openssl/3/iut_kdf.c \
 	implementations/openssl/3/iut_kda.c \
 	implementations/openssl/3/iut_kmac.c \
+	implementations/openssl/3/iut_cshake.c \
 	implementations/openssl/3/iut_rsa.c \
 	implementations/openssl/3/iut_hash.c \
 	implementations/openssl/3/iut_ml_dsa.c \
@@ -215,6 +221,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/registrations/non_fips.lo \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/registrations/fp_340.lo \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/registrations/fp_350.lo \
+@APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/registrations/fp_4X.lo \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/iut_aes.lo \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/iut_cmac.lo \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/iut_des.lo \
@@ -227,6 +234,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/iut_kdf.lo \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/iut_kda.lo \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/iut_kmac.lo \
+@APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/iut_cshake.lo \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/iut_rsa.lo \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/iut_hash.lo \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/iut_ml_dsa.lo \
@@ -258,6 +266,7 @@ am__acvp_app_SOURCES_DIST = app_main.c app_cli.c app_utils.c app_lcl.h \
 	implementations/openssl/3/registrations/non_fips.c \
 	implementations/openssl/3/registrations/fp_340.c \
 	implementations/openssl/3/registrations/fp_350.c \
+	implementations/openssl/3/registrations/fp_4X.c \
 	implementations/openssl/3/iut_aes.c \
 	implementations/openssl/3/iut_cmac.c \
 	implementations/openssl/3/iut_des.c \
@@ -270,6 +279,7 @@ am__acvp_app_SOURCES_DIST = app_main.c app_cli.c app_utils.c app_lcl.h \
 	implementations/openssl/3/iut_kdf.c \
 	implementations/openssl/3/iut_kda.c \
 	implementations/openssl/3/iut_kmac.c \
+	implementations/openssl/3/iut_cshake.c \
 	implementations/openssl/3/iut_rsa.c \
 	implementations/openssl/3/iut_hash.c \
 	implementations/openssl/3/iut_ml_dsa.c \
@@ -286,6 +296,7 @@ am__acvp_app_SOURCES_DIST = app_main.c app_cli.c app_utils.c app_lcl.h \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/registrations/acvp_app-non_fips.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/registrations/acvp_app-fp_340.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/registrations/acvp_app-fp_350.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/registrations/acvp_app-fp_4X.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/acvp_app-iut_aes.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/acvp_app-iut_cmac.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/acvp_app-iut_des.$(OBJEXT) \
@@ -298,6 +309,7 @@ am__acvp_app_SOURCES_DIST = app_main.c app_cli.c app_utils.c app_lcl.h \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/acvp_app-iut_kdf.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/acvp_app-iut_kda.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/acvp_app-iut_kmac.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/acvp_app-iut_cshake.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/acvp_app-iut_rsa.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/acvp_app-iut_hash.$(OBJEXT) \
 @APP_IUT_OPENSSL_3_TRUE@	implementations/openssl/3/acvp_app-iut_ml_dsa.$(OBJEXT) \
@@ -349,6 +361,7 @@ am__depfiles_remade = ./$(DEPDIR)/acvp_app-app_cli.Po \
 	implementations/openssl/3/$(DEPDIR)/acvp_app-iut.Po \
 	implementations/openssl/3/$(DEPDIR)/acvp_app-iut_aes.Po \
 	implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cmac.Po \
+	implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cshake.Po \
 	implementations/openssl/3/$(DEPDIR)/acvp_app-iut_des.Po \
 	implementations/openssl/3/$(DEPDIR)/acvp_app-iut_drbg.Po \
 	implementations/openssl/3/$(DEPDIR)/acvp_app-iut_dsa.Po \
@@ -368,6 +381,7 @@ am__depfiles_remade = ./$(DEPDIR)/acvp_app-app_cli.Po \
 	implementations/openssl/3/$(DEPDIR)/iut.Plo \
 	implementations/openssl/3/$(DEPDIR)/iut_aes.Plo \
 	implementations/openssl/3/$(DEPDIR)/iut_cmac.Plo \
+	implementations/openssl/3/$(DEPDIR)/iut_cshake.Plo \
 	implementations/openssl/3/$(DEPDIR)/iut_des.Plo \
 	implementations/openssl/3/$(DEPDIR)/iut_drbg.Plo \
 	implementations/openssl/3/$(DEPDIR)/iut_dsa.Plo \
@@ -388,11 +402,13 @@ am__depfiles_remade = ./$(DEPDIR)/acvp_app-app_cli.Po \
 	implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_312.Po \
 	implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_340.Po \
 	implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_350.Po \
+	implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_4X.Po \
 	implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-non_fips.Po \
 	implementations/openssl/3/registrations/$(DEPDIR)/fp_30X.Plo \
 	implementations/openssl/3/registrations/$(DEPDIR)/fp_312.Plo \
 	implementations/openssl/3/registrations/$(DEPDIR)/fp_340.Plo \
 	implementations/openssl/3/registrations/$(DEPDIR)/fp_350.Plo \
+	implementations/openssl/3/registrations/$(DEPDIR)/fp_4X.Plo \
 	implementations/openssl/3/registrations/$(DEPDIR)/non_fips.Plo \
 	totp/$(DEPDIR)/acvp_app-hmac_sha256.Po \
 	totp/$(DEPDIR)/acvp_app-sha256.Po \
@@ -451,6 +467,7 @@ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 ADDL_LIB_DEPENDENCIES = @ADDL_LIB_DEPENDENCIES@
 AMTAR = @AMTAR@
+AM_CFLAGS = @AM_CFLAGS@ $(am__append_7)
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
@@ -463,8 +480,6 @@ CFLAGS = @CFLAGS@
 CLEANFILES = @CLEANFILES@
 COND_ALG_CFLAGS = @COND_ALG_CFLAGS@
 CPPFLAGS = @CPPFLAGS@
-CRITERION_CFLAGS = @CRITERION_CFLAGS@
-CRITERION_LDFLAGS = @CRITERION_LDFLAGS@
 CSCOPE = @CSCOPE@
 CTAGS = @CTAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -589,9 +604,10 @@ tmp_sources = app_main.c app_cli.c app_utils.c app_lcl.h totp/totp.c \
 	$(am__append_3)
 @BUILD_APP_AS_LIB_FALSE@acvp_app_includedir = $(includedir)/acvp
 @BUILD_APP_AS_LIB_FALSE@acvp_app_SOURCES = ${tmp_sources}
-@BUILD_APP_AS_LIB_FALSE@acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) \
-@BUILD_APP_AS_LIB_FALSE@	$(IUT_CFLAGS) $(SAFEC_CFLAGS) \
-@BUILD_APP_AS_LIB_FALSE@	$(COND_ALG_CFLAGS) $(am__append_6)
+@BUILD_APP_AS_LIB_FALSE@acvp_app_CFLAGS = $(AM_CFLAGS) -g -fPIE \
+@BUILD_APP_AS_LIB_FALSE@	$(LIBACVP_CFLAGS) $(IUT_CFLAGS) \
+@BUILD_APP_AS_LIB_FALSE@	$(SAFEC_CFLAGS) $(COND_ALG_CFLAGS) \
+@BUILD_APP_AS_LIB_FALSE@	$(am__append_6)
 @BUILD_APP_AS_LIB_FALSE@acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) \
 @BUILD_APP_AS_LIB_FALSE@	$(IUT_LDFLAGS) $(am__append_4) \
 @BUILD_APP_AS_LIB_FALSE@	$(am__append_5)
@@ -599,8 +615,7 @@ tmp_sources = app_main.c app_cli.c app_utils.c app_lcl.h totp/totp.c \
 @BUILD_APP_AS_LIB_TRUE@lib_LTLIBRARIES = libacvp_app.la
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_includedir = ${includedir}/acvp
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_la_SOURCES = ${tmp_sources}
-@BUILD_APP_AS_LIB_TRUE@AM_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(IUT_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS) -DACVP_APP_LIB_WRAPPER
-@BUILD_APP_AS_LIB_TRUE@libacvp_app_la_LIBADD = $(LIBACVP_LDFLAGS) $(IUT_LDFLAGS)
+@BUILD_APP_AS_LIB_TRUE@libacvp_app_la_LIBADD = $(LIBACVP_LDFLAGS) $(IUT_LDFLAGS) $(ADDL_LIB_DEPENDENCIES)
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_include_HEADERS = $(top_srcdir)/app/libacvp_app.h
 all: all-am
 
@@ -762,6 +777,9 @@ implementations/openssl/3/registrations/fp_340.lo:  \
 implementations/openssl/3/registrations/fp_350.lo:  \
 	implementations/openssl/3/registrations/$(am__dirstamp) \
 	implementations/openssl/3/registrations/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/registrations/fp_4X.lo:  \
+	implementations/openssl/3/registrations/$(am__dirstamp) \
+	implementations/openssl/3/registrations/$(DEPDIR)/$(am__dirstamp)
 implementations/openssl/3/iut_aes.lo:  \
 	implementations/openssl/3/$(am__dirstamp) \
 	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
@@ -796,6 +814,9 @@ implementations/openssl/3/iut_kda.lo:  \
 	implementations/openssl/3/$(am__dirstamp) \
 	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
 implementations/openssl/3/iut_kmac.lo:  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/iut_cshake.lo:  \
 	implementations/openssl/3/$(am__dirstamp) \
 	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
 implementations/openssl/3/iut_rsa.lo:  \
@@ -866,6 +887,9 @@ implementations/openssl/3/registrations/acvp_app-fp_340.$(OBJEXT):  \
 implementations/openssl/3/registrations/acvp_app-fp_350.$(OBJEXT):  \
 	implementations/openssl/3/registrations/$(am__dirstamp) \
 	implementations/openssl/3/registrations/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/registrations/acvp_app-fp_4X.$(OBJEXT):  \
+	implementations/openssl/3/registrations/$(am__dirstamp) \
+	implementations/openssl/3/registrations/$(DEPDIR)/$(am__dirstamp)
 implementations/openssl/3/acvp_app-iut_aes.$(OBJEXT):  \
 	implementations/openssl/3/$(am__dirstamp) \
 	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
@@ -900,6 +924,9 @@ implementations/openssl/3/acvp_app-iut_kda.$(OBJEXT):  \
 	implementations/openssl/3/$(am__dirstamp) \
 	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
 implementations/openssl/3/acvp_app-iut_kmac.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/acvp_app-iut_cshake.$(OBJEXT):  \
 	implementations/openssl/3/$(am__dirstamp) \
 	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
 implementations/openssl/3/acvp_app-iut_rsa.$(OBJEXT):  \
@@ -967,6 +994,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/acvp_app-iut.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/acvp_app-iut_aes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cmac.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cshake.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/acvp_app-iut_des.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/acvp_app-iut_drbg.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/acvp_app-iut_dsa.Po@am__quote@ # am--include-marker
@@ -986,6 +1014,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/iut.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/iut_aes.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/iut_cmac.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/iut_cshake.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/iut_des.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/iut_drbg.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/iut_dsa.Plo@am__quote@ # am--include-marker
@@ -1006,11 +1035,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_312.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_340.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_350.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_4X.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-non_fips.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/registrations/$(DEPDIR)/fp_30X.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/registrations/$(DEPDIR)/fp_312.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/registrations/$(DEPDIR)/fp_340.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/registrations/$(DEPDIR)/fp_350.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/registrations/$(DEPDIR)/fp_4X.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/registrations/$(DEPDIR)/non_fips.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@totp/$(DEPDIR)/acvp_app-hmac_sha256.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@totp/$(DEPDIR)/acvp_app-sha256.Po@am__quote@ # am--include-marker
@@ -1231,6 +1262,20 @@ implementations/openssl/3/registrations/acvp_app-fp_350.obj: implementations/ope
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/registrations/acvp_app-fp_350.obj `if test -f 'implementations/openssl/3/registrations/fp_350.c'; then $(CYGPATH_W) 'implementations/openssl/3/registrations/fp_350.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/registrations/fp_350.c'; fi`
 
+implementations/openssl/3/registrations/acvp_app-fp_4X.o: implementations/openssl/3/registrations/fp_4X.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/registrations/acvp_app-fp_4X.o -MD -MP -MF implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_4X.Tpo -c -o implementations/openssl/3/registrations/acvp_app-fp_4X.o `test -f 'implementations/openssl/3/registrations/fp_4X.c' || echo '$(srcdir)/'`implementations/openssl/3/registrations/fp_4X.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_4X.Tpo implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_4X.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/registrations/fp_4X.c' object='implementations/openssl/3/registrations/acvp_app-fp_4X.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/registrations/acvp_app-fp_4X.o `test -f 'implementations/openssl/3/registrations/fp_4X.c' || echo '$(srcdir)/'`implementations/openssl/3/registrations/fp_4X.c
+
+implementations/openssl/3/registrations/acvp_app-fp_4X.obj: implementations/openssl/3/registrations/fp_4X.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/registrations/acvp_app-fp_4X.obj -MD -MP -MF implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_4X.Tpo -c -o implementations/openssl/3/registrations/acvp_app-fp_4X.obj `if test -f 'implementations/openssl/3/registrations/fp_4X.c'; then $(CYGPATH_W) 'implementations/openssl/3/registrations/fp_4X.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/registrations/fp_4X.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_4X.Tpo implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_4X.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/registrations/fp_4X.c' object='implementations/openssl/3/registrations/acvp_app-fp_4X.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/registrations/acvp_app-fp_4X.obj `if test -f 'implementations/openssl/3/registrations/fp_4X.c'; then $(CYGPATH_W) 'implementations/openssl/3/registrations/fp_4X.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/registrations/fp_4X.c'; fi`
+
 implementations/openssl/3/acvp_app-iut_aes.o: implementations/openssl/3/iut_aes.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/acvp_app-iut_aes.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/acvp_app-iut_aes.Tpo -c -o implementations/openssl/3/acvp_app-iut_aes.o `test -f 'implementations/openssl/3/iut_aes.c' || echo '$(srcdir)/'`implementations/openssl/3/iut_aes.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/acvp_app-iut_aes.Tpo implementations/openssl/3/$(DEPDIR)/acvp_app-iut_aes.Po
@@ -1398,6 +1443,20 @@ implementations/openssl/3/acvp_app-iut_kmac.obj: implementations/openssl/3/iut_k
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/iut_kmac.c' object='implementations/openssl/3/acvp_app-iut_kmac.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/acvp_app-iut_kmac.obj `if test -f 'implementations/openssl/3/iut_kmac.c'; then $(CYGPATH_W) 'implementations/openssl/3/iut_kmac.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/iut_kmac.c'; fi`
+
+implementations/openssl/3/acvp_app-iut_cshake.o: implementations/openssl/3/iut_cshake.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/acvp_app-iut_cshake.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cshake.Tpo -c -o implementations/openssl/3/acvp_app-iut_cshake.o `test -f 'implementations/openssl/3/iut_cshake.c' || echo '$(srcdir)/'`implementations/openssl/3/iut_cshake.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cshake.Tpo implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cshake.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/iut_cshake.c' object='implementations/openssl/3/acvp_app-iut_cshake.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/acvp_app-iut_cshake.o `test -f 'implementations/openssl/3/iut_cshake.c' || echo '$(srcdir)/'`implementations/openssl/3/iut_cshake.c
+
+implementations/openssl/3/acvp_app-iut_cshake.obj: implementations/openssl/3/iut_cshake.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/acvp_app-iut_cshake.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cshake.Tpo -c -o implementations/openssl/3/acvp_app-iut_cshake.obj `if test -f 'implementations/openssl/3/iut_cshake.c'; then $(CYGPATH_W) 'implementations/openssl/3/iut_cshake.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/iut_cshake.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cshake.Tpo implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cshake.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/iut_cshake.c' object='implementations/openssl/3/acvp_app-iut_cshake.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/acvp_app-iut_cshake.obj `if test -f 'implementations/openssl/3/iut_cshake.c'; then $(CYGPATH_W) 'implementations/openssl/3/iut_cshake.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/iut_cshake.c'; fi`
 
 implementations/openssl/3/acvp_app-iut_rsa.o: implementations/openssl/3/iut_rsa.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/acvp_app-iut_rsa.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/acvp_app-iut_rsa.Tpo -c -o implementations/openssl/3/acvp_app-iut_rsa.o `test -f 'implementations/openssl/3/iut_rsa.c' || echo '$(srcdir)/'`implementations/openssl/3/iut_rsa.c
@@ -1714,6 +1773,7 @@ distclean: distclean-am
 	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut_aes.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cmac.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cshake.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut_des.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut_drbg.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut_dsa.Po
@@ -1733,6 +1793,7 @@ distclean: distclean-am
 	-rm -f implementations/openssl/3/$(DEPDIR)/iut.Plo
 	-rm -f implementations/openssl/3/$(DEPDIR)/iut_aes.Plo
 	-rm -f implementations/openssl/3/$(DEPDIR)/iut_cmac.Plo
+	-rm -f implementations/openssl/3/$(DEPDIR)/iut_cshake.Plo
 	-rm -f implementations/openssl/3/$(DEPDIR)/iut_des.Plo
 	-rm -f implementations/openssl/3/$(DEPDIR)/iut_drbg.Plo
 	-rm -f implementations/openssl/3/$(DEPDIR)/iut_dsa.Plo
@@ -1753,11 +1814,13 @@ distclean: distclean-am
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_312.Po
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_340.Po
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_350.Po
+	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_4X.Po
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-non_fips.Po
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/fp_30X.Plo
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/fp_312.Plo
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/fp_340.Plo
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/fp_350.Plo
+	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/fp_4X.Plo
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/non_fips.Plo
 	-rm -f totp/$(DEPDIR)/acvp_app-hmac_sha256.Po
 	-rm -f totp/$(DEPDIR)/acvp_app-sha256.Po
@@ -1827,6 +1890,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut_aes.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cmac.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut_cshake.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut_des.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut_drbg.Po
 	-rm -f implementations/openssl/3/$(DEPDIR)/acvp_app-iut_dsa.Po
@@ -1846,6 +1910,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f implementations/openssl/3/$(DEPDIR)/iut.Plo
 	-rm -f implementations/openssl/3/$(DEPDIR)/iut_aes.Plo
 	-rm -f implementations/openssl/3/$(DEPDIR)/iut_cmac.Plo
+	-rm -f implementations/openssl/3/$(DEPDIR)/iut_cshake.Plo
 	-rm -f implementations/openssl/3/$(DEPDIR)/iut_des.Plo
 	-rm -f implementations/openssl/3/$(DEPDIR)/iut_drbg.Plo
 	-rm -f implementations/openssl/3/$(DEPDIR)/iut_dsa.Plo
@@ -1866,11 +1931,13 @@ maintainer-clean: maintainer-clean-am
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_312.Po
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_340.Po
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_350.Po
+	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-fp_4X.Po
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/acvp_app-non_fips.Po
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/fp_30X.Plo
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/fp_312.Plo
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/fp_340.Plo
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/fp_350.Plo
+	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/fp_4X.Plo
 	-rm -f implementations/openssl/3/registrations/$(DEPDIR)/non_fips.Plo
 	-rm -f totp/$(DEPDIR)/acvp_app-hmac_sha256.Po
 	-rm -f totp/$(DEPDIR)/acvp_app-sha256.Po

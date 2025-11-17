@@ -156,6 +156,7 @@
     <ClCompile Include="..\..\src\acvp_kdf135_x942.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_x963.c" />
     <ClCompile Include="..\..\src\acvp_kmac.c" />
+    <ClCompile Include="..\..\src\acvp_cshake.c" />
     <ClCompile Include="..\..\src\acvp_lms.c" />
     <ClCompile Include="..\..\src\acvp_ml_dsa.c" />
     <ClCompile Include="..\..\src\acvp_ml_kem.c" />
@@ -166,6 +167,7 @@
     <ClCompile Include="..\..\src\acvp_safe_primes.c" />
     <ClCompile Include="..\..\src\acvp_transport.c" />
     <ClCompile Include="..\..\src\acvp_util.c" />
+    <ClCompile Include="..\..\src\acvp_parse.c" />
     <ClCompile Include="..\..\src\parson.c" />
   </ItemGroup>
   <ItemGroup>

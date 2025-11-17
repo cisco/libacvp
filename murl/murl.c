@@ -111,24 +111,24 @@ CURL *curl_easy_init(void)
     CURLcode result;
     SessionHandle *data;
 
-    /* Make sure we inited the global SSL stuff */
+    // Make sure we inited the global SSL stuff
     if (!initialized) {
         result = curl_global_init();
         if (result) {
-            /* something in the global init failed, return nothing */
+            // something in the global init failed, return nothing
             DEBUGF(fprintf(stderr, "Error: curl_global_init failed\n"));
             return NULL;
         }
     }
 
-    /* We use curl_open() with undefined URL so far */
+    // We use curl_open() with undefined URL so far
     data = calloc(1, sizeof(SessionHandle));
     if (!data) {
         DEBUGF(fprintf(stderr, "Error: calloc failed\n"));
         return NULL;
     }
-    data->server_port = 443; /* default to HTTPS port */
-    data->ssl_verify_hostname = 1; /* default to verify server hostname */
+    data->server_port = 443; // default to HTTPS port
+    data->ssl_verify_hostname = 1; // default to verify server hostname
 
     return data;
 }
@@ -160,21 +160,15 @@ CURLcode Curl_setopt(CURL *ctx, CURLoption option, va_list param)
 
     switch (option) {
     case CURLOPT_USERAGENT:
-        /*
-         * String to use in the HTTP User-Agent field
-         */
+        // String to use in the HTTP User-Agent field
         result = setstropt(&data->user_agent, va_arg(param, char *));
         break;
     case CURLOPT_URL:
-        /*
-         * The URL to fetch.
-         */
+        // The URL to fetch.
         result = setstropt(&data->url, va_arg(param, char *));
         break;
     case CURLOPT_HTTPHEADER:
-        /*
-         * Set a list with HTTP headers to use (or replace internals with)
-         */
+        // Set a list with HTTP headers to use (or replace internals with)
         data->headers = va_arg(param, struct curl_slist *);
         break;
     case CURLOPT_POSTFIELDS:
@@ -189,45 +183,31 @@ CURLcode Curl_setopt(CURL *ctx, CURLoption option, va_list param)
         data->post_field_size = va_arg(param, long);
         break;
     case CURLOPT_CAINFO:
-        /*
-         * Set CA info for SSL connection. Specify file name of the CA certificate
-         */
+        // Set CA info for SSL connection. Specify file name of the CA certificate
         result = setstropt(&data->ca_file, va_arg(param, char *));
         break;
     case CURLOPT_SSL_VERIFYPEER:
-        /*
-         * Enable peer SSL verifying.
-         */
+        // Enable peer SSL verifying.
         data->ssl_verify_peer = (0 != va_arg(param, long)) ? 1 : 0;
         break;
     case CURLOPT_CERTINFO:
-        /*
-         * Enable certification info logging.
-         */
+        // Enable certification info logging.
         data->ssl_certinfo = (0 != va_arg(param, long)) ? 1 : 0;
         break;
     case CURLOPT_SSLCERT:
-        /*
-         * String that holds file name of the SSL certificate to use
-         */
+        // String that holds file name of the SSL certificate to use
         result = setstropt(&data->ssl_cert_file, va_arg(param, char *));
         break;
     case CURLOPT_SSLCERTTYPE:
-        /*
-         * String that holds file type of the SSL certificate to use
-         */
+        // String that holds file type of the SSL certificate to use
         result = setstropt(&data->ssl_cert_type, va_arg(param, char *));
         break;
     case CURLOPT_SSLKEY:
-        /*
-         * String that holds file name of the SSL key to use
-         */
+        // String that holds file name of the SSL key to use
         result = setstropt(&data->ssl_key_file, va_arg(param, char *));
         break;
     case CURLOPT_SSLKEYTYPE:
-        /*
-         * String that holds file type of the SSL key to use
-         */
+        // String that holds file type of the SSL key to use
         result = setstropt(&data->ssl_key_type, va_arg(param, char *));
         break;
     case CURLOPT_WRITEDATA:
@@ -237,13 +217,11 @@ CURLcode Curl_setopt(CURL *ctx, CURLoption option, va_list param)
         data->write_func = va_arg(param, curl_write_callback);
         break;
     case CURLOPT_SSL_VERIFY_HOSTNAME:
-        /*
-         * Enable peer hostname verification.
-         */
+        // Enable peer hostname verification.
         data->ssl_verify_hostname = (0 != va_arg(param, long)) ? 1 : 0;
         break;
     default:
-        /* Silent failure since we don't support most Curl options */
+        // Silent failure since we don't support most Curl options
         DEBUGF(fprintf(stderr, "Warning: unsupported Curl option requested from Murl\n"));
         break;
     }
@@ -305,21 +283,17 @@ static BIO *create_connection_v6(char *address, int port)
 {
     BIO		    *conn = NULL;
     struct sockaddr_in6 si6;
-    char	    *host = &address[1];  /* Removes first square bracket */
+    char	    *host = &address[1];  // Removes first square bracket
     int		    rc;
     int		    sock;
 
-    /*
-     * Strip off trailing bracket 
-     */
+    // Strip off trailing bracket
     host[strnlen(host, IPV6_ADDRESS_MAX)-1] = 0;
 
-    /*
-     * Setup destination address/port 
-     */
+    // Setup destination address/port
     memset((char *) &si6, 0, sizeof(si6));
     si6.sin6_flowinfo = 0;
-    si6.sin6_family = AF_INET6;    
+    si6.sin6_family = AF_INET6;
     si6.sin6_port = htons(port);
     rc = inet_pton(AF_INET6, host, &si6.sin6_addr);
     if (rc != 1) {
@@ -327,9 +301,7 @@ static BIO *create_connection_v6(char *address, int port)
 	return(NULL);
     }
 
-    /*
-     * Create and connect to the socket
-     */
+    // Create and connect to the socket
     if ((sock = socket(AF_INET6, SOCK_STREAM, 0)) < 0 ) {
 	fprintf(stderr, "Unable to create v6 socket for address: %s\n", host);
 	return(NULL);
@@ -347,9 +319,9 @@ static BIO *create_connection_v6(char *address, int port)
     conn = BIO_new_socket(sock, BIO_CLOSE);
     if (conn == NULL) {
         fprintf(stderr, "OpenSSL error creating IP socket\n");
-        //ossl_dump_ssl_errors();
+        // ossl_dump_ssl_errors();
         return(NULL);
-    }        
+    }
 
     return(conn);
 }
@@ -390,7 +362,7 @@ static CURLcode parseurl(SessionHandle *data)
      * proxy -- and we don't know if we will need to use SSL until we parse the
      * url ...
      ************************************************************/
-    /* clear path */
+    // clear path
     path[0] = 0;
 
     if (2 > sscanf(data->url,
@@ -417,9 +389,7 @@ static CURLcode parseurl(SessionHandle *data)
             }
         }
     }
-    /*
-     * Murl only supports http
-     */
+    // Murl only supports http
     protop = "https";
 
     /* We search for '?' in the host name (but only on the right side of a
@@ -448,16 +418,16 @@ static CURLcode parseurl(SessionHandle *data)
            the host-name part */
         memmove(path+hostlen+1, path, pathlen+1);
 
-        /* now copy the trailing host part in front of the existing path */
+        // now copy the trailing host part in front of the existing path
         memcpy(path+1, query, hostlen);
 
-        path[0] = '/'; /* prepend the missing slash */
+        path[0] = '/'; // prepend the missing slash
         rebuild_url = 1;
 
-        *query = 0; /* now cut off the hostname at the ? */
+        *query = 0; // now cut off the hostname at the ?
     }
     else if (!path[0]) {
-        /* if there's no path set, use a single slash */
+        // if there's no path set, use a single slash
         strcpy(path, "/");
         rebuild_url = 1;
     }
@@ -486,20 +456,20 @@ static CURLcode parseurl(SessionHandle *data)
 
         size_t plen = strnlen(path, MURL_URI_MAX); /* new path, should be 1 byte longer than
                                        the original */
-        size_t urllen = strnlen(data->url, MURL_URI_MAX); /* original URL length */
+        size_t urllen = strnlen(data->url, MURL_URI_MAX); // original URL length
 
         size_t prefixlen = strnlen(host_name, MURL_URI_MAX);
 
         prefixlen += strlen(protop) + strlen("://");
 
-        reurl = malloc(urllen + 2); /* 2 for zerobyte + slash */
+        reurl = malloc(urllen + 2); // 2 for zerobyte + slash
         if (!reurl)
             return CURLE_OUT_OF_MEMORY;
 
-        /* copy the prefix */
+        // copy the prefix
         memcpy(reurl, data->url, prefixlen);
 
-        /* append the trailing piece + zerobyte */
+        // append the trailing piece + zerobyte
         memcpy(&reurl[prefixlen], path, plen + 1);
 
 	if (data->url) free(data->url);
@@ -507,7 +477,7 @@ static CURLcode parseurl(SessionHandle *data)
     }
 
 #if 0
-    //TODO: do we want to support login credentials in the URL?
+    // TODO: do we want to support login credentials in the URL?
     /*
      * Parse the login details from the URL and strip them out of
      * the host name
@@ -517,9 +487,7 @@ static CURLcode parseurl(SessionHandle *data)
         return result;
 #endif
 
-    /*
-     * Check for an IPv6 address as the host name
-     */
+    // Check for an IPv6 address as the host name
     if (host_name[0] == '[') {
 	data->use_ipv6 = 1;
 #if 0
@@ -543,17 +511,17 @@ static CURLcode parseurl(SessionHandle *data)
                 conn->scope_id = (unsigned int)scope;
             }
             else {
-                /* Zone identifier is not numeric */
+                // Zone identifier is not numeric
 #if defined(HAVE_NET_IF_H) && defined(IFNAMSIZ) && defined(HAVE_IF_NAMETOINDEX)
                 char ifname[IFNAMSIZ + 2];
                 char *square_bracket;
                 unsigned int scopeidx = 0;
                 strncpy(ifname, percent + identifier_offset, IFNAMSIZ + 2);
-                /* Ensure nullbyte termination */
+                // Ensure nullbyte termination
                 ifname[IFNAMSIZ + 1] = '\0';
                 square_bracket = strchr(ifname, ']');
                 if (square_bracket) {
-                    /* Remove ']' */
+                    // Remove ']'
                     *square_bracket = '\0';
                     scopeidx = if_nametoindex(ifname);
                     if (scopeidx == 0) {
@@ -563,11 +531,11 @@ static CURLcode parseurl(SessionHandle *data)
                 if (scopeidx > 0) {
                     char *p = percent + identifier_offset + strlen(ifname);
 
-                    /* Remove zone identifier from hostname */
+                    // Remove zone identifier from hostname
                     memmove(percent, p, strlen(p) + 1);
                 }
                 else
-#endif /* HAVE_NET_IF_H && IFNAMSIZ */
+#endif // HAVE_NET_IF_H && IFNAMSIZ
                 fprintf(stderr, "Invalid IPv6 address format\n");
             }
         }
@@ -640,7 +608,7 @@ static void murl_log_peer_cert(SSL *ssl)
 	    X509_NAME_print(out, subject, 0);
 	    (void)BIO_flush(out);
 	    BIO_get_mem_ptr(out, &bptr);
-	    //fprintf(stdout, "TLS peer subject name: %s\n", bptr->data); 
+	    // fprintf(stdout, "TLS peer subject name: %s\n", bptr->data);
 	    BIO_free_all(out);
 	}
     }
@@ -670,13 +638,11 @@ CURLcode curl_easy_perform(CURL *curl)
 	return CURLE_UNKNOWN_OPTION;
     }
 
-    /*
-     * Allocate some space to build the HTTP request
-     */
+    // Allocate some space to build the HTTP request
     if (ctx->http_post && ctx->post_field_size) {
-        cl = ctx->post_field_size; 
+        cl = ctx->post_field_size;
     } else if (ctx->http_post && ctx->post_fields) {
-        cl = strlen(ctx->post_fields); //FIXME: this is not safe
+        cl = strlen(ctx->post_fields); // FIXME: this is not safe
     } else {
         cl = 0;
     }
@@ -690,15 +656,11 @@ CURLcode curl_easy_perform(CURL *curl)
         return CURLE_OUT_OF_MEMORY;
     }
 
-    /*
-     * Split the URL into it's parts
-     */
+    // Split the URL into it's parts
     crv = parseurl(ctx);
     if (crv != CURLE_OK) goto easy_perform_cleanup;
 
-    /*
-     * Setup OpenSSL API
-     */
+    // Setup OpenSSL API
     ssl_ctx = SSL_CTX_new(SSLv23_client_method());
     if (!ssl_ctx) {
         fprintf(stderr, "Failed to create SSL context.\n");
@@ -716,9 +678,7 @@ CURLcode curl_easy_perform(CURL *curl)
     SSL_CTX_set_mode(ssl_ctx, SSL_MODE_AUTO_RETRY);
 
 
-    /*
-     * Enable TLS peer verification if requested and CA certs were provided
-     */
+    // Enable TLS peer verification if requested and CA certs were provided
     if (ctx->ssl_verify_peer && ctx->ca_file) {
         if (!SSL_CTX_load_verify_locations(ssl_ctx, ctx->ca_file, NULL)) {
             fprintf(stderr, "Failed to set trust anchors.\n");
@@ -737,7 +697,7 @@ CURLcode curl_easy_perform(CURL *curl)
 	goto easy_perform_cleanup;
     }
 #if 0
-    /* TODO: Enable CRL checks */
+    // TODO: Enable CRL checks
     X509_VERIFY_PARAM_set_flags(vpm, X509_V_FLAG_CRL_CHECK |
                                 X509_V_FLAG_CRL_CHECK_ALL);
 #endif
@@ -764,15 +724,13 @@ CURLcode curl_easy_perform(CURL *curl)
         }
     }
 
-    /*
-     * Open TCP connection with server
-     */
+    // Open TCP connection with server
     if (ctx->use_ipv6) {
 	conn = create_connection_v6(ctx->host_name, ctx->server_port);
     } else {
 	conn = create_connection(ctx->host_name, ctx->server_port);
     }
-    //FIXME: do we need to free conn, or is this handled by SSL_free?
+    // FIXME: do we need to free conn, or is this handled by SSL_free?
     if (conn == NULL) {
         fprintf(stderr, "Unable to open socket with server.\n");
         crv = CURLE_COULDNT_CONNECT;
@@ -791,16 +749,12 @@ CURLcode curl_easy_perform(CURL *curl)
 	goto easy_perform_cleanup;
     }
 
-    /*
-     * PSB requires we log the X509 distinguished name of the peer
-     */
+    // PSB requires we log the X509 distinguished name of the peer
     if (ctx->ssl_verify_peer) {
 	murl_log_peer_cert(ssl);
     }
 
-    /*
-     * Build HTTP request
-     */
+    // Build HTTP request
     memset(tbuf, 0, sizeof(tbuf));
     snprintf(tbuf, TBUF_MAX, "%s %s HTTP/1.0\r\n"
             "Host: %s:%d\r\n"
@@ -808,31 +762,25 @@ CURLcode curl_easy_perform(CURL *curl)
             (ctx->http_post ? "POST" : "GET"),
             ctx->path_segment, ctx->host_name, ctx->server_port,
             (ctx->user_agent ? ctx->user_agent : "Murl"));
-    strcat(rbuf, tbuf); //FIXME: safe string handling needed
+    strcat(rbuf, tbuf); // FIXME: safe string handling needed
 
-    /*
-     * Add any custom headers requested by the user
-     */
+    // Add any custom headers requested by the user
     if (ctx->headers) {
         hdrs = ctx->headers;
         while (hdrs) {
             memset(tbuf, 0, sizeof(tbuf));
             snprintf(tbuf, TBUF_MAX, "%s\r\n", hdrs->data);
-            strcat(rbuf, tbuf); //FIXME: safe string handling needed
+            strcat(rbuf, tbuf); // FIXME: safe string handling needed
             hdrs = hdrs->next;
         }
     }
 
-    /*
-     * Set the Content-length header
-     */
+    // Set the Content-length header
     memset(tbuf, 0, sizeof(tbuf));
     snprintf(tbuf, TBUF_MAX, "Content-Length: %d\r\n" "Accept: */*\r\n\r\n", cl);
-    strcat(rbuf, tbuf); //FIXME: safe string handling needed
+    strcat(rbuf, tbuf); // FIXME: safe string handling needed
 
-    /*
-     * Send the HTTP request
-     */
+    // Send the HTTP request
     SSL_write(ssl, rbuf, strlen(rbuf));
     SSL_write(ssl, ctx->post_fields, cl);
 
@@ -840,9 +788,7 @@ CURLcode curl_easy_perform(CURL *curl)
     free(rbuf);
     rbuf = NULL;
 
-    /*
-     * Read the HTTP response
-     */
+    // Read the HTTP response
     rv = 1;
     while (rv) {
 	/*
@@ -865,13 +811,12 @@ CURLcode curl_easy_perform(CURL *curl)
             switch (ssl_err) {
             case SSL_ERROR_NONE:
             case SSL_ERROR_ZERO_RETURN:
-                //fprintf(stderr, "SSL_read finished\n");
+                // fprintf(stderr, "SSL_read finished\n");
                 break;
             default:
                 ossl_err = ERR_get_error();
                 if ((rv < 0) || ossl_err) {
-                    fprintf(stderr, "SSL_read failed, rv=%d ssl_err=%d ossl_err=%d.\n",
-                            rv, ssl_err, (int)ossl_err);
+                    fprintf(stderr, "SSL_read failed, rv=%d ssl_err=%d ossl_err=%d.\n", rv, ssl_err, (int)ossl_err);
                     ERR_print_errors_fp(stderr);
                     crv = CURLE_USE_SSL_FAILED;
 	            goto easy_perform_cleanup;
@@ -890,22 +835,16 @@ CURLcode curl_easy_perform(CURL *curl)
 	}
     }
 
-    /*
-     * make sure the data is null terminated
-     */
+    // make sure the data is null terminated
     rbuf[read_cnt] = 0;
 
-    /*
-     * Parse the HTTP response
-     */
+    // Parse the HTTP response
     if (murl_http_parse_response(ctx, rbuf)) {
         crv = CURLE_HTTP2;
 	goto easy_perform_cleanup;
     }
 
-    /*
-     * Send the data back to the user
-     */
+    // Send the data back to the user
     if (ctx->write_func) {
         (ctx->write_func)(ctx->recv_buf, 1, ctx->recv_ctr, ctx->write_ctx);
     }
@@ -939,11 +878,11 @@ static CURLcode Curl_getinfo(SessionHandle *data, CURLINFO info, ...)
 {
     va_list arg;
     long *param_longp = NULL;
-    //double *param_doublep = NULL;
-    //char **param_charp = NULL;
-    //struct curl_slist **param_slistp = NULL;
+    // double *param_doublep = NULL;
+    // char **param_charp = NULL;
+    // struct curl_slist **param_slistp = NULL;
     int type;
-    /* default return code is to error out! */
+    // default return code is to error out!
     CURLcode result = CURLE_BAD_FUNCTION_ARGUMENT;
 
     if (!data)
@@ -1002,16 +941,16 @@ CURLcode curl_easy_getinfo(CURL *curl, CURLINFO info, ...)
     return result;
 }
 
-/* returns last node in linked list */
+// returns last node in linked list
 static struct curl_slist *slist_get_last(struct curl_slist *list)
 {
     struct curl_slist     *item;
 
-    /* if caller passed us a NULL, return now */
+    // if caller passed us a NULL, return now
     if (!list)
         return NULL;
 
-    /* loop through to find the last item */
+    // loop through to find the last item
     item = list;
     while (item->next) {
         item = item->next;
@@ -1040,7 +979,7 @@ static struct curl_slist *Curl_slist_append_nodup(struct curl_slist *list, char 
     new_item->next = NULL;
     new_item->data = data;
 
-    /* if this is the first item, then new_item *is* the list */
+    // if this is the first item, then new_item *is* the list
     if (!list)
         return new_item;
 
@@ -1071,7 +1010,7 @@ struct curl_slist *curl_slist_append(struct curl_slist *list,
     return list;
 }
 
-/* be nice and clean up resources */
+// be nice and clean up resources
 void curl_slist_free_all(struct curl_slist *list)
 {
     struct curl_slist     *next;
@@ -1094,7 +1033,7 @@ void curl_slist_free_all(struct curl_slist *list)
 
 static void Curl_ossl_cleanup(void)
 {
-    /* Free thread local error state, destroying hash upon zero refcount */
+    // Free thread local error state, destroying hash upon zero refcount
     ERR_remove_thread_state(NULL);
     ERR_remove_state(0);
 }
@@ -1112,7 +1051,7 @@ void curl_easy_cleanup(CURL *curl)
     if (data->ssl_key_file) free(data->ssl_key_file);
     if (data->ssl_key_type) free(data->ssl_key_type);
     if (data->recv_buf) free(data->recv_buf);
-    //if (data->headers) curl_slist_free_all(data->headers);
+    // if (data->headers) curl_slist_free_all(data->headers);
 
     free(data);
 }
@@ -1377,7 +1316,7 @@ const char * curl_easy_strerror(CURLcode error)
     case CURLE_SSL_INVALIDCERTSTATUS:
         return "SSL server certificate status verification FAILED";
 
-    /* error codes not used by current libcurl */
+    // error codes not used by current libcurl
     case CURLE_OBSOLETE20:
     case CURLE_OBSOLETE24:
     case CURLE_OBSOLETE29:

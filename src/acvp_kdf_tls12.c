@@ -17,9 +17,7 @@
 #include "parson.h"
 #include "safe_lib.h"
 
-/*
- * Forward prototypes for local functions
- */
+// Forward prototypes for local functions
 static ACVP_RESULT acvp_kdf_tls12_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS12_TC *stc, JSON_Object *tc_rsp);
 
 static ACVP_RESULT acvp_kdf_tls12_init_tc(ACVP_CTX *ctx,
@@ -54,9 +52,9 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_KDF_TLS12_TC stc;
     ACVP_TEST_CASE tc;
@@ -95,9 +93,7 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_INVALID_ARG;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.kdf_tls12 = &stc;
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
@@ -106,25 +102,24 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
         goto err;
     }
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         int tgId = 0;
@@ -137,36 +132,29 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        pm_len = json_object_get_number(groupobj, "preMasterSecretLength");
-        if (!pm_len) {
-            ACVP_LOG_ERR("preMasterSecretLength incorrect, %d", pm_len);
-            rv = ACVP_INVALID_ARG;
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "preMasterSecretLength", &pm_len);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
-        kb_len = json_object_get_number(groupobj, "keyBlockLength");
-        if (!kb_len) {
-            ACVP_LOG_ERR("keyBlockLength incorrect, %d", kb_len);
-            rv = ACVP_INVALID_ARG;
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "keyBlockLength", &kb_len);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
-        sha = json_object_get_string(groupobj, "hashAlg");
-        if (!sha) {
-            ACVP_LOG_ERR("Failed to include hashAlg");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &sha);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         md = acvp_lookup_hash_alg(sha);
         if (md != ACVP_SHA256 && md != ACVP_SHA384 &&
             md != ACVP_SHA512) {
@@ -180,21 +168,26 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("            kbLen: %d", kb_len);
         ACVP_LOG_VERBOSE("              sha: %s", sha);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
         for (j = 0; j < t_cnt; j++) {
             ACVP_LOG_VERBOSE("Found new hash test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
-
-            pm_secret = json_object_get_string(testobj, "preMasterSecret");
-            if (!pm_secret) {
-                ACVP_LOG_ERR("Failed to include preMasterSecret");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "preMasterSecret", &pm_secret);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+
             if (strnlen_s(pm_secret, pm_len) != pm_len / 4) {
                 ACVP_LOG_ERR("pmLen(%d) or pmSecret length(%d) incorrect",
                              pm_len / 4, (int)strnlen_s(pm_secret, ACVP_KDF_TLS12_PMSECRET_STR_MAX));
@@ -202,24 +195,18 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            session_hash = json_object_get_string(testobj, "sessionHash");
-            if (!session_hash) {
-                ACVP_LOG_ERR("Failed to include sessionHash");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "sessionHash", &session_hash);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            s_rnd = json_object_get_string(testobj, "serverRandom");
-            if (!s_rnd) {
-                ACVP_LOG_ERR("Failed to include serverRandom");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "serverRandom", &s_rnd);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            c_rnd = json_object_get_string(testobj, "clientRandom");
-            if (!c_rnd) {
-                ACVP_LOG_ERR("Failed to include clientRandom");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "clientRandom", &c_rnd);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -230,9 +217,7 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("             sRND: %s", s_rnd);
             ACVP_LOG_VERBOSE("             cRND: %s", c_rnd);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -250,32 +235,28 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if ((cap->crypto_handler)(&tc)) {
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 acvp_kdf_tls12_release_tc(&stc);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
                 goto err;
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             rv = acvp_kdf_tls12_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 acvp_kdf_tls12_release_tc(&stc);
                 json_value_free(r_tval);
                 goto err;
             }
 
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_kdf_tls12_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);
@@ -297,7 +278,7 @@ err:
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */

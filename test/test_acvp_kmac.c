@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,68 +8,82 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
 #include "ut_common.h"
 #include "acvp/acvp_lcl.h"
+
+TEST_GROUP(KMAC_128_CAPABILITY);
+TEST_GROUP(KMAC_256_CAPABILITY);
+TEST_GROUP(KMAC_API);
 
 static ACVP_CTX *ctx = NULL;
 static ACVP_RESULT rv = 0;
 static JSON_Object *obj = NULL;
 static JSON_Value *val = NULL;
 
-static void setup(void) {
+TEST_SETUP(KMAC_128_CAPABILITY) {}
+TEST_TEAR_DOWN(KMAC_128_CAPABILITY) {}
+
+TEST_SETUP(KMAC_256_CAPABILITY) {}
+TEST_TEAR_DOWN(KMAC_256_CAPABILITY) {}
+
+TEST_SETUP(KMAC_API) {
     setup_empty_ctx(&ctx);
     rv = acvp_cap_kmac_enable(ctx, ACVP_KMAC_128, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kmac_enable(ctx, ACVP_KMAC_256, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
 }
 
-static void teardown(void) {
+TEST_TEAR_DOWN(KMAC_API) {
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
     if (ctx) teardown_ctx(&ctx);
 }
 
-/*
- * Test capabilites API.
- */
-Test(KMAC_128_CAPABILITY, good) {
+// Test capabilites API.
+TEST(KMAC_128_CAPABILITY, good) {
+    // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
     setup_empty_ctx(&ctx);
 
     rv = acvp_cap_kmac_enable(ctx, ACVP_KMAC_128, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_128, ACVP_KMAC_MSGLEN, 0, 65536, 8);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_128, ACVP_KMAC_MACLEN, 32, 65536, 8);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_128, ACVP_KMAC_KEYLEN, 128, 65536, 8);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kmac_set_parm(ctx, ACVP_KMAC_128, ACVP_KMAC_XOF_SUPPORT, ACVP_XOF_SUPPORT_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kmac_set_parm(ctx, ACVP_KMAC_128, ACVP_KMAC_HEX_CUSTOM_SUPPORT, 1);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     teardown_ctx(&ctx);
 }
 
-/*
- * Test capabilites API.
- */
-Test(KMAC_256_CAPABILITY, good) {
+// Test capabilites API.
+TEST(KMAC_256_CAPABILITY, good) {
+    // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
     setup_empty_ctx(&ctx);
 
     rv = acvp_cap_kmac_enable(ctx, ACVP_KMAC_256, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_256, ACVP_KMAC_MSGLEN, 0, 65536, 8);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_256, ACVP_KMAC_MACLEN, 32, 65536, 8);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_256, ACVP_KMAC_KEYLEN, 128, 65536, 8);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kmac_set_parm(ctx, ACVP_KMAC_256, ACVP_KMAC_XOF_SUPPORT, ACVP_XOF_SUPPORT_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kmac_set_parm(ctx, ACVP_KMAC_256, ACVP_KMAC_HEX_CUSTOM_SUPPORT, 1);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     teardown_ctx(&ctx);
 }
@@ -78,7 +92,10 @@ Test(KMAC_256_CAPABILITY, good) {
  * Test the KAT handler API.
  * The ctx is empty (no capabilities), expecting failure.
  */
-Test(KMAC_API, empty_ctx) {
+TEST(KMAC_API, empty_ctx) {
+    // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
     setup_empty_ctx(&ctx);
 
     val = json_parse_file("json/kmac/kmac.json");
@@ -90,8 +107,9 @@ Test(KMAC_API, empty_ctx) {
     }
 
     rv  = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
     json_value_free(val);
+    val = NULL;
 
 end:
     if (ctx) teardown_ctx(&ctx);
@@ -101,7 +119,7 @@ end:
  * Test KAT handler API.
  * The ctx is NULL, expecting failure.
  */
-Test(KMAC_API, null_ctx) {
+TEST(KMAC_API, null_ctx) {
     val = json_parse_file("json/kmac/kmac.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -112,25 +130,25 @@ Test(KMAC_API, null_ctx) {
 
     /* Test with NULL JSON object */
     rv  = acvp_kmac_kat_handler(NULL, obj);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
     json_value_free(val);
+    val = NULL;
 }
-
 
 /*
  * Test the KAT handler API.
  * The obj is null, expecting failure.
  */
-Test(KMAC_API, null_json_obj, .init = setup, .fini = teardown) {
+TEST(KMAC_API, null_json_obj) {
     rv  = acvp_kmac_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
 /*
  * This is a good JSON.
  * Expecting success.
  */
-Test(KMAC_API, good_aes, .init = setup, .fini = teardown) {
+TEST(KMAC_API, good_aes) {
     val = json_parse_file("json/kmac/kmac.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -139,14 +157,13 @@ Test(KMAC_API, good_aes, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-/*
- * The value for key:"algorithm" is wrong.
- */
-Test(KMAC_API, wrong_algorithm, .init = setup, .fini = teardown) {
+// The value for key:"algorithm" is wrong.
+TEST(KMAC_API, wrong_algorithm) {
     val = json_parse_file("json/kmac/kmac_1.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -155,14 +172,15 @@ Test(KMAC_API, wrong_algorithm, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
     json_value_free(val);
+    val = NULL;
 }
 
 /* any below failure cases could have the JSON modified anywhere in the file, not just the top */
 
 /* The value for key:"testType" is wrong. */
-Test(KMAC_API, wrong_test_type, .init = setup, .fini = teardown) {
+TEST(KMAC_API, wrong_test_type) {
     val = json_parse_file("json/kmac/kmac_3.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -171,13 +189,13 @@ Test(KMAC_API, wrong_test_type, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_TC_INVALID_DATA);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
 /* The key:"xof" is missing. */
-Test(KMAC_API, missing_xof, .init = setup, .fini = teardown) {
+TEST(KMAC_API, missing_xof) {
     val = json_parse_file("json/kmac/kmac_4.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -186,12 +204,13 @@ Test(KMAC_API, missing_xof, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_TC_MISSING_DATA);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
+    val = NULL;
 }
 
 /* The key:"hexCustomization" is missing. */
-Test(KMAC_API, missing_hex_customization, .init = setup, .fini = teardown) {
+TEST(KMAC_API, missing_hex_customization) {
     val = json_parse_file("json/kmac/kmac_5.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -200,14 +219,13 @@ Test(KMAC_API, missing_hex_customization, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_TC_MISSING_DATA);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
-/* The key:"msgLen" is missing. 0 is acceptable length and API returns 0, but it mis-matches read length
-   so it will return invalid instead of missing data. */
-Test(KMAC_API, missing_msgLen, .init = setup, .fini = teardown) {
+/* The key:"msgLen" is missing. */
+TEST(KMAC_API, missing_msgLen) {
     val = json_parse_file("json/kmac/kmac_6.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -216,13 +234,13 @@ Test(KMAC_API, missing_msgLen, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_TC_INVALID_DATA);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
+    val = NULL;
 }
 
-
 /* The key:"macLen" is missing or 0. */
-Test(KMAC_API, missing_macLen, .init = setup, .fini = teardown) {
+TEST(KMAC_API, missing_macLen) {
     val = json_parse_file("json/kmac/kmac_7.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -231,12 +249,13 @@ Test(KMAC_API, missing_macLen, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_TC_MISSING_DATA);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
+    val = NULL;
 }
 
 /* The key:"keyLen" is missing or 0. */
-Test(KMAC_API, missing_keyLen, .init = setup, .fini = teardown) {
+TEST(KMAC_API, missing_keyLen) {
     val = json_parse_file("json/kmac/kmac_8.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -245,12 +264,13 @@ Test(KMAC_API, missing_keyLen, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_TC_MISSING_DATA);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
+    val = NULL;
 }
 
 /* The value for msgLen does not match the actual length of "msg" */
-Test(KMAC_API, bad_msgLen, .init = setup, .fini = teardown) {
+TEST(KMAC_API, bad_msgLen) {
     val = json_parse_file("json/kmac/kmac_9.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -259,12 +279,13 @@ Test(KMAC_API, bad_msgLen, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_TC_INVALID_DATA);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
+    val = NULL;
 }
 
 /* The value for keyLen does not match the actual length of "key" */
-Test(KMAC_API, bad_keyLen, .init = setup, .fini = teardown) {
+TEST(KMAC_API, bad_keyLen) {
     val = json_parse_file("json/kmac/kmac_10.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -273,12 +294,13 @@ Test(KMAC_API, bad_keyLen, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_TC_INVALID_DATA);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
+    val = NULL;
 }
 
 /* The value for macLen does not match the actual length of "mac" (MVT only) */
-Test(KMAC_API, bad_macLen, .init = setup, .fini = teardown) {
+TEST(KMAC_API, bad_macLen) {
     val = json_parse_file("json/kmac/kmac_11.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -287,12 +309,13 @@ Test(KMAC_API, bad_macLen, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_TC_INVALID_DATA);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
+    val = NULL;
 }
 
 /* The key:"msg" is missing. */
-Test(KMAC_API, missing_msg, .init = setup, .fini = teardown) {
+TEST(KMAC_API, missing_msg) {
     val = json_parse_file("json/kmac/kmac_12.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -301,12 +324,13 @@ Test(KMAC_API, missing_msg, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_TC_MISSING_DATA);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
+    val = NULL;
 }
 
 /* The key:"key" is missing. */
-Test(KMAC_API, missing_key, .init = setup, .fini = teardown) {
+TEST(KMAC_API, missing_key) {
     val = json_parse_file("json/kmac/kmac_13.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -315,12 +339,13 @@ Test(KMAC_API, missing_key, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_TC_MISSING_DATA);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
+    val = NULL;
 }
 
 /* The key:"mac" is missing. (MVT only) */
-Test(KMAC_API, missing_mac, .init = setup, .fini = teardown) {
+TEST(KMAC_API, missing_mac) {
     val = json_parse_file("json/kmac/kmac_14.json");
     
     obj = ut_get_obj_from_rsp(val);
@@ -329,6 +354,7 @@ Test(KMAC_API, missing_mac, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_kmac_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_TC_MISSING_DATA);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
+    val = NULL;
 }

@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -17,9 +17,11 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_TEST_CASE *test_case;
-static ACVP_KTS_IFC_TC *kts_ifc_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_KTS_IFC_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_KTS_IFC_TC *kts_ifc_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 void free_kts_ifc_tc(ACVP_KTS_IFC_TC *stc) {
     if (stc->p) free(stc->p);
@@ -46,8 +48,6 @@ int initialize_kts_ifc_tc(ACVP_KTS_IFC_TC *stc,
                           int llen, 
                           ACVP_KTS_IFC_TEST_TYPE test_type,
                           int corrupt) {
-    ACVP_RESULT rv;
-    
     stc->llen = llen/8;
     stc->modulo = modulo;
     stc->test_type = test_type;
@@ -129,10 +129,11 @@ err:
     return 0;
 }
 
-/*
- * invalid hash alg kts ifc handler
- */
-Test(APP_KTS_IFC_HANDLER, invalid_hash_alg) {
+TEST_SETUP(APP_KTS_IFC_HANDLER) {}
+TEST_TEAR_DOWN(APP_KTS_IFC_HANDLER) {}
+
+// invalid hash alg kts ifc handler
+TEST(APP_KTS_IFC_HANDLER, invalid_hash_alg) {
     int corrupt = 0;
     char *p = "aa";
     char *q = "aa";
@@ -151,22 +152,20 @@ Test(APP_KTS_IFC_HANDLER, invalid_hash_alg) {
     
     if (!initialize_kts_ifc_tc(kts_ifc_tc, key_gen, hash_alg, role, ct,
                                p, q, d, n, e, modulo, llen, test_type, corrupt)) {
-        cr_assert_fail("kts ifc init tc failure");
+        TEST_FAIL_MESSAGE("kts ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kts_ifc = kts_ifc_tc;
     
     rv = app_kts_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kts_ifc_tc(kts_ifc_tc);
     free(test_case);
 }
 
-/*
- * invalid modulo kts ifc handler
- */
-Test(APP_KTS_IFC_HANDLER, invalid_modulo) {
+// invalid modulo kts ifc handler
+TEST(APP_KTS_IFC_HANDLER, invalid_modulo) {
     int corrupt = 0;
     char *p = "aa";
     char *q = "aa";
@@ -185,22 +184,20 @@ Test(APP_KTS_IFC_HANDLER, invalid_modulo) {
     
     if (!initialize_kts_ifc_tc(kts_ifc_tc, key_gen, hash_alg, role, ct,
                                p, q, d, n, e, modulo, llen, test_type, corrupt)) {
-        cr_assert_fail("kts ifc init tc failure");
+        TEST_FAIL_MESSAGE("kts ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kts_ifc = kts_ifc_tc;
     
     rv = app_kts_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kts_ifc_tc(kts_ifc_tc);
     free(test_case);
 }
 
-/*
- * invalid llen kts ifc handler
- */
-Test(APP_KTS_IFC_HANDLER, invalid_llen) {
+// invalid llen kts ifc handler
+TEST(APP_KTS_IFC_HANDLER, invalid_llen) {
     int corrupt = 0;
     char *p = "aa";
     char *q = "aa";
@@ -219,22 +216,20 @@ Test(APP_KTS_IFC_HANDLER, invalid_llen) {
     
     if (!initialize_kts_ifc_tc(kts_ifc_tc, key_gen, hash_alg, role, ct,
                                p, q, d, n, e, modulo, llen, test_type, corrupt)) {
-        cr_assert_fail("kts ifc init tc failure");
+        TEST_FAIL_MESSAGE("kts ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kts_ifc = kts_ifc_tc;
     
     rv = app_kts_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kts_ifc_tc(kts_ifc_tc);
     free(test_case);
 }
 
-/*
- * missing e kts ifc handler
- */
-Test(APP_KTS_IFC_HANDLER, missing_e) {
+// missing e kts ifc handler
+TEST(APP_KTS_IFC_HANDLER, missing_e) {
     int corrupt = 0;
     char *p = "aa";
     char *q = "aa";
@@ -253,23 +248,21 @@ Test(APP_KTS_IFC_HANDLER, missing_e) {
     
     if (!initialize_kts_ifc_tc(kts_ifc_tc, key_gen, hash_alg, role, ct,
                                p, q, d, n, e, modulo, llen, test_type, corrupt)) {
-        cr_assert_fail("kts ifc init tc failure");
+        TEST_FAIL_MESSAGE("kts ifc init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kts_ifc = kts_ifc_tc;
     
     rv = app_kts_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kts_ifc_tc(kts_ifc_tc);
     free(test_case);
 }
 
-/*
- * missing n kts ifc handler
- */
-Test(APP_KTS_IFC_HANDLER, missing_n) {
+// missing n kts ifc handler
+TEST(APP_KTS_IFC_HANDLER, missing_n) {
     int corrupt = 0;
     char *p = "aa";
     char *q = "aa";
@@ -288,24 +281,21 @@ Test(APP_KTS_IFC_HANDLER, missing_n) {
     
     if (!initialize_kts_ifc_tc(kts_ifc_tc, key_gen, hash_alg, role, ct,
                                p, q, d, n, e, modulo, llen, test_type, corrupt)) {
-        cr_assert_fail("kts ifc init tc failure");
+        TEST_FAIL_MESSAGE("kts ifc init tc failure");
     }
-
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kts_ifc = kts_ifc_tc;
     
     rv = app_kts_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kts_ifc_tc(kts_ifc_tc);
     free(test_case);
 }
 
-/*
- * missing p kts ifc handler
- */
-Test(APP_KTS_IFC_HANDLER, missing_p) {
+// missing p kts ifc handler
+TEST(APP_KTS_IFC_HANDLER, missing_p) {
     int corrupt = 0;
     char *p = NULL;
     char *q = "aa";
@@ -324,24 +314,21 @@ Test(APP_KTS_IFC_HANDLER, missing_p) {
     
     if (!initialize_kts_ifc_tc(kts_ifc_tc, key_gen, hash_alg, role, ct,
                                p, q, d, n, e, modulo, llen, test_type, corrupt)) {
-        cr_assert_fail("kts ifc init tc failure");
+        TEST_FAIL_MESSAGE("kts ifc init tc failure");
     }
-
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kts_ifc = kts_ifc_tc;
     
     rv = app_kts_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kts_ifc_tc(kts_ifc_tc);
     free(test_case);
 }
 
-/*
- * missing q kts ifc handler
- */
-Test(APP_KTS_IFC_HANDLER, missing_q) {
+// missing q kts ifc handler
+TEST(APP_KTS_IFC_HANDLER, missing_q) {
     int corrupt = 0;
     char *p = "aa";
     char *q = NULL;
@@ -360,23 +347,21 @@ Test(APP_KTS_IFC_HANDLER, missing_q) {
     
     if (!initialize_kts_ifc_tc(kts_ifc_tc, key_gen, hash_alg, role, ct,
                                p, q, d, n, e, modulo, llen, test_type, corrupt)) {
-        cr_assert_fail("kts ifc init tc failure");
+        TEST_FAIL_MESSAGE("kts ifc init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kts_ifc = kts_ifc_tc;
     
     rv = app_kts_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kts_ifc_tc(kts_ifc_tc);
     free(test_case);
 }
 
-/*
- * missing d kts ifc handler
- */
-Test(APP_KTS_IFC_HANDLER, missing_d) {
+// missing d kts ifc handler
+TEST(APP_KTS_IFC_HANDLER, missing_d) {
     int corrupt = 0;
     char *p = "aa";
     char *q = "aa";
@@ -395,23 +380,21 @@ Test(APP_KTS_IFC_HANDLER, missing_d) {
     
     if (!initialize_kts_ifc_tc(kts_ifc_tc, key_gen, hash_alg, role, ct,
                                p, q, d, n, e, modulo, llen, test_type, corrupt)) {
-        cr_assert_fail("kts ifc init tc failure");
+        TEST_FAIL_MESSAGE("kts ifc init tc failure");
     }
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kts_ifc = kts_ifc_tc;
     
     rv = app_kts_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kts_ifc_tc(kts_ifc_tc);
     free(test_case);
 }
 
-/*
- * missing ct kts ifc handler
- */
-Test(APP_KTS_IFC_HANDLER, missing_ct) {
+// missing ct kts ifc handler
+TEST(APP_KTS_IFC_HANDLER, missing_ct) {
     int corrupt = 0;
     char *p = "aa";
     char *q = "aa";
@@ -430,25 +413,21 @@ Test(APP_KTS_IFC_HANDLER, missing_ct) {
     
     if (!initialize_kts_ifc_tc(kts_ifc_tc, key_gen, hash_alg, role, ct,
                                p, q, d, n, e, modulo, llen, test_type, corrupt)) {
-        cr_assert_fail("kts ifc init tc failure");
+        TEST_FAIL_MESSAGE("kts ifc init tc failure");
     }
-
 
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kts_ifc = kts_ifc_tc;
     
     rv = app_kts_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kts_ifc_tc(kts_ifc_tc);
     free(test_case);
 }
 
-
-/*
- * unallocated pt ans buffer handler
- */
-Test(APP_KTS_IFC_HANDLER, unallocated_ans_bufs) {
+// unallocated pt ans buffer handler
+TEST(APP_KTS_IFC_HANDLER, unallocated_ans_bufs) {
     int corrupt = 1;
     char *p = "aa";
     char *q = "aa";
@@ -467,13 +446,13 @@ Test(APP_KTS_IFC_HANDLER, unallocated_ans_bufs) {
     
     if (!initialize_kts_ifc_tc(kts_ifc_tc, key_gen, hash_alg, role, ct,
                                p, q, d, n, e, modulo, llen, test_type, corrupt)) {
-        cr_assert_fail("kts ifc init tc failure");
+        TEST_FAIL_MESSAGE("kts ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kts_ifc = kts_ifc_tc;
     
     rv = app_kts_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_kts_ifc_tc(kts_ifc_tc);
     free(test_case);

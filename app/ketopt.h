@@ -1,26 +1,52 @@
 /*
  * Original author:
  * https://github.com/attractivechaos/klib/blob/master/ketopt.h
+ * Libacvp note: This code has been modified to meet libacvp's use cases.
+ *
+ * License:
+ * The MIT License
+ *
+ * Copyright (c) 2008-     Attractive Chaos <attractor@live.co.uk>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 #ifndef KETOPT_H
 #define KETOPT_H
 
-#include <safe_str_lib.h> /* for strstr_s() and strncmp_s() */
+#include <safe_str_lib.h> // for strstr_s() and strncmp_s()
 
 #define ko_no_argument       0
 #define ko_required_argument 1
 #define ko_optional_argument 2
 
 #define OPTION_NAME_MAX 128
-#define OSTR_MAX 11 /* Change according to the ostr parameter in app_cli.c */
+#define OSTR_MAX 11 // Change according to the ostr parameter in app_cli.c
 
 typedef struct {
-	int ind;   /* equivalent to optind */
-	int opt;   /* equivalent to optopt */
-	const char *arg; /* equivalent to optarg */
-	int longidx; /* index of a long option; or -1 if short */
-	/* private variables not intended for external uses */
+	int ind;   // equivalent to optind
+	int opt;   // equivalent to optopt
+	const char *arg; // equivalent to optarg
+	int longidx; // index of a long option; or -1 if short
+	// private variables not intended for external uses
 	int i, pos, n_args;
 } ketopt_t;
 
@@ -32,7 +58,7 @@ typedef struct {
 
 static ketopt_t KETOPT_INIT = { 1, 0, 0, -1, 1, 0, 0 };
 
-static void ketopt_permute(char *argv[], int j, int n) /* move argv[j] over n elements to the left */
+static void ketopt_permute(char *argv[], int j, int n) // move argv[j] over n elements to the left
 {
 	int k;
 	char *p = argv[j];
@@ -80,17 +106,17 @@ static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *
 		s->ind = s->i - s->n_args;
 		return -1;
 	}
-	if (argv[s->i][0] == '-' && argv[s->i][1] == '-') { /* "--" or a long option */
-		if (argv[s->i][2] == '\0') { /* a bare "--" */
+	if (argv[s->i][0] == '-' && argv[s->i][1] == '-') { // "--" or a long option
+		if (argv[s->i][2] == '\0') { // a bare "--"
 			ketopt_permute(argv, s->i, s->n_args);
 			++s->i, s->ind = s->i - s->n_args;
 			return -1;
 		}
 		s->opt = 0, opt = '?', s->pos = -1;
-		if (longopts) { /* parse long options */
+		if (longopts) { // parse long options
 			int k, n_exact = 0, n_partial = 0;
 			const ko_longopt_t *o = 0, *o_exact = 0, *o_partial = 0;
-			for (j = 2; argv[s->i][j] != '\0' && argv[s->i][j] != '='; ++j) {} /* find the end of the option name */
+			for (j = 2; argv[s->i][j] != '\0' && argv[s->i][j] != '='; ++j) {} // find the end of the option name
 			for (k = 0; longopts[k].name != 0; ++k) {
                 int diff = 1;
 				strncmp_s(&argv[s->i][2], OPTION_NAME_MAX, longopts[k].name, j - 2, &diff);
@@ -106,11 +132,11 @@ static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *
 				if (argv[s->i][j] == '=') s->arg = &argv[s->i][j + 1];
 				if (o->has_arg && argv[s->i][j] == '\0') {
 					if (s->i < argc - 1) s->arg = argv[++s->i];
-					else if (o->has_arg == 1) opt = ':'; /* missing option argument */
+					else if (o->has_arg == 1) opt = ':'; // missing option argument
 				}
 			}
 		}
-	} else if (argv[s->i][0] == '-' && strnlen_s(argv[s->i], 3) == 2) { /* a short option */
+	} else if (argv[s->i][0] == '-' && strnlen_s(argv[s->i], 3) == 2) { // a short option
 		char *p = NULL;
         char short_opt[2];
 		if (s->pos == 0) s->pos = 1;
@@ -120,16 +146,16 @@ static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *
 
         strstr_s(ostr2, OSTR_MAX, short_opt, 1, &p);
 		if (p == 0) {
-			opt = '?'; /* unknown option */
+			opt = '?'; // unknown option
 		} else if (p[1] == ':') {
 			if (s->i < argc - 1) s->arg = argv[++s->i];
-			else opt = ':'; /* missing option argument */
+			else opt = ':'; // missing option argument
 			s->pos = -1;
 		}
 	}
 	if (s->pos < 0 || argv[s->i][s->pos] == 0) {
 		++s->i, s->pos = 0;
-		if (s->n_args > 0) /* permute */
+		if (s->n_args > 0) // permute
 			for (j = i0; j < s->i; ++j)
 				ketopt_permute(argv, j, s->n_args);
 	}

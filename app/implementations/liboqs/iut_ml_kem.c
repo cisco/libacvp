@@ -12,11 +12,11 @@
 
 #include <oqs/kem.h>
 
-/* Seed buffer for keygen, m buffer for encap */
+// Seed buffer for keygen, m buffer for encap
 static unsigned char *rng_buffer = NULL;
-/* Total size of the seed buffer */
+// Total size of the seed buffer
 static size_t rng_buf_size = 0;
-/* Iterator for the seed buffer */
+// Iterator for the seed buffer
 static int rng_buf_pos = 0;
 
 void iut_ml_kem_cleanup(void) {
@@ -40,13 +40,13 @@ static void oqs_rng_callback_acvp(uint8_t *random_array, size_t bytes_to_read) {
     }
 
     while (remaining_bytes > 0) {
-        //if we need to send more bytes than there is space left in the buffer, send only until the end of the buffer
+        // if we need to send more bytes than there is space left in the buffer, send only until the end of the buffer
         bytes_going_this_round = remaining_bytes < rng_buf_size - rng_buf_pos ? remaining_bytes : rng_buf_size - rng_buf_pos;
         memcpy_s(random_array + bytes_sent, bytes_to_read - bytes_sent, rng_buffer + rng_buf_pos, bytes_going_this_round);
         bytes_sent += bytes_going_this_round;
         remaining_bytes -= bytes_going_this_round;
         rng_buf_pos += bytes_sent;
-        //if we hit end of buffer, go back to beginning
+        // if we hit end of buffer, go back to beginning
         if (rng_buf_pos >= rng_buf_size - 1) {
             rng_buf_pos = 0;
         }
@@ -89,7 +89,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
     }
 
     if (tc->cipher == ACVP_ML_KEM_KEYGEN) {
-        /** 
+        /**
          * We need to specify the D and Z seed values that ML-KEM uses. We cannot do that directly.
          * However, we can specify a custom RNG function. For testing's sake, we set a RNG function
          * that really just returns bytes for the D and Z values the server specifies. This is not
@@ -105,7 +105,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
             printf("Error allocating seed buffer for ML-KEM\n");
             goto end;
         }
-        /* append D and Z in the buffer */
+        // append D and Z in the buffer
         memcpy_s(rng_buffer, rng_buf_size, tc->d, tc->d_len);
         memcpy_s(rng_buffer + tc->d_len, rng_buf_size - tc->d_len, tc->z, tc->z_len);
 
@@ -121,14 +121,14 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
     } else if (tc->cipher == ACVP_ML_KEM_XCAP) {
 
         if (tc->function == ACVP_ML_KEM_FUNCTION_ENCAPSULATE) {
-            /* encapsulation needs to set a random m value the same way keygen needs D and Z described above */
+            // encapsulation needs to set a random m value the same way keygen needs D and Z described above
             rng_buf_size = tc->m_len;
             rng_buffer = calloc(rng_buf_size, sizeof(unsigned char));
             if (!rng_buffer) {
                 printf("Error allocating m buffer for ML-KEM\n");
                 goto end;
             }
-            /* Place m in the buffer */
+            // Place m in the buffer
             memcpy_s(rng_buffer, rng_buf_size, tc->m, tc->m_len);
 
             OQS_randombytes_custom_algorithm(&oqs_rng_callback_acvp);
@@ -136,7 +136,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
             OQS_KEM_encaps(kem, tc->c, tc->k, tc->ek);
             tc->c_len = kem->length_ciphertext;
             tc->k_len = kem->length_shared_secret;
-        } else { //decapsulate
+        } else { // decapsulate
             OQS_KEM_decaps(kem, tc->k, tc->c, tc->dk);
             tc->k_len = kem->length_shared_secret;
         }

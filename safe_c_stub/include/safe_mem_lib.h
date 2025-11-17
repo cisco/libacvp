@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------
  * safe_mem_lib.h - Replacements for Safe C Library Memory Functions
- * 
+ *
  * Contains code derived from https://sourceforge.net/projects/safeclib/
  * license reproduced below
- * 
+ *
  * October 2008, Bo Berry
  *
  * Copyright (c) 2008-2011 by Cisco Systems, Inc
@@ -37,43 +37,43 @@
 #include <stdint.h>
 #include "safe_lib_errno.h"
 
-/* Some environments (AIX) complain about this not being defined */
+// Some environments (AIX) complain about this not being defined
 #ifndef SIZE_MAX
 #   define SIZE_MAX (18446744073709551615UL)
 #endif
 
-/* Defining the RSIZE_MAX macro */
+// Defining the RSIZE_MAX macro
 #ifndef RSIZE_MAX
 #define RSIZE_MAX         SIZE_MAX/2
 #endif
 
 /**
- *  Maximum memory sizes definitions  based on types 
+ *  Maximum memory sizes definitions  based on types
  */
 #ifndef RSIZE_MAX_MEM
 #define RSIZE_MAX_MEM       RSIZE_MAX
 #endif
-#ifndef RSIZE_MAX_MEM16 
+#ifndef RSIZE_MAX_MEM16
 #define RSIZE_MAX_MEM16    ( RSIZE_MAX_MEM/2 )
 #endif
-#ifndef RSIZE_MAX_MEM32 
+#ifndef RSIZE_MAX_MEM32
 #define RSIZE_MAX_MEM32    ( RSIZE_MAX_MEM/4 )
 #endif
 
 
-/* copy memory */
+// copy memory
 extern errno_t memcpy_s(void *dest, rsize_t dmax, const void *src, rsize_t slen);
 
-/* compare memory */
+// compare memory
 extern errno_t memcmp_s(const void *dest, rsize_t dmax, const void *src, rsize_t slen, int *diff);
 
-/* Set memory */
+// Set memory
 extern errno_t memset_s (void *s, rsize_t smax, int c, rsize_t n);
 
-/* clear bytes */
+// clear bytes
 extern errno_t memzero_s(void *dest, rsize_t dmax);
 
-/* Move bytes */
+// Move bytes
 extern errno_t memmove_s(void *dest, rsize_t dmax, const void *src, rsize_t smax);
 
-#endif /* __SAFE_MEM_LIB_H__ */
+#endif // __SAFE_MEM_LIB_H__

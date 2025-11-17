@@ -15,7 +15,7 @@
 #include "safe_lib.h"
 #include "hmac_sha256.h"
 
-/* This is a public domain base64 implementation written by WEI Zhicheng. */
+// This is a public domain base64 implementation written by WEI Zhicheng.
 enum { BASE64_OK = 0, BASE64_INVALID };
 
 #define BASE64_ENCODE_OUT_SIZE(s)    (((s) + 2) / 3 * 4)
@@ -26,36 +26,36 @@ enum { BASE64_OK = 0, BASE64_INVALID };
 #define BASE64DE_FIRST    '+'
 #define BASE64DE_LAST    'z'
 
-/* ASCII order for BASE 64 decode, -1 in unused character */
+// ASCII order for BASE 64 decode, -1 in unused character
 static const signed char base64de[] = {
-    /* '+', ',', '-', '.', '/', '0', '1', '2', */
+    // '+', ',', '-', '.', '/', '0', '1', '2',
     62, -1, -1, -1, 63, 52, 53, 54,
 
-    /* '3', '4', '5', '6', '7', '8', '9', ':', */
+    // '3', '4', '5', '6', '7', '8', '9', ':',
     55, 56, 57, 58, 59, 60, 61, -1,
 
-    /* ';', '<', '=', '>', '?', '@', 'A', 'B', */
+    // ';', '<', '=', '>', '?', '@', 'A', 'B',
     -1, -1, -1, -1, -1, -1, 0,  1,
 
-    /* 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', */
+    // 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
     2,  3,  4,  5,  6,  7,  8,  9,
 
-    /* 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', */
+    // 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
     10, 11, 12, 13, 14, 15, 16, 17,
 
-    /* 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', */
+    // 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
     18, 19, 20, 21, 22, 23, 24, 25,
 
-    /* '[', '\', ']', '^', '_', '`', 'a', 'b', */
+    // '[', '\', ']', '^', '_', '`', 'a', 'b',
     -1, -1, -1, -1, -1, -1, 26, 27,
 
-    /* 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', */
+    // 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
     28, 29, 30, 31, 32, 33, 34, 35,
 
-    /* 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', */
+    // 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
     36, 37, 38, 39, 40, 41, 42, 43,
 
-    /* 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', */
+    // 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
     44, 45, 46, 47, 48, 49, 50, 51,
 };
 
@@ -65,7 +65,7 @@ base64_decode(const char *in, unsigned int inlen, unsigned char *out) {
 
     for (i = j = 0; i < inlen; i++) {
         int c;
-        int s = i % 4;             /* from 8/gcd(6, 8) */
+        int s = i % 4;             // from 8/gcd(6, 8)
 
         if (in[i] == '=')
             return j;
@@ -81,14 +81,14 @@ base64_decode(const char *in, unsigned int inlen, unsigned char *out) {
         case 1:
             out[j++] += ((unsigned int)c >> 4) & 0x3;
 
-            /* if not last char with padding */
+            // if not last char with padding
             if (i < (inlen - 3) || in[inlen - 2] != '=')
                 out[j] = ((unsigned int)c & 0xF) << 4;
             continue;
         case 2:
             out[j++] += ((unsigned int)c >> 2) & 0xF;
 
-            /* if not last char with padding */
+            // if not last char with padding
             if (i < (inlen - 2) || in[inlen - 1] != '=')
                 out[j] =  ((unsigned int)c & 0x3) << 6;
             continue;
@@ -135,7 +135,7 @@ ACVP_RESULT totp(char **token, int token_max) {
 
     seed = getenv("ACV_TOTP_SEED");
     if (!seed) {
-        /* Not required to use 2-factor auth */
+        // Not required to use 2-factor auth
         return ACVP_SUCCESS;
     }
 

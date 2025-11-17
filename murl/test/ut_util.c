@@ -41,7 +41,7 @@ int test_murl_locate_ipv6_address (char *address, int max_addr)
     }
 
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == NULL) continue;  
+        if (ifa->ifa_addr == NULL) continue;
 
         if ((ifa->ifa_addr->sa_family==AF_INET6)) {
 	    if (!strcmp(ifa->ifa_name, "lo")) {
@@ -61,7 +61,7 @@ int test_murl_locate_ipv6_address (char *address, int max_addr)
 	    /*
 	     * We found a v6 address that's not the loopback
 	     */
-            printf("\tFound IPv6 address : %s\n", address); 
+            printf("\tFound IPv6 address : %s\n", address);
 	    freeifaddrs(ifaddr);
 	    return 0;
         }

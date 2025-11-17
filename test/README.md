@@ -1,34 +1,50 @@
-The test framework for the C ACVP library leverages Criterion --> https://github.com/Snaipe/Criterion
-NOTE: The test suite does not initialize the crypto library if ACVP is built with a FOM - Any tests that test 
-the return values of crypto library functions when built with a fom will NOT be reliable.
+The test framework for the C ACVP library leverages Unity --> https://github.com/ThrowTheSwitch/Unity
 
-- update the test_env.sh script
-- 'source test_env.sh'
+Unity is a unit testing framework for C. The license for Unity can be found in test/unity/LICENSE.md.
+NOTE: Unity has been slightly modified for our uses within this project.
 
-Running tests:
-make clean && make
-./runtest
+## Building
 
-You can see more detail using:
-./runtest --verbose
+To enable the unit tests binary (named "runtest"), the project configure must be run with --enable-unit-tests
 
-Or filter for specific tests, for example:
-./runtest --verbose --filter *APP_KAS_FFC_HANDLER*
+```
+./configure --enable-unit-tests --with-ssl-dir=<path to ssl dir> --with-libcurl-dir=<path to curl dir>
+make clean
+make
+```
 
-More features are supported, see the Criterion docs for more:
-https://criterion.readthedocs.io/en/master/
+If the project is configured with --disable-app or --disable-lib, only the relevant unit tests will be included.
 
-JSON Collateral:
+## Running Tests
 
-    All examples json messages are kept in the 'json' directory. Most
-    algorithms have corresponding scripts that help build the corrupt
-    json from a clean json file. These shouldn't need to change unless
-    changes are made to the algorithm specifications.
+```
+./test/runtest
+```
 
-    The json/generate_json.py script can be used to regenerate json files
-    if necessary.
+You can see more detailed test output using:
+```
+./test/runtest -v
+```
 
+The runtest executable can be made to run only certain TEST_GROUPS using the -g argument:
+```
+./test/runtest -g <TEST_GROUP name>
+```
 
-OR run using Docker
-move to docker directory
-follow README instructions
+For example:
+```
+./test/runtest -g AES -v
+```
+
+## Contributing
+
+Before opening a pull request that modifies unit tests or adds new test coverage,
+please ensure that:
+
+1. All unit tests pass
+2. No memory leaks are reported (use valgrind or similar tools)
+3. All memory allocations are properly cleaned up
+4. All pointers are properly set up and torn down in setup/teardown functions
+
+New library features should include corresponding unit tests that follow these
+guidelines.

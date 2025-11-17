@@ -20,9 +20,7 @@
 #define ACVP_HOST_LITTLE_ENDIAN (__BYTE_ORDER == __LITTLE_ENDIAN)
 #define SWAP_16(x) ((x>>8) | (x<<8))
 
-/*
- * Forward prototypes for local functions
- */
+// Forward prototypes for local functions
 static ACVP_RESULT acvp_hash_output_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *tc_rsp);
 
 static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
@@ -94,11 +92,11 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
     int i = 0, j = 0;
     size_t seed_len = 0, mct_buffer_size = ACVP_HASH_MD_BYTE_MAX;
     ACVP_RESULT rv = ACVP_SUCCESS;
-    JSON_Value *r_tval = NULL;  /* Response testval */
-    JSON_Object *r_tobj = NULL; /* Response testobj */
+    JSON_Value *r_tval = NULL;  // Response testval
+    JSON_Object *r_tobj = NULL; // Response testobj
     unsigned char *seed = NULL;
 
-    /* Spec: Initial seed value: changes at end of every outer loop iteration */
+    // Spec: Initial seed value: changes at end of every outer loop iteration
     seed = stc->msg;
     seed_len = stc->msg_len;
     if (stc->mct_version == ACVP_HASH_MCT_VERSION_ALTERNATE) {
@@ -106,7 +104,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
     }
 
     for (i = 0; i < ACVP_HASH_MCT_OUTER; ++i) {
-        /* Spec: A = B = C = SEED */
+        // Spec: A = B = C = SEED
         memcpy_s(stc->m1, mct_buffer_size, seed, seed_len);
         stc->m1_len = seed_len;
         memcpy_s(stc->m2, mct_buffer_size, seed, seed_len);
@@ -114,7 +112,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
         memcpy_s(stc->m3, mct_buffer_size, seed, seed_len);
         stc->m3_len = seed_len;
 
-        /* Internal: Create a new test case in the response */
+        // Internal: Create a new test case in the response
         r_tval = json_value_init_object();
         r_tobj = json_value_get_object(r_tval);
 
@@ -127,15 +125,15 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
              * with 0 until that length if shorter.
              */
 
-            /* Spec: MD = SHA(MSG) */
+            // Spec: MD = SHA(MSG)
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 json_value_free(r_tval);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
-            /* Spec: A = B, B = C, C = MD */
+            // Spec: A = B, B = C, C = MD
             rv = 0;
             rv += memcpy_s(stc->m1, mct_buffer_size, stc->m2, stc->m2_len);
             stc->m1_len = stc->m2_len;
@@ -150,19 +148,19 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
                 json_value_free(r_tval);
                 return rv;
             }
-        } /* End inner loop */
+        } // End inner loop
 
-        /* Spec: Output MD */
-        /* Internal: output the test case request values using JSON, append to array */
+        // Spec: Output MD
+        // Internal: output the test case request values using JSON, append to array
         rv = acvp_hash_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("JSON output failure in HASH module");
+            ACVP_LOG_ERR("JSON output failure recording test response");
             json_value_free(r_tval);
             return rv;
         }
         json_array_append_value(res_array, r_tval);
 
-        /* Spec: SEED = MD */
+        // Spec: SEED = MD
         seed = stc->md;
         seed_len = stc->md_len;
     }
@@ -183,8 +181,8 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
                                       JSON_Array *res_array) {
     int i = 0, j = 0;
     ACVP_RESULT rv = 0;
-    JSON_Value *r_tval = NULL;  /* Response testval */
-    JSON_Object *r_tobj = NULL; /* Response testobj */
+    JSON_Value *r_tval = NULL;  // Response testval
+    JSON_Object *r_tobj = NULL; // Response testobj
     size_t initial_seed_len = stc->msg_len;
 
     /* ***********
@@ -192,9 +190,7 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
      * ***********
      */
     for (j = 0; j < ACVP_HASH_MCT_OUTER; j++) {
-        /*
-         * Create a new test case in the response
-         */
+        // Create a new test case in the response
         r_tval = json_value_init_object();
         r_tobj = json_value_get_object(r_tval);
 
@@ -209,7 +205,7 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
                  * Zeroize the msg buffer, and copy in the md.
                  */
                 memzero_s(stc->msg, ACVP_HASH_MSG_BYTE_MAX);
-                /* In alt mode, we either truncate or pad w/ 0s msg to equal initial seed len */
+                // In alt mode, we either truncate or pad w/ 0s msg to equal initial seed len
                 if (stc->mct_version == ACVP_HASH_MCT_VERSION_ALTERNATE) {
                     memcpy_s(stc->msg, ACVP_HASH_MSG_BYTE_MAX, stc->md,
                              stc->md_len > initial_seed_len ? initial_seed_len : stc->md_len);
@@ -229,28 +225,26 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
                 }
             }
 
-            /* Now clear the md buffer */
+            // Now clear the md buffer
             memzero_s(stc->md, ACVP_HASH_MD_BYTE_MAX);
 
-            /* Process the current SHA test vector... */
+            // Process the current SHA test vector...
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 goto end;
             }
         }
 
-        /*
-         * Output the test case request values using JSON
-         */
+        // Output the test case request values using JSON
         rv = acvp_hash_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("JSON output failure");
+            ACVP_LOG_ERR("JSON output failure recording test response");
             goto end;
         }
 
-        /* Append the test response value to array */
+        // Append the test response value to array
         json_array_append_value(res_array, r_tval);
     }
 
@@ -275,19 +269,17 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
                                        unsigned int max_xof_bits) {
     int i = 0, j = 0;
     ACVP_RESULT rv = 0;
-    JSON_Value *r_tval = NULL;  /* Response testval */
-    JSON_Object *r_tobj = NULL; /* Response testobj */
+    JSON_Value *r_tval = NULL;  // Response testval
+    JSON_Object *r_tobj = NULL; // Response testobj
     unsigned int xof_len = 0;
     unsigned int leftmost_bytes = 16;
     unsigned int min_xof_bytes = (min_xof_bits / 8);
     unsigned int max_xof_bytes = (max_xof_bits / 8);
     unsigned int range = max_xof_bytes - min_xof_bytes + 1;
 
-    /*
-     * Initial Outputlen = (floor(maxoutlen/8) )*8
-     */
+    // Initial Outputlen = (floor(maxoutlen/8) )*8
     xof_len = (max_xof_bits / 8) * 8;
-    /* Convert from bits to bytes */
+    // Convert from bits to bytes
     stc->xof_len = (xof_len + 7) / 8;
 
     /* ***********
@@ -295,9 +287,7 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
      * ***********
      */
     for (j = 0; j < ACVP_HASH_MCT_OUTER; j++) {
-        /*
-         * Create a new test case in the response
-         */
+        // Create a new test case in the response
         r_tval = json_value_init_object();
         r_tobj = json_value_get_object(r_tval);
 
@@ -318,7 +308,7 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
                 if (stc->md_len <= leftmost_bytes) {
                     memcpy_s(stc->msg, ACVP_SHAKE_MSG_BYTE_MAX, stc->md, stc->md_len);
                 } else {
-                    /* Only copy the leftmost 128 bits */
+                    // Only copy the leftmost 128 bits
                     memcpy_s(stc->msg, ACVP_SHAKE_MSG_BYTE_MAX, stc->md, leftmost_bytes);
                 }
 
@@ -333,18 +323,18 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
             }
             stc->msg_len = leftmost_bytes;
 
-            /* Now clear the md buffer */
+            // Now clear the md buffer
             memzero_s(stc->md, ACVP_HASH_XOF_MD_BYTE_MAX);
 
-            /* Process the current SHA test vector... */
+            // Process the current SHA test vector...
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 goto end;
             }
 
-            /* Get the right-most 16bits and convert to an integer */
+            // Get the right-most 16bits and convert to an integer
 #if ACVP_HOST_LITTLE_ENDIAN || defined(__WIN32) || defined(__APPLE__)
             rob[0] = stc->md[stc->md_len-1];
             rob[1] = stc->md[stc->md_len-2];
@@ -353,20 +343,18 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
             rob[1] = stc->md[stc->md_len-1];
 #endif
 
-            /* Calculate the next expected outputLen */
+            // Calculate the next expected outputLen
             stc->xof_len = min_xof_bytes + ((*rightmost_out_bits) % range);
         }
 
-        /*
-         * Output the test case request values using JSON
-         */
+        // Output the test case request values using JSON
         rv = acvp_hash_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("JSON output failure");
+            ACVP_LOG_ERR("JSON output failure recording test response");
             goto end;
         }
 
-        /* Append the test response value to array */
+        // Append the test response value to array
         json_array_append_value(res_array, r_tval);
     }
 
@@ -443,13 +431,13 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_HASH_TC stc;
     ACVP_TEST_CASE tc;
-    JSON_Array *res_tarr = NULL; /* Response resultsArray */
+    JSON_Array *res_tarr = NULL; // Response resultsArray
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CIPHER alg_id = 0;
     ACVP_HASH_EXPANSION_METHOD exp_method = 0;
@@ -470,17 +458,13 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.hash = &stc;
 
-    /*
-     * Get the crypto module handler for this hash algorithm
-     */
+    // Get the crypto module handler for this hash algorithm
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id == 0) {
-        ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
+        ACVP_LOG_ERR("Unsupported algorithm (%s)", alg_str);
         return ACVP_UNSUPPORTED_OP;
     }
     cap = acvp_locate_cap_entry(ctx, alg_id);
@@ -489,25 +473,24 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
         return rv;
     }
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         ACVP_HASH_TESTTYPE test_type = 0;
@@ -524,10 +507,8 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -536,10 +517,8 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         ACVP_LOG_VERBOSE("    Test group: %d", i);
 
-        test_type_str = json_object_get_string(groupobj, "testType");
-        if (!test_type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &test_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -558,27 +537,32 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
         if (test_type == ACVP_HASH_TEST_TYPE_MCT) {
             if (alg_id == ACVP_HASH_SHAKE_128 || alg_id == ACVP_HASH_SHAKE_256) {
-                min_xof_len = json_object_get_number(groupobj, "minOutLen");
+                rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "minOutLen", &min_xof_len);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
                 if (min_xof_len < ACVP_HASH_XOF_MD_BIT_MIN) {
                     ACVP_LOG_ERR("Server JSON invalid 'minOutLen' (%u)",
                                  min_xof_len);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-                max_xof_len = json_object_get_number(groupobj, "maxOutLen");
+                rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "maxOutLen", &max_xof_len);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
                 if (max_xof_len > ACVP_HASH_XOF_MD_BIT_MAX) {
                     ACVP_LOG_ERR("Server JSON invalid 'maxOutLen' (%u)",
                                  max_xof_len);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-            } else { /* All hash algs apart from SHAKE */
-                mct_version_str = json_object_get_string(groupobj, ACVP_STR_HASH_MCT);
-                if (!mct_version_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'mctVersion'");
-                    rv = ACVP_TC_MISSING_DATA;
+            } else { // All hash algs apart from SHAKE
+                rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, ACVP_STR_HASH_MCT, &mct_version_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 mct_version = read_mct_version(mct_version_str);
                 if (mct_version < 0) {
                     ACVP_LOG_ERR("Server JSON invalid 'mctVersion'");
@@ -588,19 +572,26 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
             unsigned int tmp_msg_len = 0;
             unsigned int xof_len = 0;
             unsigned int max_len = 0;
+            double fullLength_val = 0;
 
             ACVP_LOG_VERBOSE("Found new hash test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             // Based on test type: LDT vs AFT && VOT
             if (test_type == ACVP_HASH_TEST_TYPE_LDT) {
@@ -610,14 +601,16 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                ldtobj = json_object_get_object(testobj, "largeMsg");
-
-                msg = json_object_get_string(ldtobj, "content");
-                if (!msg) {
-                    ACVP_LOG_ERR("Server JSON missing 'content'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_object(ctx, alg_id, testobj, "largeMsg", &ldtobj);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
+                rv = acvp_tc_json_get_string(ctx, alg_id, ldtobj, "content", &msg);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+
                 max_len = ACVP_HASH_MSG_STR_MAX;
                 tmp_msg_len = strnlen_s(msg, max_len + 1);
                 if (tmp_msg_len > max_len) {
@@ -627,17 +620,32 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
                 msglen = tmp_msg_len/2;  // tmp_msg_len is ASCII chars, we store hex bytes
 
-                max_len = json_object_get_number(ldtobj, "contentLength")/8;  // In bits; store as bytes
+                rv = acvp_tc_json_get_int(ctx, alg_id, ldtobj, "contentLength", (int *)&max_len);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+                max_len = max_len / 8;  // In bits; store as bytes
                 if (msglen != max_len) {
                     ACVP_LOG_ERR("Length of content (%d) does not match stated length (%d)", tmp_msg_len, max_len);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
 
-                exp_len = json_object_get_number(ldtobj, "fullLength")/8;  // In bits; store as bytes
-                // Variable size, and large; no need to validate
+                // fullLength can be very large (no defined max), so use json_object_get_number directly
+                // If the value is negative, casting it to unsigned could cause some very large buffer allocation attempts
+                fullLength_val = json_object_get_number(ldtobj, "fullLength");
+                if (fullLength_val < 0) {
+                    ACVP_LOG_ERR("Server JSON invalid 'fullLength' (negative value)");
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+                exp_len = (unsigned long long int)fullLength_val / 8;  // In bits; store as bytes
 
-                exp_method_str = json_object_get_string(ldtobj, "expansionTechnique");
+                rv = acvp_tc_json_get_string(ctx, alg_id, ldtobj, "expansionTechnique", &exp_method_str);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+
                 exp_method = read_exp_method(exp_method_str);
                 if (exp_method != ACVP_HASH_EXPANSION_REPEATING) {
                     ACVP_LOG_ERR("Invalid LDT expansion technique (only 'repeating' is allowed for Hash/SHA).");
@@ -645,12 +653,11 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
             } else {
-                msg = json_object_get_string(testobj, "msg");
-                if (!msg) {
-                    ACVP_LOG_ERR("Server JSON missing 'msg'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "msg", &msg);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (alg_id != ACVP_HASH_SHAKE_128 && alg_id != ACVP_HASH_SHAKE_256) {
                     max_len = ACVP_HASH_MSG_STR_MAX;
                 } else {
@@ -667,7 +674,10 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
                 if ((alg_id == ACVP_HASH_SHAKE_128 || alg_id == ACVP_HASH_SHAKE_256) &&
                         test_type != ACVP_HASH_TEST_TYPE_MCT) {
-                    xof_len = json_object_get_number(testobj, "outLen");
+                    rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "outLen", (int *)&xof_len);
+                    if (rv != ACVP_SUCCESS) {
+                        goto err;
+                    }
                     if (!(xof_len >= ACVP_HASH_XOF_MD_BIT_MIN &&
                         xof_len <= ACVP_HASH_XOF_MD_BIT_MAX)) {
                         ACVP_LOG_ERR("Server JSON invalid 'outLen'(%d)", xof_len);
@@ -690,9 +700,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             ACVP_LOG_VERBOSE("         testtype: %s", test_type_str);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -711,7 +719,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* If Monte Carlo start that here */
+            // If Monte Carlo start that here
             if (stc.test_type == ACVP_HASH_TEST_TYPE_MCT) {
                 json_object_set_value(r_tobj, "resultsArray", json_value_init_array());
                 res_tarr = json_object_get_array(r_tobj, "resultsArray");
@@ -727,38 +735,34 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
 
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("crypto module failed the HASH MCT operation");
+                    ACVP_LOG_ERR("Crypto module failed the HASH MCT operation");
                     acvp_hash_release_tc(&stc);
                     json_value_free(r_tval);
                     goto err;
                 }
             } else {
-                /* Process the current test vector... */
+                // Process the current test vector...
                 if ((cap->crypto_handler)(&tc)) {
-                    ACVP_LOG_ERR("crypto module failed the operation");
+                    ACVP_LOG_ERR("Crypto module failed the operation");
                     acvp_hash_release_tc(&stc);
                     json_value_free(r_tval);
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     goto err;
                 }
 
-                /*
-                 * Output the test case results using JSON
-                 */
+                // Output the test case results using JSON
                 rv = acvp_hash_output_tc(ctx, &stc, r_tobj);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in hash module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     acvp_hash_release_tc(&stc);
                     json_value_free(r_tval);
                     goto err;
                 }
             }
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_hash_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);
@@ -847,29 +851,29 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
 
     if (test_type == ACVP_HASH_TEST_TYPE_AFT ||
         test_type == ACVP_HASH_TEST_TYPE_LDT) {
-        /* AFT */
+        // AFT
         stc->md = calloc(1, ACVP_HASH_MD_BYTE_MAX);
         if (!stc->md) { return ACVP_MALLOC_FAIL; }
     } else if (test_type == ACVP_HASH_TEST_TYPE_VOT) {
-        /* VOT */
+        // VOT
         stc->md = calloc(1, ACVP_HASH_XOF_MD_BYTE_MAX);
         if (!stc->md) { return ACVP_MALLOC_FAIL; }
-    } else { /* MCT */
+    } else { // MCT
         if (alg_id == ACVP_HASH_SHA3_224 || alg_id == ACVP_HASH_SHA3_256 ||
             alg_id == ACVP_HASH_SHA3_384 || alg_id == ACVP_HASH_SHA3_512) {
-            /* SHA3 only needs the md buffer */
+            // SHA3 only needs the md buffer
             stc->md = calloc(1, ACVP_HASH_MD_BYTE_MAX);
             if (!stc->md) { return ACVP_MALLOC_FAIL; }
         } else if (alg_id == ACVP_HASH_SHAKE_128 ||
                    alg_id == ACVP_HASH_SHAKE_256) {
-            /* SHAKE needs the md to support XOF length */
+            // SHAKE needs the md to support XOF length
             stc->md = calloc(1, ACVP_HASH_XOF_MD_BYTE_MAX);
             if (!stc->md) { return ACVP_MALLOC_FAIL; }
         } else {
             stc->m1_len = msg_len;
             stc->m2_len = msg_len;
             stc->m3_len = msg_len;
-            /* SHA/SHA2; need bigger buffers if using alternate MCT */
+            // SHA/SHA2; need bigger buffers if using alternate MCT
             stc->md = calloc(1, mct_buffer);
             if (!stc->md) { return ACVP_MALLOC_FAIL; }
 

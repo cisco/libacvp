@@ -11,7 +11,7 @@
 
 int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
     /*
-     * "tc" is test_case->tc.ml_kem. All modes use tc->param_set to specify ML-KEM-512, 768, or 
+     * "tc" is test_case->tc.ml_kem. All modes use tc->param_set to specify ML-KEM-512, 768, or
      * 1024.
      *
      * For keygen, take tc->d and tc->z (seeds) and use them to generate tc->ek (encapsulation key)
@@ -25,7 +25,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
      *
      * For decapsulating, take tc->dk and tc->c and attempt to generate tc->k. Note that in the
      * case of invalid ciphertext being provided, the IuT is expected to still provide a k value
-     * that aligns with the "implicit rejection" function described in FIPS203. 
+     * that aligns with the "implicit rejection" function described in FIPS203.
      */
 
 

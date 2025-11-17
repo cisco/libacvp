@@ -3,8 +3,8 @@
  *
  * Octobber 2008, Bo Berry
  *
- * Copyright (c) 2008-2011 by Cisco Systems, Inc
- * All rights reserved. 
+ * Copyright (c) 2008-2025 by Cisco Systems, Inc
+ * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -32,60 +32,64 @@
 #ifndef __SAFE_LIB_ERRNO_H__
 #define __SAFE_LIB_ERRNO_H__
 #include <stddef.h>
+#include <errno.h>
 
 /*
- * CONFIGURE: If these errno codes are added to errno.h, then 
- * enable this macro
- */ 
-/* #define USING_ERRNO_H  */ 
-
-#ifdef USING_ERRNO_H
-
-#include "errno.h"
-
-#else
-
-/* 
- * Safe Lib specific errno codes.  These can be added to the errno.h file
- * if desired. 
+ * Update 2025: Previously, users could build with USING_ERRNO_H defined,
+ * and it would exclude the safeC error codes in the assumption that they
+ * were already defined in errno.h. EINVAL is always needed though, and we
+ * don't want the user to have to include headers themselves, or redefine
+ * EINVAL, so lets include errno.h and use ifndef for the error codes.
  */
-#undef  ESNULLP 
-#define ESNULLP         ( 400 )       /* null ptr                    */  
 
-#undef  ESZEROL
-#define ESZEROL         ( 401 )       /* length is zero              */  
+/*
+ * Safe Lib specific errno codes
+ */
+#ifndef  ESNULLP
+#define ESNULLP         ( 400 )       // null ptr
+#endif
 
-#undef  ESLEMIN  
-#define ESLEMIN         ( 402 )       /* length is below min         */  
+#ifndef  ESZEROL
+#define ESZEROL         ( 401 )       // length is zero
+#endif
 
-#undef  ESLEMAX 
-#define ESLEMAX         ( 403 )       /* length exceeds max          */  
+#ifndef  ESLEMIN
+#define ESLEMIN         ( 402 )       // length is below min
+#endif
 
-#undef  ESOVRLP 
-#define ESOVRLP         ( 404 )       /* overlap undefined           */ 
+#ifndef  ESLEMAX
+#define ESLEMAX         ( 403 )       // length exceeds max
+#endif
 
-#undef  ESEMPTY 
-#define ESEMPTY         ( 405 )       /* empty string                */ 
+#ifndef  ESOVRLP
+#define ESOVRLP         ( 404 )       // overlap ifndefined
+#endif
 
-#undef  ESNOSPC 
-#define ESNOSPC         ( 406 )       /* not enough space for s2     */  
+#ifndef  ESEMPTY
+#define ESEMPTY         ( 405 )       // empty string
+#endif
 
-#undef  ESUNTERM 
-#define ESUNTERM        ( 407 )       /* unterminated string         */  
+#ifndef  ESNOSPC
+#define ESNOSPC         ( 406 )       // not enough space for s2
+#endif
 
-#undef  ESNODIFF 
-#define ESNODIFF        ( 408 )       /* no difference               */ 
+#ifndef  ESUNTERM
+#define ESUNTERM        ( 407 )       // unterminated string
+#endif
 
-#undef  ESNOTFND
-#define ESNOTFND        ( 409 )       /* not found                   */ 
+#ifndef  ESNODIFF
+#define ESNODIFF        ( 408 )       // no difference
+#endif
 
-#undef  EINVAL
-#define EINVAL          ( 422 )       /* invalid                     */ 
+#ifndef  ESNOTFND
+#define ESNOTFND        ( 409 )       // not found
+#endif
 
-#endif 
+#ifndef EINVAL
+#define EINVAL          ( 422 )       // invalid
+#endif
 
-
-/* errno_t may or may not be defined in errno.h */ 
+// errno_t may or may not be defined in errno.h
 #ifndef errno_t
 typedef int errno_t;
 #endif
@@ -94,11 +98,11 @@ typedef int errno_t;
 typedef size_t rsize_t;
 #endif
 
-/* EOK may or may not be defined in errno.h */ 
-#ifndef EOK 
+// EOK may or may not be defined in errno.h
+#ifndef EOK
 #define EOK   0
 #endif
 
 
-#endif /* __SAFE_LIB_ERRNO_H__ */
+#endif // __SAFE_LIB_ERRNO_H__
 

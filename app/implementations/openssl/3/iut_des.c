@@ -14,7 +14,7 @@
 #include <openssl/evp.h>
 #include <openssl/err.h>
 
-static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
+static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; // need to maintain across calls for MCT
 
 void app_des_cleanup(void) {
     if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
@@ -35,14 +35,12 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
     }
 
     tc = test_case->tc.symmetric;
-    
+
     if (!tc) {
         goto err;
     }
 
-    /*
-     * We only support 3 key DES
-     */
+    // We only support 3 key DES
     if (tc->key_len != 192) {
         printf("Unsupported DES key length\n");
         goto err;
@@ -61,7 +59,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /* Begin encrypt code section */
+    // Begin encrypt code section
     cipher_ctx = glb_cipher_ctx;
 
     alg = acvp_get_tdes_alg(tc->cipher);
@@ -69,7 +67,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
         printf("Invalid cipher value");
         return 1;
     }
-    
+
     switch (alg) {
     case ACVP_SUB_TDES_ECB:
         cipher = EVP_des_ede3_ecb();
@@ -128,7 +126,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
                 EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, iv, 1);
                 EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             } else {
-                /* TDES needs the pre-operation IV returned */
+                // TDES needs the pre-operation IV returned
                 EVP_CIPHER_CTX_get_updated_iv(cipher_ctx, (void *)ctx_iv, 8);
                 memcpy_s(tc->iv_ret, SYM_IV_BYTE_MAX, ctx_iv, 8);
             }
@@ -138,7 +136,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
 
             EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
             tc->ct_len = tc->pt_len;
-            /* TDES needs the post-operation IV returned */
+            // TDES needs the post-operation IV returned
             EVP_CIPHER_CTX_get_updated_iv(cipher_ctx, (void *)ctx_iv, 8);
             memcpy_s(tc->iv_ret_after, SYM_IV_BYTE_MAX, ctx_iv, 8);
         } else if (tc->direction == ACVP_SYM_CIPH_DIR_DECRYPT) {
@@ -146,7 +144,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
                 EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, iv, 0);
                 EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             } else {
-                /* TDES needs the pre-operation IV returned */
+                // TDES needs the pre-operation IV returned
                 EVP_CIPHER_CTX_get_updated_iv(cipher_ctx, (void *)ctx_iv, 8);
                 memcpy_s(tc->iv_ret, SYM_IV_BYTE_MAX, ctx_iv, 8);
             }
@@ -155,7 +153,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
             }
             EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
             tc->pt_len = tc->ct_len;
-            /* TDES needs the post-operation IV returned */
+            // TDES needs the post-operation IV returned
             EVP_CIPHER_CTX_get_updated_iv(cipher_ctx, (void *)ctx_iv, 8);
             memcpy_s(tc->iv_ret_after, SYM_IV_BYTE_MAX, ctx_iv, 8);
         } else {
@@ -189,7 +187,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
 err:
     if (rv != 0) ERR_print_errors_fp(stderr);
     if (ctx_iv) free(ctx_iv);
-    //free global if not MCT, or if we are at at a specific point in MCT
+    // free global if not MCT, or if we are at at a specific point in MCT
     if (glb_cipher_ctx && (tc->test_type != ACVP_SYM_TEST_TYPE_MCT || tc->mct_index == ACVP_DES_MCT_INNER - 1)) {
         EVP_CIPHER_CTX_free(glb_cipher_ctx);
         glb_cipher_ctx = NULL;

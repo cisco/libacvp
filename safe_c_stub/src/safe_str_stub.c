@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------
  * safe_str_stub.c - Replacements for Safe C Library String Functions
- * 
+ *
  * Contains code derived from https://sourceforge.net/projects/safeclib/
  * license reproduced below
- * 
+ *
  * October 2008, Bo Berry
  *
  * Copyright (c) 2008-2011 by Cisco Systems, Inc
@@ -348,7 +348,7 @@ errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
         return (ESLEMAX);
     }
 
-    /* hold base in case src was not copied */  
+    // hold base in case src was not copied
     orig_dest = dest;
 
     if (src == NULL) {
@@ -367,15 +367,15 @@ errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
         while (dmax > 0) {
             if (dest == overlap_bumper) {
                 *orig_dest = '\0';
-                return (ESOVRLP); 
+                return (ESOVRLP);
             }
 
 	    if (slen == 0) {
                 /*
                  * Copying truncated to n chars.  Note that the C11 says to
-                 * copy n chars plus the null char.  
+                 * copy n chars plus the null char.
                  */
-                *dest = '\0'; 
+                *dest = '\0';
                 return (EOK);
             }
 
@@ -390,21 +390,21 @@ errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
             src++;
         }
 
-    } else { 
+    } else {
         overlap_bumper = dest;
 
         while (dmax > 0) {
             if (src == overlap_bumper) {
                 *orig_dest = '\0';
-                return (ESOVRLP); 
+                return (ESOVRLP);
             }
 
 	    if (slen == 0) {
                 /*
                  * Copying truncated to n chars.  Note that the C11 says to
-                 * copy n chars plus the null char. 
+                 * copy n chars plus the null char.
                  */
-                *dest = '\0'; 
+                *dest = '\0';
                 return (EOK);
             }
 
@@ -418,11 +418,9 @@ errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
             dest++;
             src++;
         }
-    } 
+    }
 
-    /*
-     * the entire src was not copied, so zero the string
-     */
+    // the entire src was not copied, so zero the string
     *orig_dest = '\0';
 
     return(ESNOSPC);
@@ -446,7 +444,7 @@ rsize_t strnlen_s (const char *s, rsize_t smax) {
  *
  * Emulate subset of the functionality of strstr_s() with strstr()
  */
-errno_t strstr_s (char *dest, rsize_t dmax, 
+errno_t strstr_s (char *dest, rsize_t dmax,
                   const char *src, rsize_t slen, char **substring) {
     SAFEC_STUB_UNUSED(dmax);
     SAFEC_STUB_UNUSED(slen);
@@ -495,14 +493,12 @@ strtok_s (char *dest, rsize_t *dmax, const char *src, char **ptr)
         return (NULL);
     }
 
-    /* if the source was NULL, use the tokenizer context */
+    // if the source was NULL, use the tokenizer context
     if (dest == NULL) {
         dest = *ptr;
     }
 
-    /*
-     * scan dest for a delimiter
-     */
+    // scan dest for a delimiter
     dlen = *dmax;
     ptoken = NULL;
     while (*dest != '\0' && !ptoken) {
@@ -547,9 +543,7 @@ strtok_s (char *dest, rsize_t *dmax, const char *src, char **ptr)
         return (ptoken);
     }
 
-    /*
-     * Now we need to locate the end of the token
-     */
+    // Now we need to locate the end of the token
     while (*dest != '\0') {
 
         if (dlen == 0) {
@@ -573,13 +567,11 @@ strtok_s (char *dest, rsize_t *dmax, const char *src, char **ptr)
                  * and return context ptr to next char
                  */
                 *dest = '\0';
-                *ptr = (dest + 1);  /* return pointer for next scan */
-                *dmax = dlen - 1;   /* account for the nulled delimiter */
+                *ptr = (dest + 1);  // return pointer for next scan
+                *dmax = dlen - 1;   // account for the nulled delimiter
                 return (ptoken);
             } else {
-                /*
-                 * simply scanning through the delimiter string
-                 */
+                // simply scanning through the delimiter string
                 pt++;
             }
         }
@@ -591,9 +583,7 @@ strtok_s (char *dest, rsize_t *dmax, const char *src, char **ptr)
     return (ptoken);
 }
 
-/*
- * strremovews_s
- */
+// strremovews_s
 errno_t strremovews_s (char *s, rsize_t smax) {
 	if (!s) return (ESNULLP);
 	if (smax == 0) return (ESZEROL);
@@ -617,14 +607,14 @@ errno_t strremovews_s (char *s, rsize_t smax) {
             while (orig_smax) { *orig_s++ = '\0';  orig_smax--; }
             return (ESUNTERM);
         }
-        smax--; 
+        smax--;
 
         s++;
-    } 
+    }
 
 
 	
-    if (new_s != s) { 
+    if (new_s != s) {
         while (*s) {
 
             if (smax == 0) {
@@ -634,11 +624,11 @@ errno_t strremovews_s (char *s, rsize_t smax) {
             smax--;
 
             *new_s++ = *s;
-            *s++ = ' '; 
-        } 
+            *s++ = ' ';
+        }
         *new_s = '\0';
 
-    } else { 
+    } else {
         while (*s) {
 
             if (smax == 0) {
@@ -649,13 +639,13 @@ errno_t strremovews_s (char *s, rsize_t smax) {
 
             s++;
         }
-    }  
+    }
 
-    s--; 
+    s--;
     while ((*s == ' ') || (*s == '\t') || (*s == '\0')) {
-        *s = '\0'; 
+        *s = '\0';
         s--;
-    } 
+    }
 
     return (EOK);
 }

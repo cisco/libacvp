@@ -19,7 +19,7 @@
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
@@ -87,7 +87,7 @@ static ACVP_RESULT acvp_pbkdf_init_tc(ACVP_PBKDF_TC *stc,
     rv = acvp_hexstr_to_bin(salt, stc->salt, salt_len, NULL);
     if (rv != ACVP_SUCCESS) return rv;
 
-    //copy password (string) to TC
+    // copy password (string) to TC
     stc->password = calloc(password_len + 1, sizeof(char));
     if (!stc->password) { return ACVP_MALLOC_FAIL; }
     tmp = strncpy_s(stc->password, password_len + 1, password, password_len);
@@ -96,7 +96,7 @@ static ACVP_RESULT acvp_pbkdf_init_tc(ACVP_PBKDF_TC *stc,
 
     stc->iterationCount = iterationCount;
 
-    //Allocate space for output (key)
+    // Allocate space for output (key)
     stc->key = calloc(ACVP_PBKDF_KEY_BYTE_MAX + 1, sizeof(unsigned char));
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
 
@@ -204,9 +204,9 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
 
     ACVP_CAPS_LIST *cap;
     ACVP_PBKDF_TC stc;
@@ -239,39 +239,34 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_INVALID_ARG;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.pbkdf = &stc;
 
-    /*
-     * Get the crypto module handler for this hash algorithm
-     */
+    // Get the crypto module handler for this hash algorithm
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
         return rv;
     }
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         int tgId = 0;
@@ -284,22 +279,19 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        test_type_str = json_object_get_string(groupobj, "testType");
-        if (!test_type_str) {
-            ACVP_LOG_ERR("Failed to include testType");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "testType", &test_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         test_type = read_test_type(test_type_str);
         if (!test_type) {
             ACVP_LOG_ERR("Server JSON invalid testType");
@@ -307,12 +299,11 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        hmac_alg_str = json_object_get_string(groupobj, "hmacAlg");
-        if (!hmac_alg_str) {
-            ACVP_LOG_ERR("Server JSON missing hmacAlg");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hmacAlg", &hmac_alg_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         hmac_alg = read_hmac_alg(hmac_alg_str);
         if (!hmac_alg) {
             ACVP_LOG_ERR("Server JSON invalid hmacAlg");
@@ -320,28 +311,30 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        /*
-         * Log Test Group information...
-         */
+        // Log Test Group information...
         ACVP_LOG_VERBOSE("    Test group: %d", i);
         ACVP_LOG_VERBOSE("       hmacAlg: %s", hmac_alg_str);
         ACVP_LOG_VERBOSE("      testType: %s", test_type_str);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
         for (j = 0; j < t_cnt; j++) {
             ACVP_LOG_VERBOSE("Found new pbkdf test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
-            if (!tc_id) {
-                ACVP_LOG_ERR("Server JSON missing 'tcId'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            key_len = json_object_get_number(testobj, "keyLen");
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "keyLen", &key_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (key_len < ACVP_PBKDF_KEY_BIT_MIN) {
                 ACVP_LOG_ERR("keyLen too low, given = %d, min = %d", key_len, ACVP_PBKDF_KEY_BIT_MIN);
                 rv = ACVP_INVALID_ARG;
@@ -351,30 +344,28 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
-            //convert to byte length
+            // convert to byte length
             key_len /= 8;
 
-            salt_str = json_object_get_string(testobj, "salt");
-            if (!salt_str) {
-                ACVP_LOG_ERR("Server JSON missing salt");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "salt", &salt_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             salt_len = strnlen_s(salt_str, ACVP_PBKDF_SALT_LEN_STR_MAX + 1);
             if (salt_len > ACVP_PBKDF_SALT_LEN_STR_MAX) {
                 ACVP_LOG_ERR("salt too long, max allowed=(%d)", ACVP_PBKDF_SALT_LEN_STR_MAX);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
-            //convert to byte length
+            // convert to byte length
             salt_len /= 2;
 
-            password_str = json_object_get_string(testobj, "password");
-            if (!password_str) {
-                ACVP_LOG_ERR("Server JSON missing password");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "password", &password_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             password_len = strnlen_s(password_str, ACVP_PBKDF_PASS_LEN_MAX + 1);
             if (password_len < ACVP_PBKDF_PASS_LEN_MIN) {
                 ACVP_LOG_ERR("password to short, min allowed=(%d)", ACVP_PBKDF_PASS_LEN_MIN);
@@ -386,7 +377,10 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-           iteration_count = json_object_get_number(testobj, "iterationCount");
+           rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "iterationCount", &iteration_count);
+           if (rv != ACVP_SUCCESS) {
+               goto err;
+           }
            if (iteration_count < ACVP_PBKDF_ITERATION_MIN) {
                ACVP_LOG_ERR("iterationCount too short, min allowed=(%d)", ACVP_PBKDF_ITERATION_MIN);
                rv = ACVP_INVALID_ARG;
@@ -397,9 +391,7 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                goto err;
            }
 
-            /*
-             * Log Test Case information...
-             */
+            // Log Test Case information...
             ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
             ACVP_LOG_VERBOSE("           keyLen: %d", key_len);
@@ -419,38 +411,32 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if ((cap->crypto_handler)(&tc)) {
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 acvp_pbkdf_release_tc(&stc);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 goto err;
             }
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             rv = acvp_pbkdf_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure for pbkdf tc");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 json_value_free(r_tval);
                 acvp_pbkdf_release_tc(&stc);
                 goto err;
             }
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_pbkdf_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

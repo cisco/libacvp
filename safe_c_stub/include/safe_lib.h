@@ -1,11 +1,11 @@
 /*------------------------------------------------------------------
  * safe_lib.h -- Stub SafeC library includes
  *
- * June, 2016 
+ * June, 2016
  *
  * Contains code derived from https://sourceforge.net/projects/safeclib/
  * license reproduced below
- * 
+ *
  * October 2008, Bo Berry
  *
  * Copyright (c) 2008-2011 by Cisco Systems, Inc
@@ -38,7 +38,7 @@
 
 
 #ifdef _WIN32
-#define __restrict__ 
+#define __restrict__
 #endif
 
 #ifdef __cplusplus
@@ -53,5 +53,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif /* __SAFE_LIB_H__ */
+#endif // __SAFE_LIB_H__
 

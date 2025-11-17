@@ -19,7 +19,7 @@
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
@@ -117,7 +117,7 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc(ACVP_CTX *ctx,
     memzero_s(stc, sizeof(ACVP_KDF135_SRTP_TC));
 
     if (!kdr || !master_key || !master_salt || !idx || !srtcp_idx) {
-        ACVP_LOG_ERR("Missing parameters - initalize KDF SRTP test case");
+        ACVP_LOG_ERR("Missing parameters - initialize KDF SRTP test case");
         return ACVP_INVALID_ARG;
     }
 
@@ -152,8 +152,7 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc(ACVP_CTX *ctx,
 
     stc->idx = calloc(ACVP_KDF135_SRTP_INDEX_MAX, sizeof(char));
     if (!stc->idx) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(idx, (unsigned char *)stc->idx, ACVP_KDF135_SRTP_INDEX_MAX,
-                            NULL);
+    rv = acvp_hexstr_to_bin(idx, (unsigned char *)stc->idx, ACVP_KDF135_SRTP_INDEX_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (idx)");
         return rv;
@@ -202,9 +201,9 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_SRTP_TC stc;
     ACVP_TEST_CASE tc;
@@ -239,9 +238,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_INVALID_ARG;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.kdf135_srtp = &stc;
     stc.cipher = alg_id;
 
@@ -251,25 +248,24 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
         goto err;
     }
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         int tgId = 0;
@@ -282,27 +278,21 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        aes_key_length = json_object_get_number(groupobj, "aesKeyLength");
-        if (!aes_key_length) {
-            ACVP_LOG_ERR("aesKeyLength incorrect, %d", aes_key_length);
-            rv = ACVP_INVALID_ARG;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "aesKeyLength", &aes_key_length);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
-        kdr = json_object_get_string(groupobj, "kdr");
-        if (!kdr) {
-            ACVP_LOG_ERR("Failed to include kdr");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "kdr", &kdr);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
@@ -310,7 +300,10 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("           kdr: %s", kdr);
         ACVP_LOG_VERBOSE("    key length: %d", aes_key_length);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
@@ -318,33 +311,28 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
-
-            master_key = json_object_get_string(testobj, "masterKey");
-            if (!master_key) {
-                ACVP_LOG_ERR("Failed to include JSON key:\"masterKey\"");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            master_salt = json_object_get_string(testobj, "masterSalt");
-            if (!master_salt) {
-                ACVP_LOG_ERR("Failed to include JSON key:\"masterSalt\"");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "masterKey", &master_key);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            idx = json_object_get_string(testobj, "index");
-            if (!idx) {
-                ACVP_LOG_ERR("Failed to include JSON key:\"idx\"");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "masterSalt", &master_salt);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
-            srtcp_idx = json_object_get_string(testobj, "srtcpIndex");
-            if (!srtcp_idx) {
-                ACVP_LOG_ERR("Failed to include JSON key:\"srtcpIndex\"");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "index", &idx);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "srtcpIndex", &srtcp_idx);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -355,9 +343,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("            idx: %s", idx);
             ACVP_LOG_VERBOSE("       srtcpIndex: %s", srtcp_idx);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -374,31 +360,27 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if ((cap->crypto_handler)(&tc)) {
-                ACVP_LOG_ERR("crypto module failed");
+                ACVP_LOG_ERR("Crypto module failed");
                 acvp_kdf135_srtp_release_tc(&stc);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
                 goto err;
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             rv = acvp_kdf135_srtp_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 acvp_kdf135_srtp_release_tc(&stc);
                 json_value_free(r_tval);
                 goto err;
             }
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_kdf135_srtp_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

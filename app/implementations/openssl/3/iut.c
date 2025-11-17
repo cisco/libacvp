@@ -35,7 +35,7 @@ void iut_print_version(APP_CONFIG *cfg) {
 
     if (!cfg->disable_fips) {
         printf("       FIPS requested: yes\n");
-        /* Get the FIPS provider version number */
+        // Get the FIPS provider version number
         str = get_provider_version("OpenSSL FIPS Provider");
         if (!str) {
            printf("Error: Unable to detect FIPS provider version; please ensure it is configured properly\n");
@@ -71,13 +71,13 @@ ACVP_RESULT iut_setup(APP_CONFIG *cfg) {
     }
 
     if (!cfg->disable_fips) {
-        /* sets the property "fips=yes" to be included implicitly in cipher fetches */
+        // sets the property "fips=yes" to be included implicitly in cipher fetches
         EVP_default_properties_enable_fips(NULL, 1);
         if (!EVP_default_properties_is_fips_enabled(NULL)) {
             printf("Error setting FIPS property at startup\n\n");
             return 1;
         }
-        /* Run a quick sanity check to determine that the FIPS provider is functioning properly */
+        // Run a quick sanity check to determine that the FIPS provider is functioning properly
         rv = fips_sanity_check();
         if (rv != ACVP_SUCCESS) {
             printf("Error occurred when testing FIPS at startup (rv = %d). Please verify the FIPS provider is\n", rv);
@@ -101,8 +101,8 @@ ACVP_RESULT iut_setup(APP_CONFIG *cfg) {
         acvp_sleep(5);
     }
 
-    /* Check if the provider has DSA disabled; other conditional algorithm flags can be checked here in the future if needed */
-    //TODO
+    // Check if the provider has DSA disabled; other conditional algorithm flags can be checked here in the future if needed
+    // TODO
     max_ldt_size = cfg->max_ldt_size;
     rv = ACVP_SUCCESS;
     return rv;
@@ -113,7 +113,7 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
         return register_capabilities_non_fips(ctx, cfg);
     } else if (fips_ver <= OPENSSL_FIPS_309) {
         printf("Registering capabilities for FP 3.0.X...\n");
-        /* 3.0.X registrations are so nearly identical, we left them combined. */
+        // 3.0.X registrations are so nearly identical, we left them combined.
         return register_capabilities_fp_30X(ctx, cfg);
     } else if (fips_ver <= OPENSSL_FIPS_312) {
         printf("Registering capabilities for FP 3.1.2...\n");
@@ -121,8 +121,11 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
     } else if (fips_ver < OPENSSL_FIPS_350) { // for any versions of 3.4.0
         printf("Registering capabilities for FP 3.4.0 (not certified)...\n");
         return register_capabilities_fp_340(ctx, cfg);
-    } else {
+    } else if (fips_ver < OPENSSL_FIPS_360) { // for any versions of 3.5.0
         printf("Registering capabilities for FP 3.5.0...\n");
         return register_capabilities_fp_350(ctx, cfg);
+    } else {
+        printf("Registering capabilities for FP 4.X (unverified)...\n");
+        return register_capabilities_fp_4x(ctx, cfg);
     }
 }

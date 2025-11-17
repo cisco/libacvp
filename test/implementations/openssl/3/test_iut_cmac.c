@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -18,9 +18,11 @@
 #include "acvp/acvp_lcl.h"
 #include "acvp/acvp.h"
 
-static ACVP_TEST_CASE *test_case;
-ACVP_CMAC_TC *cmac_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_CMAC_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_CMAC_TC *cmac_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 int initialize_cmac_tc(ACVP_CMAC_TC *cmac_tc,
                        int alg_id, char *mac,
@@ -109,66 +111,62 @@ void free_cmac_tc(ACVP_CMAC_TC *cmac_tc) {
     memset(cmac_tc, 0x0, sizeof(ACVP_CMAC_TC));
 }
 
-/*
- * missing msg in cmac tc test case
- */
-Test(APP_CMAC_HANDLER, missing_msg) {
+TEST_SETUP(APP_CMAC_HANDLER) {}
+TEST_TEAR_DOWN(APP_CMAC_HANDLER) {}
+
+TEST(APP_CMAC_HANDLER, missing_msg) {
     char *msg = NULL;
     char *key = "aaaa";
     cmac_tc = calloc(1, sizeof(ACVP_CMAC_TC));
     
     if (!initialize_cmac_tc(cmac_tc, ACVP_CMAC_AES, NULL, msg, 8, key, 16, NULL, NULL, 0, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.cmac = cmac_tc;
     
     rv = app_cmac_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_cmac_tc(cmac_tc);
     free(cmac_tc);
     free(test_case);
 }
 
-/*
- * missing key in cmac tc test case
- */
-Test(APP_CMAC_HANDLER, missing_key_aes) {
+// missing key in cmac tc test case
+TEST(APP_CMAC_HANDLER, missing_key_aes) {
     char *msg = "aaaa";
     char *key = NULL;
     cmac_tc = calloc(1, sizeof(ACVP_CMAC_TC));
 
     if (!initialize_cmac_tc(cmac_tc, ACVP_CMAC_AES, NULL, msg, 8, key, 16, NULL, NULL, 0, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.cmac = cmac_tc;
     
     rv = app_cmac_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_cmac_tc(cmac_tc);
     free(cmac_tc);
     free(test_case);
 }
 
-/*
- * missing key in cmac tc test case
- */
-Test(APP_CMAC_HANDLER, missing_keys_tdes) {
+// missing key in cmac tc test case
+TEST(APP_CMAC_HANDLER, missing_keys_tdes) {
     char *msg = "aaaa";
     char *key = NULL;
     cmac_tc = calloc(1, sizeof(ACVP_CMAC_TC));
     
     if (!initialize_cmac_tc(cmac_tc, ACVP_CMAC_TDES, NULL, msg, 8, key, 16, NULL, NULL, 0, 0)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.cmac = cmac_tc;
     
     rv = app_cmac_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_cmac_tc(cmac_tc);
     free(cmac_tc);
@@ -180,22 +178,21 @@ Test(APP_CMAC_HANDLER, missing_keys_tdes) {
  * by the library. here we don't allocate it and test
  * to see if the handler gracefully handles it
  */
-Test(APP_CMAC_HANDLER, disposition_mem_not_allocated) {
+TEST(APP_CMAC_HANDLER, disposition_mem_not_allocated) {
     char key[] = "aaaa";
     char msg[] = "AA";
     cmac_tc = calloc(1, sizeof(ACVP_CMAC_TC));
 
     if (!initialize_cmac_tc(cmac_tc, ACVP_CMAC_AES, NULL, msg, 8, key, 16, NULL, NULL, 0, 1)) {
-        cr_assert_fail("hash init tc failure");
+        TEST_FAIL_MESSAGE("hash init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.cmac = cmac_tc;
 
     rv = app_cmac_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_cmac_tc(cmac_tc);
     free(cmac_tc);
     free(test_case);
 }
-

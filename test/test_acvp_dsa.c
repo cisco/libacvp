@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,126 +8,275 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
 #include "ut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx;
+TEST_GROUP(DsaKeyGenApi);
+TEST_GROUP(DsaKeyGenFunc);
+TEST_GROUP(DsaKeyGen_HANDLER);
+TEST_GROUP(DsaPqgGenApi);
+TEST_GROUP(DsaPqgGenFunc);
+TEST_GROUP(DsaPqgVerApi);
+TEST_GROUP(DsaPqgVerFunc);
+TEST_GROUP(DsaPqgVer_HANDLER);
+TEST_GROUP(DsaSigGenApi);
+TEST_GROUP(DsaSigGenFunc);
+TEST_GROUP(DsaSigVerApi);
+TEST_GROUP(DsaSigVerFunc);
+TEST_GROUP(SigGen_HANDLER);
+
+static ACVP_CTX *ctx = NULL;
+static ACVP_RESULT rv = 0;
+static JSON_Object *obj = NULL;
+static JSON_Value *val = NULL;
 static char cvalue[] = "same";
 
 static void setup_pqggen(void)
 {
-    ACVP_RESULT rv;
 
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGGEN, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGGEN, ACVP_PREREQ_DRBG, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_GENPQ, ACVP_DSA_PROBABLE);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_GENG, ACVP_DSA_CANONICAL);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 }
 
 static void setup_keygen(void)
 {
-    ACVP_RESULT rv;
 
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_KEYGEN, ACVP_PREREQ_DRBG, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_224, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_224, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_224, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_224, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_256, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 }
 
 static void setup_siggen(void)
 {
-    ACVP_RESULT rv;
 
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_SIGGEN, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_SIGGEN, ACVP_PREREQ_DRBG, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_224, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_224, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_224, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_224, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_256, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 }
 
+// Test DSA PQGGEN handler API inputs
 
-/*
- * Test DSA PQGGEN handler API inputs
- */
-Test(DsaPqgGenApi, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
+// Empty setup/teardown for groups without fixtures
+TEST_SETUP(DsaKeyGenApi) {
     setup_empty_ctx(&ctx);
+}
 
+TEST_TEAR_DOWN(DsaKeyGenApi) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(DsaKeyGenFunc) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(DsaKeyGenFunc) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(DsaKeyGen_HANDLER) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(DsaKeyGen_HANDLER) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(DsaPqgGenApi) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(DsaPqgGenApi) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(DsaPqgGenFunc) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(DsaPqgGenFunc) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(DsaPqgVerApi) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(DsaPqgVerApi) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(DsaPqgVerFunc) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(DsaPqgVerFunc) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(DsaPqgVer_HANDLER) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(DsaPqgVer_HANDLER) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(DsaSigGenApi) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(DsaSigGenApi) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(DsaSigGenFunc) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(DsaSigGenFunc) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(DsaSigVerApi) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(DsaSigVerApi) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(DsaSigVerFunc) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(DsaSigVerFunc) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(SigGen_HANDLER) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(SigGen_HANDLER) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST(DsaPqgGenApi, null_ctx) {
     val = json_parse_file("json/dsa/dsa_pqggen1.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -138,38 +287,27 @@ Test(DsaPqgGenApi, null_ctx) {
 
     /* Test with unregistered ctx */
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
 
     /* Enable capabilites */
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGGEN, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     setup_pqggen();
 
     /* Test with NULL ctx */
     rv  = acvp_dsa_kat_handler(NULL, obj);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     /* Test with NULL JSON object */
     rv  = acvp_dsa_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
-/*
- * Test DSA PQGGEN handler functionally
- */
-Test(DsaPqgGenFunc, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
-
+// Test DSA PQGGEN handler functionally
+TEST(DsaPqgGenFunc, null_ctx) {
     /* Enable capabilites */
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGGEN, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     setup_pqggen();
 
     /* This is a proper JSON, positive test */
@@ -182,7 +320,7 @@ Test(DsaPqgGenFunc, null_ctx) {
     }
 
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include mode */
@@ -194,7 +332,7 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include l */
@@ -206,7 +344,7 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include n */
@@ -218,7 +356,7 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include hashAlg */
@@ -230,7 +368,7 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include pqMode */
@@ -242,7 +380,7 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include gmode */
@@ -254,9 +392,8 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
-
 
     /* Test failing case, failed to include p */
     val = json_parse_file("json/dsa/dsa_pqggen8.json");
@@ -267,7 +404,7 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include q */
@@ -279,7 +416,7 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include domainSeed */
@@ -291,7 +428,7 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include index */
@@ -303,7 +440,7 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Positive test case for coverage */
@@ -315,7 +452,7 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
 
     /* Missing tgId */
@@ -327,7 +464,7 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Missing tgId */
@@ -339,7 +476,7 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Missing tgId */
@@ -351,24 +488,11 @@ Test(DsaPqgGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
-
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
-
-/*
- * Test DSA KEYGEN handler API inputs
- */
-Test(DsaKeyGenApi, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
-
+// Test DSA KEYGEN handler API inputs
+TEST(DsaKeyGenApi, null_ctx) {
     val = json_parse_file("json/dsa/dsa_keygen1.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -379,37 +503,27 @@ Test(DsaKeyGenApi, null_ctx) {
 
     /* Test with unregistered ctx */
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
 
     /* Enable capabilites */
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     setup_keygen();
 
     /* Test with NULL ctx */
     rv  = acvp_dsa_kat_handler(NULL, obj);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     /* Test with NULL JSON object */
     rv  = acvp_dsa_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
-    json_value_free(val);
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
-/*
- * Test DSA KEYGEN handler functionally
- */
-Test(DsaKeyGenFunc, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
-
+// Test DSA KEYGEN handler functionally
+TEST(DsaKeyGenFunc, null_ctx) {
     /* Enable capabilites */
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     setup_keygen();
 
     /* This is a proper JSON, positive test */
@@ -422,7 +536,7 @@ Test(DsaKeyGenFunc, null_ctx) {
     }
 
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include mode */
@@ -434,7 +548,7 @@ Test(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include l */
@@ -446,7 +560,7 @@ Test(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include n */
@@ -458,7 +572,7 @@ Test(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Positive test case for coverage */
@@ -470,7 +584,7 @@ Test(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
 
     /* Positive test case for coverage */
@@ -482,7 +596,7 @@ Test(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
 
     /* missing tgId */
@@ -494,7 +608,7 @@ Test(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 
     json_value_free(val);
 
@@ -507,7 +621,7 @@ Test(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 
     json_value_free(val);
 
@@ -520,24 +634,11 @@ Test(DsaKeyGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
-
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
-
-/*
- * Test DSA SIGGEN handler API inputs
- */
-Test(DsaSigGenApi, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
-
+// Test DSA SIGGEN handler API inputs
+TEST(DsaSigGenApi, null_ctx) {
     val = json_parse_file("json/dsa/dsa_siggen1.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -548,38 +649,27 @@ Test(DsaSigGenApi, null_ctx) {
 
     /* Test with unregistered ctx */
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
 
     /* Enable capabilites */
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     setup_siggen();
 
     /* Test with NULL ctx */
     rv  = acvp_dsa_kat_handler(NULL, obj);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     /* Test with NULL JSON object */
     rv  = acvp_dsa_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
-/*
- * Test DSA SIGGEN handler functionally
- */
-Test(DsaSigGenFunc, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
-
+// Test DSA SIGGEN handler functionally
+TEST(DsaSigGenFunc, null_ctx) {
     /* Enable capabilites */
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     setup_siggen();
 
     /* This is a proper JSON, positive test */
@@ -592,7 +682,7 @@ Test(DsaSigGenFunc, null_ctx) {
     }
 
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include mode */
@@ -604,7 +694,7 @@ Test(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include l */
@@ -616,7 +706,7 @@ Test(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include n */
@@ -628,7 +718,7 @@ Test(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include hashAlg */
@@ -640,7 +730,7 @@ Test(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include message */
@@ -652,9 +742,8 @@ Test(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
-
 
     /* Test failing case, failed to include tests */
     val = json_parse_file("json/dsa/dsa_siggen7.json");
@@ -665,7 +754,7 @@ Test(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include testGroup */
@@ -677,7 +766,7 @@ Test(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -689,7 +778,7 @@ Test(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tgId */
@@ -701,7 +790,7 @@ Test(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, missing field in last tgId */
@@ -713,7 +802,7 @@ Test(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, missing field in last tcId */
@@ -725,24 +814,11 @@ Test(DsaSigGenFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
-
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
-
-/*
- * Test DSA SIGVER handler API inputs
- */
-Test(DsaSigVerApi, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
-
+// Test DSA SIGVER handler API inputs
+TEST(DsaSigVerApi, null_ctx) {
     val = json_parse_file("json/dsa/dsa_sigver1.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -753,93 +829,82 @@ Test(DsaSigVerApi, null_ctx) {
 
     /* Test with unregistered ctx */
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
 
     /* Enable capabilites */
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGVER, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_SIGVER, ACVP_PREREQ_DRBG, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     /* Test with NULL ctx */
     rv  = acvp_dsa_kat_handler(NULL, obj);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     /* Test with NULL JSON object */
     rv  = acvp_dsa_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
-/*
- * Test DSA SIGVER handler functionally
- */
-Test(DsaSigVerFunc, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
-
+// Test DSA SIGVER handler functionally
+TEST(DsaSigVerFunc, null_ctx) {
     /* Enable capabilites */
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGVER, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_SIGVER, ACVP_PREREQ_DRBG, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     /* This is a proper JSON, positive test */
     val = json_parse_file("json/dsa/dsa_sigver1.json");
@@ -851,7 +916,7 @@ Test(DsaSigVerFunc, null_ctx) {
     }
 
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include mode */
@@ -863,7 +928,7 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include l */
@@ -875,7 +940,7 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include n */
@@ -887,7 +952,7 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include hashAlg */
@@ -899,7 +964,7 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include message */
@@ -911,9 +976,8 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
-
 
     /* Test failing case, failed to include tests */
     val = json_parse_file("json/dsa/dsa_sigver7.json");
@@ -924,7 +988,7 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include testGroup */
@@ -936,7 +1000,7 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -948,7 +1012,7 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -960,7 +1024,7 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -972,20 +1036,20 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
     val = json_parse_file("json/dsa/dsa_sigver12.json");
 
     obj = ut_get_obj_from_rsp(val);
-    cr_assert(obj != NULL);
+    TEST_ASSERT_NOT_EQUAL(NULL, obj);
     if (!obj) {
         ACVP_LOG_ERR("JSON obj parse error");
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -997,7 +1061,7 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1009,7 +1073,7 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1021,7 +1085,7 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tgId */
@@ -1033,7 +1097,7 @@ Test(DsaSigVerFunc, null_ctx) {
     return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, missing field in last tgId */
@@ -1045,7 +1109,7 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, missing field in last tcId */
@@ -1057,22 +1121,11 @@ Test(DsaSigVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
-    json_value_free(val);
-    teardown_ctx(&ctx);
-
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
-/*
- * Test DSA PQGVER handler API inputs
- */
-Test(DsaPqgVerApi, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
-
+// Test DSA PQGVER handler API inputs
+TEST(DsaPqgVerApi, null_ctx) {
     val = json_parse_file("json/dsa/dsa_pqgver1.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -1083,93 +1136,82 @@ Test(DsaPqgVerApi, null_ctx) {
 
     /* Test with unregistered ctx */
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
 
     /* Enable capabilites */
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGVER, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGVER, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGVER, ACVP_PREREQ_DRBG, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_GENPQ, ACVP_DSA_PROBABLE);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_GENG, ACVP_DSA_CANONICAL);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     /* Test with NULL ctx */
     rv  = acvp_dsa_kat_handler(NULL, obj);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     /* Test with NULL JSON object */
     rv  = acvp_dsa_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
-/*
- * Test DSA PQGVER handler functionally
- */
-Test(DsaPqgVerFunc, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
-
+// Test DSA PQGVER handler functionally
+TEST(DsaPqgVerFunc, null_ctx) {
     /* Enable capabilites */
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGVER, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGVER, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGVER, ACVP_PREREQ_DRBG, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_GENPQ, ACVP_DSA_PROBABLE);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_GENG, ACVP_DSA_CANONICAL);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_SHA224);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_SHA256);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_SHA384);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     /* This is a proper JSON, positive test */
     val = json_parse_file("json/dsa/dsa_pqgver1.json");
@@ -1181,7 +1223,7 @@ Test(DsaPqgVerFunc, null_ctx) {
     }
 
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include mode */
@@ -1193,7 +1235,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include l */
@@ -1205,7 +1247,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include n */
@@ -1217,7 +1259,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include hashAlg */
@@ -1229,7 +1271,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include message */
@@ -1241,9 +1283,8 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
-
 
     /* Test failing case, failed to include tests */
     val = json_parse_file("json/dsa/dsa_pqgver7.json");
@@ -1254,7 +1295,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include testGroup */
@@ -1266,7 +1307,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1278,7 +1319,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
 #if 0
@@ -1291,7 +1332,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
     json_value_free(val);
 #endif
 
@@ -1304,7 +1345,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1316,7 +1357,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tcId */
@@ -1328,7 +1369,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* Test failing case, failed to include tgId */
@@ -1340,7 +1381,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 
     json_value_free(val);
 
@@ -1353,7 +1394,7 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 
     json_value_free(val);
 
@@ -1366,26 +1407,19 @@ Test(DsaPqgVerFunc, null_ctx) {
         return;
     }
     rv  = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
-
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
 /*
  * This is a good JSON.
  * Will fail as defined by the counter values.
  */
-Test(DsaPqgVer_HANDLER, cryptoFail1) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+TEST(DsaPqgVer_HANDLER, cryptoFail1) {
+    force_handler_failure = 1;
 
-    setup_empty_ctx(&ctx);
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGGEN, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     setup_pqggen();
     /* This is a proper JSON, positive test */
@@ -1400,26 +1434,20 @@ Test(DsaPqgVer_HANDLER, cryptoFail1) {
     counter_fail = 0; /* fail on first iteration of AFT */
 
     rv = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
+    force_handler_failure = 0;
 }
 
 /*
  * This is a good JSON.
  * Will fail as defined by the counter values.
  */
-Test(DsaPqgVer_HANDLER, cryptoFail2) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
+TEST(DsaPqgVer_HANDLER, cryptoFail2) {
+    force_handler_failure = 1;
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGGEN, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     setup_pqggen();
     /* This is a proper JSON, positive test */
@@ -1434,26 +1462,21 @@ Test(DsaPqgVer_HANDLER, cryptoFail2) {
     counter_fail = 20;  /* fail on 21st(last) iteration of AFT */
 
     rv = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
+    force_handler_failure = 0;
 }
 
 /*
  * This is a good JSON.
  * Will fail as defined by the counter values.
  */
-Test(DsaKeyGen_HANDLER, cryptoFail1) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+TEST(DsaKeyGen_HANDLER, cryptoFail1) {
+    force_handler_failure = 1;
 
-    setup_empty_ctx(&ctx);
     /* Enable capabilites */
 
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     setup_keygen();
     /* This is a proper JSON, positive test */
@@ -1468,26 +1491,20 @@ Test(DsaKeyGen_HANDLER, cryptoFail1) {
     counter_fail = 0; /* fail on first iteration of AFT */
 
     rv = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
+    force_handler_failure = 0;
 }
 
 /*
  * This is a good JSON.
  * Will fail as defined by the counter values.
  */
-Test(DsaKeyGen_HANDLER, cryptoFail2) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
+TEST(DsaKeyGen_HANDLER, cryptoFail2) {
+    force_handler_failure = 1;
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     setup_keygen();
     /* This is a proper JSON, positive test */
@@ -1502,26 +1519,21 @@ Test(DsaKeyGen_HANDLER, cryptoFail2) {
     counter_fail = 9;  /* fail on 10th(last) iteration of AFT */
 
     rv = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
+    force_handler_failure = 0;
 }
 
 /*
  * This is a good JSON.
  * Will fail as defined by the counter values.
  */
-Test(SigGen_HANDLER, cryptoFail1) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+TEST(SigGen_HANDLER, cryptoFail1) {
+    force_handler_failure = 1;
 
-    setup_empty_ctx(&ctx);
     /* Enable capabilites */
 
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     setup_siggen();
     /* This is a proper JSON, positive test */
@@ -1536,26 +1548,20 @@ Test(SigGen_HANDLER, cryptoFail1) {
     counter_fail = 0; /* fail on first iteration of AFT */
 
     rv = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
+    force_handler_failure = 0;
 }
 
 /*
  * This is a good JSON.
  * Will fail as defined by the counter values.
  */
-Test(SigGen_HANDLER, cryptoFail2) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-
-    setup_empty_ctx(&ctx);
+TEST(SigGen_HANDLER, cryptoFail2) {
+    force_handler_failure = 1;
 
     /* Enable capabilites */
-    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     setup_siggen();
     /* This is a proper JSON, positive test */
@@ -1570,8 +1576,6 @@ Test(SigGen_HANDLER, cryptoFail2) {
     counter_fail = 2;  /* fail on 3rd(last) iteration of AFT */
 
     rv = acvp_dsa_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
+    force_handler_failure = 0;
 }

@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------
  * safe_str_lib.h - Replacements for Safe C Library String Functions
- * 
+ *
  * Contains code derived from https://sourceforge.net/projects/safeclib/
  * license reproduced below
- * 
+ *
  * October 2008, Bo Berry
  *
  * Copyright (c) 2008-2011 by Cisco Systems, Inc
@@ -37,61 +37,57 @@
 #include <stdint.h>
 #include "safe_lib_errno.h"
 
-/**
- * The shortest string is a null string!! 
- */
-#ifndef RSIZE_MIN_STR 
+// The shortest string is a null string!!
+#ifndef RSIZE_MIN_STR
 #define RSIZE_MIN_STR      ( 1 )
 #endif
 
 
-/**
- * The maximum sring length
- */
-#ifndef RSIZE_MAX_STR 
+// The maximum string length
+#ifndef RSIZE_MAX_STR
 #define RSIZE_MAX_STR     RSIZE_MAX
 #endif
 
-/* string compare */
+// string compare
 extern errno_t strcmp_s(const char *dest, rsize_t dmax, const char *src, int *indicator);
 
-/* string compare */
+// string compare
 extern errno_t strncmp_s(const char *dest, rsize_t dmax, const char *src, rsize_t smax, int *indicator);
 
-/* Case insensitive string compare */
+// Case insensitive string compare
 extern errno_t strcasecmp_s (const char *dest, rsize_t dmax, const char *src, int *indicator);
 
-/* string concatenate */
+// string concatenate
 extern errno_t strcat_s(char *dest, rsize_t dmax, const char *src);
 
-/* fitted string concatenate */
+// fitted string concatenate
 extern errno_t strncat_s(char *dest, rsize_t dmax, const char *src, rsize_t slen);
 
-/* string copy */
+// string copy
 extern errno_t strcpy_s(char *dest, rsize_t dmax, const char *src);
 
-/* fitted string copy */
+// fitted string copy
 extern errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen);
 
-/* string length */
+// string length
 extern rsize_t strnlen_s(const char *s, rsize_t smax);
 
-/* find a substring */ 
+// find a substring
 extern errno_t strstr_s(char *dest, rsize_t dmax, const char *src, rsize_t slen, char **substring);
 
-/* string tokenizer */
+// string tokenizer
 extern char *strtok_s(char *dest, rsize_t *dmax, const char *src, char **ptr);
 
-/* get span until character in string*/
+// get span until character in string
 extern errno_t strcspn_s(const char *dest, rsize_t dmax, const char *src,  rsize_t slen, rsize_t *count);
 
-/* get span of character set in string*/
+// get span of character set in string
 extern errno_t strspn_s(const char *dest, rsize_t dmax, const char *src,  rsize_t slen, rsize_t *count);
 
-/* determine if character is a digit*/
+// determine if character is a digit
 extern int strisdigit_s(const char *dest, rsize_t dmax);
 
-/* remove leading and trailing whitespace*/
+// remove leading and trailing whitespace
 extern errno_t strremovews_s(char *s, rsize_t smax);
 
-#endif /* __SAFE_STR_LIB_H__ */
+#endif // __SAFE_STR_LIB_H__

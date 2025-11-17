@@ -19,7 +19,7 @@
 
 /*
  * After the test case has been processed by the DUT, the results
- * need to be JSON formated to be included in the vector set results
+ * need to be JSON formatted to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
@@ -138,7 +138,7 @@ static ACVP_RESULT acvp_kda_onestep_init_tc(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Error copying array of fixedInfoPattern candidates into test case structure");
         rv = ACVP_MALLOC_FAIL;
         return rv;
-    } 
+    }
     if (salt) {
         stc->salt = calloc(1, ACVP_KDA_SALT_BYTE_MAX);
         if (!stc->salt) { return ACVP_MALLOC_FAIL; }
@@ -232,9 +232,9 @@ static ACVP_RESULT acvp_kda_onestep_init_tc(ACVP_CTX *ctx,
     }
 
     stc->outputDkm = calloc(ACVP_KDA_DKM_BYTE_MAX, 1);
-    if (!stc->outputDkm) { 
+    if (!stc->outputDkm) {
         ACVP_LOG_ERR("Failed to allocate outputDkm initializing test case");
-        return ACVP_MALLOC_FAIL; 
+        return ACVP_MALLOC_FAIL;
     }
 
     if (stc->type == ACVP_KDA_TT_VAL) {
@@ -336,7 +336,7 @@ static ACVP_RESULT acvp_kda_twostep_init_tc(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Error copying array of fixedInfoPattern candidates into test case structure");
         rv = ACVP_MALLOC_FAIL;
         return rv;
-    } 
+    }
 
     stc->salt = calloc(1, ACVP_KDA_SALT_BYTE_MAX);
     if (!stc->salt) { return ACVP_MALLOC_FAIL; }
@@ -440,9 +440,9 @@ static ACVP_RESULT acvp_kda_twostep_init_tc(ACVP_CTX *ctx,
     }
 
     stc->outputDkm = calloc(ACVP_KDA_DKM_BYTE_MAX, 1);
-    if (!stc->outputDkm) { 
+    if (!stc->outputDkm) {
         ACVP_LOG_ERR("Failed to allocate outputDkm initializing test case");
-        return ACVP_MALLOC_FAIL; 
+        return ACVP_MALLOC_FAIL;
     }
 
     if (stc->type == ACVP_KDA_TT_VAL) {
@@ -495,7 +495,7 @@ static ACVP_RESULT acvp_kda_hkdf_init_tc(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Error copying array of fixedInfoPattern candidates into test case structure");
         rv = ACVP_MALLOC_FAIL;
         return rv;
-    } 
+    }
 
     stc->salt = calloc(1, ACVP_KDA_SALT_BYTE_MAX);
     if (!stc->salt) { return ACVP_MALLOC_FAIL; }
@@ -588,9 +588,9 @@ static ACVP_RESULT acvp_kda_hkdf_init_tc(ACVP_CTX *ctx,
     }
 
     stc->outputDkm = calloc(ACVP_KDA_DKM_BYTE_MAX, 1);
-    if (!stc->outputDkm) { 
+    if (!stc->outputDkm) {
         ACVP_LOG_ERR("Failed to allocate outputDkm initializing test case");
-        return ACVP_MALLOC_FAIL; 
+        return ACVP_MALLOC_FAIL;
     }
 
     if (stc->type == ACVP_KDA_TT_VAL) {
@@ -679,12 +679,12 @@ static ACVP_KDA_TEST_TYPE read_test_type(const char *str) {
 }
 
 ACVP_KDA_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, const char *str, ACVP_TEST_CASE *tc) {
-    //size of (preprocessor string) includes null terminator
+    // size of (preprocessor string) includes null terminator
     ACVP_RESULT rv =  ACVP_SUCCESS;
     char *tmp = NULL, *lit = NULL, *token = NULL;
     rsize_t len = strnlen_s(str, ACVP_KDA_PATTERN_REG_STR_MAX + 1);
     int diff = 1;
-    if (len > ACVP_KDA_PATTERN_REG_STR_MAX) { 
+    if (len > ACVP_KDA_PATTERN_REG_STR_MAX) {
         ACVP_LOG_ERR("pattern candidate too long");
         return 0;
     }
@@ -716,11 +716,11 @@ ACVP_KDA_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, co
     if (!diff && len == sizeof(ACVP_KDA_PATTERN_T_STR) - 1) {
         return ACVP_KDA_PATTERN_T;
     }
-    //only compares first X number of characters, so should match, even though string is literal[0000000]
+    // only compares first X number of characters, so should match, even though string is literal[0000000]
     if (sizeof(ACVP_KDA_PATTERN_LITERAL_STR) - 1 < len) {
         strncmp_s(str, len, ACVP_KDA_PATTERN_LITERAL_STR, sizeof(ACVP_KDA_PATTERN_LITERAL_STR) - 1, &diff);
         if (!diff) {
-            //copy string so it can be tokenized
+            // copy string so it can be tokenized
             tmp = calloc(len + 1, sizeof(char));
             if (!tmp) {
                 ACVP_LOG_ERR("Failed to allocate memory when checking literal pattern");
@@ -728,19 +728,19 @@ ACVP_KDA_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, co
             }
             strncpy_s(tmp, len + 1, str, len);
 
-            //tokenize around the [] characters
+            // tokenize around the [] characters
             token = strtok_s(tmp, &len, "[", &lit);
-            if (!token) { 
+            if (!token) {
                 ACVP_LOG_ERR("Invalid literal pattern candidate");
                 goto err;
             }
-            token = strtok_s(NULL, &len, "]", &lit); //the actual hex string
-            if (!token) { 
+            token = strtok_s(NULL, &len, "]", &lit); // the actual hex string
+            if (!token) {
                 ACVP_LOG_ERR("Invalid literal pattern candidate");
                 goto err;
             }
             if (strnlen_s(token, ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX + 1) > ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX) {
-                ACVP_LOG_ERR("Patttern literal too long");
+                ACVP_LOG_ERR("Pattern literal too long");
                 goto err;
             }
             if (cipher == ACVP_KDA_HKDF) {
@@ -777,7 +777,7 @@ static ACVP_KDA_PATTERN_CANDIDATE* read_info_pattern(ACVP_CTX *ctx, ACVP_CIPHER 
     ACVP_KDA_PATTERN_CANDIDATE currentCand;
     char *cpy = NULL;
     ACVP_KDA_PATTERN_CANDIDATE *rv = NULL;
-    int hasUParty = 0, hasVParty = 0; //Currently, these are required
+    int hasUParty = 0, hasVParty = 0; // Currently, these are required
     if (!str) {
         return NULL;
     }
@@ -794,7 +794,7 @@ static ACVP_KDA_PATTERN_CANDIDATE* read_info_pattern(ACVP_CTX *ctx, ACVP_CIPHER 
         ACVP_LOG_ERR("Failed to copy string into temp holder for tokenization");
 
     }
-    //we return this to be used in the test case struct, so we want it to survive the scope of this function
+    // we return this to be used in the test case struct, so we want it to survive the scope of this function
     ACVP_KDA_PATTERN_CANDIDATE *arr = calloc(ACVP_KDA_PATTERN_MAX, sizeof(int));
     if (!arr) {
         ACVP_LOG_ERR("Failed to allocate memory for reading fixedInfoPattern");
@@ -808,7 +808,7 @@ static ACVP_KDA_PATTERN_CANDIDATE* read_info_pattern(ACVP_CTX *ctx, ACVP_CIPHER 
         ACVP_LOG_ERR("Server JSON invalid 'fixedInfoPattern'");
         free(arr);
         goto err;
-    } 
+    }
 
     do {
         if (count >= ACVP_KDA_PATTERN_MAX) {
@@ -852,7 +852,7 @@ static ACVP_KDA_ENCODING read_encoding_type(const char* str) {
     strncmp_s(ACVP_KDA_ENCODING_CONCATENATION_STR,
               sizeof(ACVP_KDA_ENCODING_CONCATENATION_STR) - 1,
               str, strnlen_s(str, 16), &diff);
-            
+
     if (!diff) {
         return ACVP_KDA_ENCODING_CONCAT;
     }
@@ -865,13 +865,13 @@ static ACVP_KDA_MAC_SALT_METHOD read_salt_method(const char* str) {
     if (!str) {
         return 0;
     }
-    strncmp_s(ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR, 
+    strncmp_s(ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR,
               sizeof(ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR) - 1,
               str, strnlen_s(str, 16), &diff);
     if (!diff) {
         return ACVP_KDA_MAC_SALT_METHOD_DEFAULT;
     }
-    strncmp_s(ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR, 
+    strncmp_s(ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR,
               sizeof(ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR) - 1,
               str, strnlen_s(str, 16), &diff);
     if (!diff) {
@@ -885,7 +885,7 @@ static ACVP_KDA_MAC_SALT_METHOD read_salt_method(const char* str) {
  * uses an hmac alg and onestep uses an aux function (which can also be an hmac alg)
  */
 static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
-                                        ACVP_CIPHER cipher, 
+                                        ACVP_CIPHER cipher,
                                         ACVP_CAPS_LIST *cap,
                                         ACVP_TEST_CASE *tc,
                                         JSON_Object *obj,
@@ -897,14 +897,15 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
     JSON_Value *testval = NULL;
     JSON_Object *testobj = NULL, *paramobj = NULL;
     JSON_Array *tests, *r_tarr = NULL;
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
-    const char *alg_str = NULL,  *pattern_str = NULL, *encoding_str = NULL, 
-               *salt_method_str = NULL;
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
+    const char *alg_str = NULL,  *pattern_str = NULL, *encoding_str = NULL,
+               *salt_method_str = NULL, *rev_str = NULL;
     ACVP_HASH_ALG hmac_alg = 0;
     unsigned int i = 0, g_cnt = 0;
     int j = 0, k = 0, t_cnt = 0, tc_id = 0, saltLen = 0, l = 0,hybrid_secret = 0;
     ACVP_RESULT rv;
+    ACVP_REVISION revision = ACVP_REVISION_DEFAULT;
     const char *test_type_str = NULL;
     ACVP_KDA_TEST_TYPE test_type;
     ACVP_KDA_PATTERN_CANDIDATE *arr = NULL;
@@ -913,14 +914,25 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
     ACVP_CAPS_LIST *kdfcap = NULL;
     /*These vars are specific to onestep */
     ACVP_CIPHER aux_function = 0;
-    /* These vars are specific to twostep */
+    // These vars are specific to twostep
     int ctr_len = 0, iv_len = 0;
     const char *ctr_loc_str = NULL, *kdf_mode_str = NULL, *iv_str = NULL;
     ACVP_KDF108_MODE kdf_mode = 0;
     ACVP_KDF108_MAC_MODE_VAL mac_mode = 0;
     ACVP_KDF108_FIXED_DATA_ORDER_VAL ctr_loc = 0;
 
-    groups = json_object_get_array(obj, "testGroups");
+    // Check revision to determine if hybrid secret is supported
+    rev_str = json_object_get_string(obj, "revision");
+    if (!rev_str) {
+        ACVP_LOG_ERR("Missing 'revision' from server json");
+        return ACVP_MISSING_ARG;
+    }
+    revision = acvp_lookup_alt_revision(rev_str);
+
+    rv = acvp_tc_json_get_array(ctx, cipher, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
@@ -937,18 +949,15 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, cipher, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
-        test_type_str = json_object_get_string(groupobj, "testType");
-        if (!test_type_str) {
-            ACVP_LOG_ERR("Server JSON missing 'testType'");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_string(ctx, cipher, groupobj, "testType", &test_type_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         test_type = read_test_type(test_type_str);
         if (!test_type) {
             ACVP_LOG_ERR("Server provided invalid testType");
@@ -957,17 +966,14 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
         }
         json_object_set_number(r_gobj, "tgId", tgId);
 
-        configobj = json_object_get_object(groupobj, "kdfConfiguration");
-        if (!configobj) {
-            ACVP_LOG_ERR("Missing kdfConfiguration object in server JSON");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_object(ctx, cipher, groupobj, "kdfConfiguration", &configobj);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         if (cipher == ACVP_KDA_HKDF) {
-            alg_str = json_object_get_string(configobj, "hmacAlg");
-            if (!alg_str) {
-                ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
-                rv = ACVP_MALFORMED_JSON;
+            rv = acvp_tc_json_get_string(ctx, cipher, configobj, "hmacAlg", &alg_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
 
@@ -995,12 +1001,11 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 goto err;
             }
         } else if (cipher == ACVP_KDA_ONESTEP) {
-            alg_str = json_object_get_string(configobj, "auxFunction");
-            if (!alg_str) {
-                ACVP_LOG_ERR("Server JSON missing 'auxFunction'");
-                rv = ACVP_MALFORMED_JSON;
+            rv = acvp_tc_json_get_string(ctx, cipher, configobj, "auxFunction", &alg_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             aux_function = acvp_lookup_aux_function_alg_tbl(alg_str);
             if (!aux_function) {
                 ACVP_LOG_ERR("Invalid auxFunction provided by server JSON");
@@ -1008,12 +1013,11 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 goto err;
             }
         } else if (cipher == ACVP_KDA_TWOSTEP) {
-            alg_str = json_object_get_string(configobj, "macMode");
-            if (!alg_str) {
-                ACVP_LOG_ERR("Server JSON missing 'macMode'");
-                rv = ACVP_TC_INVALID_DATA;
+            rv = acvp_tc_json_get_string(ctx, cipher, configobj, "macMode", &alg_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             mac_mode = read_mac_mode(alg_str);
             if (!mac_mode) {
                 ACVP_LOG_ERR("Sever JSON invalid 'macMode'");
@@ -1026,21 +1030,28 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             goto err;
         }
 
-        pattern_str = json_object_get_string(configobj, "fixedInfoPattern");
-        if (!pattern_str) {
-            ACVP_LOG_ERR("Server JSON missing 'fixedInfoPattern'");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_string(ctx, cipher, configobj, "fixedInfoPattern", &pattern_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
 
-        encoding_str = json_object_get_string(configobj, "fixedInfoEncoding");
+        rv = acvp_tc_json_get_string(ctx, cipher, configobj, "fixedInfoEncoding", &encoding_str);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
+
         encoding = read_encoding_type(encoding_str);
         if (!encoding) {
             ACVP_LOG_ERR("Invalid fixedInfoEncoding provided by server");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
-        salt_method_str = json_object_get_string(configobj, "saltMethod");
+
+        rv = acvp_tc_json_get_string(ctx, cipher, configobj, "saltMethod", &salt_method_str);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
+
         salt_method = read_salt_method(salt_method_str);
         if (!salt_method) {
             ACVP_LOG_ERR("Invalid saltMethod provided by server");
@@ -1048,14 +1059,23 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             goto err;
         }
 
-        saltLen = json_object_get_number(configobj, "saltLen");
+        if (cipher != ACVP_KDA_ONESTEP) {
+            rv = acvp_tc_json_get_int(ctx, cipher, configobj, "saltLen", &saltLen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+        }
+
         if (saltLen % 8 != 0 || saltLen < 0 || saltLen > ACVP_KDA_SALT_BIT_MAX) {
             ACVP_LOG_ERR("Invalid saltLen provided by server");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
 
-        l = json_object_get_number(configobj, "l");
+        rv = acvp_tc_json_get_int(ctx, cipher, configobj, "l", &l);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (cipher == ACVP_KDA_HKDF) {
             kdfcap = acvp_locate_cap_entry(ctx, ACVP_KDA_HKDF);
             if (!kdfcap || !kdfcap->cap.kda_hkdf_cap) {
@@ -1094,14 +1114,13 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             }
         }
 
-        /* there are some kdfConfiguration values specific to twostep */
+        // there are some kdfConfiguration values specific to twostep
         if (cipher == ACVP_KDA_TWOSTEP) {
-            kdf_mode_str = json_object_get_string(configobj, "kdfMode");
-            if (!kdf_mode_str) {
-                ACVP_LOG_ERR("Server JSON missing kdfMode");
-                rv = ACVP_TC_INVALID_DATA;
+            rv = acvp_tc_json_get_string(ctx, cipher, configobj, "kdfMode", &kdf_mode_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             kdf_mode = read_mode(kdf_mode_str);
             if (!kdf_mode) {
                 ACVP_LOG_ERR("Server JSON invalid kdfMode");
@@ -1109,12 +1128,11 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 goto err;
             }
 
-            ctr_loc_str = json_object_get_string(configobj, "counterLocation");
-            if (!ctr_loc_str) {
-                ACVP_LOG_ERR("Server JSON missing counterLocation");
-                rv = ACVP_TC_INVALID_DATA;
+            rv = acvp_tc_json_get_string(ctx, cipher, configobj, "counterLocation", &ctr_loc_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             ctr_loc = read_ctr_location(ctr_loc_str);
             if (!ctr_loc) {
                 ACVP_LOG_ERR("Server JSON invalid counterLocation.");
@@ -1122,14 +1140,20 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 goto err;
             }
 
-            ctr_len = json_object_get_number(configobj, "counterLen");
+            rv = acvp_tc_json_get_int(ctx, cipher, configobj, "counterLen", &ctr_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (ctr_len <= 0) {
                 ACVP_LOG_ERR("Server JSON missing or invalid counterLen.");
                 rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
 
-            iv_len = json_object_get_number(configobj, "ivLen");
+            rv = acvp_tc_json_get_int(ctx, cipher, configobj, "ivLen", &iv_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if ((kdf_mode == ACVP_KDF108_MODE_COUNTER && !kdfcap->cap.kda_twostep_cap->kdf_params.counter_mode.requires_empty_iv)
             || (kdf_mode == ACVP_KDF108_MODE_DPI && !kdfcap->cap.kda_twostep_cap->kdf_params.dpi_mode.requires_empty_iv)
             || (kdf_mode == ACVP_KDF108_MODE_FEEDBACK && !kdfcap->cap.kda_twostep_cap->kdf_params.feedback_mode.requires_empty_iv)) {
@@ -1145,8 +1169,13 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             }
         }
 
-        /* in case of value not existing or being false, we have the same outcome */
-        hybrid_secret = json_object_get_boolean(paramobj, "usesHybridSharedSecret");
+        // usesHybridSharedSecret only exists in revisions after CR1
+        if (cipher != ACVP_KDA_ONESTEP && revision != ACVP_REVISION_SP800_56CR1) {
+            rv = acvp_tc_json_get_boolean(ctx, cipher, groupobj, "usesHybridSharedSecret", &hybrid_secret);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+        }
 
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
@@ -1171,22 +1200,33 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("          ivLen: %d", iv_len);
         }
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, cipher, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
             JSON_Object *upartyobj = NULL, *vpartyobj = NULL;
             const char *salt = NULL, *z = NULL, *uparty = NULL,
-                       *uephemeral = NULL, *vparty = NULL, 
+                       *uephemeral = NULL, *vparty = NULL,
                        *vephemeral = NULL, *dkm = NULL, *context = NULL,
                        *algid = NULL, *label = NULL, *t = NULL;
             ACVP_LOG_VERBOSE("Found new KDA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            paramobj = json_object_get_object(testobj, "kdfParameter");
-            tc_id = json_object_get_number(testobj, "tcId");
+
+            rv = acvp_tc_json_get_object(ctx, cipher, testobj, "kdfParameter", &paramobj);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+
+            rv = acvp_tc_json_get_int(ctx, cipher, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             salt = json_object_get_string(paramobj, "salt");
-          
+
             arr = read_info_pattern(ctx, cipher, pattern_str, tc);
             if (!arr || arr[0] <= ACVP_KDA_PATTERN_NONE || arr[0] > ACVP_KDA_PATTERN_MAX) {
                 ACVP_LOG_ERR("Invalid fixedInfoPattern provided by server");
@@ -1194,7 +1234,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 goto err;
             }
 
-            //for onestep, salt only exists for HMAC aux functions
+            // for onestep, salt only exists for HMAC aux functions
             if (cipher != ACVP_KDA_ONESTEP) {
                 if (!salt) {
                     ACVP_LOG_ERR("Server JSON missing 'salt'");
@@ -1202,19 +1242,17 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                     goto err;
                 }
                 if ((int)strnlen_s(salt, ACVP_KDA_SALT_STR_MAX + 1) != saltLen / 4) {
-                    ACVP_LOG_ERR("salt wrong length, should match provided saltLen %d",
-                                saltLen);
+                    ACVP_LOG_ERR("salt wrong length, should match provided saltLen %d", saltLen);
                     rv = ACVP_MALFORMED_JSON;
                     goto err;
                 }
             }
 
-            z = json_object_get_string(paramobj, "z");
-            if (!z) {
-                ACVP_LOG_ERR("Server JSON missing 'z'");
-                rv = ACVP_MALFORMED_JSON;
+            rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "z", &z);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(z, ACVP_KDA_Z_STR_MAX + 1) > ACVP_KDA_Z_STR_MAX) {
                 ACVP_LOG_ERR("Server JSON 'z' too long");
                 rv = ACVP_TC_INVALID_DATA;
@@ -1222,81 +1260,73 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             }
 
             if (cipher == ACVP_KDA_TWOSTEP && iv_len > 0) {
-                iv_str = json_object_get_string(paramobj, "iv");
-                if (!iv_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'iv'");
-                    rv = ACVP_TC_INVALID_DATA;
+                rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "iv", &iv_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
             }
 
-            //Read the array of pattern candidates, read specific JSON objects based on whats there
+            // Read the array of pattern candidates, read specific JSON objects based on whats there
             for (k = 0; k < ACVP_KDA_PATTERN_MAX; k++) {
                 if (arr[k] >= ACVP_KDA_PATTERN_MAX || arr[k] <= ACVP_KDA_PATTERN_NONE) {
                     break;
                 }
-                switch (arr[k]) {                    
+                switch (arr[k]) {
                 case ACVP_KDA_PATTERN_UPARTYINFO:
-                    upartyobj = json_object_get_object(testobj, "fixedInfoPartyU");
-                    if (!upartyobj) {
-                        ACVP_LOG_ERR("Server JSON missing 'fixedInfoPartyU'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_object(ctx, cipher, testobj, "fixedInfoPartyU", &upartyobj);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
-                    uparty = json_object_get_string(upartyobj, "partyId");
-                    if (!uparty) {
-                        ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPatyU");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_string(ctx, cipher, upartyobj, "partyId", &uparty);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
-                    //ephemeral data is randomly included and optional
-                    uephemeral = json_object_get_string(upartyobj, "ephemeralData");
+                    // ephemeral data is randomly included and optional
+                    if (json_object_has_value_of_type(upartyobj, "ephemeralData", JSONString)) {
+                        rv = acvp_tc_json_get_string(ctx, cipher, upartyobj, "ephemeralData", &uephemeral);
+                        if (rv != ACVP_SUCCESS) {
+                            goto err;
+                        }
+                    }
                     break;
                 case ACVP_KDA_PATTERN_VPARTYINFO:
-                    vpartyobj = json_object_get_object(testobj, "fixedInfoPartyV");
-                    if (!vpartyobj) {
-                        ACVP_LOG_ERR("Server JSON missing 'fixedInfoPartyV'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_object(ctx, cipher, testobj, "fixedInfoPartyV", &vpartyobj);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
-                    vparty = json_object_get_string(vpartyobj, "partyId");
-                    if (!vparty) {
-                        ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPatyU");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_string(ctx, cipher, vpartyobj, "partyId", &vparty);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
-                    //ephemeral data is randomly included and optional
-                    vephemeral = json_object_get_string(vpartyobj, "ephemeralData");
+                    // ephemeral data is randomly included and optional
+                    if (json_object_has_value_of_type(vpartyobj, "ephemeralData", JSONString)) {
+                        rv = acvp_tc_json_get_string(ctx, cipher, vpartyobj, "ephemeralData", &vephemeral);
+                        if (rv != ACVP_SUCCESS) {
+                            goto err;
+                        }
+                    }
                     break;
                 case ACVP_KDA_PATTERN_CONTEXT:
-                    context = json_object_get_string(paramobj, "context");
-                    if (!context) {
-                        ACVP_LOG_ERR("Server JSON missing 'context'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "context", &context);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     break;
                 case ACVP_KDA_PATTERN_ALGID:
-                    algid = json_object_get_string(paramobj, "algorithmId");
-                    if (!algid) {
-                        ACVP_LOG_ERR("Server JSON missing 'algorithmId'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "algorithmId", &algid);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     break;
                 case ACVP_KDA_PATTERN_LABEL:
-                    label = json_object_get_string(paramobj, "label");
-                    if (!label) {
-                        ACVP_LOG_ERR("Server JSON missing 'label'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "label", &label);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     break;
                 case ACVP_KDA_PATTERN_T:
-                    t = json_object_get_string(paramobj, "t");
-                    if (!t) {
-                        ACVP_LOG_ERR("Server JSON missing 't'");
-                        rv = ACVP_MALFORMED_JSON;
+                    rv = acvp_tc_json_get_string(ctx, cipher, paramobj, "t", &t);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                     break;
@@ -1319,13 +1349,9 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             }
 
             if (test_type == ACVP_KDA_TT_VAL) {
-                /*
-                 * Validate
-                 */
-                dkm = json_object_get_string(testobj, "dkm");
-                if (!dkm) {
-                    ACVP_LOG_ERR("Server json missing 'dkm'");
-                    rv = ACVP_MALFORMED_JSON;
+                // Validate
+                rv = acvp_tc_json_get_string(ctx, cipher, testobj, "dkm", &dkm);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
                 if ((int)strnlen_s(dkm, ACVP_KDA_DKM_STR_MAX) != l / 4) {
@@ -1361,9 +1387,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("            dkm: %s", dkm);
             }
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -1400,7 +1424,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 json_value_free(r_tval);
                 goto err;
             }
-            /* Process the current KAT test vector... */
+            // Process the current KAT test vector...
             if ((cap->crypto_handler)(tc)) {
                 if (cipher == ACVP_KDA_HKDF) {
                     acvp_kda_release_tc(ACVP_KDA_HKDF, tc);
@@ -1409,19 +1433,17 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 } else {
                     acvp_kda_release_tc(ACVP_KDA_TWOSTEP, tc);
                 }
-                ACVP_LOG_ERR("crypto module failed the operation");
+                ACVP_LOG_ERR("Crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
                 goto err;
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             if (cipher == ACVP_KDA_HKDF) {
                 rv = acvp_kda_hkdf_output_tc(ctx, tc->tc.kda_hkdf, r_tobj);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in KDA module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     acvp_kda_release_tc(ACVP_KDA_HKDF, tc);
                     json_value_free(r_tval);
                     goto err;
@@ -1429,7 +1451,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             } else if (cipher == ACVP_KDA_ONESTEP) {
                 rv = acvp_kda_onestep_output_tc(ctx, tc->tc.kda_onestep, r_tobj);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in KDA module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     acvp_kda_release_tc(ACVP_KDA_ONESTEP, tc);
                     json_value_free(r_tval);
                     goto err;
@@ -1437,16 +1459,14 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             } else {
                 rv = acvp_kda_twostep_output_tc(ctx, tc->tc.kda_twostep, r_tobj);
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in KDA module");
+                    ACVP_LOG_ERR("JSON output failure recording test response");
                     acvp_kda_release_tc(ACVP_KDA_TWOSTEP, tc);
                     json_value_free(r_tval);
                     goto err;
                 }
             }
 
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             if (cipher == ACVP_KDA_HKDF) {
                 acvp_kda_release_tc(ACVP_KDA_HKDF, tc);
             } else if (cipher == ACVP_KDA_ONESTEP) {
@@ -1455,7 +1475,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 acvp_kda_release_tc(ACVP_KDA_TWOSTEP, tc);
             }
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);
@@ -1474,7 +1494,7 @@ err:
 ACVP_RESULT acvp_kda_hkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;
@@ -1497,24 +1517,18 @@ ACVP_RESULT acvp_kda_hkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    /*
-    * Get a reference to the abstracted test case
-    */
+    // Get a reference to the abstracted test case
     tc.tc.kda_hkdf = &stc;
     memzero_s(&stc, sizeof(ACVP_KDA_HKDF_TC));
 
-    /*
-    * Create ACVP array for response
-    */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -1570,7 +1584,7 @@ err:
 ACVP_RESULT acvp_kda_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;
@@ -1593,24 +1607,18 @@ ACVP_RESULT acvp_kda_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    /*
-    * Get a reference to the abstracted test case
-    */
+    // Get a reference to the abstracted test case
     tc.tc.kda_onestep = &stc;
     memzero_s(&stc, sizeof(ACVP_KDA_ONESTEP_TC));
 
-    /*
-    * Create ACVP array for response
-    */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -1666,7 +1674,7 @@ err:
 ACVP_RESULT acvp_kda_twostep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Array *r_garr = NULL; // Response testarray
     JSON_Value *reg_arry_val = NULL;
     JSON_Array *reg_arry = NULL;
     JSON_Object *reg_obj = NULL;
@@ -1689,24 +1697,18 @@ ACVP_RESULT acvp_kda_twostep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    /*
-    * Get a reference to the abstracted test case
-    */
+    // Get a reference to the abstracted test case
     tc.tc.kda_twostep = &stc;
     memzero_s(&stc, sizeof(ACVP_KDA_TWOSTEP_TC));
 
-    /*
-    * Create ACVP array for response
-    */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");

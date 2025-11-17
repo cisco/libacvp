@@ -16,7 +16,7 @@
 
 #define SHA256_BLOCK_SIZE 64
 
-/* LOCAL FUNCTIONS */
+// LOCAL FUNCTIONS
 
 // Concatenate X & Y, return hash.
 static void* H(const void* x,

@@ -17,9 +17,7 @@
 #include "parson.h"
 #include "safe_lib.h"
 
-/*
- * Forward prototypes for local functions
- */
+// Forward prototypes for local functions
 static ACVP_RESULT acvp_kdf135_ikev2_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV2_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
@@ -156,7 +154,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_init_tc(ACVP_CTX *ctx,
         return rv;
     }
 
-    /* allocate memory for answers so app doesn't have to touch library memory */
+    // allocate memory for answers so app doesn't have to touch library memory
     stc->s_key_seed = calloc(ACVP_KDF135_IKEV2_SKEY_SEED_BYTE_MAX,
                              sizeof(unsigned char));
     if (!stc->s_key_seed) { return ACVP_MALLOC_FAIL; }
@@ -169,12 +167,10 @@ static ACVP_RESULT acvp_kdf135_ikev2_init_tc(ACVP_CTX *ctx,
                                           sizeof(unsigned char));
     if (!stc->derived_keying_material) { return ACVP_MALLOC_FAIL; }
 
-    stc->derived_keying_material_child_dh = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_BYTE_MAX,
-                                                   sizeof(unsigned char));
+    stc->derived_keying_material_child_dh = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_BYTE_MAX, sizeof(unsigned char));
     if (!stc->derived_keying_material_child_dh) { return ACVP_MALLOC_FAIL; }
 
-    stc->derived_keying_material_child = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_BYTE_MAX,
-                                                sizeof(unsigned char));
+    stc->derived_keying_material_child = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_BYTE_MAX, sizeof(unsigned char));
     if (!stc->derived_keying_material_child) { return ACVP_MALLOC_FAIL; }
 
     return rv;
@@ -214,9 +210,9 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_IKEV2_TC stc;
     ACVP_TEST_CASE tc;
@@ -255,9 +251,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_INVALID_ARG;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.kdf135_ikev2 = &stc;
     stc.cipher = alg_id;
 
@@ -267,25 +261,24 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
         return rv;
     }
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         int tgId = 0;
@@ -298,22 +291,19 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        hash_alg_str = json_object_get_string(groupobj, "hashAlg");
-        if (!hash_alg_str) {
-            ACVP_LOG_ERR("Failed to include hashAlg");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &hash_alg_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         hash_alg = acvp_lookup_hash_alg(hash_alg_str);
         if (hash_alg != ACVP_SHA1 && hash_alg != ACVP_SHA224 &&
             hash_alg != ACVP_SHA256 && hash_alg != ACVP_SHA384 &&
@@ -323,7 +313,10 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        init_nonce_len = json_object_get_number(groupobj, "nInitLength");
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "nInitLength", &init_nonce_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (!(init_nonce_len >= ACVP_KDF135_IKEV2_INIT_NONCE_BIT_MIN &&
               init_nonce_len <= ACVP_KDF135_IKEV2_INIT_NONCE_BIT_MAX)) {
             ACVP_LOG_ERR("nInitLength incorrect, %d", init_nonce_len);
@@ -331,7 +324,10 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        resp_nonce_len = json_object_get_number(groupobj, "nRespLength");
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "nRespLength", &resp_nonce_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (!(resp_nonce_len >= ACVP_KDF135_IKEV2_RESP_NONCE_BIT_MIN &&
               resp_nonce_len <= ACVP_KDF135_IKEV2_RESP_NONCE_BIT_MAX)) {
             ACVP_LOG_ERR("nRespLength incorrect, %d", resp_nonce_len);
@@ -339,7 +335,10 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        dh_secret_len = json_object_get_number(groupobj, "dhLength");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "dhLength", &dh_secret_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (!(dh_secret_len >= ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MIN &&
               dh_secret_len <= ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MAX)) {
             ACVP_LOG_ERR("dhLength incorrect, %d", dh_secret_len);
@@ -347,7 +346,10 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        keying_material_len = json_object_get_number(groupobj, "derivedKeyingMaterialLength");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "derivedKeyingMaterialLength", &keying_material_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (!(keying_material_len >= ACVP_KDF135_IKEV2_DKEY_MATERIAL_BIT_MIN &&
               keying_material_len <= ACVP_KDF135_IKEV2_DKEY_MATERIAL_BIT_MAX)) {
             ACVP_LOG_ERR("derivedKeyingMaterialLength incorrect, %d", keying_material_len);
@@ -362,7 +364,10 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("   dh secret len: %d", dh_secret_len);
         ACVP_LOG_VERBOSE("derived key material: %d", keying_material_len);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
@@ -370,42 +375,40 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
-
-            init_nonce = json_object_get_string(testobj, "nInit");
-            if (!init_nonce) {
-                ACVP_LOG_ERR("Failed to include nInit");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "nInit", &init_nonce);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+
             if (strnlen_s(init_nonce, init_nonce_len) != init_nonce_len / 4) {
                 ACVP_LOG_ERR("nInit length(%d) incorrect, expected(%d)",
-                             (int)strnlen_s(init_nonce, ACVP_KDF135_IKEV2_INIT_NONCE_STR_MAX),
-                             init_nonce_len / 4);
+                             (int)strnlen_s(init_nonce, ACVP_KDF135_IKEV2_INIT_NONCE_STR_MAX), init_nonce_len / 4);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
 
-            resp_nonce = json_object_get_string(testobj, "nResp");
-            if (!resp_nonce) {
-                ACVP_LOG_ERR("Failed to include nResp");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "nResp", &resp_nonce);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(resp_nonce, resp_nonce_len) != resp_nonce_len / 4) {
                 ACVP_LOG_ERR("nResp length(%d) incorrect, expected(%d)",
-                             (int)strnlen_s(resp_nonce, ACVP_KDF135_IKEV2_RESP_NONCE_STR_MAX),
-                             resp_nonce_len / 4);
+                             (int)strnlen_s(resp_nonce, ACVP_KDF135_IKEV2_RESP_NONCE_STR_MAX), resp_nonce_len / 4);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
 
-            init_spi = json_object_get_string(testobj, "spiInit");
-            if (!init_spi) {
-                ACVP_LOG_ERR("Failed to include spiInit");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "spiInit", &init_spi);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(init_spi, ACVP_KDF135_IKEV2_SPI_STR_MAX + 1)
                 > ACVP_KDF135_IKEV2_SPI_STR_MAX) {
                 ACVP_LOG_ERR("spiInit too long, max allowed=(%d)",
@@ -414,12 +417,11 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            resp_spi = json_object_get_string(testobj, "spiResp");
-            if (!resp_spi) {
-                ACVP_LOG_ERR("Failed to include spiResp");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "spiResp", &resp_spi);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(resp_spi, ACVP_KDF135_IKEV2_SPI_STR_MAX + 1)
                 > ACVP_KDF135_IKEV2_SPI_STR_MAX) {
                 ACVP_LOG_ERR("spiResp too long, max allowed=(%d)",
@@ -428,12 +430,11 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            gir = json_object_get_string(testobj, "gir");
-            if (!gir) {
-                ACVP_LOG_ERR("Failed to include gir");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "gir", &gir);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(gir, ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX + 1)
                 > ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX) {
                 ACVP_LOG_ERR("gir too long, max allowed=(%d)",
@@ -442,10 +443,8 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            gir_new = json_object_get_string(testobj, "girNew");
-            if (!gir_new) {
-                ACVP_LOG_ERR("Failed to include girNew");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "girNew", &gir_new);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
             if (strnlen_s(gir_new, ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX + 1)
@@ -459,9 +458,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -483,31 +480,27 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if ((cap->crypto_handler)(&tc)) {
-                ACVP_LOG_ERR("crypto module failed");
+                ACVP_LOG_ERR("Crypto module failed");
                 acvp_kdf135_ikev2_release_tc(&stc);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
                 goto err;
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             rv = acvp_kdf135_ikev2_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 acvp_kdf135_ikev2_release_tc(&stc);
                 json_value_free(r_tval);
                 goto err;
             }
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_kdf135_ikev2_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

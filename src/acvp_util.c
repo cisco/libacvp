@@ -34,13 +34,11 @@ extern ACVP_ALG_HANDLER alg_tbl[];
 
 static int acvp_char_to_int(char ch);
 
-/*
- * Basic logging for libacvp
- */
+// Basic logging for libacvp
 void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *func, int line, const char *fmt, ...) {
     va_list arguments;
     int iter = 0, ret = 0;
-    //One extra char for null terminator
+    // One extra char for null terminator
     char tmp[ACVP_LOG_MAX_MSG_LEN + 1];
     tmp[ACVP_LOG_MAX_MSG_LEN] = '\0';
 
@@ -53,7 +51,7 @@ void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *func, int line,
     }
 
     if (ctx->test_progress_cb && (ctx->log_lvl >= level)) {
-        /*  Pull the arguments from the stack and invoke the logger function */
+        //  Pull the arguments from the stack and invoke the logger function
         va_start(arguments, fmt);
         ret = vsnprintf(tmp + iter, ACVP_LOG_MAX_MSG_LEN + 1 - iter, fmt, arguments);
         if (ret < 0 || ret >= ACVP_LOG_MAX_MSG_LEN + 1 - iter) {
@@ -101,7 +99,7 @@ ACVP_RESULT acvp_cleanup(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (ctx) {
-        /* Only call if ctx is not null */
+        // Only call if ctx is not null
         rv = acvp_free_test_session(ctx);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Failed to free parameter 'ctx'");
@@ -159,7 +157,7 @@ const char *acvp_lookup_cipher_name(ACVP_CIPHER alg) {
  *        If the mode is given, then it will also use that to
  *        narrow down the search to entries that only match
  *        both the \p alg and \p mode.
- * 
+ *
  *        Note that this should not be used when the user registers an alternative revision for a
  *        cipher.
  *
@@ -277,13 +275,13 @@ ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
 
         if (alg_tbl[i].mode == NULL) continue;
 
-        /* Compare the algorithm string */
+        // Compare the algorithm string
         strcmp_s(alg_tbl[i].name,
                  ACVP_ALG_NAME_MAX,
                  algorithm, &diff);
 
         if (!diff) {
-            /* Compare the mode string */
+            // Compare the mode string
             strcmp_s(alg_tbl[i].mode,
                      ACVP_ALG_MODE_MAX,
                      mode, &diff);
@@ -480,9 +478,7 @@ ACVP_RESULT is_valid_tf_param(int value) {
 }
 
 #define HASH_ALG_NAME_MAX 12
-/*
- * Local table for matching ACVP_HASH_ALG to name string and vice versa.
- */
+// Local table for matching ACVP_HASH_ALG to name string and vice versa.
 static struct acvp_hash_alg_info hash_alg_tbl[] = {
     { ACVP_SHA1,       ACVP_STR_SHA_1        },
     { ACVP_SHA224,     ACVP_STR_SHA2_224     },
@@ -566,7 +562,7 @@ const char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type) {
     }
 }
 
-/* This function checks to see if the value is a valid prime test (RSA) */
+// This function checks to see if the value is a valid prime test (RSA)
 ACVP_RESULT is_valid_prime_test(const char *value) {
     int diff = 0;
 
@@ -581,7 +577,7 @@ ACVP_RESULT is_valid_prime_test(const char *value) {
     return ACVP_INVALID_ARG;
 }
 
-/* This function checks to see if the value is a valid prime test (RSA) */
+// This function checks to see if the value is a valid prime test (RSA)
 ACVP_RESULT is_valid_rsa_mod(int value) {
     if (value != 2048 &&
         value != 3072 &&
@@ -591,9 +587,7 @@ ACVP_RESULT is_valid_rsa_mod(int value) {
 }
 
 #define EC_CURVE_NAME_MAX 5
-/*
- * Local table for matching ACVP_EC_CURVE to name string and vice versa.
- */
+// Local table for matching ACVP_EC_CURVE to name string and vice versa.
 static struct acvp_ec_curve_info ec_curve_tbl[] = {
     { ACVP_EC_CURVE_P224, "P-224" },
     { ACVP_EC_CURVE_P256, "P-256" },
@@ -613,7 +607,7 @@ static int ec_curve_tbl_length =
 
 /*
  * Local table for matching ACVP_EC_CURVE to name string and vice versa.
- * Containes "deprecated" curves (still allowed for ECDSA_KEYVER and ECDSA_SIGVER).
+ * Contains "deprecated" curves (still allowed for ECDSA_KEYVER and ECDSA_SIGVER).
  */
 static struct acvp_ec_curve_info ec_curve_depr_tbl[] = {
     { ACVP_EC_CURVE_P192, "P-192" },
@@ -633,7 +627,7 @@ const char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id) {
     }
 
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
-        /* Check the deprecated curves */
+        // Check the deprecated curves
         for (i = 0; i < ec_curve_depr_tbl_length; i++) {
             if (id == ec_curve_depr_tbl[i].id) {
                 return ec_curve_depr_tbl[i].name;
@@ -660,7 +654,7 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     }
 
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
-        /* Check the deprecated curves */
+        // Check the deprecated curves
         for (i = 0; i < ec_curve_depr_tbl_length; i++) {
             int diff = 0;
 
@@ -759,7 +753,7 @@ ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str) {
     return 0;
 }
 
-#define ACVP_LMS_MODE_STR_MAX 64 /* arbitrary */
+#define ACVP_LMS_MODE_STR_MAX 64 // arbitrary
 
 static struct acvp_enum_string_pair lms_mode_tbl[] = {
     { ACVP_LMS_MODE_SHA256_M24_H5, "LMS_SHA256_M24_H5"},
@@ -949,7 +943,7 @@ const char *acvp_lookup_slh_dsa_param_set_str(ACVP_SLH_DSA_PARAM_SET param_set) 
     return NULL;
 }
 
-/* This seems too small to dictate having its own table/function, but future expandability may be useful */
+// This seems too small to dictate having its own table/function, but future expandability may be useful
 static struct acvp_enum_string_pair rsa_key_format_tbl[] = {
     { ACVP_RSA_KEY_FORMAT_STANDARD, "standard" },
     { ACVP_RSA_KEY_FORMAT_CRT, "crt" }
@@ -985,8 +979,8 @@ ACVP_RESULT acvp_bin_to_hexstr(const unsigned char *src, int src_len, char *dest
     }
 
     for (i = 0, j = 0; i < src_len; i++, j += 2) {
-        nibb_a = *src >> 4;   /* Get first half of byte */
-        nibb_b = *src & 0x0f; /* Get second half of byte */
+        nibb_a = *src >> 4;   // Get first half of byte
+        nibb_b = *src & 0x0f; // Get second half of byte
 
         *dest = hex_chars[nibb_a];
         *(dest + 1) = hex_chars[nibb_b];
@@ -1016,9 +1010,7 @@ ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_ma
 
     src_len = strnlen_s(src, ACVP_HEXSTR_MAX);
 
-    /*
-     * Make sure the hex value isn't too large
-     */
+    // Make sure the hex value isn't too large
     if (src_len > (2 * dest_max)) {
         return ACVP_DATA_TOO_LARGE;
     }
@@ -1029,10 +1021,10 @@ ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_ma
 
     if (!is_odd) {
         while (*src && src[1]) {
-            byte_a = acvp_char_to_int((char)*src) << 4; /* Shift to left half of byte */
+            byte_a = acvp_char_to_int((char)*src) << 4; // Shift to left half of byte
             byte_b = acvp_char_to_int(*(src + 1));
 
-            *dest = byte_a + byte_b; /* Combine left half with right half */
+            *dest = byte_a + byte_b; // Combine left half with right half
 
             dest++;
             src += 2;
@@ -1073,7 +1065,7 @@ ACVP_DRBG_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_
 
     drbg_cap = cap->cap.drbg_cap;
 
-    /* No entires yet */
+    // No entires yet
     cap_mode = drbg_cap->drbg_cap_mode;
 
     while (cap_mode) {
@@ -1224,28 +1216,6 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_get_tc_str_from_json(ACVP_CTX *ctx, JSON_Object *obj, const char *key, const char **out) {
-    const char *val= NULL;
-    ACVP_RESULT rv = ACVP_INTERNAL_ERR;
-
-    if (!json_object_has_value(obj, key)) {
-        ACVP_LOG_ERR("Server JSON is missing '%s' data", key);
-        rv = ACVP_TC_MISSING_DATA;
-        goto err;
-    }
-
-    val = json_object_get_string(obj, key);
-    if (!val) {
-        ACVP_LOG_ERR("Server JSON provided an invalid '%s' value", key);
-        rv = ACVP_TC_INVALID_DATA;
-        goto err;
-    }
-
-    *out = val;
-    rv = ACVP_SUCCESS;
-err:
-    return rv;
-}
 
 /*
  * This function returns a string that describes the error
@@ -1276,8 +1246,8 @@ const char *acvp_lookup_error_string(ACVP_RESULT rv) {
         { ACVP_CTX_NOT_EMPTY,      "ctx already initialized"                          },
         { ACVP_JWT_MISSING,        "Error using JWT"                                  },
         { ACVP_JWT_EXPIRED,        "Provided JWT has expired"                         },
-        { ACVP_JWT_INVALID,        "Proivded JWT is not valid"                        },
-        { ACVP_INTERNAL_ERR,       "Unexpected error occured internally"              }
+        { ACVP_JWT_INVALID,        "Provided JWT is not valid"                        },
+        { ACVP_INTERNAL_ERR,       "Unexpected error occurred internally"             }
     };
 
     for (i = 0; i < ACVP_RESULT_MAX - 1; i++) {
@@ -1359,14 +1329,14 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
     *r_vs = json_value_get_object(*r_vs_val);
     if (!*r_vs) {
         return ACVP_JSON_ERR;
-    } 
+    }
 
     if (json_object_set_number(*r_vs, "vsId", (*ctx)->vs_id) != JSONSuccess ||
             json_object_set_string(*r_vs, "algorithm", alg_str) != JSONSuccess) {
         return ACVP_JSON_ERR;
     }
 
-    /* create an array of response test groups */
+    // create an array of response test groups
     json_object_set_value(*r_vs, "testGroups", json_value_init_array());
     (*groups_arr) = json_object_get_array(*r_vs, "testGroups");
     if (!*groups_arr) {
@@ -1427,7 +1397,7 @@ void acvp_release_json(JSON_Value *r_vs_val,
  *
  * @return 1 Length of \string <= \p max_allowed
  * @return 0 Length of \string > \p max_allowed
- * 
+ *
  */
 int string_fits(const char *string, unsigned int max_allowed) {
     if (strnlen_s(string, max_allowed + 1) > max_allowed) {
@@ -1468,7 +1438,7 @@ ACVP_RESULT acvp_append_sl_list(ACVP_SL_LIST **list, int length) {
     if (!list) {
         return ACVP_NO_DATA;
     }
-    
+
     if (*list == NULL) {
         *list = calloc(1, sizeof(ACVP_SL_LIST));
         if (!*list) {
@@ -1490,7 +1460,7 @@ ACVP_RESULT acvp_append_sl_list(ACVP_SL_LIST **list, int length) {
         current = current->next;
     }
 
-    /* Code should never reach here */
+    // Code should never reach here
     return ACVP_UNSUPPORTED_OP;
 }
 
@@ -1503,7 +1473,7 @@ ACVP_RESULT acvp_append_param_list(ACVP_PARAM_LIST **list, int param) {
     if (!list) {
         return ACVP_NO_DATA;
     }
-    
+
     if (*list == NULL) {
         *list = calloc(1, sizeof(ACVP_PARAM_LIST));
         if (!*list) {
@@ -1525,14 +1495,14 @@ ACVP_RESULT acvp_append_param_list(ACVP_PARAM_LIST **list, int param) {
         current = current->next;
     }
 
-    /* Code should never reach here */
+    // Code should never reach here
     return ACVP_INTERNAL_ERR;
 }
 
 /**
  * Simple utility function to add a entry to a name list. If the list is NULL, it is created
  * with the given entry being the first one. Note the string is REFERENCED, not copied.
- * This function should be able to accomdate the removal of names from the list if needed in the
+ * This function should be able to accommodate the removal of names from the list if needed in the
  * future; if a name is removed from the list but its node remains (with a NULL value) then
  * the given string will be added to the "dummy" node
  */
@@ -1562,7 +1532,7 @@ ACVP_RESULT acvp_append_name_list(ACVP_NAME_LIST **list, const char *string) {
         }
         current = current->next;
     }
-    /* Code should never reach here */
+    // Code should never reach here
     return ACVP_UNSUPPORTED_OP;
 }
 
@@ -1677,7 +1647,7 @@ int acvp_lookup_param_list(ACVP_PARAM_LIST *list, int value) {
 /**
  * Checks if a domain value in a capability object has already been set
  * if all values are 0, then domain is considered empty
- * helps keep code cleaner in places where we woud need to reference
+ * helps keep code cleaner in places where we would need to reference
  * through several unions/pointers
  */
 int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain) {
@@ -1687,7 +1657,7 @@ int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain) {
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a_work(const JSON_Value *value, const char *filename, int first) {
     ACVP_RESULT return_code = ACVP_SUCCESS;
     FILE *fp = NULL;
-    char *serialized_string = NULL; 
+    char *serialized_string = NULL;
 
     if (!filename) {
         return ACVP_INVALID_ARG;
@@ -1733,9 +1703,9 @@ ACVP_RESULT acvp_json_serialize_to_file_pretty_a_raw(const JSON_Value *value, co
 }
 
 static ACVP_RESULT acvp_json_serialize_to_file_pretty_w_work(
-        const JSON_Value *value, 
-        const char *filename, 
-        int leading_bracket) { 
+        const JSON_Value *value,
+        const char *filename,
+        int leading_bracket) {
     ACVP_RESULT return_code = ACVP_SUCCESS;
     FILE *fp = NULL;
     char *serialized_string = NULL;
@@ -1822,7 +1792,7 @@ unsigned char *acvp_hash_create_mct_msg(ACVP_HASH_TC *tc, size_t *msg_len) {
         if (!out) {
             goto err;
         }
-        /* If the concatenation is larger than msg_len, only copy msg_len bytes. If smaller, only copy concatenation bytes, so the calloc 0s remain */
+        // If the concatenation is larger than msg_len, only copy msg_len bytes. If smaller, only copy concatenation bytes, so the calloc 0s remain
         out_len = tmp_len > tc->msg_len ? tc->msg_len : tmp_len;
         memcpy_s(out, tc->msg_len, tmp, out_len);
         free(tmp);

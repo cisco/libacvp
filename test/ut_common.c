@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,11 +8,17 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
 #include "ut_common.h"
 
 int counter_set = 0;
 int counter_fail = 0;
+
+/*
+ * Global flag to force handler failure for specific tests.
+ * Set to 1 in tests that need to test error handling paths.
+ * The handler will check counter_set vs counter_fail when this is enabled.
+ */
+int force_handler_failure = 0;
 
 /*
  * This is a minimal and rudimentary logging handler.
@@ -20,12 +26,16 @@ int counter_fail = 0;
  * and errors.
  */
 ACVP_RESULT progress(char *msg, ACVP_LOG_LVL level) {
+    (void)level;  // Unused parameter
     printf("[ACVP]: %s\n", msg);
     return ACVP_SUCCESS;
 }
 
 void teardown_ctx(ACVP_CTX **ctx) {
-    acvp_cleanup(*ctx);
+    if (ctx && *ctx) {
+        acvp_cleanup(*ctx);
+        *ctx = NULL;
+    }
 }
 
 void setup_empty_ctx(ACVP_CTX **ctx) {
@@ -33,36 +43,39 @@ void setup_empty_ctx(ACVP_CTX **ctx) {
     ACVP_LOG_LVL level = ACVP_LOG_LVL_STATUS;
     
     rv = acvp_create_test_session(ctx, &progress, level);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     
     return;
 }
 
-int dummy_handler_success(ACVP_TEST_CASE *test_case) {
-    return 0;
-}
-
-int dummy_handler_failure(ACVP_TEST_CASE *test_case) {
-    if (counter_set == counter_fail) {
-        return 1;
-    }
-    counter_set++;
-    return 0;
-}
-
 /*
- * get JSON Object from response
+ * Unified dummy handler that can simulate both success and failure.
+ * When force_handler_failure is 0: always returns success (0)
+ * When force_handler_failure is 1: returns failure (1) based on counter logic
  */
+int dummy_handler_success(ACVP_TEST_CASE *test_case) {
+    (void)test_case;  // Unused parameter
+    
+    if (force_handler_failure) {
+        if (counter_set == counter_fail) {
+            return 1;  // Failure
+        }
+        counter_set++;
+    }
+    
+    return 0;  // Success
+}
+
+// get JSON Object from response
 JSON_Object *ut_get_obj_from_rsp (JSON_Value *arry_val) {
     JSON_Object *obj = NULL;
     JSON_Array *reg_array;
 
     reg_array = json_value_get_array(arry_val);
     obj = json_array_get_object(reg_array, 1);
-    cr_assert(obj != NULL);
+    TEST_ASSERT_NOT_NULL(obj);
     return (obj);
 }
-
 
 /* This is a public domain base64 implementation written by WEI Zhicheng. */
 
@@ -72,7 +85,6 @@ enum {BASE64_OK = 0, BASE64_INVALID};
 #define BASE64_DECODE_OUT_SIZE(s)    (((s)) / 4 * 3)
 
 #define BASE64_PAD    '='
-
 
 #define BASE64DE_FIRST    '+'
 #define BASE64DE_LAST    'z'
@@ -144,6 +156,9 @@ unsigned int base64_decode(const char *in, unsigned int inlen, unsigned char *ou
             continue;
         case 3:
             out[j++] += (unsigned char)c;
+            break;
+        default:
+            break;
         }
     }
     
@@ -154,5 +169,3 @@ unsigned int dummy_totp(char **token, int token_max) {
     memset_s((char *)*token, token_max, '0', token_max);
     return 0;
 }
-
-

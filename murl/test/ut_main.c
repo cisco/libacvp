@@ -14,29 +14,27 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "ut_lcl.h"
 
 
-/*
- * Sample test app that shows how to use Murl
- */
+// Sample test app that shows how to use Murl
 int main(int argc, char **argv)
 {
     int rv = 0;
 
     /*
-     * Invoke HTTPS TLS unit test suite 
+     * Invoke HTTPS TLS unit test suite
      */
     if (test_murl_tls()) {
 	rv = 1;
     }
 
     /*
-     * Invoke HTTPS POST unit test suite 
+     * Invoke HTTPS POST unit test suite
      */
     if (test_murl_post()) {
 	rv = 1;
     }
 
     /*
-     * Invoke HTTPS GET unit test suite 
+     * Invoke HTTPS GET unit test suite
      */
     if (test_murl_get()) {
 	rv = 1;

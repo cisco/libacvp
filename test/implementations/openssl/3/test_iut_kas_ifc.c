@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -17,11 +17,12 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-/* Note: currently tests KAS1 only, and only basic key formats */
+TEST_GROUP(APP_KAS_IFC_HANDLER);
 
-static ACVP_TEST_CASE *test_case;
-ACVP_KAS_IFC_TC *kas_ifc_tc;
-static ACVP_RESULT rv;
+/* Note: currently tests KAS1 only, and only basic key formats */
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_KAS_IFC_TC *kas_ifc_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 void free_kas_ifc_tc(ACVP_KAS_IFC_TC *stc) {
     if (stc->server_n) free(stc->server_n);
@@ -65,8 +66,6 @@ int initialize_kas_ifc_tc(ACVP_KAS_IFC_TC *stc,
                           const char *dmq1,
                           const char *iqmp,
                           int corrupt) {
-    ACVP_RESULT rv;
-
     stc->test_type = test_type;
     stc->md = hash_alg;
     stc->kas_role = role;
@@ -246,8 +245,11 @@ err:
     return 0;
 }
 
+TEST_SETUP(APP_KAS_IFC_HANDLER) {}
+TEST_TEAR_DOWN(APP_KAS_IFC_HANDLER) {}
+
 /* invalid hash alg kas ifc handler */
-Test(APP_KAS_IFC_HANDLER, invalid_hash_alg) {
+TEST(APP_KAS_IFC_HANDLER, invalid_hash_alg) {
     int corrupt = 0;
     int hash_alg = -1;
     char *iut_ct_z = NULL;
@@ -272,20 +274,20 @@ Test(APP_KAS_IFC_HANDLER, invalid_hash_alg) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
 
 /* Missing server public key e */
-Test(APP_KAS_IFC_HANDLER, missing_server_e) {
+TEST(APP_KAS_IFC_HANDLER, missing_server_e) {
     int corrupt = 0;
     int hash_alg = ACVP_NO_SHA;
     char *iut_ct_z = NULL;
@@ -310,20 +312,20 @@ Test(APP_KAS_IFC_HANDLER, missing_server_e) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
 
 /* Missing server public key n */
-Test(APP_KAS_IFC_HANDLER, missing_server_n) {
+TEST(APP_KAS_IFC_HANDLER, missing_server_n) {
     int corrupt = 0;
     int hash_alg = ACVP_NO_SHA;
     char *iut_ct_z = NULL;
@@ -348,20 +350,20 @@ Test(APP_KAS_IFC_HANDLER, missing_server_n) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
 
 /* Missing iut_pt_z for VAL */
-Test(APP_KAS_IFC_HANDLER, missing_iut_pt_z) {
+TEST(APP_KAS_IFC_HANDLER, missing_iut_pt_z) {
     int corrupt = 0;
     int hash_alg = ACVP_NO_SHA;
     char *iut_ct_z = NULL;
@@ -386,20 +388,20 @@ Test(APP_KAS_IFC_HANDLER, missing_iut_pt_z) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
 
 /* Missing output buffer - iut_ct_z for initiator */
-Test(APP_KAS_IFC_HANDLER, missing_buf_iut_ct_z) {
+TEST(APP_KAS_IFC_HANDLER, missing_buf_iut_ct_z) {
     int corrupt = 1;
     int hash_alg = ACVP_NO_SHA;
     char *iut_ct_z = NULL;
@@ -424,20 +426,20 @@ Test(APP_KAS_IFC_HANDLER, missing_buf_iut_ct_z) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
 
 /* Missing output buffer - iut_pt_z for initiator */
-Test(APP_KAS_IFC_HANDLER, missing_buf_iut_pt_z) {
+TEST(APP_KAS_IFC_HANDLER, missing_buf_iut_pt_z) {
     int corrupt = 2;
     int hash_alg = ACVP_NO_SHA;
     char *iut_ct_z = NULL;
@@ -462,20 +464,20 @@ Test(APP_KAS_IFC_HANDLER, missing_buf_iut_pt_z) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
 
 /* missing e kas ifc handler */
-Test(APP_KAS_IFC_HANDLER, missing_e) {
+TEST(APP_KAS_IFC_HANDLER, missing_e) {
     int corrupt = 0;
     int hash_alg = ACVP_NO_SHA;
     char *iut_ct_z = NULL;
@@ -500,21 +502,20 @@ Test(APP_KAS_IFC_HANDLER, missing_e) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
 
-
 /* missing n kas ifc handler */
-Test(APP_KAS_IFC_HANDLER, missing_n) {
+TEST(APP_KAS_IFC_HANDLER, missing_n) {
     int corrupt = 0;
     int hash_alg = ACVP_NO_SHA;
     char *iut_ct_z = NULL;
@@ -539,21 +540,20 @@ Test(APP_KAS_IFC_HANDLER, missing_n) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
 
-
 /* missing p kas ifc handler */
-Test(APP_KAS_IFC_HANDLER, missing_p) {
+TEST(APP_KAS_IFC_HANDLER, missing_p) {
     int corrupt = 0;
     int hash_alg = ACVP_NO_SHA;
     char *iut_ct_z = NULL;
@@ -578,21 +578,20 @@ Test(APP_KAS_IFC_HANDLER, missing_p) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
 
-
 /* missing q kas ifc handler */
-Test(APP_KAS_IFC_HANDLER, missing_q) {
+TEST(APP_KAS_IFC_HANDLER, missing_q) {
     int corrupt = 0;
     int hash_alg = ACVP_NO_SHA;
     char *iut_ct_z = NULL;
@@ -617,20 +616,20 @@ Test(APP_KAS_IFC_HANDLER, missing_q) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
 
 /* missing d kas ifc handler */
-Test(APP_KAS_IFC_HANDLER, missing_d) {
+TEST(APP_KAS_IFC_HANDLER, missing_d) {
     int corrupt = 0;
     int hash_alg = ACVP_NO_SHA;
     char *iut_ct_z = NULL;
@@ -655,20 +654,20 @@ Test(APP_KAS_IFC_HANDLER, missing_d) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
 
 /* missing server_ct_z kas ifc handler */
-Test(APP_KAS_IFC_HANDLER, missing_ct) {
+TEST(APP_KAS_IFC_HANDLER, missing_ct) {
     int corrupt = 0;
     int hash_alg = ACVP_NO_SHA;
     char *iut_ct_z = NULL;
@@ -693,20 +692,20 @@ Test(APP_KAS_IFC_HANDLER, missing_ct) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
 
 /* missing output buffer - server_pt_z - responder */
-Test(APP_KAS_IFC_HANDLER, missing_buf_serv_pt_z) {
+TEST(APP_KAS_IFC_HANDLER, missing_buf_serv_pt_z) {
     int corrupt = 3;
     int hash_alg = ACVP_NO_SHA;
     char *iut_ct_z = NULL;
@@ -731,13 +730,13 @@ Test(APP_KAS_IFC_HANDLER, missing_buf_serv_pt_z) {
 
     if (!initialize_kas_ifc_tc(kas_ifc_tc, test_type, key_gen, hash_alg, ACVP_KAS_IFC_KAS1, role, iut_pt_z, iut_ct_z,
                                server_ct_z, NULL, server_n, server_e, p, q, d, n, e, dmp1, dmq1, iqmp, corrupt)) {
-        cr_assert_fail("kas ifc init tc failure");
+        TEST_FAIL_MESSAGE("kas ifc init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.kas_ifc = kas_ifc_tc;
 
     rv = app_kas_ifc_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
 
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);

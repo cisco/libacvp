@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -17,9 +17,11 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_TEST_CASE *test_case;
-ACVP_RSA_KEYGEN_TC *rsa_tc;
-static ACVP_RESULT rv;
+TEST_GROUP(APP_RSA_KEYGEN_HANDLER);
+
+static ACVP_TEST_CASE *test_case = NULL;
+static ACVP_RSA_KEYGEN_TC *rsa_tc = NULL;
+static ACVP_RESULT rv = 0;
 
 void free_rsa_keygen_tc(ACVP_RSA_KEYGEN_TC *stc) {
     if (stc->e) { free(stc->e); }
@@ -102,10 +104,11 @@ err:
     return 0;
 }
 
-/*
- * invalid hash alg rsa keygen handler
- */
-Test(APP_RSA_KEYGEN_HANDLER, invalid_hash_alg) {
+TEST_SETUP(APP_RSA_KEYGEN_HANDLER) {}
+TEST_TEAR_DOWN(APP_RSA_KEYGEN_HANDLER) {}
+
+// invalid hash alg rsa keygen handler
+TEST(APP_RSA_KEYGEN_HANDLER, invalid_hash_alg) {
     int info_gen_by_server = 0, corrupt = 0;
     int bitlen1 = 88, bitlen2 = 88, bitlen3 = 88, bitlen4 = 88;
     int pub_exp_mode = ACVP_RSA_PUB_EXP_MODE_FIXED;
@@ -122,22 +125,20 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_hash_alg) {
     if (!initialize_rsa_tc(rsa_tc, info_gen_by_server, 0, key_format,
             pub_exp_mode, modulo, prime_test, rand_pq, e, seed, seed_len,
             bitlen1, bitlen2, bitlen3, bitlen4, corrupt)) {
-        cr_assert_fail("rsa keygen init tc failure");
+        TEST_FAIL_MESSAGE("rsa keygen init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.rsa_keygen = rsa_tc;
     
     rv = app_rsa_keygen_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_rsa_keygen_tc(rsa_tc);
     free(test_case);
 }
 
-/*
- * invalid key format rsa keygen handler
- */
-Test(APP_RSA_KEYGEN_HANDLER, invalid_key_format) {
+// invalid key format rsa keygen handler
+TEST(APP_RSA_KEYGEN_HANDLER, invalid_key_format) {
     int info_gen_by_server = 0, corrupt = 0;
     int bitlen1 = 88, bitlen2 = 88, bitlen3 = 88, bitlen4 = 88;
     int pub_exp_mode = ACVP_RSA_PUB_EXP_MODE_FIXED;
@@ -153,22 +154,20 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_key_format) {
     if (!initialize_rsa_tc(rsa_tc, info_gen_by_server, ACVP_SHA384, key_format,
     pub_exp_mode, modulo, prime_test, rand_pq, e, seed, seed_len,
     bitlen1, bitlen2, bitlen3, bitlen4, corrupt)) {
-        cr_assert_fail("rsa keygen init tc failure");
+        TEST_FAIL_MESSAGE("rsa keygen init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.rsa_keygen = rsa_tc;
     
     rv = app_rsa_keygen_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_rsa_keygen_tc(rsa_tc);
     free(test_case);
 }
 
-/*
- * invalid pub exp mode rsa keygen handler
- */
-Test(APP_RSA_KEYGEN_HANDLER, invalid_pub_exp_mode) {
+// invalid pub exp mode rsa keygen handler
+TEST(APP_RSA_KEYGEN_HANDLER, invalid_pub_exp_mode) {
     int info_gen_by_server = 0, corrupt = 0;
     int bitlen1 = 88, bitlen2 = 88, bitlen3 = 88, bitlen4 = 88;
     int pub_exp_mode = 0;
@@ -185,22 +184,20 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_pub_exp_mode) {
     if (!initialize_rsa_tc(rsa_tc, info_gen_by_server, ACVP_SHA384, key_format,
             pub_exp_mode, modulo, prime_test, rand_pq, e, seed, seed_len,
             bitlen1, bitlen2, bitlen3, bitlen4, corrupt)) {
-        cr_assert_fail("rsa keygen init tc failure");
+        TEST_FAIL_MESSAGE("rsa keygen init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.rsa_keygen = rsa_tc;
     
     rv = app_rsa_keygen_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_rsa_keygen_tc(rsa_tc);
     free(test_case);
 }
 
-/*
- * invalid modulo rsa keygen handler
- */
-Test(APP_RSA_KEYGEN_HANDLER, invalid_modulo) {
+// invalid modulo rsa keygen handler
+TEST(APP_RSA_KEYGEN_HANDLER, invalid_modulo) {
     int info_gen_by_server = 0, corrupt = 0;
     int bitlen1 = 88, bitlen2 = 88, bitlen3 = 88, bitlen4 = 88;
     int pub_exp_mode = ACVP_RSA_PUB_EXP_MODE_FIXED;
@@ -217,22 +214,20 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_modulo) {
     if (!initialize_rsa_tc(rsa_tc, info_gen_by_server, ACVP_SHA384, key_format,
             pub_exp_mode, modulo, prime_test, rand_pq, e, seed, seed_len,
             bitlen1, bitlen2, bitlen3, bitlen4, corrupt)) {
-        cr_assert_fail("rsa keygen init tc failure");
+        TEST_FAIL_MESSAGE("rsa keygen init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.rsa_keygen = rsa_tc;
     
     rv = app_rsa_keygen_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_rsa_keygen_tc(rsa_tc);
     free(test_case);
 }
 
-/*
- * invalid prime test rsa keygen handler
- */
-Test(APP_RSA_KEYGEN_HANDLER, invalid_prime_test) {
+// invalid prime test rsa keygen handler
+TEST(APP_RSA_KEYGEN_HANDLER, invalid_prime_test) {
     int info_gen_by_server = 0, corrupt = 0;
     int bitlen1 = 88, bitlen2 = 88, bitlen3 = 88, bitlen4 = 88;
     int pub_exp_mode = ACVP_RSA_PUB_EXP_MODE_FIXED;
@@ -249,22 +244,20 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_prime_test) {
     if (!initialize_rsa_tc(rsa_tc, info_gen_by_server, ACVP_SHA384, key_format,
             pub_exp_mode, modulo, prime_test, rand_pq, e, seed, seed_len,
             bitlen1, bitlen2, bitlen3, bitlen4, corrupt)) {
-        cr_assert_fail("rsa keygen init tc failure");
+        TEST_FAIL_MESSAGE("rsa keygen init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.rsa_keygen = rsa_tc;
     
     rv = app_rsa_keygen_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_rsa_keygen_tc(rsa_tc);
     free(test_case);
 }
 
-/*
- * invalid rand pq rsa keygen handler
- */
-Test(APP_RSA_KEYGEN_HANDLER, invalid_rand_pq) {
+// invalid rand pq rsa keygen handler
+TEST(APP_RSA_KEYGEN_HANDLER, invalid_rand_pq) {
     int info_gen_by_server = 0, corrupt = 0;
     int bitlen1 = 88, bitlen2 = 88, bitlen3 = 88, bitlen4 = 88;
     int pub_exp_mode = ACVP_RSA_PUB_EXP_MODE_FIXED;
@@ -281,22 +274,20 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_rand_pq) {
     if (!initialize_rsa_tc(rsa_tc, info_gen_by_server, ACVP_SHA384, key_format,
             pub_exp_mode, modulo, prime_test, rand_pq, e, seed, seed_len,
             bitlen1, bitlen2, bitlen3, bitlen4, corrupt)) {
-        cr_assert_fail("rsa keygen init tc failure");
+        TEST_FAIL_MESSAGE("rsa keygen init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.rsa_keygen = rsa_tc;
     
     rv = app_rsa_keygen_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_rsa_keygen_tc(rsa_tc);
     free(test_case);
 }
 
-/*
- * missing e rsa keygen handler (only if pub_exp_fixed)
- */
-Test(APP_RSA_KEYGEN_HANDLER, missing_e) {
+// missing e rsa keygen handler (only if pub_exp_fixed)
+TEST(APP_RSA_KEYGEN_HANDLER, missing_e) {
     int info_gen_by_server = 0, corrupt = 0;
     int bitlen1 = 88, bitlen2 = 88, bitlen3 = 88, bitlen4 = 88;
     int pub_exp_mode = ACVP_RSA_PUB_EXP_MODE_FIXED;
@@ -313,22 +304,20 @@ Test(APP_RSA_KEYGEN_HANDLER, missing_e) {
     if (!initialize_rsa_tc(rsa_tc, info_gen_by_server, ACVP_SHA384, key_format,
             pub_exp_mode, modulo, prime_test, rand_pq, e, seed, seed_len,
             bitlen1, bitlen2, bitlen3, bitlen4, corrupt)) {
-        cr_assert_fail("rsa keygen init tc failure");
+        TEST_FAIL_MESSAGE("rsa keygen init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.rsa_keygen = rsa_tc;
     
     rv = app_rsa_keygen_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_rsa_keygen_tc(rsa_tc);
     free(test_case);
 }
 
-/*
- * missing seed rsa keygen handler (only if info_gen_by_server = 1)
- */
-Test(APP_RSA_KEYGEN_HANDLER, missing_seed) {
+// missing seed rsa keygen handler (only if info_gen_by_server = 1)
+TEST(APP_RSA_KEYGEN_HANDLER, missing_seed) {
     int info_gen_by_server = 1, corrupt = 0;
     int bitlen1 = 88, bitlen2 = 88, bitlen3 = 88, bitlen4 = 88;
     int pub_exp_mode = ACVP_RSA_PUB_EXP_MODE_FIXED;
@@ -345,22 +334,20 @@ Test(APP_RSA_KEYGEN_HANDLER, missing_seed) {
     if (!initialize_rsa_tc(rsa_tc, info_gen_by_server, ACVP_SHA384, key_format,
             pub_exp_mode, modulo, prime_test, rand_pq, e, seed, seed_len,
             bitlen1, bitlen2, bitlen3, bitlen4, corrupt)) {
-        cr_assert_fail("rsa keygen init tc failure");
+        TEST_FAIL_MESSAGE("rsa keygen init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.rsa_keygen = rsa_tc;
     
     rv = app_rsa_keygen_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_rsa_keygen_tc(rsa_tc);
     free(test_case);
 }
 
-/*
- * unallocated answer buffers rsa keygen tc
- */
-Test(APP_RSA_KEYGEN_HANDLER, unallocated_ans_bufs) {
+// unallocated answer buffers rsa keygen tc
+TEST(APP_RSA_KEYGEN_HANDLER, unallocated_ans_bufs) {
     int info_gen_by_server = 0, corrupt = 1;
     int bitlen1 = 88, bitlen2 = 88, bitlen3 = 88, bitlen4 = 88;
     int pub_exp_mode = ACVP_RSA_PUB_EXP_MODE_FIXED;
@@ -377,13 +364,13 @@ Test(APP_RSA_KEYGEN_HANDLER, unallocated_ans_bufs) {
     if (!initialize_rsa_tc(rsa_tc, info_gen_by_server, ACVP_SHA384, key_format,
             pub_exp_mode, modulo, prime_test, rand_pq, e, seed, seed_len,
             bitlen1, bitlen2, bitlen3, bitlen4, corrupt)) {
-        cr_assert_fail("rsa keygen init tc failure");
+        TEST_FAIL_MESSAGE("rsa keygen init tc failure");
     }
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.rsa_keygen = rsa_tc;
     
     rv = app_rsa_keygen_handler(test_case);
-    cr_assert_neq(rv, 0);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
     
     free_rsa_keygen_tc(rsa_tc);
     free(test_case);

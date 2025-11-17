@@ -19,7 +19,7 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
     ACVP_HASH_TC    *tc;
     const EVP_MD    *md;
     EVP_MD_CTX *md_ctx = NULL;
-    /* assume fail */
+    // assume fail
     int rv = 1;
     int sha3 = 0, shake = 0;
     ACVP_SUB_HASH alg;
@@ -111,7 +111,7 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
             printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
         }
 
-        /* We can either use this helper function, or concatenate m1/m2/m3 ourselves */
+        // We can either use this helper function, or concatenate m1/m2/m3 ourselves
         mct_msg = acvp_hash_create_mct_msg(tc, &mct_msg_len);
         if (!mct_msg) {
             printf("Library failed to generate mct message for test when asked\n");
@@ -168,8 +168,9 @@ end:
  */
 int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md) {
     unsigned char *large_data = NULL, *iter = NULL;
-    int numcopies = 0, i = 0, rv = 1;
+    int rv = 1;
     EVP_MD_CTX *md_ctx = NULL;
+    size_t filled = 0;
 
     printf("Performing hash large data test (This may take time...)\n");
 
@@ -179,12 +180,18 @@ int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md) {
         return 1;
     }
 
-    /* We have to copy the message into the buffer many times. Assume concatenation as it is the only mode currently */
-    numcopies = tc->exp_len / tc->msg_len;
-    iter = large_data;
-    for (i = 0; i < numcopies; i++) {
-        memcpy_s(iter, tc->exp_len - (i * tc->msg_len), tc->msg, tc->msg_len);
-        iter += tc->msg_len;
+    // Allocate buffer for "concatenation" style LDT test: copy message into large buffer many times.
+    // Using doubling strategy to help tests run faster having substantially fewer memcpy calls.
+    memcpy_s(large_data, tc->exp_len, tc->msg, tc->msg_len);
+    filled = tc->msg_len;
+    iter = large_data + tc->msg_len;
+    while (filled * 2 <= tc->exp_len) {
+        memcpy_s(iter, tc->exp_len - (iter - large_data), large_data, filled);
+        iter += filled;
+        filled *= 2;
+    }
+    if (filled < tc->exp_len) {
+        memcpy_s(iter, tc->exp_len - (iter - large_data), large_data, tc->exp_len - filled);
     }
 
     md_ctx = EVP_MD_CTX_create();
@@ -194,11 +201,12 @@ int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md) {
         goto end;
     }
 
-    /* Update MUST only be called once */
+    // Update MUST only be called once
     if (!EVP_DigestUpdate(md_ctx, large_data, tc->exp_len)) {
         printf("\nCrypto module error, EVP_DigestUpdate failed\n");
         goto end;
     }
+
     if (!EVP_DigestFinal(md_ctx, tc->md, &tc->md_len)) {
         printf("\nCrypto module error, EVP_DigestFinal failed\n");
         goto end;

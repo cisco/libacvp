@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libacvp.la
-AM_CFLAGS = -I$(top_srcdir)/include/acvp $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS)
+AM_CFLAGS += -I$(top_srcdir)/include/acvp $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS)
 
 if BUILDING_OFFLINE
 AM_CFLAGS+= -DACVP_OFFLINE
@@ -9,6 +9,7 @@ libacvp_la_SOURCES =  acvp.c \
                     acvp_build_register.c \
                     acvp_capabilities.c \
                     acvp_operating_env.c \
+                    acvp_parse.c \
                     acvp_aes.c \
                     acvp_des.c \
                     acvp_hash.c \
@@ -19,6 +20,7 @@ libacvp_la_SOURCES =  acvp.c \
                     acvp_hmac.c \
                     acvp_cmac.c \
                     acvp_kmac.c \
+                    acvp_cshake.c \
                     acvp_rsa_keygen.c \
                     acvp_rsa_sig.c \
                     acvp_rsa_prim.c \
@@ -47,7 +49,7 @@ libacvp_la_SOURCES =  acvp.c \
                     acvp_ml_kem.c \
                     acvp_slh_dsa.c
 
-libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBCURL_LDFLAGS)
+libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBCURL_LDFLAGS) $(ADDL_LIB_DEPENDENCIES)
 libacvp_includedir=$(includedir)/acvp
 libacvp_include_HEADERS = $(top_srcdir)/include/acvp/acvp.h
 noinst_HEADERS = $(top_srcdir)/include/acvp/acvp_lcl.h \

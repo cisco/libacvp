@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2024, Cisco Systems, Inc.
+ * Copyright (c) 2025, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,23 +8,54 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
 #include "ut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx;
+TEST_GROUP(Kdf135SshApi);
+TEST_GROUP(Kdf135SshFail);
+TEST_GROUP(Kdf135SshFunc);
+
+static ACVP_CTX *ctx = NULL;
+static ACVP_RESULT rv = 0;
+static JSON_Object *obj = NULL;
+static JSON_Value *val = NULL;
 static char cvalue[] = "same";
 
-/*
- * Test kdf135 SSH handler API inputs
- */
-Test(Kdf135SshApi, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
-    int flags = 0;
-
+TEST_SETUP(Kdf135SshApi) {
     setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(Kdf135SshApi) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(Kdf135SshFail) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(Kdf135SshFail) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST_SETUP(Kdf135SshFunc) {
+    setup_empty_ctx(&ctx);
+}
+
+TEST_TEAR_DOWN(Kdf135SshFunc) {
+    if (ctx) teardown_ctx(&ctx);
+    if (val) json_value_free(val);
+    val = NULL;
+    obj = NULL;
+}
+
+TEST(Kdf135SshApi, null_ctx) {
+    int flags = 0;
 
     val = json_parse_file("json/kdf135_ssh/kdf135_ssh1.json");
 
@@ -36,77 +67,66 @@ Test(Kdf135SshApi, null_ctx) {
 
     /* Test with unregistered ctx */
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, rv);
 
     /* Enable capabilites */
     rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_TDES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     //Bit flags for kdf135_ssh sha capabilities
     flags = ACVP_SHA1 | ACVP_SHA224 |ACVP_SHA256
     | ACVP_SHA384 | ACVP_SHA512;
 
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_TDES_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_128_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_192_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     /* Test with NULL ctx */
     rv  = acvp_kdf135_ssh_kat_handler(NULL, obj);
-    cr_assert(rv == ACVP_NO_CTX);
+    TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
 
     /* Test with NULL JSON object */
     rv  = acvp_kdf135_ssh_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
-
-    teardown_ctx(&ctx);
-    json_value_free(val);
+    TEST_ASSERT_EQUAL(ACVP_MALFORMED_JSON, rv);
 }
 
-/*
- * Test kdf135 SSH handler functionally
- */
-Test(Kdf135SshFunc, null_ctx) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// Test kdf135 SSH handler functionally
+TEST(Kdf135SshFunc, null_ctx) {
     int flags = 0;
-
-    setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
     rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_TDES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     //Bit flags for kdf135_ssh sha capabilities
     flags = ACVP_SHA1 | ACVP_SHA224 |ACVP_SHA256
     | ACVP_SHA384 | ACVP_SHA512;
 
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_TDES_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_128_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_192_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
-
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     /* This is a proper JSON, positive test TDES SHA-1 */
     val = json_parse_file("json/kdf135_ssh/kdf135_ssh1.json");
@@ -117,7 +137,7 @@ Test(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
 
     /* This is a corrupt JSON, missing cipher */
@@ -129,7 +149,7 @@ Test(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, missing hashAlg */
@@ -141,7 +161,7 @@ Test(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, failed to include k */
@@ -153,7 +173,7 @@ Test(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, failed to include h */
@@ -165,7 +185,7 @@ Test(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     
     /* This is a corrupt JSON, failed to include session_id */
@@ -177,7 +197,7 @@ Test(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* This is a corrupt JSON, corrupt algorithm */
@@ -189,7 +209,7 @@ Test(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     json_value_free(val);
 
     /* This is a corrupt JSON, failed to include tests */
@@ -201,7 +221,7 @@ Test(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* This is a corrupt JSON, failed to include testGroups */
@@ -213,7 +233,7 @@ Test(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* This is a corrupt JSON, failed to include tc_id */
@@ -225,7 +245,7 @@ Test(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
 
     /* This is a proper JSON, positive test AES-128 thru 256 SHA-224 thru SHA-512 */
@@ -237,7 +257,7 @@ Test(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     json_value_free(val);
 
     /* This is a corrupt JSON, failed to include tgid */
@@ -249,46 +269,36 @@ Test(Kdf135SshFunc, null_ctx) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
-    json_value_free(val);
-
-    teardown_ctx(&ctx);
-
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
-/*
- * The key: crypto handler operation fails on last crypto call
- */
-Test(Kdf135SshFail, cryptoFail1) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key: crypto handler operation fails on last crypto call
+TEST(Kdf135SshFail, cryptoFail1) {
+    force_handler_failure = 1;
     int flags = 0;
 
-    setup_empty_ctx(&ctx);
-
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_TDES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     //Bit flags for kdf135_ssh sha capabilities
     flags = ACVP_SHA1 | ACVP_SHA224 |ACVP_SHA256
     | ACVP_SHA384 | ACVP_SHA512;
 
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_TDES_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_128_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_192_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     val = json_parse_file("json/kdf135_ssh/kdf135_ssh1.json");
     
@@ -300,45 +310,37 @@ Test(Kdf135SshFail, cryptoFail1) {
     counter_set = 0;
     counter_fail = 9; /* fail on first iteration */
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
-    json_value_free(val);
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
+    force_handler_failure = 0;
 }
 
-/*
- * The key: crypto handler operation fails on last crypto call
- */
-Test(Kdf135SshFail, cryptoFail2) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key: crypto handler operation fails on last crypto call
+TEST(Kdf135SshFail, cryptoFail2) {
+    force_handler_failure = 1;
     int flags = 0;
 
-    setup_empty_ctx(&ctx);
-
     /* Enable capabilites */
-    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_TDES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     //Bit flags for kdf135_ssh sha capabilities
     flags = ACVP_SHA1 | ACVP_SHA224 |ACVP_SHA256
     | ACVP_SHA384 | ACVP_SHA512;
 
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_TDES_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_128_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_192_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
-
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     val = json_parse_file("json/kdf135_ssh/kdf135_ssh1.json");
     
@@ -350,44 +352,36 @@ Test(Kdf135SshFail, cryptoFail2) {
     counter_set = 0;
     counter_fail = 9; /* fail on last iteration */
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_CRYPTO_MODULE_FAIL);
-    json_value_free(val);
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_CRYPTO_MODULE_FAIL, rv);
+    force_handler_failure = 0;
 }
 
-/*
- * The key:"cipher" is missing in secong tg
- */
-Test(Kdf135SshFail, tcidFail) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key:"cipher" is missing in secong tg
+TEST(Kdf135SshFail, tcidFail) {
     int flags = 0;
-
-    setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
     rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_TDES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     //Bit flags for kdf135_ssh sha capabilities
     flags = ACVP_SHA1 | ACVP_SHA224 |ACVP_SHA256
     | ACVP_SHA384 | ACVP_SHA512;
 
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_TDES_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_128_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_192_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     val = json_parse_file("json/kdf135_ssh/kdf135_ssh13.json");
     
@@ -397,44 +391,35 @@ Test(Kdf135SshFail, tcidFail) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
-    json_value_free(val);
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
 
-/*
- * The key:"h" is missing in last tc
- */
-Test(Kdf135SshFail, tcFail) {
-    ACVP_RESULT rv;
-    JSON_Object *obj;
-    JSON_Value *val;
+// The key:"h" is missing in last tc
+TEST(Kdf135SshFail, tcFail) {
     int flags = 0;
-
-    setup_empty_ctx(&ctx);
 
     /* Enable capabilites */
     rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_TDES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     //Bit flags for kdf135_ssh sha capabilities
     flags = ACVP_SHA1 | ACVP_SHA224 |ACVP_SHA256
     | ACVP_SHA384 | ACVP_SHA512;
 
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_TDES_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_128_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_192_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, flags);
-    cr_assert(rv == ACVP_SUCCESS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     val = json_parse_file("json/kdf135_ssh/kdf135_ssh14.json");
     
@@ -444,8 +429,5 @@ Test(Kdf135SshFail, tcFail) {
         return;
     }
     rv  = acvp_kdf135_ssh_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
-    json_value_free(val);
-    teardown_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
-

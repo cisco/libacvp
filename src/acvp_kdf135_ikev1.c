@@ -17,9 +17,7 @@
 #include "parson.h"
 #include "safe_lib.h"
 
-/*
- * Forward prototypes for local functions
- */
+// Forward prototypes for local functions
 static ACVP_RESULT acvp_kdf135_ikev1_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV1_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
     char *tmp = NULL;
@@ -142,7 +140,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_init_tc(ACVP_CTX *ctx,
     }
 
     if (psk != NULL) {
-        /* Only for PSK authentication method */
+        // Only for PSK authentication method
         stc->psk = calloc(ACVP_KDF135_IKEV1_PSK_BYTE_MAX,
                           sizeof(unsigned char));
         if (!stc->psk) { return ACVP_MALLOC_FAIL; }
@@ -217,9 +215,9 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_IKEV1_TC stc;
     ACVP_TEST_CASE tc;
@@ -258,9 +256,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_INVALID_ARG;
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
+    // Get a reference to the abstracted test case
     tc.tc.kdf135_ikev1 = &stc;
     stc.cipher = alg_id;
 
@@ -270,25 +266,24 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /*
-     * Create ACVP array for response
-     */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct.");
         return rv;
     }
 
-    /*
-     * Start to build the JSON response
-     */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
         return rv;
     }
 
-    groups = json_object_get_array(obj, "testGroups");
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         int tgId = 0;
@@ -301,22 +296,19 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        hash_alg_str = json_object_get_string(groupobj, "hashAlg");
-        if (!hash_alg_str) {
-            ACVP_LOG_ERR("Failed to include hashAlg");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "hashAlg", &hash_alg_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         hash_alg = acvp_lookup_hash_alg(hash_alg_str);
         if (hash_alg != ACVP_SHA1 && hash_alg != ACVP_SHA224 &&
             hash_alg != ACVP_SHA256 && hash_alg != ACVP_SHA384 &&
@@ -326,12 +318,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        auth_method_str = json_object_get_string(groupobj, "authenticationMethod");
-        if (!auth_method_str) {
-            ACVP_LOG_ERR("Failed to include authenticationMethod");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "authenticationMethod", &auth_method_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
+
         auth_method = read_auth_method(auth_method_str);
         if (!auth_method) {
             ACVP_LOG_ERR("ACVP server requesting invalid authenticationMethod");
@@ -339,7 +330,10 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        init_nonce_len = json_object_get_number(groupobj, "nInitLength");
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "nInitLength", &init_nonce_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (!(init_nonce_len >= ACVP_KDF135_IKEV1_INIT_NONCE_BIT_MIN &&
               init_nonce_len <= ACVP_KDF135_IKEV1_INIT_NONCE_BIT_MAX)) {
             ACVP_LOG_ERR("nInitLength incorrect, %d", init_nonce_len);
@@ -347,7 +341,10 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        resp_nonce_len = json_object_get_number(groupobj, "nRespLength");
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "nRespLength", &resp_nonce_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (!(resp_nonce_len >= ACVP_KDF135_IKEV1_RESP_NONCE_BIT_MIN &&
               resp_nonce_len <= ACVP_KDF135_IKEV1_RESP_NONCE_BIT_MAX)) {
             ACVP_LOG_ERR("nRespLength incorrect, %d", resp_nonce_len);
@@ -355,7 +352,10 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        dh_secret_len = json_object_get_number(groupobj, "dhLength");
+        rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "dhLength", &dh_secret_len);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         if (!(dh_secret_len >= ACVP_KDF135_IKEV1_DH_SHARED_SECRET_BIT_MIN &&
               dh_secret_len <= ACVP_KDF135_IKEV1_DH_SHARED_SECRET_BIT_MAX)) {
             ACVP_LOG_ERR("dhLength incorrect, %d", dh_secret_len);
@@ -364,8 +364,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         if (auth_method == ACVP_KDF135_IKEV1_AMETH_PSK) {
-            /* Only for PSK authentication method */
-            psk_len = json_object_get_number(groupobj, "preSharedKeyLength");
+            // Only for PSK authentication method
+            rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "preSharedKeyLength", &psk_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
             if (!(psk_len >= ACVP_KDF135_IKEV1_PSK_BIT_MIN &&
                   psk_len <= ACVP_KDF135_IKEV1_PSK_BIT_MAX)) {
                 ACVP_LOG_ERR("preSharedKeyLength incorrect, %d", psk_len);
@@ -382,7 +385,10 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("   dh secret len: %d", dh_secret_len);
         ACVP_LOG_VERBOSE("         psk len: %d", psk_len);
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
@@ -390,14 +396,16 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = json_object_get_number(testobj, "tcId");
-
-            init_nonce = json_object_get_string(testobj, "nInit");
-            if (!init_nonce) {
-                ACVP_LOG_ERR("Failed to include nInit");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "nInit", &init_nonce);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+
             if (strnlen_s(init_nonce,
                         ACVP_KDF135_IKEV1_INIT_NONCE_STR_MAX + 1) != ((init_nonce_len + 7) / 8) * 2) {
                 ACVP_LOG_ERR("nInit length(%d) incorrect, expected(%d)",
@@ -408,12 +416,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            resp_nonce = json_object_get_string(testobj, "nResp");
-            if (!resp_nonce) {
-                ACVP_LOG_ERR("Failed to include nResp");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "nResp", &resp_nonce);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(resp_nonce,
                         ACVP_KDF135_IKEV1_RESP_NONCE_STR_MAX + 1) != ((resp_nonce_len + 7) / 8) * 2) {
                 ACVP_LOG_ERR("nResp length(%d) incorrect, expected(%d)",
@@ -423,12 +430,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            init_ckey = json_object_get_string(testobj, "ckyInit");
-            if (!init_ckey) {
-                ACVP_LOG_ERR("Failed to include ckyInit");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "ckyInit", &init_ckey);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(init_ckey, ACVP_KDF135_IKEV1_COOKIE_STR_MAX + 1)
                 > ACVP_KDF135_IKEV1_COOKIE_STR_MAX) {
                 ACVP_LOG_ERR("ckyInit too long, max allowed=(%d)",
@@ -437,12 +443,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            resp_ckey = json_object_get_string(testobj, "ckyResp");
-            if (!resp_ckey) {
-                ACVP_LOG_ERR("Failed to include ckyResp");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "ckyResp", &resp_ckey);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(resp_ckey, ACVP_KDF135_IKEV1_COOKIE_STR_MAX + 1)
                 > ACVP_KDF135_IKEV1_COOKIE_STR_MAX) {
                 ACVP_LOG_ERR("ckyResp too long, max allowed=(%d)",
@@ -451,12 +456,11 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            gxy = json_object_get_string(testobj, "gxy");
-            if (!gxy) {
-                ACVP_LOG_ERR("Failed to include gxy");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "gxy", &gxy);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
             if (strnlen_s(gxy, ACVP_KDF135_IKEV1_DH_SHARED_SECRET_STR_MAX + 1)
                 > ACVP_KDF135_IKEV1_DH_SHARED_SECRET_STR_MAX) {
                 ACVP_LOG_ERR("gxy too long, max allowed=(%d)",
@@ -467,13 +471,12 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
 
             if (auth_method == ACVP_KDF135_IKEV1_AMETH_PSK) {
-                /* Only for PSK authentication method */
-                psk = json_object_get_string(testobj, "preSharedKey");
-                if (!psk) {
-                    ACVP_LOG_ERR("Failed to include preSharedKey");
-                    rv = ACVP_MISSING_ARG;
+                // Only for PSK authentication method
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "preSharedKey", &psk);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
                 if (strnlen_s(psk, ACVP_KDF135_IKEV1_PSK_STR_MAX + 1)
                     > ACVP_KDF135_IKEV1_PSK_STR_MAX) {
                     ACVP_LOG_ERR("preSharedKey too long, max allowed=(%d)",
@@ -486,9 +489,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
 
-            /*
-             * Create a new test case in the response
-             */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -510,31 +511,27 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if ((cap->crypto_handler)(&tc)) {
-                ACVP_LOG_ERR("crypto module failed the KDF IKEv1 operation");
+                ACVP_LOG_ERR("Crypto module failed the KDF IKEv1 operation");
                 acvp_kdf135_ikev1_release_tc(&stc);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
                 goto err;
             }
 
-            /*
-             * Output the test case results using JSON
-             */
+            // Output the test case results using JSON
             rv = acvp_kdf135_ikev1_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 acvp_kdf135_ikev1_release_tc(&stc);
                 json_value_free(r_tval);
                 goto err;
             }
-            /*
-             * Release all the memory associated with the test case
-             */
+            // Release all the memory associated with the test case
             acvp_kdf135_ikev1_release_tc(&stc);
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);

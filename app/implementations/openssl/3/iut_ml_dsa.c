@@ -17,7 +17,7 @@
 #include <openssl/err.h>
 
 #define ML_DSA_MAX_BUF_SIZE 8192
-/* Stubs for new functions to allow old versions of OpenSSL to compile */
+// Stubs for new functions to allow old versions of OpenSSL to compile
 #if OPENSSL_VERSION_NUMBER < 0x30400000L
 int EVP_PKEY_verify_message_init(EVP_PKEY_CTX *ctx, EVP_SIGNATURE *algo, const OSSL_PARAM params[]) {
     if (!ctx || !algo || !params) {
@@ -121,7 +121,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
         tc->pub_key_len = (int)pk_len;
         break;
     case ACVP_SUB_ML_DSA_SIGGEN:
-        /* First, create the pkey containing the sk we are given */
+        // First, create the pkey containing the sk we are given
         pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, param_set, NULL);
         if (!pkey_ctx) {
             printf("Error initializing pkey CTX in ML-DSA siggen\n");
@@ -147,13 +147,13 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        /* Then, create the signature object */
+        // Then, create the signature object
         sig = EVP_SIGNATURE_fetch(NULL, param_set, NULL);
         if (!sig) {
             printf("Error fetching signature in ML-DSA siggen\n");
             goto end;
         }
-        /* Then, use that pkey to sign. Start generating new params */
+        // Then, use that pkey to sign. Start generating new params
         if (pbld) OSSL_PARAM_BLD_free(pbld);
         if (params) OSSL_PARAM_free(params);
 
@@ -167,7 +167,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_SIGNATURE_PARAM_TEST_ENTROPY, tc->rnd, tc->rnd_len);
         }
 
-        /* Determine if we have mu or message; if MU, set correct flag */
+        // Determine if we have mu or message; if MU, set correct flag
         if (tc->mu_len) {
             msg_ptr = tc->mu;
             msg_len = (size_t)tc->mu_len;
@@ -186,7 +186,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        /* Initialize and perform sig operation */
+        // Initialize and perform sig operation
         if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
         pkey_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
         if (!pkey_ctx) {
@@ -208,7 +208,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        /* Copy results back into test case */
+        // Copy results back into test case
         memcpy_s(tc->sig, ML_DSA_MAX_BUF_SIZE, sig_buf, sig_len);
         tc->sig_len = (int)sig_len;
 
@@ -216,7 +216,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SUB_ML_DSA_SIGVER:
         tc->ver_disposition = 0;
 
-        /* First, create the pkey containing the pk we are given */
+        // First, create the pkey containing the pk we are given
         pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, param_set, NULL);
         if (!pkey_ctx) {
             printf("Error initializing pkey CTX in ML-DSA sigver\n");
@@ -242,7 +242,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        /* Set up params */
+        // Set up params
         if (pbld) OSSL_PARAM_BLD_free(pbld);
         if (params) OSSL_PARAM_free(params);
         if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
@@ -252,7 +252,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             printf("Error creating param_bld in ML-DSA sigver\n");
             goto end;
         }
-        /* Determine if we have mu or message; if MU, set correct flag */
+        // Determine if we have mu or message; if MU, set correct flag
         if (tc->mu_len) {
             msg_ptr = tc->mu;
             msg_len = (size_t)tc->mu_len;
@@ -271,7 +271,7 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        /* Set up the CTX's and run the verify */
+        // Set up the CTX's and run the verify
         pkey_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
         if (!pkey_ctx) {
             printf("Error initializing pkey ctx from pkey in ML-DSA sigver\n");

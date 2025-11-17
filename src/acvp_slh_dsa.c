@@ -285,9 +285,9 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
-    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
-    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  // Response testarray, grouparray
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  // Response testval, groupval
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; // Response testobj, groupobj
     ACVP_CAPS_LIST *cap = NULL;
     ACVP_SLH_DSA_TC stc;
     ACVP_TEST_CASE tc;
@@ -312,7 +312,7 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
-        ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
+        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return ACVP_MALFORMED_JSON;
     }
 
@@ -332,19 +332,19 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
-        ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
+        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return ACVP_UNSUPPORTED_OP;
     }
     ACVP_LOG_VERBOSE("    SLH-DSA mode: %s", mode_str);
 
-    /* Create ACVP array for response */
+    // Create ACVP array for response
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("ERROR: Failed to create JSON response struct.");
+        ACVP_LOG_ERR("Failed to create JSON response struct. ");
         return rv;
     }
 
-    /* Start to build the JSON response */
+    // Start to build the JSON response
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
@@ -352,10 +352,8 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_object_set_string(r_vs, "mode", mode_str);
 
-    groups = json_object_get_array(obj, "testGroups");
-    if (!groups) {
-        ACVP_LOG_ERR("Missing testGroups from server JSON");
-        rv = ACVP_MALFORMED_JSON;
+    rv = acvp_tc_json_get_array(ctx, alg_id, obj, "testGroups", &groups);
+    if (rv != ACVP_SUCCESS) {
         goto err;
     }
     g_cnt = json_array_get_count(groups);
@@ -371,20 +369,16 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tg_id = json_object_get_number(groupobj, "tgId");
-        if (!tg_id) {
-            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "tgId", &tg_id);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tg_id);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        param_set_str = json_object_get_string(groupobj, "parameterSet");
-        if (!param_set_str) {
-            ACVP_LOG_ERR("Server JSON missing 'parameterSet'");
-            rv = ACVP_MISSING_ARG;
+        rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "parameterSet", &param_set_str);
+        if (rv != ACVP_SUCCESS) {
             goto err;
         }
         param_set = acvp_lookup_slh_dsa_param_set(param_set_str);
@@ -395,19 +389,15 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         if (alg_id == ACVP_SLH_DSA_SIGGEN) {
-            if (!json_object_has_value(groupobj, "deterministic")) {
-                ACVP_LOG_ERR("Server JSON missing 'deterministic'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "deterministic", &is_deterministic);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
-            is_deterministic = json_object_get_boolean(groupobj, "deterministic");
         }
 
         if (alg_id == ACVP_SLH_DSA_SIGGEN || alg_id == ACVP_SLH_DSA_SIGVER) {
-            sig_interface_str = json_object_get_string(groupobj, "signatureInterface");
-            if (!sig_interface_str) {
-                ACVP_LOG_ERR("Server JSON missing 'signatureInterface'");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "signatureInterface", &sig_interface_str);
+            if (rv != ACVP_SUCCESS) {
                 goto err;
             }
             sig_interface = read_sig_interface(sig_interface_str);
@@ -418,10 +408,8 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (sig_interface == ACVP_SIG_INTERFACE_EXTERNAL) {
-                prehash_str = json_object_get_string(groupobj, "preHash");
-                if (!prehash_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'preHash'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "preHash", &prehash_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
                 switch(read_prehash(prehash_str)) {
@@ -449,7 +437,10 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("     is deterministic: %s", is_deterministic ? "yes" : "no");
         }
 
-        tests = json_object_get_array(groupobj, "tests");
+        rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
+        if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
             ACVP_LOG_ERR("Test array count is zero");
@@ -461,39 +452,34 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("Found new SLH-DSA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = json_object_get_number(testobj, "tcId");
+            rv = acvp_tc_json_get_uint(ctx, alg_id, testobj, "tcId", &tc_id);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
 
             if (alg_id == ACVP_SLH_DSA_KEYGEN) {
-                secret_seed_str = json_object_get_string(testobj, "skSeed");
-                if (!secret_seed_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'skSeed'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "skSeed", &secret_seed_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
-                secret_prf_str = json_object_get_string(testobj, "skPrf");
-                if (!secret_seed_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'skPrf'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "skPrf", &secret_prf_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
-                pub_seed_str = json_object_get_string(testobj, "pkSeed");
-                if (!pub_seed_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'pkSeed'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "pkSeed", &pub_seed_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
             } else {
-                msg_str = json_object_get_string(testobj, "message");
-                if (!msg_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'message'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "message", &msg_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
                 if (sig_interface == ACVP_SIG_INTERFACE_EXTERNAL && is_prehash == 1) {
-                    rv = acvp_get_tc_str_from_json(ctx, testobj, "hashAlg", &hash_alg_str);
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "hashAlg", &hash_alg_str);
                     if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
@@ -507,44 +493,34 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_SLH_DSA_SIGVER) {
-                pub_str = json_object_get_string(testobj, "pk");
-                if (!pub_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'pk'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "pk", &pub_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
-                sig_str = json_object_get_string(testobj, "signature");
-                if (!sig_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'signature'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "signature", &sig_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
             }
 
             if (alg_id== ACVP_SLH_DSA_SIGGEN) {
-                secret_str = json_object_get_string(testobj, "sk");
-                if (!secret_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'sk'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "sk", &secret_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
                 if (!is_deterministic) {
-                    rnd_str = json_object_get_string(testobj, "additionalRandomness");
-                    if (!rnd_str) {
-                        ACVP_LOG_ERR("Server JSON missing 'rnd'");
-                        rv = ACVP_MISSING_ARG;
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "additionalRandomness", &rnd_str);
+                    if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
                 }
             }
 
             if ((alg_id == ACVP_SLH_DSA_SIGGEN || alg_id == ACVP_SLH_DSA_SIGVER) && sig_interface == ACVP_SIG_INTERFACE_EXTERNAL) {
-                context_str = json_object_get_string(testobj, "context");
-                if (!context_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'context'");
-                    rv = ACVP_MISSING_ARG;
+                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "context", &context_str);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
             }
@@ -579,7 +555,7 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_VERBOSE("          context: %s", context_str);
             }
 
-            /* Create a new test case in the response */
+            // Create a new test case in the response
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
@@ -589,10 +565,10 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                       is_prehash, hash_alg, pub_str, secret_str, secret_seed_str, secret_prf_str,
                                       pub_seed_str, rnd_str, msg_str, sig_str, context_str);
 
-            /* Process the current test vector... */
+            // Process the current test vector...
             if (rv == ACVP_SUCCESS) {
                 if ((cap->crypto_handler)(&tc)) {
-                    ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                    ACVP_LOG_ERR("Crypto module failed the operation");
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     json_value_free(r_tval);
                     goto err;
@@ -603,18 +579,18 @@ ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            /* Output the test case results using JSON */
+            // Output the test case results using JSON
             rv = acvp_slh_dsa_output_tc(ctx, alg_id, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure recording test response");
                 json_value_free(r_tval);
                 goto err;
             }
 
-            /* Append the test response value to array */
+            // Append the test response value to array
             json_array_append_value(r_tarr, r_tval);
 
-            /* Release all the memory associated with the test case */
+            // Release all the memory associated with the test case
             acvp_slh_dsa_release_tc(&stc);
         }
         json_array_append_value(r_garr, r_gval);
