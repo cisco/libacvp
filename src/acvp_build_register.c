@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2025, Cisco Systems, Inc.
+ * Copyright (c) 2026, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -2379,12 +2379,13 @@ static ACVP_RESULT acvp_build_kdf135_srtp_register_cap(JSON_Object *cap_obj, ACV
     }
 
     json_object_set_boolean(cap_obj, "supportsZeroKdr", cap_entry->cap.kdf135_srtp_cap->supports_zero_kdr);
+    json_object_set_boolean(cap_obj, "supports48BitSrtcpIndex", cap_entry->cap.kdf135_srtp_cap->supports_48bit_srtcp_index);
 
     json_object_set_value(cap_obj, "kdrExponent", json_value_init_array());
     tmp_arr = json_object_get_array(cap_obj, "kdrExponent");
-    for (i = 0; i < 24; i++) {
+    for (i = 0; i <= 24; i++) {
         if (cap_entry->cap.kdf135_srtp_cap->kdr_exp[i] == 1) {
-            json_array_append_number(tmp_arr, i + 1);
+            json_array_append_number(tmp_arr, i);
         }
     }
 

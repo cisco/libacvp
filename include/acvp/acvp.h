@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2025, Cisco Systems, Inc.
+ * Copyright (c) 2026, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License"). You may not use
  * this file except in compliance with the License. You can obtain a copy
@@ -590,7 +590,8 @@ typedef enum acvp_kdf135_ikev1_auth_method {
 typedef enum acvp_kdf135_srtp_param {
     ACVP_SRTP_AES_KEYLEN = 1,
     ACVP_SRTP_SUPPORT_ZERO_KDR,
-    ACVP_SRTP_KDF_EXPONENT
+    ACVP_SRTP_KDF_EXPONENT,
+    ACVP_SRTP_SUPPORTS_48_BIT_SRTCP
 } ACVP_KDF135_SRTP_PARAM;
 
 #define ACVP_KDF108_KEYOUT_MAX 64     //!< SHA2-512
