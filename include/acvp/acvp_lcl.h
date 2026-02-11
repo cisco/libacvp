@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Cisco Systems, Inc.
+ * Copyright (c) 2026, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -1324,7 +1324,8 @@ typedef struct acvp_kdf135_ssh_capability {
 
 typedef struct acvp_kdf135_srtp_capability {
     int supports_zero_kdr;
-    int kdr_exp[ACVP_KDF135_SRTP_KDR_MAX];
+    int supports_48bit_srtcp_index;
+    int kdr_exp[ACVP_KDF135_SRTP_KDR_MAX + 1]; // 0-24
     ACVP_SL_LIST *aes_keylens;
 } ACVP_KDF135_SRTP_CAP;
 

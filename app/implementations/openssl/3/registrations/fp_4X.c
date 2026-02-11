@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Cisco Systems, Inc.
+ * Copyright (c) 2026, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -756,7 +756,7 @@ static int enable_hmac(ACVP_CTX *ctx) {
 
  static int enable_kdf(ACVP_CTX *ctx) {
      ACVP_RESULT rv = ACVP_SUCCESS;
-     int flags = 0;
+     int flags = 0, i = 0;
 
      rv = acvp_cap_kdf_tls12_enable(ctx, &app_kdf_tls12_handler);
      CHECK_ENABLE_CAP_RV(rv);
@@ -1038,6 +1038,25 @@ static int enable_hmac(ACVP_CTX *ctx) {
     rv = acvp_cap_kdf135_snmp_set_engid(ctx, ACVP_KDF135_SNMP, ENGID1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf135_snmp_set_engid(ctx, ACVP_KDF135_SNMP, ENGID2);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_kdf135_srtp_enable(ctx, &app_kdf135_srtp_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SRTP, ACVP_PREREQ_AES, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_SUPPORT_ZERO_KDR, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_SUPPORTS_48_BIT_SRTCP, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    for (i = 0; i <= 24; i++) {
+        rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_KDF_EXPONENT, i);
+        CHECK_ENABLE_CAP_RV(rv);
+    }
+    rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
  end:

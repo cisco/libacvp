@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2025, Cisco Systems, Inc.
+ * Copyright (c) 2026, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -825,10 +825,11 @@ static ACVP_RESULT acvp_validate_kdf135_srtp_param_value(ACVP_KDF135_SRTP_PARAM 
         }
         break;
     case ACVP_SRTP_SUPPORT_ZERO_KDR:
+    case ACVP_SRTP_SUPPORTS_48_BIT_SRTCP:
         retval = is_valid_tf_param(value);
         break;
     case ACVP_SRTP_KDF_EXPONENT:
-        if (value >= 1 && value <= 24) {
+        if (value >= 0 && value <= 24) {
             retval = ACVP_SUCCESS;
         }
         break;
@@ -6403,11 +6404,18 @@ ACVP_RESULT acvp_cap_kdf135_srtp_set_parm(ACVP_CTX *ctx,
         kdf135_srtp_cap->supports_zero_kdr = value;
         break;
     case ACVP_SRTP_KDF_EXPONENT:
-        if (!value || value > ACVP_KDF135_SRTP_KDR_MAX) {
+        if (value < 0 || value > ACVP_KDF135_SRTP_KDR_MAX) {
             ACVP_LOG_ERR("invalid srtp exponent");
             return ACVP_INVALID_ARG;
         }
-        kdf135_srtp_cap->kdr_exp[value - 1] = 1;
+        kdf135_srtp_cap->kdr_exp[value] = 1;
+        break;
+    case ACVP_SRTP_SUPPORTS_48_BIT_SRTCP:
+        if (is_valid_tf_param(value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("invalid boolean for 48 bit srtcp support");
+            return ACVP_INVALID_ARG;
+        }
+        kdf135_srtp_cap->supports_48bit_srtcp_index = value;
         break;
     default:
         return ACVP_INVALID_ARG;
