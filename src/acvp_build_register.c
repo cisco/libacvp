@@ -198,6 +198,8 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 
 static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
+    JSON_Value *tmp_val = NULL;
+    JSON_Object *tmp_obj = NULL;
     ACVP_RESULT result;
     ACVP_HMAC_CAP *hmac_cap = cap_entry->cap.hmac_cap;
     ACVP_SL_LIST *list = NULL;
@@ -208,7 +210,11 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     }
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
-    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (hmac_cap->revision) {
+        revision = acvp_lookup_alt_revision_string(hmac_cap->revision);
+    } else {
+        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    }
     if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
@@ -220,14 +226,12 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     temp_arr = json_object_get_array(cap_obj, "keyLen");
 
     if (hmac_cap->key_len.increment != 0) {
-        JSON_Value *key_len_val = NULL;
-        JSON_Object *key_len_obj = NULL;
-        key_len_val = json_value_init_object();
-        key_len_obj = json_value_get_object(key_len_val);
-        json_object_set_number(key_len_obj, "min", hmac_cap->key_len.min);
-        json_object_set_number(key_len_obj, "max", hmac_cap->key_len.max);
-        json_object_set_number(key_len_obj, "increment", hmac_cap->key_len.increment);
-        json_array_append_value(temp_arr, key_len_val);
+        tmp_val = json_value_init_object();
+        tmp_obj = json_value_get_object(tmp_val);
+        json_object_set_number(tmp_obj, "min", hmac_cap->key_len.min);
+        json_object_set_number(tmp_obj, "max", hmac_cap->key_len.max);
+        json_object_set_number(tmp_obj, "increment", hmac_cap->key_len.increment);
+        json_array_append_value(temp_arr, tmp_val);
     }
 
     list = hmac_cap->key_len.values;
@@ -241,20 +245,38 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     temp_arr = json_object_get_array(cap_obj, "macLen");
 
     if (hmac_cap->mac_len.increment != 0) {
-        JSON_Value *mac_len_val = NULL;
-        JSON_Object *mac_len_obj = NULL;
-        mac_len_val = json_value_init_object();
-        mac_len_obj = json_value_get_object(mac_len_val);
-        json_object_set_number(mac_len_obj, "min", hmac_cap->mac_len.min);
-        json_object_set_number(mac_len_obj, "max", hmac_cap->mac_len.max);
-        json_object_set_number(mac_len_obj, "increment", hmac_cap->mac_len.increment);
-        json_array_append_value(temp_arr, mac_len_val);
+        tmp_val = json_value_init_object();
+        tmp_obj = json_value_get_object(tmp_val);
+        json_object_set_number(tmp_obj, "min", hmac_cap->mac_len.min);
+        json_object_set_number(tmp_obj, "max", hmac_cap->mac_len.max);
+        json_object_set_number(tmp_obj, "increment", hmac_cap->mac_len.increment);
+        json_array_append_value(temp_arr, tmp_val);
     }
 
     list = hmac_cap->mac_len.values;
     while (list) {
         json_array_append_number(temp_arr, list->length);
         list = list->next;
+    }
+
+    if (hmac_cap->revision == ACVP_REVISION_DEFAULT) {
+        json_object_set_value(cap_obj, "msgLen", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "msgLen");
+
+        if (hmac_cap->msg_len.increment != 0) {
+            tmp_val = json_value_init_object();
+            tmp_obj = json_value_get_object(tmp_val);
+            json_object_set_number(tmp_obj, "min", hmac_cap->msg_len.min);
+            json_object_set_number(tmp_obj, "max", hmac_cap->msg_len.max);
+            json_object_set_number(tmp_obj, "increment", hmac_cap->msg_len.increment);
+            json_array_append_value(temp_arr, tmp_val);
+        }
+
+        list = hmac_cap->msg_len.values;
+        while (list) {
+            json_array_append_number(temp_arr, list->length);
+            list = list->next;
+        }
     }
 
     return ACVP_SUCCESS;

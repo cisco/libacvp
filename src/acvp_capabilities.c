@@ -28,6 +28,13 @@ static ACVP_RESULT validate_domain_range(int min, int max, int inc) {
     return ACVP_SUCCESS;
 }
 
+static int domain_has_set_values(ACVP_JSON_DOMAIN_OBJ *d) {
+    if (d->min || d->max || d->increment || d->values) {
+        return 1;
+    }
+    return 0;
+}
+
 static ACVP_DSA_CAP *allocate_dsa_cap(void) {
     ACVP_DSA_CAP *cap = NULL;
     ACVP_DSA_CAP_MODE *modes = NULL;
@@ -3061,6 +3068,16 @@ static ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
             retval = ACVP_SUCCESS;
         }
         break;
+    case ACVP_HMAC_REVISION:
+        if (value == ACVP_REVISION_1_0) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_HMAC_MSGLEN:
+        if (value >= 0 && value <= ACVP_HMAC_MSG_BIT_MAX && value % 8 == 0) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_HMAC_KEYBLOCK:
     default:
         break;
@@ -3123,9 +3140,9 @@ ACVP_RESULT acvp_cap_hmac_set_domain(ACVP_CTX *ctx,
                                      int min,
                                      int max,
                                      int increment) {
-    ACVP_CAPS_LIST *cap_list;
-    ACVP_JSON_DOMAIN_OBJ *domain;
-    ACVP_HMAC_CAP *current_hmac_cap;
+    ACVP_CAPS_LIST *cap_list = NULL;
+    ACVP_JSON_DOMAIN_OBJ *domain = NULL;
+    ACVP_HMAC_CAP *current_hmac_cap = NULL;
 
     cap_list = acvp_locate_cap_entry(ctx, cipher);
     if (!cap_list) {
@@ -3133,6 +3150,11 @@ ACVP_RESULT acvp_cap_hmac_set_domain(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
     current_hmac_cap = cap_list->cap.hmac_cap;
+
+    if (validate_domain_range(min, max, increment) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Invalid domain range provided for HMAC");
+        return ACVP_INVALID_ARG;
+    }
 
     switch (parm) {
     case ACVP_HMAC_KEYLEN:
@@ -3151,7 +3173,19 @@ ACVP_RESULT acvp_cap_hmac_set_domain(ACVP_CTX *ctx,
         }
         domain = &current_hmac_cap->mac_len;
         break;
+    case ACVP_HMAC_MSGLEN:
+        if (current_hmac_cap->revision != ACVP_REVISION_DEFAULT) {
+            ACVP_LOG_ERR("ACVP_HMAC_MSGLEN not supported for alternate revisions");
+            return ACVP_INVALID_ARG;
+        }
+        if (min < 0 || max > ACVP_HMAC_MSG_BIT_MAX || increment % 8 != 0) {
+            ACVP_LOG_ERR("Invalid domain provided for HMAC message length");
+            return ACVP_INVALID_ARG;
+        }
+        domain = &current_hmac_cap->msg_len;
+        break;
     case ACVP_HMAC_KEYBLOCK:
+    case ACVP_HMAC_REVISION:
     default:
         return ACVP_INVALID_ARG;
     }
@@ -3178,7 +3212,8 @@ ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
                                    ACVP_CIPHER cipher,
                                    ACVP_HMAC_PARM parm,
                                    int value) {
-    ACVP_CAPS_LIST *cap;
+    ACVP_CAPS_LIST *cap = NULL;
+    ACVP_HMAC_CAP *hcap = NULL;
 
     // Locate this cipher in the caps array
     cap = acvp_locate_cap_entry(ctx, cipher);
@@ -3186,6 +3221,7 @@ ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Cap entry not found, use acvp_enable_hmac_cipher_cap() first.");
         return ACVP_NO_CAP;
     }
+    hcap = cap->cap.hmac_cap;
 
     if (acvp_validate_hmac_parm_value(cipher, parm, value) != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Invalid parm or value");
@@ -3194,14 +3230,39 @@ ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
 
     switch (parm) {
     case ACVP_HMAC_KEYLEN:
-        if (acvp_append_sl_list(&cap->cap.hmac_cap->key_len.values, value) != ACVP_SUCCESS) {
+        if (acvp_append_sl_list(&hcap->key_len.values, value) != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Error adding HMAC key length to list");
             return ACVP_MALLOC_FAIL;
         }
         break;
     case ACVP_HMAC_MACLEN:
-        if (acvp_append_sl_list(&cap->cap.hmac_cap->mac_len.values, value) != ACVP_SUCCESS) {
+        if (acvp_append_sl_list(&hcap->mac_len.values, value) != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Error adding HMAC mac length to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_HMAC_REVISION:
+        if (domain_has_set_values(&hcap->msg_len)) {
+            ACVP_LOG_ERR("Cannot set revision for HMAC after setting msg_len values (msg only supports default revision)");
+            return ACVP_INVALID_ARG;
+        }
+        if (value != ACVP_REVISION_1_0) {
+            ACVP_LOG_ERR("Only revision 1.0 supported for HMAC");
+            return ACVP_INVALID_ARG;
+        }
+        hcap->revision = value;
+        break;
+    case ACVP_HMAC_MSGLEN:
+        if (cap->cap.hmac_cap->revision != ACVP_REVISION_DEFAULT) {
+            ACVP_LOG_ERR("ACVP_HMAC_MSGLEN not supported for alternate revisions");
+            return ACVP_INVALID_ARG;
+        }
+        if (value < 0 || value > ACVP_HMAC_MSG_BIT_MAX || value % 8 != 0) {
+            ACVP_LOG_ERR("Invalid HMAC message length value");
+            return ACVP_INVALID_ARG;
+        }
+        if (acvp_append_sl_list(&hcap->msg_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding HMAC msg length to list");
             return ACVP_MALLOC_FAIL;
         }
         break;

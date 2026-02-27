@@ -527,6 +527,7 @@ typedef enum acvp_conformance_t {
 typedef enum acvp_revision_t {
     ACVP_REVISION_DEFAULT = 0,
     ACVP_REVISION_1_0,
+    ACVP_REVISION_2_0,
     ACVP_REVISION_SP800_56CR1,
     ACVP_REVISION_SP800_56AR3,
     ACVP_REVISION_FIPS186_4,
@@ -1176,7 +1177,9 @@ typedef enum acvp_eddsa_testtype {
 typedef enum acvp_hmac_parameter {
     ACVP_HMAC_KEYLEN = 1,
     ACVP_HMAC_KEYBLOCK,
-    ACVP_HMAC_MACLEN
+    ACVP_HMAC_MACLEN,
+    ACVP_HMAC_REVISION,
+    ACVP_HMAC_MSGLEN
 } ACVP_HMAC_PARM;
 
 /** @enum ACVP_CMAC_PARM */

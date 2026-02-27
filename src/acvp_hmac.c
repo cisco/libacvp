@@ -30,14 +30,14 @@ static ACVP_RESULT acvp_hmac_init_tc(ACVP_CTX *ctx,
 
     memzero_s(stc, sizeof(ACVP_HMAC_TC));
 
-    stc->msg = calloc(1, ACVP_HMAC_MSG_MAX);
+    stc->msg = calloc(1, ACVP_HMAC_MSG_BYTE_MAX);
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
     stc->mac = calloc(1, ACVP_HMAC_MAC_BYTE_MAX);
     if (!stc->mac) { return ACVP_MALLOC_FAIL; }
     stc->key = calloc(1, ACVP_HMAC_KEY_BYTE_MAX);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
 
-    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_HMAC_MSG_MAX, NULL);
+    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_HMAC_MSG_BYTE_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (msg)");
         return rv;
@@ -102,7 +102,7 @@ static ACVP_RESULT acvp_hmac_release_tc(ACVP_HMAC_TC *stc) {
 
 ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id = 0, msglen = 0, keylen = 0, maclen = 0;
-    const char *msg = NULL, *key = NULL;
+    const char *msg = NULL, *key = NULL, *rev_str = NULL;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Value *testval;
@@ -126,8 +126,9 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_HMAC_TC stc;
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
-    const char *alg_str = json_object_get_string(obj, "algorithm");
+    const char *alg_str = NULL;
     ACVP_CIPHER alg_id;
+    ACVP_REVISION revision;
     char *json_result;
 
     if (!ctx) {
@@ -140,6 +141,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
+    alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return ACVP_MALFORMED_JSON;
@@ -158,6 +160,15 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     if (!cap) {
         ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return ACVP_UNSUPPORTED_OP;
+    }
+    rv = acvp_tc_json_get_string(ctx, alg_id, obj, "revision", &rev_str);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
+    revision = acvp_lookup_alt_revision(rev_str);
+    if (revision != ACVP_REVISION_1_0 && revision != ACVP_REVISION_2_0) {
+        ACVP_LOG_ERR("invalid HMAC 'revision' from JSON");
+        return ACVP_TC_INVALID_DATA;
     }
 
     // Create ACVP array for response
@@ -190,6 +201,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
+
         rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "tgId", &tgId);
         if (rv != ACVP_SUCCESS) {
             goto err;
@@ -198,23 +210,44 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "msgLen", &msglen);
-        if (rv != ACVP_SUCCESS) {
-            goto err;
-        }
-
-        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "keyLen", &keylen);
-        if (rv != ACVP_SUCCESS) {
-            goto err;
-        }
-
-        rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "macLen", &maclen);
-        if (rv != ACVP_SUCCESS) {
-            goto err;
-        }
-
         ACVP_LOG_VERBOSE("    Test group: %d", i);
-        ACVP_LOG_VERBOSE("        msglen: %d", msglen);
+
+        /* For revision 2.0, all data besides testType is in the test case level instead of test group. This is for rev. 1.0 */
+        if (revision == ACVP_REVISION_1_0) {
+            rv = acvp_tc_json_get_uint(ctx,alg_id, groupobj, "msgLen", &msglen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            if (msglen > ACVP_HMAC_MSG_BIT_MAX || msglen % 8 != 0) {
+                ACVP_LOG_ERR("Invalid HMAC message length value");
+                rv = ACVP_TC_INVALID_DATA;
+                goto err;
+            }
+
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "keyLen", &keylen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            if (keylen > ACVP_HMAC_KEY_BIT_MAX || keylen % 8 != 0) {
+                ACVP_LOG_ERR("Invalid HMAC key length value");
+                rv = ACVP_TC_INVALID_DATA;
+                goto err;
+            }
+
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "macLen", &maclen);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            if (maclen < ACVP_HMAC_MAC_BIT_MIN || maclen > ACVP_HMAC_MAC_BIT_MAX || maclen % 8 != 0) {
+                ACVP_LOG_ERR("Invalid HMAC mac length value");
+                rv = ACVP_TC_INVALID_DATA;
+                goto err;
+            }
+
+            ACVP_LOG_VERBOSE("        msglen: %d", msglen);
+            ACVP_LOG_VERBOSE("        keylen: %d", keylen);
+            ACVP_LOG_VERBOSE("        maclen: %d", maclen);
+        }
 
         rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
         if (rv != ACVP_SUCCESS) {
@@ -224,18 +257,51 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
             ACVP_LOG_ERR("Failed to include tests in array.");
-            rv = ACVP_MISSING_ARG;
+            rv = ACVP_TC_MISSING_DATA;
             goto err;
         }
 
         for (j = 0; j < t_cnt; j++) {
-            ACVP_LOG_VERBOSE("Found new hash test vector...");
+            ACVP_LOG_VERBOSE("Found new hmac test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            rv = acvp_tc_json_get_int(ctx, alg_id, testobj, "tcId", (int *)&tc_id);
+            rv = acvp_tc_json_get_uint(ctx, alg_id, testobj, "tcId", &tc_id);
             if (rv != ACVP_SUCCESS) {
                 goto err;
+            }
+
+            if (revision == ACVP_REVISION_2_0) {
+                rv = acvp_tc_json_get_uint(ctx, alg_id, testobj, "msgLen", &msglen);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+
+                if (msglen > ACVP_HMAC_MSG_BIT_MAX || msglen % 8 != 0) {
+                    ACVP_LOG_ERR("Invalid HMAC message length value");
+                    rv = ACVP_TC_INVALID_DATA;
+                    goto err;
+                }
+
+                rv = acvp_tc_json_get_uint(ctx, alg_id, testobj, "keyLen", &keylen);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+                if (keylen > ACVP_HMAC_KEY_BIT_MAX || keylen % 8 != 0) {
+                    ACVP_LOG_ERR("Invalid HMAC key length value");
+                    rv = ACVP_TC_INVALID_DATA;
+                    goto err;
+                }
+
+                rv = acvp_tc_json_get_uint(ctx, alg_id, testobj, "macLen", &maclen);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+                if (maclen < ACVP_HMAC_MAC_BIT_MIN || maclen > ACVP_HMAC_MAC_BIT_MAX || maclen % 8 != 0) {
+                    ACVP_LOG_ERR("Invalid HMAC mac length value");
+                    rv = ACVP_TC_INVALID_DATA;
+                    goto err;
+                }
             }
 
             rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "msg", &msg);
@@ -243,9 +309,9 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            if (strnlen_s(msg, ACVP_HMAC_MSG_MAX) != msglen * 2 / 8) {
+            if (strnlen_s(msg, ACVP_HMAC_MSG_STR_MAX) != msglen * 2 / 8) {
                 ACVP_LOG_ERR("msgLen(%d) or msg length(%zu) incorrect",
-                             msglen, strnlen_s(msg, ACVP_HMAC_MSG_MAX) * 8 / 2);
+                             msglen, strnlen_s(msg, ACVP_HMAC_MSG_STR_MAX) * 8 / 2);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
@@ -264,11 +330,13 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
-            ACVP_LOG_VERBOSE("           msgLen: %d", msglen);
-            ACVP_LOG_VERBOSE("           macLen: %d", maclen);
             ACVP_LOG_VERBOSE("              msg: %s", msg);
-            ACVP_LOG_VERBOSE("           keyLen: %d", keylen);
             ACVP_LOG_VERBOSE("              key: %s", key);
+            if (revision == ACVP_REVISION_2_0) {
+                ACVP_LOG_VERBOSE("           msgLen: %d", msglen);
+                ACVP_LOG_VERBOSE("           macLen: %d", maclen);
+                ACVP_LOG_VERBOSE("           keyLen: %d", keylen);
+            }
 
             // Create a new test case in the response
             r_tval = json_value_init_object();

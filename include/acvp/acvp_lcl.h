@@ -138,18 +138,18 @@
 #define ACVP_REV_HMACDRBG            ACVP_REV_STR_1_0
 #define ACVP_REV_CTRDRBG             ACVP_REV_STR_1_0
 
-// HMAC
-#define ACVP_REV_HMAC_SHA1           ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA2_224       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA2_256       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA2_384       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA2_512       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA2_512_224   ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA2_512_256   ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA3_224       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA3_256       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA3_384       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA3_512       ACVP_REV_STR_1_0
+/* HMAC */
+#define ACVP_REV_HMAC_SHA1           ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA2_224       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA2_256       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA2_384       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA2_512       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA2_512_224   ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA2_512_256   ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA3_224       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA3_256       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA3_384       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA3_512       ACVP_REV_STR_2_0
 
 // CMAC
 #define ACVP_REV_CMAC_AES            ACVP_REV_STR_1_0
@@ -801,7 +801,6 @@
  * END TLS 1.3 KDF
  */
 
-#define ACVP_HMAC_MSG_MAX       1024
 
 #define ACVP_HMAC_MAC_BIT_MIN 32  //!< 32 bits
 #define ACVP_HMAC_MAC_BIT_MAX 512 //!< 512 bits
@@ -812,6 +811,10 @@
 #define ACVP_HMAC_KEY_BIT_MAX 524288 //!< 524288 bits
 #define ACVP_HMAC_KEY_BYTE_MAX (ACVP_HMAC_KEY_BIT_MAX >> 3)
 #define ACVP_HMAC_KEY_STR_MAX (ACVP_HMAC_KEY_BIT_MAX >> 2)
+
+#define ACVP_HMAC_MSG_BIT_MAX 4096
+#define ACVP_HMAC_MSG_BYTE_MAX (ACVP_HMAC_MSG_BIT_MAX >> 3)
+#define ACVP_HMAC_MSG_STR_MAX (ACVP_HMAC_MSG_BIT_MAX >> 2)
 
 #define ACVP_CMAC_MSGLEN_MAX_STR       131072    //!< 524288 bits, 131072 characters
 #define ACVP_CMAC_MSGLEN_MAX       524288
@@ -1384,6 +1387,8 @@ typedef struct acvp_kdf_tls13_capability {
 typedef struct acvp_hmac_capability {
     ACVP_JSON_DOMAIN_OBJ key_len; // 8-524288
     ACVP_JSON_DOMAIN_OBJ mac_len; // 32-512
+    ACVP_JSON_DOMAIN_OBJ msg_len; //0-4096; revision 2 only
+    ACVP_REVISION revision; //For indicating an alternative revision; empty by default
 } ACVP_HMAC_CAP;
 
 typedef struct acvp_cmac_capability {

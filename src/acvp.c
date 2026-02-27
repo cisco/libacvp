@@ -711,6 +711,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             case ACVP_HMAC_TYPE:
                 acvp_cap_free_domain(&cap_entry->cap.hmac_cap->key_len);
                 acvp_cap_free_domain(&cap_entry->cap.hmac_cap->mac_len);
+                acvp_cap_free_domain(&cap_entry->cap.hmac_cap->msg_len);
                 free(cap_entry->cap.hmac_cap);
                 break;
             case ACVP_CMAC_TYPE:
@@ -2962,6 +2963,7 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
         return ACVP_MISSING_ARG;
     }
     while (vs_entry) {
+        ACVP_LOG_STATUS("Processing next vector set...");
         rv = acvp_process_vsid(ctx, vs_entry->string, count);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Unable to process vector set! Error: %d", rv);
