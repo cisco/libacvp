@@ -610,7 +610,7 @@ static void add_dsa_details_good(void) {
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_SHA512);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
-    
+
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
@@ -642,7 +642,7 @@ static void add_dsa_details_good(void) {
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_SHA512);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
-    
+
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_SIGGEN, ACVP_PREREQ_SHA, cvalue);
@@ -674,7 +674,7 @@ static void add_dsa_details_good(void) {
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_SHA512);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
-    
+
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGVER, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_SIGVER, ACVP_PREREQ_SHA, cvalue);
@@ -766,8 +766,6 @@ static void add_rsa_details_good(void) {
     // RSA w/ sigType: PKCS1v1.5
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA1, 0);
-    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA224, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA256, 0);
@@ -775,8 +773,6 @@ static void add_rsa_details_good(void) {
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA384, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA512, 0);
-    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA1, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA224, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
@@ -790,8 +786,6 @@ static void add_rsa_details_good(void) {
     // RSA w/ sigType: PKCS1PSS -- has salt
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA1, 0);
-    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA224, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA256, 0);
@@ -799,8 +793,6 @@ static void add_rsa_details_good(void) {
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA384, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512, 0);
-    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA1, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA224, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
@@ -825,15 +817,11 @@ static void add_rsa_details_good(void) {
     // RSA w/ sigType: X9.31
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA1, 0);
-    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA256, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA384, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA512, 0);
-    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA1, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA256, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
@@ -845,8 +833,6 @@ static void add_rsa_details_good(void) {
     // RSA w/ sigType: PKCS1v1.5
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA1, 0);
-    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA224, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA256, 0);
@@ -854,8 +840,6 @@ static void add_rsa_details_good(void) {
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA384, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA512, 0);
-    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA1, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA224, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
@@ -869,8 +853,6 @@ static void add_rsa_details_good(void) {
     // RSA w/ sigType: PKCS1PSS -- has salt
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA1, 0);
-    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA224, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA256, 0);
@@ -878,8 +860,6 @@ static void add_rsa_details_good(void) {
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA384, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512, 0);
-    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA1, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA224, 0);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
@@ -958,7 +938,7 @@ static void add_ecdsa_details_good(void) {
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B571);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
-    
+
     // Enable ECDSA sigGen...
     rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_SIGGEN, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
@@ -1954,6 +1934,198 @@ TEST(BUILD_TEST_SESSION, rsa_no_params) {
 
     rv = acvp_build_registration_json(ctx, &generated_value);
     TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+}
+
+// Test RSA SigGen with ACVP_REVISION_186_BOTH and MGF1 registered (should succeed)
+TEST(BUILD_TEST_SESSION, rsa_siggen_both_with_mgf1) {
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_186_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // RSA w/ sigType: PKCS1PSS with MGF1
+    rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA256, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_mask(ctx, 2048, ACVP_RSA_MASK_FUNCTION_MGF1);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_build_registration_json(ctx, &generated_value);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+}
+
+// Test RSA SigGen with ACVP_REVISION_186_BOTH without MGF1 (should fail)
+TEST(BUILD_TEST_SESSION, rsa_siggen_both_no_mgf1) {
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_186_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // RSA w/ sigType: PKCS1PSS without any mask function
+    rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA256, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_build_registration_json(ctx, &generated_value);
+    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+}
+
+// Test RSA SigGen with ACVP_REVISION_186_BOTH with non-MGF1 mask functions (should warn but succeed)
+TEST(BUILD_TEST_SESSION, rsa_siggen_both_mixed_mask_functions) {
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_186_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // RSA w/ sigType: PKCS1PSS with MGF1 and SHAKE-128
+    rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA256, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_mask(ctx, 2048, ACVP_RSA_MASK_FUNCTION_MGF1);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_mask(ctx, 2048, ACVP_RSA_MASK_FUNCTION_SHAKE_128);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // Should succeed - will warn about SHAKE-128 being excluded from 186-4
+    rv = acvp_build_registration_json(ctx, &generated_value);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+}
+
+// Test RSA SigVer with ACVP_REVISION_186_BOTH and 1024-bit modulus (should warn and exclude from 186-5)
+TEST(BUILD_TEST_SESSION, rsa_sigver_both_with_1024) {
+    char *expo_str = calloc(7, sizeof(char));
+    strncpy(expo_str, "010001", 7);
+
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_186_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // RSA w/ sigType: PKCS1v1.5 with 1024 and 2048 bit moduli
+    rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 1024, ACVP_SHA256, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA256, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // Should succeed - will warn about 1024-bit being excluded from 186-5
+    rv = acvp_build_registration_json(ctx, &generated_value);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    free(expo_str);
+}
+
+// Test RSA SigGen with ACVP_REVISION_186_BOTH and SHA1 (should warn and exclude from 186-5)
+TEST(BUILD_TEST_SESSION, rsa_siggen_both_with_sha1) {
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_186_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // RSA w/ sigType: PKCS1PSS with MGF1, SHA1 and SHA256
+    rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA1, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA256, 0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_siggen_set_mod_mask(ctx, 2048, ACVP_RSA_MASK_FUNCTION_MGF1);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // Should succeed - will warn about SHA1 being excluded from 186-5
+    rv = acvp_build_registration_json(ctx, &generated_value);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+}
+
+// Test RSA KeyGen with standalone ACVP_REVISION_FIPS186_4 (should work without MGF1)
+TEST(BUILD_TEST_SESSION, rsa_keygen_186_4_no_mgf1) {
+    char *expo_str = calloc(7, sizeof(char));
+    strncpy(expo_str, "010001", 7);
+
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_DRBG, cvalue);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_INFO_GEN_BY_SERVER, 1);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT, ACVP_RSA_KEY_FORMAT_STANDARD);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_keygen_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_keygen_set_mode(ctx, ACVP_RSA_KEYGEN_B34);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B34, 2048, ACVP_RSA_PRIME_HASH_ALG, ACVP_SHA256);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B34, 2048, ACVP_RSA_PRIME_TEST, ACVP_RSA_PRIME_TEST_TBLC2);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // Should succeed - 186-4 alone doesn't require MGF1
+    rv = acvp_build_registration_json(ctx, &generated_value);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    free(expo_str);
+}
+
+// Test ECDSA SigGen with ACVP_REVISION_186_BOTH (should succeed)
+TEST(BUILD_TEST_SESSION, ecdsa_siggen_both) {
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_SIGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_REVISION, ACVP_REVISION_186_BOTH);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_SIGGEN, ACVP_PREREQ_SHA, cvalue);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_ECDSA_SIGGEN, ACVP_PREREQ_DRBG, cvalue);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P256);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA256);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    // Should succeed - ECDSA doesn't have MGF1 requirement
+    rv = acvp_build_registration_json(ctx, &generated_value);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 }
 
 // The ctx has a good ecdsa registration
