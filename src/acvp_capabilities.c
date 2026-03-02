@@ -4139,7 +4139,7 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_parm(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Use acvp_enable_rsa_keygen_mode() or acvp_enable_rsa_keygen_exp_parm() API to enable a new randPQ or exponent.");
         break;
     case ACVP_RSA_PARM_REVISION:
-        if (value == ACVP_REVISION_FIPS186_4) {
+        if (value == ACVP_REVISION_FIPS186_4 || value == ACVP_REVISION_DEFAULT || value == ACVP_REVISION_186_BOTH) {
             cap_list->cap.rsa_keygen_cap->revision = value;
         } else {
             ACVP_LOG_ERR("Invalid revision provided for RSA keygen");
@@ -4203,8 +4203,8 @@ ACVP_RESULT acvp_cap_rsa_siggen_set_parm(ACVP_CTX *ctx,
 
     switch (param) {
     case ACVP_RSA_PARM_REVISION:
-        if (value == ACVP_REVISION_FIPS186_4) {
-            cap_list->cap.rsa_keygen_cap->revision = value;
+        if (value == ACVP_REVISION_FIPS186_4 || value == ACVP_REVISION_DEFAULT || value == ACVP_REVISION_186_BOTH) {
+            cap_list->cap.rsa_siggen_cap->revision = value;
         } else {
             ACVP_LOG_ERR("Invalid revision provided for RSA siggen");
             return ACVP_INVALID_ARG;
@@ -4242,10 +4242,10 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_parm(ACVP_CTX *ctx,
         cap_list->cap.rsa_sigver_cap->pub_exp_mode = value;
         break;
     case ACVP_RSA_PARM_REVISION:
-         if (value == ACVP_REVISION_FIPS186_4) {
-            cap_list->cap.rsa_keygen_cap->revision = value;
+         if (value == ACVP_REVISION_FIPS186_4 || value == ACVP_REVISION_DEFAULT || value == ACVP_REVISION_186_BOTH) {
+            cap_list->cap.rsa_sigver_cap->revision = value;
         } else {
-            ACVP_LOG_ERR("Invalid revision provided for RSA keygen");
+            ACVP_LOG_ERR("Invalid revision provided for RSA sigver");
             return ACVP_INVALID_ARG;
         }
         break;
@@ -4549,8 +4549,8 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_primes(ACVP_CTX *ctx,
         }
         break;
     case ACVP_RSA_PRIME_TEST:
-        // Just use the string lookup to make sure its a valid value)
-        if (acvp_lookup_rsa_prime_test_name(value)) {
+        // Check if value is in valid range
+        if (value >= ACVP_RSA_PRIME_TEST_TBLC2 && value <= ACVP_RSA_PRIME_TEST_2POW_SEC_STR) {
             acvp_append_param_list(&current_prime->prime_tests, value);
         } else {
             ACVP_LOG_ERR("Invalid 'value' for ACVP_RSA_PRIME_TEST");
@@ -5345,8 +5345,8 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Unable to set alternate revision for DetECDSA; not applicable at this time");
             return ACVP_INVALID_ARG;
         }
-        if (value != ACVP_REVISION_1_0) {
-            ACVP_LOG_ERR("Invalid ECDSA revision. Only revision 1.0 (AKA FIPS 186-4) can be set for ECDSA. default is 186-5.");
+        if (value != ACVP_REVISION_1_0 && value != ACVP_REVISION_DEFAULT && value != ACVP_REVISION_186_BOTH) {
+            ACVP_LOG_ERR("Invalid ECDSA revision. Only revision 1.0 (AKA FIPS 186-4), DEFAULT (186-5), or BOTH can be set.");
             return ACVP_INVALID_ARG;
         }
         cap->revision = value;

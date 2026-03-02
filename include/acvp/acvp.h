@@ -531,6 +531,7 @@ typedef enum acvp_revision_t {
     ACVP_REVISION_SP800_56CR1,
     ACVP_REVISION_SP800_56AR3,
     ACVP_REVISION_FIPS186_4,
+    ACVP_REVISION_186_BOTH,  /* Special value to indicate both 186-4 and 186-5 should be registered */
     ACVP_REVISION_MAX
 } ACVP_REVISION;
 

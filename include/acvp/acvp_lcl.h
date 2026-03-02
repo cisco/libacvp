@@ -2232,7 +2232,7 @@ ACVP_SLH_DSA_CAP_GROUP *acvp_locate_slh_dsa_cap_group(ACVP_SLH_DSA_CAP *cap, uns
 
 const char *acvp_lookup_rsa_sig_type_str(ACVP_RSA_SIG_TYPE type);
 const char *acvp_lookup_rsa_mask_func_str(ACVP_RSA_MASK_FUNCTION func);
-const char *acvp_lookup_rsa_randpq_name(int value);
+const char *acvp_lookup_rsa_randpq_name(int value, ACVP_REVISION revision);
 ACVP_RSA_PUB_EXP_MODE acvp_lookup_rsa_pub_exp_mode(const char *str);
 
 int acvp_lookup_rsa_randpq_index(const char *value);
@@ -2248,7 +2248,8 @@ ACVP_RESULT acvp_tc_json_get_array(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Objec
 
 ACVP_RESULT is_valid_tf_param(int value);
 
-const char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type);
+const char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type, ACVP_REVISION revision);
+void acvp_normalize_rsa_keygen_params(ACVP_RSA_KEYGEN_CAP *cap);
 ACVP_RESULT is_valid_prime_test(const char *value);
 
 ACVP_RESULT is_valid_rsa_mod(int value);

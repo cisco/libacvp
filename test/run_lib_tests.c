@@ -100,8 +100,15 @@ TEST_GROUP_RUNNER(BUILD_TEST_SESSION) {
     RUN_TEST_CASE(BUILD_TEST_SESSION, good_des_output);
     RUN_TEST_CASE(BUILD_TEST_SESSION, good_rsa);
     RUN_TEST_CASE(BUILD_TEST_SESSION, rsa_no_params);
+    RUN_TEST_CASE(BUILD_TEST_SESSION, rsa_siggen_both_with_mgf1);
+    RUN_TEST_CASE(BUILD_TEST_SESSION, rsa_siggen_both_no_mgf1);
+    RUN_TEST_CASE(BUILD_TEST_SESSION, rsa_siggen_both_mixed_mask_functions);
+    RUN_TEST_CASE(BUILD_TEST_SESSION, rsa_sigver_both_with_1024);
+    RUN_TEST_CASE(BUILD_TEST_SESSION, rsa_siggen_both_with_sha1);
+    RUN_TEST_CASE(BUILD_TEST_SESSION, rsa_keygen_186_4_no_mgf1);
     RUN_TEST_CASE(BUILD_TEST_SESSION, good_ecdsa);
     RUN_TEST_CASE(BUILD_TEST_SESSION, ecdsa_no_params);
+    RUN_TEST_CASE(BUILD_TEST_SESSION, ecdsa_siggen_both);
     RUN_TEST_CASE(BUILD_TEST_SESSION, good_kdf);
     RUN_TEST_CASE(BUILD_TEST_SESSION, kdf_more_modes);
     RUN_TEST_CASE(BUILD_TEST_SESSION, good_kas_ecc);

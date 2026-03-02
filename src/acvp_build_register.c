@@ -1157,7 +1157,7 @@ static ACVP_RESULT acvp_lookup_rsa_primes(JSON_Object *cap_obj, ACVP_RSA_KEYGEN_
             prime_test_array = json_object_get_array(obj, "primeTest");
 
             while (current_param) {
-                str = acvp_lookup_rsa_prime_test_name(current_param->param);
+                str = acvp_lookup_rsa_prime_test_name(current_param->param, rsa_cap->revision);
                 if (!str) {
                     rv = ACVP_INVALID_ARG;
                     json_value_free(val);
@@ -1182,10 +1182,14 @@ end:
     return rv;
 }
 
-static ACVP_RESULT acvp_build_rsa_keygen_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_rsa_keygen_register_cap(ACVP_CTX *ctx, JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     ACVP_RSA_KEYGEN_CAP *keygen_cap = NULL;
     const char *revision = NULL;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
 
     json_object_set_string(cap_obj, "algorithm", "RSA");
 
@@ -1234,7 +1238,7 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap(JSON_Object *cap_obj, ACVP
         alg_specs_val = json_value_init_object();
         alg_specs_obj = json_value_get_object(alg_specs_val);
 
-        json_object_set_string(alg_specs_obj, "randPQ", acvp_lookup_rsa_randpq_name(keygen_cap->rand_pq));
+        json_object_set_string(alg_specs_obj, "randPQ", acvp_lookup_rsa_randpq_name(keygen_cap->rand_pq, keygen_cap->revision));
         result = acvp_lookup_rsa_primes(alg_specs_obj, keygen_cap);
         if (result != ACVP_SUCCESS) {
             return result;
@@ -1247,7 +1251,66 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap(JSON_Object *cap_obj, ACVP
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+/*
+ * Validate RSA mask functions for FIPS 186-4 when using ACVP_REVISION_186_BOTH
+ * For PSS signatures: MGF1 must be registered,
+ * and warn if non-MGF1 mask functions are registered (they'll be ignored for 186-4)
+ */
+static ACVP_RESULT acvp_validate_rsa_pss_mask_functions(ACVP_CTX *ctx, ACVP_RSA_SIG_CAP *rsa_cap) {
+    ACVP_RSA_MODE_CAPS_LIST *mode_cap = NULL;
+    ACVP_RSA_SIG_CAP *current_cap = rsa_cap;
+    int has_non_mgf1 = 0;
+
+    while (current_cap) {
+        if (current_cap->sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
+            mode_cap = current_cap->mode_capabilities;
+
+            while (mode_cap) {
+                ACVP_PARAM_LIST *mask_func = mode_cap->mask_functions;
+                int has_mgf1 = 0;
+
+                // When using BOTH revision, mask functions must be explicitly set for PSS
+                if (!mask_func) {
+                    ACVP_LOG_ERR("When using ACVP_REVISION_186_BOTH for RSA PSS signatures, "
+                                 "mask functions must be explicitly registered. "
+                                 "Use acvp_cap_rsa_siggen_set_mod_mask() or acvp_cap_rsa_sigver_set_mod_mask().");
+                    return ACVP_MISSING_ARG;
+                }
+
+                // Check if MGF1 is registered and if there are non-MGF1 functions
+                while (mask_func) {
+                    if (mask_func->param == ACVP_RSA_MASK_FUNCTION_MGF1) {
+                        has_mgf1 = 1;
+                    } else {
+                        has_non_mgf1 = 1;
+                    }
+                    mask_func = mask_func->next;
+                }
+
+                // MGF1 is required when using BOTH revision with PSS
+                if (!has_mgf1) {
+                    ACVP_LOG_ERR("When using ACVP_REVISION_186_BOTH for RSA PSS signatures, "
+                                 "MGF1 must be registered as a mask function. "
+                                 "FIPS 186-4 only supports MGF1.");
+                    return ACVP_MISSING_ARG;
+                }
+
+                mode_cap = mode_cap->next;
+            }
+        }
+        current_cap = current_cap->next;
+    }
+
+    // Warn if non-MGF1 mask functions are present
+    if (has_non_mgf1) {
+        ACVP_LOG_WARN("Non-MGF1 mask functions are not supported in FIPS 186-4. "
+                      "Ignoring non-MGF1 mask functions for this registration.");
+    }
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_build_rsa_sig_register_cap(ACVP_CTX *ctx, JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result = ACVP_SUCCESS;
     ACVP_PARAM_LIST *plist = NULL;
     ACVP_RSA_SIG_CAP *rsa_cap_mode = NULL;
@@ -1256,6 +1319,7 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
     JSON_Value *alg_specs_val = NULL, *sig_type_val = NULL, *hash_pair_val = NULL;
     JSON_Object *alg_specs_obj = NULL, *sig_type_obj = NULL, *hash_pair_obj = NULL;
     const char *revision = NULL, *str = NULL;
+    int warned_1024 = 0, warned_sha1 = 0;
 
     json_object_set_string(cap_obj, "algorithm", "RSA");
 
@@ -1315,6 +1379,18 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
         ACVP_RSA_MODE_CAPS_LIST *current_sig_type_cap = rsa_cap_mode->mode_capabilities;
 
         while (current_sig_type_cap) {
+            // For FIPS 186-5 sigver, skip 1024-bit modulus
+            if (rev != ACVP_REVISION_FIPS186_4 && cap_entry->cipher == ACVP_RSA_SIGVER &&
+                current_sig_type_cap->modulo == 1024) {
+                if (!warned_1024) {
+                    ACVP_LOG_INFO("1024-bit modulus is not supported in FIPS 186-5 for signature verification. "
+                                  "Excluding 1024-bit modulus from this registration.");
+                    warned_1024 = 1;
+                }
+                current_sig_type_cap = current_sig_type_cap->next;
+                continue;
+            }
+
             sig_type_val = json_value_init_object();
             sig_type_obj = json_value_get_object(sig_type_val);
 
@@ -1339,6 +1415,17 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
 
             ACVP_RSA_HASH_PAIR_LIST *current_hash_pair = current_sig_type_cap->hash_pair;
             while (current_hash_pair) {
+                // For FIPS 186-5, skip SHA1
+                if (rev != ACVP_REVISION_FIPS186_4 && current_hash_pair->alg == ACVP_SHA1) {
+                    if (!warned_sha1) {
+                        ACVP_LOG_INFO("SHA1 is not supported in FIPS 186-5 for RSA signatures. "
+                                      "Excluding SHA1 from this registration.");
+                        warned_sha1 = 1;
+                    }
+                    current_hash_pair = current_hash_pair->next;
+                    continue;
+                }
+
                 hash_pair_val = json_value_init_object();
                 hash_pair_obj = json_value_get_object(hash_pair_val);
                 if (!current_hash_pair->alg) {
@@ -1442,7 +1529,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
     JSON_Value *alg_caps_val = NULL;
     JSON_Object *alg_caps_obj = NULL;
     const char *revision = NULL, *tmp = NULL;
-    int i = 0, diff = 0;
+    int i = 0, diff = 0, warned_sha1 = 0;
     ACVP_EC_CURVE track[ACVP_EC_CURVE_END + 1] = { 0 };
     ACVP_SUB_ECDSA alg;
     ACVP_ECDSA_CAP *ecdsa_cap = NULL;
@@ -1632,6 +1719,15 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
             json_array_append_string(curves_arr, tmp);
             for (i = 0; i < ACVP_HASH_ALG_MAX; i++) {
                 if (current_curve->algs[i]) {
+                    // For ECDSA SIGVER with FIPS 186-5, skip SHA1 (not supported)
+                    if (cipher == ACVP_ECDSA_SIGVER && ecdsa_cap->revision != ACVP_REVISION_1_0 && i == ACVP_SHA1) {
+                        if (!warned_sha1) {
+                            ACVP_LOG_INFO("SHA1 is not supported in FIPS 186-5 for ECDSA signature verification. "
+                                          "Excluding SHA1 from this registration.");
+                            warned_sha1 = 1;
+                        }
+                        continue;
+                    }
                     tmp = acvp_lookup_hash_alg_name(i);
                     if (!tmp) {
                         if (alg_caps_val) json_value_free(alg_caps_val);
@@ -5691,11 +5787,75 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 rv = acvp_build_dsa_register_cap(cap_obj, cap_entry, ACVP_DSA_MODE_SIGVER);
                 break;
             case ACVP_RSA_KEYGEN:
-                rv = acvp_build_rsa_keygen_register_cap(cap_obj, cap_entry);
+                // Normalize all parameters to 186-5 format
+                acvp_normalize_rsa_keygen_params(cap_entry->cap.rsa_keygen_cap);
+
+                // If revision = BOTH, we need two registrations (FIPS 186-4 and FIPS 186-5)
+                if (cap_entry->cap.rsa_keygen_cap->revision == ACVP_REVISION_186_BOTH) {
+
+                    // Build 186-4 registration
+                    cap_entry->cap.rsa_keygen_cap->revision = ACVP_REVISION_FIPS186_4;
+                    rv = acvp_build_rsa_keygen_register_cap(ctx, cap_obj, cap_entry);
+                    if (rv != ACVP_SUCCESS) {
+                        cap_entry->cap.rsa_keygen_cap->revision = ACVP_REVISION_186_BOTH;
+                        break;
+                    }
+                    json_array_append_value(caps_arr, cap_val);
+                    cap_val = json_value_init_object();
+                    cap_obj = json_value_get_object(cap_val);
+
+                    // Build 186-5 registration
+                    cap_entry->cap.rsa_keygen_cap->revision = ACVP_REVISION_DEFAULT;
+                    rv = acvp_build_rsa_keygen_register_cap(ctx, cap_obj, cap_entry);
+                    cap_entry->cap.rsa_keygen_cap->revision = ACVP_REVISION_186_BOTH;
+                } else {
+                    rv = acvp_build_rsa_keygen_register_cap(ctx, cap_obj, cap_entry);
+                }
                 break;
             case ACVP_RSA_SIGGEN:
             case ACVP_RSA_SIGVER:
-                rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
+                // If revision = BOTH, we need two registrations (FIPS 186-4 and FIPS 186-5)
+                if (cap_entry->cipher == ACVP_RSA_SIGGEN &&
+                    cap_entry->cap.rsa_siggen_cap->revision == ACVP_REVISION_186_BOTH) {
+                    // Validate mask functions when using BOTH - MGF1 required, warn about non-MGF1
+                    rv = acvp_validate_rsa_pss_mask_functions(ctx, cap_entry->cap.rsa_siggen_cap);
+                    if (rv != ACVP_SUCCESS) {
+                        break;
+                    }
+                    cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_FIPS186_4;
+                    rv = acvp_build_rsa_sig_register_cap(ctx, cap_obj, cap_entry);
+                    if (rv != ACVP_SUCCESS) {
+                        cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                        break;
+                    }
+                    json_array_append_value(caps_arr, cap_val);
+                    cap_val = json_value_init_object();
+                    cap_obj = json_value_get_object(cap_val);
+                    cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
+                    rv = acvp_build_rsa_sig_register_cap(ctx, cap_obj, cap_entry);
+                    cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                } else if (cap_entry->cipher == ACVP_RSA_SIGVER &&
+                           cap_entry->cap.rsa_sigver_cap->revision == ACVP_REVISION_186_BOTH) {
+                    // Validate mask functions when using BOTH - MGF1 required, warn about non-MGF1
+                    rv = acvp_validate_rsa_pss_mask_functions(ctx, cap_entry->cap.rsa_sigver_cap);
+                    if (rv != ACVP_SUCCESS) {
+                        break;
+                    }
+                    cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_FIPS186_4;
+                    rv = acvp_build_rsa_sig_register_cap(ctx, cap_obj, cap_entry);
+                    if (rv != ACVP_SUCCESS) {
+                        cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_186_BOTH;
+                        break;
+                    }
+                    json_array_append_value(caps_arr, cap_val);
+                    cap_val = json_value_init_object();
+                    cap_obj = json_value_get_object(cap_val);
+                    cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
+                    rv = acvp_build_rsa_sig_register_cap(ctx, cap_obj, cap_entry);
+                    cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_186_BOTH;
+                } else {
+                    rv = acvp_build_rsa_sig_register_cap(ctx, cap_obj, cap_entry);
+                }
                 break;
             case ACVP_RSA_SIGPRIM:
             case ACVP_RSA_DECPRIM:
@@ -5703,11 +5863,105 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 break;
             case ACVP_ECDSA_KEYGEN:
             case ACVP_ECDSA_KEYVER:
-                rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                // If revision = BOTH, we need two registrations (FIPS 186-4 and FIPS 186-5)
+                if (cap_entry->cipher == ACVP_ECDSA_KEYGEN &&
+                    cap_entry->cap.ecdsa_keygen_cap->revision == ACVP_REVISION_186_BOTH) {
+                    cap_entry->cap.ecdsa_keygen_cap->revision = ACVP_REVISION_1_0;  // 186-4
+                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                    if (rv != ACVP_SUCCESS) {
+                        cap_entry->cap.ecdsa_keygen_cap->revision = ACVP_REVISION_186_BOTH;
+                        break;
+                    }
+                    json_array_append_value(caps_arr, cap_val);
+                    cap_val = json_value_init_object();
+                    cap_obj = json_value_get_object(cap_val);
+                    cap_entry->cap.ecdsa_keygen_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
+                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                    cap_entry->cap.ecdsa_keygen_cap->revision = ACVP_REVISION_186_BOTH;
+                } else if (cap_entry->cipher == ACVP_ECDSA_KEYVER &&
+                           cap_entry->cap.ecdsa_keyver_cap->revision == ACVP_REVISION_186_BOTH) {
+                    cap_entry->cap.ecdsa_keyver_cap->revision = ACVP_REVISION_1_0;  // 186-4
+                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                    if (rv != ACVP_SUCCESS) {
+                        cap_entry->cap.ecdsa_keyver_cap->revision = ACVP_REVISION_186_BOTH;
+                        break;
+                    }
+                    json_array_append_value(caps_arr, cap_val);
+                    cap_val = json_value_init_object();
+                    cap_obj = json_value_get_object(cap_val);
+                    cap_entry->cap.ecdsa_keyver_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
+                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                    cap_entry->cap.ecdsa_keyver_cap->revision = ACVP_REVISION_186_BOTH;
+                } else {
+                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                }
                 break;
             case ACVP_ECDSA_SIGGEN:
-                // If component_test = BOTH, we need two registrations
-                if (cap_entry->cap.ecdsa_siggen_cap->component == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
+                // If revision = BOTH, we need two registrations (FIPS 186-4 and FIPS 186-5)
+                // Note: Also handle component test = BOTH separately if needed
+                if (cap_entry->cap.ecdsa_siggen_cap->revision == ACVP_REVISION_186_BOTH) {
+                    // Handle BOTH revision with potential component test BOTH
+                    if (cap_entry->cap.ecdsa_siggen_cap->component == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
+                        // First: 186-4 without component test
+                        cap_entry->cap.ecdsa_siggen_cap->revision = ACVP_REVISION_1_0;
+                        cap_entry->cap.ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_NO;
+                        rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                        if (rv != ACVP_SUCCESS) {
+                            cap_entry->cap.ecdsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                            cap_entry->cap.ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
+                            break;
+                        }
+                        json_array_append_value(caps_arr, cap_val);
+                        // Second: 186-4 with component test
+                        cap_val = json_value_init_object();
+                        cap_obj = json_value_get_object(cap_val);
+                        cap_entry->cap.ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_YES;
+                        rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                        if (rv != ACVP_SUCCESS) {
+                            cap_entry->cap.ecdsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                            cap_entry->cap.ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
+                            break;
+                        }
+                        json_array_append_value(caps_arr, cap_val);
+                        // Third: 186-5 without component test
+                        cap_val = json_value_init_object();
+                        cap_obj = json_value_get_object(cap_val);
+                        cap_entry->cap.ecdsa_siggen_cap->revision = ACVP_REVISION_DEFAULT;
+                        cap_entry->cap.ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_NO;
+                        rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                        if (rv != ACVP_SUCCESS) {
+                            cap_entry->cap.ecdsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                            cap_entry->cap.ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
+                            break;
+                        }
+                        json_array_append_value(caps_arr, cap_val);
+                        // Fourth: 186-5 with component test
+                        cap_val = json_value_init_object();
+                        cap_obj = json_value_get_object(cap_val);
+                        cap_entry->cap.ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_YES;
+                        rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                        cap_entry->cap.ecdsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                        cap_entry->cap.ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
+                        if (rv != ACVP_SUCCESS) {
+                            break;
+                        }
+                    } else {
+                        // Just handle revision BOTH, component test is not BOTH
+                        cap_entry->cap.ecdsa_siggen_cap->revision = ACVP_REVISION_1_0;  // 186-4
+                        rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                        if (rv != ACVP_SUCCESS) {
+                            cap_entry->cap.ecdsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                            break;
+                        }
+                        json_array_append_value(caps_arr, cap_val);
+                        cap_val = json_value_init_object();
+                        cap_obj = json_value_get_object(cap_val);
+                        cap_entry->cap.ecdsa_siggen_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
+                        rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                        cap_entry->cap.ecdsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                    }
+                } else if (cap_entry->cap.ecdsa_siggen_cap->component == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
+                    // Original component test BOTH handling (revision is not BOTH)
                     cap_entry->cap.ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_NO;
                     rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
                     if (rv != ACVP_SUCCESS) {
@@ -5725,8 +5979,70 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 }
                 break;
             case ACVP_DET_ECDSA_SIGGEN:
-                // If component_test = BOTH, we need two registrations
-                if (cap_entry->cap.det_ecdsa_siggen_cap->component == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
+                // If revision = BOTH, handle similar to ECDSA_SIGGEN
+                if (cap_entry->cap.det_ecdsa_siggen_cap->revision == ACVP_REVISION_186_BOTH) {
+                    // Handle BOTH revision with potential component test BOTH
+                    if (cap_entry->cap.det_ecdsa_siggen_cap->component == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
+                        // First: 186-4 without component test
+                        cap_entry->cap.det_ecdsa_siggen_cap->revision = ACVP_REVISION_1_0;
+                        cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_NO;
+                        rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                        if (rv != ACVP_SUCCESS) {
+                            cap_entry->cap.det_ecdsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                            cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
+                            break;
+                        }
+                        json_array_append_value(caps_arr, cap_val);
+                        // Second: 186-4 with component test
+                        cap_val = json_value_init_object();
+                        cap_obj = json_value_get_object(cap_val);
+                        cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_YES;
+                        rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                        if (rv != ACVP_SUCCESS) {
+                            cap_entry->cap.det_ecdsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                            cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
+                            break;
+                        }
+                        json_array_append_value(caps_arr, cap_val);
+                        // Third: 186-5 without component test
+                        cap_val = json_value_init_object();
+                        cap_obj = json_value_get_object(cap_val);
+                        cap_entry->cap.det_ecdsa_siggen_cap->revision = ACVP_REVISION_DEFAULT;
+                        cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_NO;
+                        rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                        if (rv != ACVP_SUCCESS) {
+                            cap_entry->cap.det_ecdsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                            cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
+                            break;
+                        }
+                        json_array_append_value(caps_arr, cap_val);
+                        // Fourth: 186-5 with component test
+                        cap_val = json_value_init_object();
+                        cap_obj = json_value_get_object(cap_val);
+                        cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_YES;
+                        rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                        cap_entry->cap.det_ecdsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                        cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
+                        if (rv != ACVP_SUCCESS) {
+                            break;
+                        }
+                    } else {
+                        // Just handle revision BOTH, component test is not BOTH
+                        cap_entry->cap.det_ecdsa_siggen_cap->revision = ACVP_REVISION_1_0;  // 186-4
+                        rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                        if (rv != ACVP_SUCCESS) {
+                            cap_entry->cap.det_ecdsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                            break;
+                        }
+                        json_array_append_value(caps_arr, cap_val);
+                        cap_val = json_value_init_object();
+                        cap_obj = json_value_get_object(cap_val);
+                        cap_entry->cap.det_ecdsa_siggen_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
+                        rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                        cap_entry->cap.det_ecdsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
+                    }
+                } else if (cap_entry->cap.det_ecdsa_siggen_cap->component == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
+                    // Original component test BOTH handling (revision is not BOTH)
                     cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_NO;
                     rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
                     if (rv != ACVP_SUCCESS) {
@@ -5744,7 +6060,23 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 }
                 break;
             case ACVP_ECDSA_SIGVER:
-                rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                // If revision = BOTH, we need two registrations (FIPS 186-4 and FIPS 186-5)
+                if (cap_entry->cap.ecdsa_sigver_cap->revision == ACVP_REVISION_186_BOTH) {
+                    cap_entry->cap.ecdsa_sigver_cap->revision = ACVP_REVISION_1_0;  // 186-4
+                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                    if (rv != ACVP_SUCCESS) {
+                        cap_entry->cap.ecdsa_sigver_cap->revision = ACVP_REVISION_186_BOTH;
+                        break;
+                    }
+                    json_array_append_value(caps_arr, cap_val);
+                    cap_val = json_value_init_object();
+                    cap_obj = json_value_get_object(cap_val);
+                    cap_entry->cap.ecdsa_sigver_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
+                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                    cap_entry->cap.ecdsa_sigver_cap->revision = ACVP_REVISION_186_BOTH;
+                } else {
+                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                }
                 break;
             case ACVP_EDDSA_KEYGEN:
             case ACVP_EDDSA_KEYVER:
