@@ -1,0 +1,18 @@
+[ {
+  "acvVersion": "0.5"
+}, {
+  "vsId" : 586,
+  "algorithm" : "HMAC-SHA-1",
+  "testGroups" : [ {
+    "tgId": 999,
+    "testType" : "AFT",
+    "keyLen" : 320,
+    "msgLen" : 128,
+    "macLen" : 160,
+    "tests" : [ {
+      "tcId" : 1,
+      "key" : "E81D7DBA3BABF4BC723E7BA94C7F92417232632B0AE0C1F2A17C71371FEB35AFAD1A6E256BDEAB1C",
+      "msg" : "B81148076A21CD11AD599D07F06DC2D3"
+    } ]
+  } ]
+} ]

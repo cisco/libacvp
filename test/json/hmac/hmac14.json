@@ -3,6 +3,7 @@
 }, {
   "vsId" : 586,
   "algorithm" : "HMAC-SHA-1",
+  "revision" : "1.0",
   "testGroups" : [ {
     "tgId": 999,
     "testType" : "AFT",

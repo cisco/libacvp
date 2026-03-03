@@ -4277,7 +4277,9 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_type(ACVP_CTX *ctx,
 
     sigver_cap = cap_list->cap.rsa_sigver_cap;
 
-    if (sigver_cap->revision != ACVP_REVISION_FIPS186_4 && value == ACVP_RSA_SIG_TYPE_X931) {
+    if (sigver_cap->revision != ACVP_REVISION_FIPS186_4 &&
+        sigver_cap->revision != ACVP_REVISION_186_BOTH &&
+        value == ACVP_RSA_SIG_TYPE_X931) {
         ACVP_LOG_ERR("ANS X9.31 signatures only allowed for FIPS 186-4");
         return ACVP_UNSUPPORTED_OP;
     }
@@ -4328,7 +4330,9 @@ ACVP_RESULT acvp_cap_rsa_siggen_set_type(ACVP_CTX *ctx,
     }
     siggen_cap = cap_list->cap.rsa_siggen_cap;
 
-    if (siggen_cap->revision != ACVP_REVISION_FIPS186_4 && value == ACVP_RSA_SIG_TYPE_X931) {
+    if (siggen_cap->revision != ACVP_REVISION_FIPS186_4 &&
+        siggen_cap->revision != ACVP_REVISION_186_BOTH &&
+        value == ACVP_RSA_SIG_TYPE_X931) {
         ACVP_LOG_ERR("ANS X9.31 signatures only allowed for FIPS 186-4");
         return ACVP_UNSUPPORTED_OP;
     }

@@ -1364,6 +1364,14 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(ACVP_CTX *ctx, JSON_Object *c
     alg_specs_array = json_object_get_array(cap_obj, "capabilities");
 
     while (rsa_cap_mode) {
+        // For FIPS 186-5, skip X9.31 signature type (not supported)
+        if (rev != ACVP_REVISION_FIPS186_4 && rsa_cap_mode->sig_type == ACVP_RSA_SIG_TYPE_X931) {
+            ACVP_LOG_INFO("ANS X9.31 signatures are not supported in FIPS 186-5. "
+                          "Excluding X9.31 from this registration.");
+            rsa_cap_mode = rsa_cap_mode->next;
+            continue;
+        }
+
         alg_specs_val = json_value_init_object();
         alg_specs_obj = json_value_get_object(alg_specs_val);
 

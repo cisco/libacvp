@@ -3,6 +3,7 @@
 }, {
   "vsId" : 586,
   "algorithm" : "HMAC-SHA-1",
+  "revision" : "1.0",
   "testGroups" : [ {
     "testType" : "AFT",
     "keyLen" : 320,
