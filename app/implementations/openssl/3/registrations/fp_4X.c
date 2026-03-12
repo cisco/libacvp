@@ -2069,10 +2069,6 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_224);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_256);
-     CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA3_224);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA3_256);
@@ -2120,10 +2116,6 @@ static int enable_hmac(ACVP_CTX *ctx) {
      rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA384);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_224);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_256);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA3_224);
      CHECK_ENABLE_CAP_RV(rv);
