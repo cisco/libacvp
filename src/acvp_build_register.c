@@ -1252,19 +1252,59 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap(ACVP_CTX *ctx, JSON_Object
 }
 
 /*
- * Validate RSA mask functions for FIPS 186-4 when using ACVP_REVISION_186_BOTH
- * For PSS signatures: MGF1 must be registered,
- * and warn if non-MGF1 mask functions are registered (they'll be ignored for 186-4)
+ * Validate RSA signature capabilities for FIPS 186 mode compatibility
+ * Performs multiple checks:
+ * 1. For Mode BOTH: Validates mask functions (MGF1 required for PSS)
+ * 2. For Mode 5: Errors if 186-4-only parameters present (X9.31, SHA1, 1024-bit)
+ * 3. For Mode BOTH: Logs INFO if 186-4-only parameters present (will be auto-excluded)
  */
-static ACVP_RESULT acvp_validate_rsa_pss_mask_functions(ACVP_CTX *ctx, ACVP_RSA_SIG_CAP *rsa_cap) {
+static ACVP_RESULT acvp_validate_rsa_sig_caps(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap_entry) {
+    ACVP_RSA_SIG_CAP *rsa_cap = NULL;
+    ACVP_RSA_SIG_CAP *current_cap = NULL;
     ACVP_RSA_MODE_CAPS_LIST *mode_cap = NULL;
-    ACVP_RSA_SIG_CAP *current_cap = rsa_cap;
+    ACVP_REVISION revision;
     int has_non_mgf1 = 0;
+    int is_sigver = (cap_entry->cipher == ACVP_RSA_SIGVER);
 
+    // Get the appropriate cap structure
+    if (cap_entry->cipher == ACVP_RSA_SIGGEN) {
+        rsa_cap = cap_entry->cap.rsa_siggen_cap;
+    } else if (cap_entry->cipher == ACVP_RSA_SIGVER) {
+        rsa_cap = cap_entry->cap.rsa_sigver_cap;
+    } else {
+        return ACVP_INVALID_ARG;
+    }
+
+    if (!rsa_cap) {
+        return ACVP_MISSING_ARG;
+    }
+
+    revision = rsa_cap->revision;
+    current_cap = rsa_cap;
+
+    // Mode 4: no validation needed
+    if (revision == ACVP_REVISION_FIPS186_4) {
+        return ACVP_SUCCESS;
+    }
+
+    // Check for 186-4-only parameters and mask functions (for both Mode BOTH and Mode 5)
+    current_cap = rsa_cap;
     while (current_cap) {
-        if (current_cap->sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
-            mode_cap = current_cap->mode_capabilities;
+        // Check for X9.31 signature type (not supported in 186-5)
+        if (current_cap->sig_type == ACVP_RSA_SIG_TYPE_X931) {
+            if (revision == ACVP_REVISION_186_BOTH) {
+                ACVP_LOG_INFO("ANS X9.31 signatures are not supported in FIPS 186-5. "
+                              "Excluding X9.31 from 186-5 registration.");
+            } else {
+                ACVP_LOG_ERR("ANS X9.31 signatures are not supported in FIPS 186-5. "
+                             "Remove X9.31 from your registration or use ACVP_REVISION_186_BOTH to test both revisions.");
+                return ACVP_INVALID_ARG;
+            }
+        }
 
+        // For Mode BOTH with PSS, validate mask functions
+        if (revision == ACVP_REVISION_186_BOTH && current_cap->sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
+            mode_cap = current_cap->mode_capabilities;
             while (mode_cap) {
                 ACVP_PARAM_LIST *mask_func = mode_cap->mask_functions;
                 int has_mgf1 = 0;
@@ -1298,19 +1338,76 @@ static ACVP_RESULT acvp_validate_rsa_pss_mask_functions(ACVP_CTX *ctx, ACVP_RSA_
                 mode_cap = mode_cap->next;
             }
         }
+
+        // Check modulo and SHA1 parameters
+        mode_cap = current_cap->mode_capabilities;
+        while (mode_cap) {
+            // Check for 1024-bit modulus in sigver (not supported in 186-5)
+            if (is_sigver && mode_cap->modulo == 1024) {
+                if (revision == ACVP_REVISION_186_BOTH) {
+                    ACVP_LOG_INFO("1024-bit modulus is not supported in FIPS 186-5 for signature verification. "
+                                  "Excluding 1024-bit modulus from 186-5 registration.");
+                } else {
+                    ACVP_LOG_ERR("1024-bit modulus is not supported in FIPS 186-5 for signature verification. "
+                                 "Remove 1024-bit modulus from your registration or use ACVP_REVISION_186_BOTH to test both revisions.");
+                    return ACVP_INVALID_ARG;
+                }
+            }
+
+            // Check for SHA1 in hash pairs (not supported in 186-5)
+            ACVP_RSA_HASH_PAIR_LIST *hash_pair = mode_cap->hash_pair;
+            while (hash_pair) {
+                if (hash_pair->alg == ACVP_SHA1) {
+                    if (revision == ACVP_REVISION_186_BOTH) {
+                        ACVP_LOG_INFO("SHA1 is not supported in FIPS 186-5 for RSA signatures. "
+                                      "Excluding SHA1 from 186-5 registration.");
+                    } else {
+                        ACVP_LOG_ERR("SHA1 is not supported in FIPS 186-5 for RSA signatures. "
+                                     "Remove SHA1 from your registration or use ACVP_REVISION_186_BOTH to test both revisions.");
+                        return ACVP_INVALID_ARG;
+                    }
+                }
+                hash_pair = hash_pair->next;
+            }
+
+            mode_cap = mode_cap->next;
+        }
         current_cap = current_cap->next;
     }
 
-    // Warn if non-MGF1 mask functions are present
+    // Log info if non-MGF1 mask functions are present
     if (has_non_mgf1) {
-        ACVP_LOG_WARN("Non-MGF1 mask functions are not supported in FIPS 186-4. "
+        ACVP_LOG_INFO("Non-MGF1 mask functions are not supported in FIPS 186-4. "
                       "Ignoring non-MGF1 mask functions for this registration.");
     }
 
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_rsa_sig_register_cap(ACVP_CTX *ctx, JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_validate_ecdsa_sig_caps(ACVP_CTX *ctx, ACVP_ECDSA_CAP *ecdsa_cap) {
+    if (!ecdsa_cap) {
+        return ACVP_MISSING_ARG;
+    }
+
+    if (ecdsa_cap->revision == ACVP_REVISION_1_0) {
+        return ACVP_SUCCESS;
+    }
+
+    if (ecdsa_cap->hash_algs[ACVP_SHA1]) {
+        if (ecdsa_cap->revision == ACVP_REVISION_186_BOTH) {
+            ACVP_LOG_INFO("SHA1 is not supported in FIPS 186-5 for ECDSA signatures. "
+                          "Excluding SHA1 from 186-5 registration.");
+        } else {
+            ACVP_LOG_ERR("SHA1 is not supported in FIPS 186-5 for ECDSA signatures. "
+                         "Remove SHA1 from your registration or use ACVP_REVISION_186_BOTH to test both revisions.");
+            return ACVP_INVALID_ARG;
+        }
+    }
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result = ACVP_SUCCESS;
     ACVP_PARAM_LIST *plist = NULL;
     ACVP_RSA_SIG_CAP *rsa_cap_mode = NULL;
@@ -1319,7 +1416,6 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(ACVP_CTX *ctx, JSON_Object *c
     JSON_Value *alg_specs_val = NULL, *sig_type_val = NULL, *hash_pair_val = NULL;
     JSON_Object *alg_specs_obj = NULL, *sig_type_obj = NULL, *hash_pair_obj = NULL;
     const char *revision = NULL, *str = NULL;
-    int warned_1024 = 0, warned_sha1 = 0;
 
     json_object_set_string(cap_obj, "algorithm", "RSA");
 
@@ -1366,8 +1462,6 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(ACVP_CTX *ctx, JSON_Object *c
     while (rsa_cap_mode) {
         // For FIPS 186-5, skip X9.31 signature type (not supported)
         if (rev != ACVP_REVISION_FIPS186_4 && rsa_cap_mode->sig_type == ACVP_RSA_SIG_TYPE_X931) {
-            ACVP_LOG_INFO("ANS X9.31 signatures are not supported in FIPS 186-5. "
-                          "Excluding X9.31 from this registration.");
             rsa_cap_mode = rsa_cap_mode->next;
             continue;
         }
@@ -1390,11 +1484,6 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(ACVP_CTX *ctx, JSON_Object *c
             // For FIPS 186-5 sigver, skip 1024-bit modulus
             if (rev != ACVP_REVISION_FIPS186_4 && cap_entry->cipher == ACVP_RSA_SIGVER &&
                 current_sig_type_cap->modulo == 1024) {
-                if (!warned_1024) {
-                    ACVP_LOG_INFO("1024-bit modulus is not supported in FIPS 186-5 for signature verification. "
-                                  "Excluding 1024-bit modulus from this registration.");
-                    warned_1024 = 1;
-                }
                 current_sig_type_cap = current_sig_type_cap->next;
                 continue;
             }
@@ -1425,11 +1514,6 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(ACVP_CTX *ctx, JSON_Object *c
             while (current_hash_pair) {
                 // For FIPS 186-5, skip SHA1
                 if (rev != ACVP_REVISION_FIPS186_4 && current_hash_pair->alg == ACVP_SHA1) {
-                    if (!warned_sha1) {
-                        ACVP_LOG_INFO("SHA1 is not supported in FIPS 186-5 for RSA signatures. "
-                                      "Excluding SHA1 from this registration.");
-                        warned_sha1 = 1;
-                    }
                     current_hash_pair = current_hash_pair->next;
                     continue;
                 }
@@ -5822,16 +5906,16 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 break;
             case ACVP_RSA_SIGGEN:
             case ACVP_RSA_SIGVER:
+                rv = acvp_validate_rsa_sig_caps(ctx, cap_entry);
+                if (rv != ACVP_SUCCESS) {
+                    break;
+                }
+
                 // If revision = BOTH, we need two registrations (FIPS 186-4 and FIPS 186-5)
                 if (cap_entry->cipher == ACVP_RSA_SIGGEN &&
                     cap_entry->cap.rsa_siggen_cap->revision == ACVP_REVISION_186_BOTH) {
-                    // Validate mask functions when using BOTH - MGF1 required, warn about non-MGF1
-                    rv = acvp_validate_rsa_pss_mask_functions(ctx, cap_entry->cap.rsa_siggen_cap);
-                    if (rv != ACVP_SUCCESS) {
-                        break;
-                    }
                     cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_FIPS186_4;
-                    rv = acvp_build_rsa_sig_register_cap(ctx, cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
                     if (rv != ACVP_SUCCESS) {
                         cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
                         break;
@@ -5840,17 +5924,12 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                     cap_val = json_value_init_object();
                     cap_obj = json_value_get_object(cap_val);
                     cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
-                    rv = acvp_build_rsa_sig_register_cap(ctx, cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
                     cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
                 } else if (cap_entry->cipher == ACVP_RSA_SIGVER &&
                            cap_entry->cap.rsa_sigver_cap->revision == ACVP_REVISION_186_BOTH) {
-                    // Validate mask functions when using BOTH - MGF1 required, warn about non-MGF1
-                    rv = acvp_validate_rsa_pss_mask_functions(ctx, cap_entry->cap.rsa_sigver_cap);
-                    if (rv != ACVP_SUCCESS) {
-                        break;
-                    }
                     cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_FIPS186_4;
-                    rv = acvp_build_rsa_sig_register_cap(ctx, cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
                     if (rv != ACVP_SUCCESS) {
                         cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_186_BOTH;
                         break;
@@ -5859,10 +5938,10 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                     cap_val = json_value_init_object();
                     cap_obj = json_value_get_object(cap_val);
                     cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
-                    rv = acvp_build_rsa_sig_register_cap(ctx, cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
                     cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_186_BOTH;
                 } else {
-                    rv = acvp_build_rsa_sig_register_cap(ctx, cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
                 }
                 break;
             case ACVP_RSA_SIGPRIM:
@@ -5905,6 +5984,10 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 }
                 break;
             case ACVP_ECDSA_SIGGEN:
+                rv = acvp_validate_ecdsa_sig_caps(ctx, cap_entry->cap.ecdsa_siggen_cap);
+                if (rv != ACVP_SUCCESS) {
+                    break;
+                }
                 // If revision = BOTH, we need two registrations (FIPS 186-4 and FIPS 186-5)
                 // Note: Also handle component test = BOTH separately if needed
                 if (cap_entry->cap.ecdsa_siggen_cap->revision == ACVP_REVISION_186_BOTH) {
@@ -6068,6 +6151,10 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 }
                 break;
             case ACVP_ECDSA_SIGVER:
+                rv = acvp_validate_ecdsa_sig_caps(ctx, cap_entry->cap.ecdsa_sigver_cap);
+                if (rv != ACVP_SUCCESS) {
+                    break;
+                }
                 // If revision = BOTH, we need two registrations (FIPS 186-4 and FIPS 186-5)
                 if (cap_entry->cap.ecdsa_sigver_cap->revision == ACVP_REVISION_186_BOTH) {
                     cap_entry->cap.ecdsa_sigver_cap->revision = ACVP_REVISION_1_0;  // 186-4
