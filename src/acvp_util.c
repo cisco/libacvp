@@ -184,7 +184,8 @@ static struct acvp_alt_revision_info alt_revision_tbl[] = {
     { ACVP_REVISION_SP800_56AR3, ACVP_REV_STR_SP800_56AR3 },
     { ACVP_REVISION_SP800_56CR1, ACVP_REV_STR_SP800_56CR1 },
     { ACVP_REVISION_FIPS186_4, ACVP_REV_STR_FIPS186_4 },
-    { ACVP_REVISION_1_0, ACVP_REV_STR_1_0 }
+    { ACVP_REVISION_1_0, ACVP_REV_STR_1_0 },
+    { ACVP_REVISION_2_0, ACVP_REV_STR_2_0 }
 };
 static int alt_revision_tbl_length =
     sizeof(alt_revision_tbl) / sizeof(struct acvp_alt_revision_info);
@@ -345,33 +346,53 @@ const char *acvp_lookup_rsa_mask_func_str(ACVP_RSA_MASK_FUNCTION func) {
 
 /*
  * This method returns the string that corresponds to a randPQ
- * index value
+ * index value. Values should be normalized to 186-5 before calling this.
  */
-const char *acvp_lookup_rsa_randpq_name(int value) {
-    switch (value) {
-    case ACVP_RSA_KEYGEN_B32:
-        return ACVP_RSA_RANDPQ_STR_B32; // "provRP"
-    case ACVP_RSA_KEYGEN_B33:
-        return ACVP_RSA_RANDPQ_STR_B33; // "probRP"
-    case ACVP_RSA_KEYGEN_B34:
-        return ACVP_RSA_RANDPQ_STR_B34; // "provPC"
-    case ACVP_RSA_KEYGEN_B35:
-        return ACVP_RSA_RANDPQ_STR_B35; // "bothPC"
-    case ACVP_RSA_KEYGEN_B36:
-        return ACVP_RSA_RANDPQ_STR_B36; // "probPC"
-    case ACVP_RSA_KEYGEN_PROVABLE:
-        return ACVP_RSA_RANDPQ_STR_PROVABLE;
-    case ACVP_RSA_KEYGEN_PROBABLE:
-        return ACVP_RSA_RANDPQ_STR_PROBABLE;
-    case ACVP_RSA_KEYGEN_PROV_W_PROV_AUX:
-        return ACVP_RSA_RANDPQ_STR_PROV_W_PROV_AUX;
-    case ACVP_RSA_KEYGEN_PROB_W_PROV_AUX:
-        return ACVP_RSA_RANDPQ_STR_PROB_W_PROV_AUX;
-    case ACVP_RSA_KEYGEN_PROB_W_PROB_AUX:
-        return ACVP_RSA_RANDPQ_STR_PROB_W_PROB_AUX;
-    default:
-        return NULL;
+const char *acvp_lookup_rsa_randpq_name(int value, ACVP_REVISION revision) {
+    // Return 186-4 strings if explicitly requested
+    if (revision == ACVP_REVISION_FIPS186_4) {
+        switch (value) {
+        case ACVP_RSA_KEYGEN_PROVABLE:
+            return ACVP_RSA_RANDPQ_STR_B32; // "provRP"
+        case ACVP_RSA_KEYGEN_PROBABLE:
+            return ACVP_RSA_RANDPQ_STR_B33; // "probRP"
+        case ACVP_RSA_KEYGEN_PROV_W_PROV_AUX:
+            return ACVP_RSA_RANDPQ_STR_B34; // "provPC"
+        case ACVP_RSA_KEYGEN_PROB_W_PROV_AUX:
+            return ACVP_RSA_RANDPQ_STR_B35; // "bothPC"
+        case ACVP_RSA_KEYGEN_PROB_W_PROB_AUX:
+            return ACVP_RSA_RANDPQ_STR_B36; // "probPC"
+        case ACVP_RSA_KEYGEN_B32:
+        case ACVP_RSA_KEYGEN_B33:
+        case ACVP_RSA_KEYGEN_B34:
+        case ACVP_RSA_KEYGEN_B35:
+        case ACVP_RSA_KEYGEN_B36:
+        default:
+            return NULL;
+        }
+    } else if (revision == ACVP_REVISION_DEFAULT) {
+        // Return 186-5 strings (default)
+        switch (value) {
+        case ACVP_RSA_KEYGEN_PROVABLE:
+            return ACVP_RSA_RANDPQ_STR_PROVABLE;
+        case ACVP_RSA_KEYGEN_PROBABLE:
+            return ACVP_RSA_RANDPQ_STR_PROBABLE;
+        case ACVP_RSA_KEYGEN_PROV_W_PROV_AUX:
+            return ACVP_RSA_RANDPQ_STR_PROV_W_PROV_AUX;
+        case ACVP_RSA_KEYGEN_PROB_W_PROV_AUX:
+            return ACVP_RSA_RANDPQ_STR_PROB_W_PROV_AUX;
+        case ACVP_RSA_KEYGEN_PROB_W_PROB_AUX:
+            return ACVP_RSA_RANDPQ_STR_PROB_W_PROB_AUX;
+        case ACVP_RSA_KEYGEN_B32:
+        case ACVP_RSA_KEYGEN_B33:
+        case ACVP_RSA_KEYGEN_B34:
+        case ACVP_RSA_KEYGEN_B35:
+        case ACVP_RSA_KEYGEN_B36:
+        default:
+            return NULL;
+        }
     }
+    return NULL;
 }
 
 ACVP_RSA_PUB_EXP_MODE acvp_lookup_rsa_pub_exp_mode(const char *str) {
@@ -547,19 +568,33 @@ const char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id) {
     return NULL;
 }
 
-const char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type) {
+const char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type, ACVP_REVISION revision) {
+    // Return 186-4 strings if explicitly requested
+    if (revision == ACVP_REVISION_FIPS186_4) {
+        switch (type) {
+        case ACVP_RSA_PRIME_TEST_2POW100:
+            return ACVP_RSA_PRIME_TEST_STR_TBLC2;
+        case ACVP_RSA_PRIME_TEST_2POW_SEC_STR:
+            return ACVP_RSA_PRIME_TEST_STR_TBLC3;
+        case ACVP_RSA_PRIME_TEST_TBLC2:
+        case ACVP_RSA_PRIME_TEST_TBLC3:
+        default:
+            return NULL;
+        }
+    }
+
+    // Return 186-5 strings (default)
     switch (type) {
-    case ACVP_RSA_PRIME_TEST_TBLC2:
-        return ACVP_RSA_PRIME_TEST_STR_TBLC2;
-    case ACVP_RSA_PRIME_TEST_TBLC3:
-        return ACVP_RSA_PRIME_TEST_STR_TBLC3;
     case ACVP_RSA_PRIME_TEST_2POW100:
         return ACVP_RSA_PRIME_TEST_STR_2POW100;
     case ACVP_RSA_PRIME_TEST_2POW_SEC_STR:
         return ACVP_RSA_PRIME_TEST_STR_2POW_SEC_STR;
+    case ACVP_RSA_PRIME_TEST_TBLC2:
+    case ACVP_RSA_PRIME_TEST_TBLC3:
     default:
         return NULL;
     }
+    return NULL;
 }
 
 // This function checks to see if the value is a valid prime test (RSA)
@@ -1216,7 +1251,6 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
     return ACVP_SUCCESS;
 }
 
-
 /*
  * This function returns a string that describes the error
  * code passed in.
@@ -1809,4 +1843,40 @@ err:
     if (tmp) free(tmp);
     *msg_len = 0;
     return NULL;
+}
+
+/*
+ * Normalize RSA keygen parameters to FIPS 186-5 format.
+ * - randPQ: 186-5 enum values are offset by 5 from 186-4 equivalents
+ * - prime_test: Converts TBLC2 -> 2POW100 and TBLC3 -> 2POW_SEC_STR
+ *
+ * @param cap Pointer to RSA keygen capability list
+ */
+void acvp_normalize_rsa_keygen_params(ACVP_RSA_KEYGEN_CAP *cap) {
+    ACVP_RSA_MODE_CAPS_LIST *mode_cap = NULL;
+    ACVP_PARAM_LIST *param = NULL;
+
+    while (cap) {
+        // Normalize randPQ: add 5 to convert 186-4 values (B32-B36) to 186-5
+        if (cap->rand_pq >= ACVP_RSA_KEYGEN_B32 && cap->rand_pq <= ACVP_RSA_KEYGEN_B36) {
+            cap->rand_pq = (ACVP_RSA_KEYGEN_MODE)(cap->rand_pq + 5);
+        }
+
+        // Normalize prime_test values
+        mode_cap = cap->mode_capabilities;
+        while (mode_cap) {
+            param = mode_cap->prime_tests;
+            while (param) {
+                if (param->param == ACVP_RSA_PRIME_TEST_TBLC2) {
+                    param->param = ACVP_RSA_PRIME_TEST_2POW100;
+                } else if (param->param == ACVP_RSA_PRIME_TEST_TBLC3) {
+                    param->param = ACVP_RSA_PRIME_TEST_2POW_SEC_STR;
+                }
+                param = param->next;
+            }
+            mode_cap = mode_cap->next;
+        }
+
+        cap = cap->next;
+    }
 }

@@ -32,9 +32,9 @@ int initialize_hmac_tc(ACVP_HMAC_TC *hmac_tc, int alg_id, char *msg, int msg_len
     }
     
     if (msg) {
-        hmac_tc->msg = calloc(1, ACVP_HMAC_MSG_MAX);
+        hmac_tc->msg = calloc(1, ACVP_HMAC_MSG_BYTE_MAX);
         if (!hmac_tc->msg) { return -1; }
-        rv = acvp_hexstr_to_bin(msg, hmac_tc->msg, ACVP_HMAC_MSG_MAX, NULL);
+        rv = acvp_hexstr_to_bin(msg, hmac_tc->msg, ACVP_HMAC_MSG_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             printf("Hex converstion failure (msg)\n");
             return -1;

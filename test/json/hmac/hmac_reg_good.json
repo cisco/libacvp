@@ -7,6 +7,7 @@
       "algorithms": [
         {
           "algorithm": "HMAC-SHA-1",
+          "revision": "1.0",
           "prereqVals": [
             {
               "algorithm": "SHA",
@@ -26,6 +27,7 @@
         },
         {
           "algorithm": "HMAC-SHA2-224",
+          "revision": "1.0",
           "prereqVals": [
             {
               "algorithm": "SHA",
@@ -45,6 +47,7 @@
         },
         {
           "algorithm": "HMAC-SHA2-256",
+          "revision": "1.0",
           "prereqVals": [
             {
               "algorithm": "SHA",
@@ -64,6 +67,7 @@
         },
         {
           "algorithm": "HMAC-SHA2-384",
+          "revision": "1.0",
           "prereqVals": [
             {
               "algorithm": "SHA",
@@ -83,6 +87,7 @@
         },
         {
           "algorithm": "HMAC-SHA2-512",
+          "revision": "1.0",
           "prereqVals": [
             {
               "algorithm": "SHA",

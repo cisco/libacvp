@@ -396,6 +396,32 @@ TEST(HmacFunc, null_ctx) {
     }
     rv  = acvp_hmac_kat_handler(ctx, obj);
     TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
+    json_value_free(val);
+    val = NULL;
+
+    /* missing revision */
+    val = json_parse_file("json/hmac/hmac18.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv  = acvp_hmac_kat_handler(ctx, obj);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
+    json_value_free(val);
+    val = NULL;
+
+    /* invalid revision */
+    val = json_parse_file("json/hmac/hmac19.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv  = acvp_hmac_kat_handler(ctx, obj);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
 
     teardown_ctx(&ctx);
     json_value_free(val);

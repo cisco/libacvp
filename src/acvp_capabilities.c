@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2025, Cisco Systems, Inc.
+ * Copyright (c) 2026, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -26,6 +26,13 @@ static ACVP_RESULT validate_domain_range(int min, int max, int inc) {
         return ACVP_INVALID_ARG;
     }
     return ACVP_SUCCESS;
+}
+
+static int domain_has_set_values(ACVP_JSON_DOMAIN_OBJ *d) {
+    if (d->min || d->max || d->increment || d->values) {
+        return 1;
+    }
+    return 0;
 }
 
 static ACVP_DSA_CAP *allocate_dsa_cap(void) {
@@ -825,10 +832,11 @@ static ACVP_RESULT acvp_validate_kdf135_srtp_param_value(ACVP_KDF135_SRTP_PARAM 
         }
         break;
     case ACVP_SRTP_SUPPORT_ZERO_KDR:
+    case ACVP_SRTP_SUPPORTS_48_BIT_SRTCP:
         retval = is_valid_tf_param(value);
         break;
     case ACVP_SRTP_KDF_EXPONENT:
-        if (value >= 1 && value <= 24) {
+        if (value >= 0 && value <= 24) {
             retval = ACVP_SUCCESS;
         }
         break;
@@ -3060,6 +3068,16 @@ static ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
             retval = ACVP_SUCCESS;
         }
         break;
+    case ACVP_HMAC_REVISION:
+        if (value == ACVP_REVISION_1_0) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_HMAC_MSGLEN:
+        if (value >= 0 && value <= ACVP_HMAC_MSG_BIT_MAX && value % 8 == 0) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_HMAC_KEYBLOCK:
     default:
         break;
@@ -3122,9 +3140,9 @@ ACVP_RESULT acvp_cap_hmac_set_domain(ACVP_CTX *ctx,
                                      int min,
                                      int max,
                                      int increment) {
-    ACVP_CAPS_LIST *cap_list;
-    ACVP_JSON_DOMAIN_OBJ *domain;
-    ACVP_HMAC_CAP *current_hmac_cap;
+    ACVP_CAPS_LIST *cap_list = NULL;
+    ACVP_JSON_DOMAIN_OBJ *domain = NULL;
+    ACVP_HMAC_CAP *current_hmac_cap = NULL;
 
     cap_list = acvp_locate_cap_entry(ctx, cipher);
     if (!cap_list) {
@@ -3132,6 +3150,11 @@ ACVP_RESULT acvp_cap_hmac_set_domain(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
     current_hmac_cap = cap_list->cap.hmac_cap;
+
+    if (validate_domain_range(min, max, increment) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Invalid domain range provided for HMAC");
+        return ACVP_INVALID_ARG;
+    }
 
     switch (parm) {
     case ACVP_HMAC_KEYLEN:
@@ -3150,7 +3173,19 @@ ACVP_RESULT acvp_cap_hmac_set_domain(ACVP_CTX *ctx,
         }
         domain = &current_hmac_cap->mac_len;
         break;
+    case ACVP_HMAC_MSGLEN:
+        if (current_hmac_cap->revision != ACVP_REVISION_DEFAULT) {
+            ACVP_LOG_ERR("ACVP_HMAC_MSGLEN not supported for alternate revisions");
+            return ACVP_INVALID_ARG;
+        }
+        if (min < 0 || max > ACVP_HMAC_MSG_BIT_MAX || increment % 8 != 0) {
+            ACVP_LOG_ERR("Invalid domain provided for HMAC message length");
+            return ACVP_INVALID_ARG;
+        }
+        domain = &current_hmac_cap->msg_len;
+        break;
     case ACVP_HMAC_KEYBLOCK:
+    case ACVP_HMAC_REVISION:
     default:
         return ACVP_INVALID_ARG;
     }
@@ -3177,7 +3212,8 @@ ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
                                    ACVP_CIPHER cipher,
                                    ACVP_HMAC_PARM parm,
                                    int value) {
-    ACVP_CAPS_LIST *cap;
+    ACVP_CAPS_LIST *cap = NULL;
+    ACVP_HMAC_CAP *hcap = NULL;
 
     // Locate this cipher in the caps array
     cap = acvp_locate_cap_entry(ctx, cipher);
@@ -3185,6 +3221,7 @@ ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Cap entry not found, use acvp_enable_hmac_cipher_cap() first.");
         return ACVP_NO_CAP;
     }
+    hcap = cap->cap.hmac_cap;
 
     if (acvp_validate_hmac_parm_value(cipher, parm, value) != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Invalid parm or value");
@@ -3193,14 +3230,39 @@ ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
 
     switch (parm) {
     case ACVP_HMAC_KEYLEN:
-        if (acvp_append_sl_list(&cap->cap.hmac_cap->key_len.values, value) != ACVP_SUCCESS) {
+        if (acvp_append_sl_list(&hcap->key_len.values, value) != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Error adding HMAC key length to list");
             return ACVP_MALLOC_FAIL;
         }
         break;
     case ACVP_HMAC_MACLEN:
-        if (acvp_append_sl_list(&cap->cap.hmac_cap->mac_len.values, value) != ACVP_SUCCESS) {
+        if (acvp_append_sl_list(&hcap->mac_len.values, value) != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Error adding HMAC mac length to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_HMAC_REVISION:
+        if (domain_has_set_values(&hcap->msg_len)) {
+            ACVP_LOG_ERR("Cannot set revision for HMAC after setting msg_len values (msg only supports default revision)");
+            return ACVP_INVALID_ARG;
+        }
+        if (value != ACVP_REVISION_1_0) {
+            ACVP_LOG_ERR("Only revision 1.0 supported for HMAC");
+            return ACVP_INVALID_ARG;
+        }
+        hcap->revision = value;
+        break;
+    case ACVP_HMAC_MSGLEN:
+        if (cap->cap.hmac_cap->revision != ACVP_REVISION_DEFAULT) {
+            ACVP_LOG_ERR("ACVP_HMAC_MSGLEN not supported for alternate revisions");
+            return ACVP_INVALID_ARG;
+        }
+        if (value < 0 || value > ACVP_HMAC_MSG_BIT_MAX || value % 8 != 0) {
+            ACVP_LOG_ERR("Invalid HMAC message length value");
+            return ACVP_INVALID_ARG;
+        }
+        if (acvp_append_sl_list(&hcap->msg_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding HMAC msg length to list");
             return ACVP_MALLOC_FAIL;
         }
         break;
@@ -4077,7 +4139,7 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_parm(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Use acvp_enable_rsa_keygen_mode() or acvp_enable_rsa_keygen_exp_parm() API to enable a new randPQ or exponent.");
         break;
     case ACVP_RSA_PARM_REVISION:
-        if (value == ACVP_REVISION_FIPS186_4) {
+        if (value == ACVP_REVISION_FIPS186_4 || value == ACVP_REVISION_DEFAULT || value == ACVP_REVISION_186_BOTH) {
             cap_list->cap.rsa_keygen_cap->revision = value;
         } else {
             ACVP_LOG_ERR("Invalid revision provided for RSA keygen");
@@ -4141,8 +4203,8 @@ ACVP_RESULT acvp_cap_rsa_siggen_set_parm(ACVP_CTX *ctx,
 
     switch (param) {
     case ACVP_RSA_PARM_REVISION:
-        if (value == ACVP_REVISION_FIPS186_4) {
-            cap_list->cap.rsa_keygen_cap->revision = value;
+        if (value == ACVP_REVISION_FIPS186_4 || value == ACVP_REVISION_DEFAULT || value == ACVP_REVISION_186_BOTH) {
+            cap_list->cap.rsa_siggen_cap->revision = value;
         } else {
             ACVP_LOG_ERR("Invalid revision provided for RSA siggen");
             return ACVP_INVALID_ARG;
@@ -4180,10 +4242,10 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_parm(ACVP_CTX *ctx,
         cap_list->cap.rsa_sigver_cap->pub_exp_mode = value;
         break;
     case ACVP_RSA_PARM_REVISION:
-         if (value == ACVP_REVISION_FIPS186_4) {
-            cap_list->cap.rsa_keygen_cap->revision = value;
+         if (value == ACVP_REVISION_FIPS186_4 || value == ACVP_REVISION_DEFAULT || value == ACVP_REVISION_186_BOTH) {
+            cap_list->cap.rsa_sigver_cap->revision = value;
         } else {
-            ACVP_LOG_ERR("Invalid revision provided for RSA keygen");
+            ACVP_LOG_ERR("Invalid revision provided for RSA sigver");
             return ACVP_INVALID_ARG;
         }
         break;
@@ -4215,7 +4277,9 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_type(ACVP_CTX *ctx,
 
     sigver_cap = cap_list->cap.rsa_sigver_cap;
 
-    if (sigver_cap->revision != ACVP_REVISION_FIPS186_4 && value == ACVP_RSA_SIG_TYPE_X931) {
+    if (sigver_cap->revision != ACVP_REVISION_FIPS186_4 &&
+        sigver_cap->revision != ACVP_REVISION_186_BOTH &&
+        value == ACVP_RSA_SIG_TYPE_X931) {
         ACVP_LOG_ERR("ANS X9.31 signatures only allowed for FIPS 186-4");
         return ACVP_UNSUPPORTED_OP;
     }
@@ -4266,7 +4330,9 @@ ACVP_RESULT acvp_cap_rsa_siggen_set_type(ACVP_CTX *ctx,
     }
     siggen_cap = cap_list->cap.rsa_siggen_cap;
 
-    if (siggen_cap->revision != ACVP_REVISION_FIPS186_4 && value == ACVP_RSA_SIG_TYPE_X931) {
+    if (siggen_cap->revision != ACVP_REVISION_FIPS186_4 &&
+        siggen_cap->revision != ACVP_REVISION_186_BOTH &&
+        value == ACVP_RSA_SIG_TYPE_X931) {
         ACVP_LOG_ERR("ANS X9.31 signatures only allowed for FIPS 186-4");
         return ACVP_UNSUPPORTED_OP;
     }
@@ -4487,8 +4553,8 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_primes(ACVP_CTX *ctx,
         }
         break;
     case ACVP_RSA_PRIME_TEST:
-        // Just use the string lookup to make sure its a valid value)
-        if (acvp_lookup_rsa_prime_test_name(value)) {
+        // Check if value is in valid range
+        if (value >= ACVP_RSA_PRIME_TEST_TBLC2 && value <= ACVP_RSA_PRIME_TEST_2POW_SEC_STR) {
             acvp_append_param_list(&current_prime->prime_tests, value);
         } else {
             ACVP_LOG_ERR("Invalid 'value' for ACVP_RSA_PRIME_TEST");
@@ -5283,8 +5349,8 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Unable to set alternate revision for DetECDSA; not applicable at this time");
             return ACVP_INVALID_ARG;
         }
-        if (value != ACVP_REVISION_1_0) {
-            ACVP_LOG_ERR("Invalid ECDSA revision. Only revision 1.0 (AKA FIPS 186-4) can be set for ECDSA. default is 186-5.");
+        if (value != ACVP_REVISION_1_0 && value != ACVP_REVISION_DEFAULT && value != ACVP_REVISION_186_BOTH) {
+            ACVP_LOG_ERR("Invalid ECDSA revision. Only revision 1.0 (AKA FIPS 186-4), DEFAULT (186-5), or BOTH can be set.");
             return ACVP_INVALID_ARG;
         }
         cap->revision = value;
@@ -5697,7 +5763,48 @@ ACVP_RESULT acvp_cap_kdf135_snmp_set_parm(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    acvp_append_sl_list(&kdf135_snmp_cap->pass_lens, value);
+    acvp_append_sl_list(&kdf135_snmp_cap->pass_lens.values, value);
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_kdf135_snmp_set_domain(ACVP_CTX *ctx,
+                                            ACVP_KDF135_SNMP_PARAM param,
+                                            int min,
+                                            int max,
+                                            int increment) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    if (param != ACVP_KDF135_SNMP_PASS_LEN) {
+        return ACVP_INVALID_ARG;
+    }
+
+    if (min < ACVP_KDF135_SNMP_PASS_LEN_MIN ||
+        max > ACVP_KDF135_SNMP_PASS_LEN_MAX ||
+        increment % 8 != 0 ) {
+        ACVP_LOG_ERR("Invalid pass len domain for SNMP KDF");
+        return ACVP_INVALID_ARG;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, ACVP_KDF135_SNMP);
+    if (!cap) {
+        ACVP_LOG_ERR("Capability entry for KDF135 SNMP not found, ensure it is enabled before setting parameters");
+        return ACVP_NO_CAP;
+    }
+
+    kdf135_snmp_cap = cap->cap.kdf135_snmp_cap;
+    if (!kdf135_snmp_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    kdf135_snmp_cap->pass_lens.min = min;
+    kdf135_snmp_cap->pass_lens.max = max;
+    kdf135_snmp_cap->pass_lens.increment = increment;
 
     return ACVP_SUCCESS;
 }
@@ -6362,11 +6469,18 @@ ACVP_RESULT acvp_cap_kdf135_srtp_set_parm(ACVP_CTX *ctx,
         kdf135_srtp_cap->supports_zero_kdr = value;
         break;
     case ACVP_SRTP_KDF_EXPONENT:
-        if (!value || value > ACVP_KDF135_SRTP_KDR_MAX) {
+        if (value < 0 || value > ACVP_KDF135_SRTP_KDR_MAX) {
             ACVP_LOG_ERR("invalid srtp exponent");
             return ACVP_INVALID_ARG;
         }
-        kdf135_srtp_cap->kdr_exp[value - 1] = 1;
+        kdf135_srtp_cap->kdr_exp[value] = 1;
+        break;
+    case ACVP_SRTP_SUPPORTS_48_BIT_SRTCP:
+        if (is_valid_tf_param(value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("invalid boolean for 48 bit srtcp support");
+            return ACVP_INVALID_ARG;
+        }
+        kdf135_srtp_cap->supports_48bit_srtcp_index = value;
         break;
     default:
         return ACVP_INVALID_ARG;

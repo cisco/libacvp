@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Cisco Systems, Inc.
+ * Copyright (c) 2026, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -61,6 +61,8 @@ int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case);
 int app_pbkdf_handler(ACVP_TEST_CASE *test_case);
 int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case);
 int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case);
+int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case);
+int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case);
 int app_dsa_handler(ACVP_TEST_CASE *test_case);
 int app_kas_ecc_handler(ACVP_TEST_CASE *test_case);
 int app_kas_ffc_handler(ACVP_TEST_CASE *test_case);
@@ -110,6 +112,22 @@ ACVP_RESULT register_capabilities_fp_4x(ACVP_CTX *ctx, APP_CONFIG *cfg);
 
 #ifndef OSSL_DIGEST_PARAM_CUSTOMIZATION
 #define OSSL_DIGEST_PARAM_CUSTOMIZATION "customization"
+#endif
+
+#ifndef OSSL_KDF_NAME_SNMPKDF
+#define OSSL_KDF_NAME_SNMPKDF "SNMPKDF"
+#endif
+
+#ifndef OSSL_KDF_PARAM_SNMPKDF_EID
+#define OSSL_KDF_PARAM_SNMPKDF_EID "eid"
+#endif
+
+#ifndef OSSL_KDF_PARAM_SRTPKDF_KDR
+#define OSSL_KDF_PARAM_SRTPKDF_KDR "kdr"
+#endif
+
+#ifndef OSSL_KDF_PARAM_SRTPKDF_INDEX
+#define OSSL_KDF_PARAM_SRTPKDF_INDEX "index"
 #endif
 
 // Added in 3.5.0 for PQC

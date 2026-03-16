@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Cisco Systems, Inc.
+ * Copyright (c) 2026, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -655,7 +655,9 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYLEN, 112, 524288, 8);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_MACLEN, 32, 160, 8);
+     rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_MACLEN, 160);
+     CHECK_ENABLE_CAP_RV(rv);
+     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_MSGLEN, 0, 4096, 8);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA1, ACVP_PREREQ_SHA, value);
      CHECK_ENABLE_CAP_RV(rv);
@@ -664,7 +666,9 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYLEN, 112, 524288, 8);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_MACLEN, 32, 224, 8);
+     rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_MACLEN, 224);
+     CHECK_ENABLE_CAP_RV(rv);
+     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_MSGLEN, 0, 4096, 8);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_224, ACVP_PREREQ_SHA, value);
      CHECK_ENABLE_CAP_RV(rv);
@@ -673,7 +677,9 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYLEN, 112, 524288, 8);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_MACLEN, 32, 256, 8);
+     rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_MACLEN, 256);
+     CHECK_ENABLE_CAP_RV(rv);
+     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_MSGLEN, 0, 4096, 8);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_256, ACVP_PREREQ_SHA, value);
      CHECK_ENABLE_CAP_RV(rv);
@@ -682,7 +688,9 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYLEN, 112, 524288, 8);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_MACLEN, 32, 384, 8);
+     rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_MACLEN, 384);
+     CHECK_ENABLE_CAP_RV(rv);
+     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_MSGLEN, 0, 4096, 8);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_384, ACVP_PREREQ_SHA, value);
      CHECK_ENABLE_CAP_RV(rv);
@@ -691,7 +699,9 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYLEN, 112, 524288, 8);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 32, 512, 8);
+     rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 512);
+     CHECK_ENABLE_CAP_RV(rv);
+     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MSGLEN, 0, 4096, 8);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_512, ACVP_PREREQ_SHA, value);
      CHECK_ENABLE_CAP_RV(rv);
@@ -700,7 +710,9 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512_224, ACVP_HMAC_KEYLEN, 112, 524288, 8);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512_224, ACVP_HMAC_MACLEN, 32, 224, 8);
+     rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_512_224, ACVP_HMAC_MACLEN, 224);
+     CHECK_ENABLE_CAP_RV(rv);
+     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512_224, ACVP_HMAC_MSGLEN, 0, 4096, 8);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_512_224, ACVP_PREREQ_SHA, value);
      CHECK_ENABLE_CAP_RV(rv);
@@ -709,7 +721,9 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512_256, ACVP_HMAC_KEYLEN, 112, 524288, 8);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512_256, ACVP_HMAC_MACLEN, 32, 256, 8);
+     rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_512_256, ACVP_HMAC_MACLEN, 256);
+     CHECK_ENABLE_CAP_RV(rv);
+     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512_256, ACVP_HMAC_MSGLEN, 0, 4096, 8);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_512_256, ACVP_PREREQ_SHA, value);
      CHECK_ENABLE_CAP_RV(rv);
@@ -718,7 +732,9 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA3_224, ACVP_HMAC_KEYLEN, 112, 524288, 8);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA3_224, ACVP_HMAC_MACLEN, 32, 224, 8);
+     rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA3_224, ACVP_HMAC_MACLEN, 224);
+     CHECK_ENABLE_CAP_RV(rv);
+     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA3_224, ACVP_HMAC_MSGLEN, 0, 4096, 8);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA3_224, ACVP_PREREQ_SHA, value);
      CHECK_ENABLE_CAP_RV(rv);
@@ -727,7 +743,9 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA3_256, ACVP_HMAC_KEYLEN, 112, 524288, 8);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA3_256, ACVP_HMAC_MACLEN, 32, 256, 8);
+     rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA3_256, ACVP_HMAC_MACLEN, 256);
+     CHECK_ENABLE_CAP_RV(rv);
+     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA3_256, ACVP_HMAC_MSGLEN, 0, 4096, 8);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA3_256, ACVP_PREREQ_SHA, value);
      CHECK_ENABLE_CAP_RV(rv);
@@ -736,7 +754,9 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA3_384, ACVP_HMAC_KEYLEN, 112, 524288, 8);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA3_384, ACVP_HMAC_MACLEN, 32, 384, 8);
+     rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA3_384, ACVP_HMAC_MACLEN, 384);
+     CHECK_ENABLE_CAP_RV(rv);
+     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA3_384, ACVP_HMAC_MSGLEN, 0, 4096, 8);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA3_384, ACVP_PREREQ_SHA, value);
      CHECK_ENABLE_CAP_RV(rv);
@@ -745,7 +765,9 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA3_512, ACVP_HMAC_KEYLEN, 112, 524288, 8);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA3_512, ACVP_HMAC_MACLEN, 32, 512, 8);
+     rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA3_512, ACVP_HMAC_MACLEN, 512);
+     CHECK_ENABLE_CAP_RV(rv);
+     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA3_512, ACVP_HMAC_MSGLEN, 0, 4096, 8);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA3_512, ACVP_PREREQ_SHA, value);
      CHECK_ENABLE_CAP_RV(rv);
@@ -756,7 +778,7 @@ static int enable_hmac(ACVP_CTX *ctx) {
 
  static int enable_kdf(ACVP_CTX *ctx) {
      ACVP_RESULT rv = ACVP_SUCCESS;
-     int flags = 0;
+     int flags = 0, i = 0;
 
      rv = acvp_cap_kdf_tls12_enable(ctx, &app_kdf_tls12_handler);
      CHECK_ENABLE_CAP_RV(rv);
@@ -1028,6 +1050,36 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_RUNNING_MODE, ACVP_KDF_TLS13_RUN_MODE_PSK_DHE);
      CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_kdf135_snmp_enable(ctx, &app_kdf135_snmp_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_snmp_set_domain(ctx, ACVP_KDF135_SNMP_PASS_LEN, 64, 8192, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_snmp_set_engid(ctx, ACVP_KDF135_SNMP, ENGID1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_snmp_set_engid(ctx, ACVP_KDF135_SNMP, ENGID2);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_kdf135_srtp_enable(ctx, &app_kdf135_srtp_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SRTP, ACVP_PREREQ_AES, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_SUPPORT_ZERO_KDR, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_SUPPORTS_48_BIT_SRTCP, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    for (i = 0; i <= 24; i++) {
+        rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_KDF_EXPONENT, i);
+        CHECK_ENABLE_CAP_RV(rv);
+    }
+    rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
 
  end:
 
@@ -2017,10 +2069,6 @@ static int enable_hmac(ACVP_CTX *ctx) {
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
      CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_224);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_256);
-     CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA3_224);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA3_256);
@@ -2068,10 +2116,6 @@ static int enable_hmac(ACVP_CTX *ctx) {
      rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA384);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_224);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_256);
      CHECK_ENABLE_CAP_RV(rv);
      rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA3_224);
      CHECK_ENABLE_CAP_RV(rv);

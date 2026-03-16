@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Cisco Systems, Inc.
+ * Copyright (c) 2026, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -138,18 +138,18 @@
 #define ACVP_REV_HMACDRBG            ACVP_REV_STR_1_0
 #define ACVP_REV_CTRDRBG             ACVP_REV_STR_1_0
 
-// HMAC
-#define ACVP_REV_HMAC_SHA1           ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA2_224       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA2_256       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA2_384       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA2_512       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA2_512_224   ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA2_512_256   ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA3_224       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA3_256       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA3_384       ACVP_REV_STR_1_0
-#define ACVP_REV_HMAC_SHA3_512       ACVP_REV_STR_1_0
+/* HMAC */
+#define ACVP_REV_HMAC_SHA1           ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA2_224       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA2_256       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA2_384       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA2_512       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA2_512_224   ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA2_512_256   ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA3_224       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA3_256       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA3_384       ACVP_REV_STR_2_0
+#define ACVP_REV_HMAC_SHA3_512       ACVP_REV_STR_2_0
 
 // CMAC
 #define ACVP_REV_CMAC_AES            ACVP_REV_STR_1_0
@@ -801,7 +801,6 @@
  * END TLS 1.3 KDF
  */
 
-#define ACVP_HMAC_MSG_MAX       1024
 
 #define ACVP_HMAC_MAC_BIT_MIN 32  //!< 32 bits
 #define ACVP_HMAC_MAC_BIT_MAX 512 //!< 512 bits
@@ -812,6 +811,10 @@
 #define ACVP_HMAC_KEY_BIT_MAX 524288 //!< 524288 bits
 #define ACVP_HMAC_KEY_BYTE_MAX (ACVP_HMAC_KEY_BIT_MAX >> 3)
 #define ACVP_HMAC_KEY_STR_MAX (ACVP_HMAC_KEY_BIT_MAX >> 2)
+
+#define ACVP_HMAC_MSG_BIT_MAX 4096
+#define ACVP_HMAC_MSG_BYTE_MAX (ACVP_HMAC_MSG_BIT_MAX >> 3)
+#define ACVP_HMAC_MSG_STR_MAX (ACVP_HMAC_MSG_BIT_MAX >> 2)
 
 #define ACVP_CMAC_MSGLEN_MAX_STR       131072    //!< 524288 bits, 131072 characters
 #define ACVP_CMAC_MSGLEN_MAX       524288
@@ -1292,7 +1295,7 @@ typedef struct acvp_hash_capability {
 } ACVP_HASH_CAP;
 
 typedef struct acvp_kdf135_snmp_capability {
-    ACVP_SL_LIST *pass_lens;
+    ACVP_JSON_DOMAIN_OBJ pass_lens;
     ACVP_NAME_LIST *eng_ids;
 } ACVP_KDF135_SNMP_CAP;
 
@@ -1324,7 +1327,8 @@ typedef struct acvp_kdf135_ssh_capability {
 
 typedef struct acvp_kdf135_srtp_capability {
     int supports_zero_kdr;
-    int kdr_exp[ACVP_KDF135_SRTP_KDR_MAX];
+    int supports_48bit_srtcp_index;
+    int kdr_exp[ACVP_KDF135_SRTP_KDR_MAX + 1]; // 0-24
     ACVP_SL_LIST *aes_keylens;
 } ACVP_KDF135_SRTP_CAP;
 
@@ -1383,6 +1387,8 @@ typedef struct acvp_kdf_tls13_capability {
 typedef struct acvp_hmac_capability {
     ACVP_JSON_DOMAIN_OBJ key_len; // 8-524288
     ACVP_JSON_DOMAIN_OBJ mac_len; // 32-512
+    ACVP_JSON_DOMAIN_OBJ msg_len; //0-4096; revision 2 only
+    ACVP_REVISION revision; //For indicating an alternative revision; empty by default
 } ACVP_HMAC_CAP;
 
 typedef struct acvp_cmac_capability {
@@ -2226,7 +2232,7 @@ ACVP_SLH_DSA_CAP_GROUP *acvp_locate_slh_dsa_cap_group(ACVP_SLH_DSA_CAP *cap, uns
 
 const char *acvp_lookup_rsa_sig_type_str(ACVP_RSA_SIG_TYPE type);
 const char *acvp_lookup_rsa_mask_func_str(ACVP_RSA_MASK_FUNCTION func);
-const char *acvp_lookup_rsa_randpq_name(int value);
+const char *acvp_lookup_rsa_randpq_name(int value, ACVP_REVISION revision);
 ACVP_RSA_PUB_EXP_MODE acvp_lookup_rsa_pub_exp_mode(const char *str);
 
 int acvp_lookup_rsa_randpq_index(const char *value);
@@ -2242,7 +2248,8 @@ ACVP_RESULT acvp_tc_json_get_array(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Objec
 
 ACVP_RESULT is_valid_tf_param(int value);
 
-const char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type);
+const char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type, ACVP_REVISION revision);
+void acvp_normalize_rsa_keygen_params(ACVP_RSA_KEYGEN_CAP *cap);
 ACVP_RESULT is_valid_prime_test(const char *value);
 
 ACVP_RESULT is_valid_rsa_mod(int value);

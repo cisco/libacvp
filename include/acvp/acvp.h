@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2025, Cisco Systems, Inc.
+ * Copyright (c) 2026, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License"). You may not use
  * this file except in compliance with the License. You can obtain a copy
@@ -28,7 +28,7 @@ extern "C"
 
 #define ACVP_LIBRARY_VERSION_MAJOR 2
 #define ACVP_LIBRARY_VERSION_MINOR 3
-#define ACVP_LIBRARY_VERSION_PATCH 0
+#define ACVP_LIBRARY_VERSION_PATCH 1
 
 #define xstr_2(x) #x
 #define xstr(x) xstr_2(x)
@@ -527,9 +527,11 @@ typedef enum acvp_conformance_t {
 typedef enum acvp_revision_t {
     ACVP_REVISION_DEFAULT = 0,
     ACVP_REVISION_1_0,
+    ACVP_REVISION_2_0,
     ACVP_REVISION_SP800_56CR1,
     ACVP_REVISION_SP800_56AR3,
     ACVP_REVISION_FIPS186_4,
+    ACVP_REVISION_186_BOTH,  /* Special value to indicate both 186-4 and 186-5 should be registered */
     ACVP_REVISION_MAX
 } ACVP_REVISION;
 
@@ -590,7 +592,8 @@ typedef enum acvp_kdf135_ikev1_auth_method {
 typedef enum acvp_kdf135_srtp_param {
     ACVP_SRTP_AES_KEYLEN = 1,
     ACVP_SRTP_SUPPORT_ZERO_KDR,
-    ACVP_SRTP_KDF_EXPONENT
+    ACVP_SRTP_KDF_EXPONENT,
+    ACVP_SRTP_SUPPORTS_48_BIT_SRTCP
 } ACVP_KDF135_SRTP_PARAM;
 
 #define ACVP_KDF108_KEYOUT_MAX 64     //!< SHA2-512
@@ -1175,7 +1178,9 @@ typedef enum acvp_eddsa_testtype {
 typedef enum acvp_hmac_parameter {
     ACVP_HMAC_KEYLEN = 1,
     ACVP_HMAC_KEYBLOCK,
-    ACVP_HMAC_MACLEN
+    ACVP_HMAC_MACLEN,
+    ACVP_HMAC_REVISION,
+    ACVP_HMAC_MSGLEN
 } ACVP_HMAC_PARM;
 
 /** @enum ACVP_CMAC_PARM */
@@ -4476,7 +4481,7 @@ ACVP_RESULT acvp_cap_kdf135_x963_set_parm(ACVP_CTX *ctx,
 /**
  * @brief acvp_cap_kdf135_snmp_set_parm() allows an application to specify operational
  *        parameters to be used during a test session with the ACVP server.  This function should
- *        be called after acvp_enable_kdf135_srtp_cap() to specify the parameters for the
+ *        be called after acvp_cap_kdf135_snmp_enable() to specify the parameters for the
  *        corresponding KDF.
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
@@ -4490,6 +4495,26 @@ ACVP_RESULT acvp_cap_kdf135_snmp_set_parm(ACVP_CTX *ctx,
                                           ACVP_CIPHER kcap,
                                           ACVP_KDF135_SNMP_PARAM param,
                                           int value);
+
+/**
+ * @brief acvp_cap_kdf135_snmp_set_parm() allows an application to specify operational
+ *        parameters to be used during a test session with the ACVP server.  This function should
+ *        be called after acvp_cap_kdf135_snmp_enable() to specify the parameters for the
+ *        corresponding KDF.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param param ACVP_KDF135_SNMP_PARAM enum value specifying parameter
+ * @param min integer minimum for domain parameter
+ * @param max integer maximum for domain parameter
+ * @param increment integer increment for domain parameter
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kdf135_snmp_set_domain(ACVP_CTX *ctx,
+                                            ACVP_KDF135_SNMP_PARAM param,
+                                            int min,
+                                            int max,
+                                            int increment);
 
 /**
  * @brief acvp_enable_kdf135_snmp_engid_parm() allows an application to specify a custom engid to

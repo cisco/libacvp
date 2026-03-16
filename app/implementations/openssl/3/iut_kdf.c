@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Cisco Systems, Inc.
+ * Copyright (c) 2026, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -27,6 +27,10 @@
 #define TLS12_BUF_MAX 4096 // match library
 #define TLS12_SEED_BUF_MAX (TLS12_BUF_MAX + TLS_EXT_MASTER_SECRET_CONST_SIZE)
 
+/* these values are fixed as per srtp spec */
+#define SRTP_SALT_BYTE_LEN 14
+#define SRTP_INDEX_BYTE_LEN 6
+#define SRTP_AUTH_KEY_LEN 20
 
 // For simplicity, define as non-const; the OSSL_PARAM functions don't use const
 static char ssh_kdf_a[] = "A";
@@ -1051,6 +1055,163 @@ err:
     if (client_hello_hash) free(client_hello_hash);
     if (client_hash) free(client_hash);
     if (md) free(md);
+    if (kdf) EVP_KDF_free(kdf);
+    if (kctx) EVP_KDF_CTX_free(kctx);
+    return rv;
+}
+
+int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
+    ACVP_KDF135_SNMP_TC *tc;
+    int rv = 1;
+    OSSL_PARAM_BLD *pbld = NULL;
+    OSSL_PARAM *params = NULL;
+    EVP_KDF *kdf = NULL;
+    EVP_KDF_CTX *kctx = NULL;
+    char digest[] = "SHA-1";
+
+    tc = test_case->tc.kdf135_snmp;
+
+    if (!tc->p_len || !tc->engine_id || !tc->password) {
+        printf("Missing test case arguments in kdf135-snmp\n");
+        return rv;
+    }
+
+    kdf = EVP_KDF_fetch(NULL, OSSL_KDF_NAME_SNMPKDF, NULL);
+    kctx = EVP_KDF_CTX_new(kdf);
+    if (!kctx) {
+        printf("Error creating KDF CTX in kdf135-snmp\n");
+        goto err;
+    }
+
+    pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in kdf135-snmp");
+        goto err;
+    }
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SNMPKDF_EID, tc->engine_id, tc->engine_id_len);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_PASSWORD, tc->password, tc->p_len);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, digest, 0);
+    params = OSSL_PARAM_BLD_to_param(pbld);
+    if (!params) {
+        printf("Error generating params in kdf135-snmp\n");
+        goto err;
+    }
+
+    if (EVP_KDF_derive(kctx, tc->s_key, tc->skey_len, params) != 1) {
+        printf("Failure deriving key material in kdf135-snmp\n");
+        goto err;
+    }
+
+    rv = 0;
+err:
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (params) OSSL_PARAM_free(params);
+    if (kdf) EVP_KDF_free(kdf);
+    if (kctx) EVP_KDF_CTX_free(kctx);
+    return rv;
+}
+
+int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case) {
+    ACVP_KDF135_SRTP_TC *tc;
+    int rv = 1, label = 0;
+    const char *cipher;
+    char *cipher_str;
+    EVP_KDF *kdf = NULL;
+    EVP_KDF_CTX *kctx = NULL;
+    OSSL_PARAM params[10] = { 0 };
+    uint32_t kdr_value = 0;
+
+    tc = test_case->tc.kdf135_srtp;
+
+    if (!tc->kdr || !tc->master_key || !tc->master_salt || !tc->idx || !tc->srtcp_idx) {
+        printf("Missing string attribute in kdf135-srtp test case\n");
+        return 1;
+    }
+
+    switch (tc->aes_keylen) {
+    case 128:
+        cipher = "AES-128-CTR";
+        break;
+    case 192:
+        cipher = "AES-192-CTR";
+        break;
+    case 256:
+        cipher = "AES-256-CTR";
+        break;
+    default:
+        printf("Unsupported aes keylen in kdf135-srtp\n");
+        return 1;
+    }
+    cipher_str = remove_str_const(cipher);
+    if (!cipher_str) {
+        printf("Error generating cipher string in kdf135-srtp\n");
+        goto err;
+    }
+
+    kdf = EVP_KDF_fetch(NULL, "SRTPKDF", NULL);
+    kctx = EVP_KDF_CTX_new(kdf);
+    if (!kctx) {
+        printf("Error creating KDF CTX in kdf135-srtp\n");
+        goto err;
+    }
+
+    // Convert binary kdr data to uint32. Shifts the digits left to form a 32 bit numeric value.
+    for (int i = 0; i < tc->kdr_len && i < 4; i++) {
+        kdr_value = (kdr_value << 8) | (unsigned char)tc->kdr[i];
+    }
+
+    params[0] = OSSL_PARAM_construct_utf8_string(OSSL_KDF_PARAM_CIPHER, cipher_str, 0);
+    params[1] = OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_KEY, tc->master_key, tc->aes_keylen / 8);
+    params[2] = OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_SALT, tc->master_salt, SRTP_SALT_BYTE_LEN);
+    params[3] = OSSL_PARAM_construct_uint32(OSSL_KDF_PARAM_SRTPKDF_KDR, &kdr_value);
+    params[4] = OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_SRTPKDF_INDEX, tc->idx, SRTP_INDEX_BYTE_LEN);
+    params[5] = OSSL_PARAM_construct_int(OSSL_KDF_PARAM_LABEL, &label);
+    params[6] = OSSL_PARAM_construct_end();
+
+    if (EVP_KDF_derive(kctx, tc->srtp_ke, tc->aes_keylen / 8, params) != 1) {
+        printf("Failure deriving in kdf135-srtp (1)\n");
+        goto err;
+    }
+
+    label = 1;
+    params[5] = OSSL_PARAM_construct_int(OSSL_KDF_PARAM_LABEL, &label);
+    if (EVP_KDF_derive(kctx, tc->srtp_ka, SRTP_AUTH_KEY_LEN, params) != 1) {
+        printf("Failure deriving in kdf135-srtp (2)\n");
+        goto err;
+    }
+
+    label = 2;
+    params[5] = OSSL_PARAM_construct_int(OSSL_KDF_PARAM_LABEL, &label);
+    if (EVP_KDF_derive(kctx, tc->srtp_ks, SRTP_SALT_BYTE_LEN, params) != 1) {
+        printf("Failure deriving in kdf135-srtp (3)\n");
+        goto err;
+    }
+
+    params[4] = OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_SRTPKDF_INDEX, tc->srtcp_idx, SRTP_INDEX_BYTE_LEN);
+    label = 3;
+    params[5] = OSSL_PARAM_construct_int(OSSL_KDF_PARAM_LABEL, &label);
+    if (EVP_KDF_derive(kctx, tc->srtcp_ke, tc->aes_keylen / 8, params) != 1) {
+        printf("Failure deriving in kdf135-srtp (4)\n");
+        goto err;
+    }
+
+    label = 4;
+    params[5] = OSSL_PARAM_construct_int(OSSL_KDF_PARAM_LABEL, &label);
+    if (EVP_KDF_derive(kctx, tc->srtcp_ka, SRTP_AUTH_KEY_LEN, params) != 1) {
+        printf("Failure deriving in kdf135-srtp (5)\n");
+        goto err;
+    }
+
+    label = 5;
+    params[5] = OSSL_PARAM_construct_int(OSSL_KDF_PARAM_LABEL, &label);
+    if (EVP_KDF_derive(kctx, tc->srtcp_ks, SRTP_SALT_BYTE_LEN, params) != 1) {
+        printf("Failure deriving in kdf135-srtp (6)\n");
+        goto err;
+    }
+
+    rv = 0;
+err:
+    if (cipher_str) free(cipher_str);
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
     return rv;
