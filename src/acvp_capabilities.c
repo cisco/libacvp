@@ -61,6 +61,18 @@ static ACVP_DSA_CAP *allocate_dsa_cap(void) {
     return cap;
 }
 
+static ACVP_ASCON_CAP *allocate_ascon_cap(void) {
+    ACVP_ASCON_CAP *cap = NULL;
+
+    // Allocate the capability object
+    cap = calloc(1, sizeof(ACVP_ASCON_CAP));
+    if (!cap)
+        return NULL;
+
+    // Allocate the array of ascon_mode
+    return cap;
+}
+
 static ACVP_KAS_ECC_CAP *allocate_kas_ecc_cap(void) {
     ACVP_KAS_ECC_CAP *cap = NULL;
     ACVP_KAS_ECC_CAP_MODE *modes = NULL;
@@ -214,6 +226,32 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         }
         break;
 
+    case ACVP_ASCON_TYPE:
+        cap_entry->cap.ascon_cap = allocate_ascon_cap();
+        if (!cap_entry->cap.ascon_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+
+        switch (cipher) {
+        case ACVP_ASCON_AEAD128:
+            cap_entry->cap.ascon_cap->cipher = ACVP_ASCON_AEAD128;
+            break;
+        case ACVP_ASCON_CXOF128:
+            cap_entry->cap.ascon_cap->cipher = ACVP_ASCON_CXOF128;
+            break;
+        case ACVP_ASCON_HASH256:
+            cap_entry->cap.ascon_cap->cipher = ACVP_ASCON_HASH256;
+            break;
+        case ACVP_ASCON_XOF128:
+            cap_entry->cap.ascon_cap->cipher = ACVP_ASCON_XOF128;
+            break;
+        default:
+            ACVP_LOG_ERR("Invalid cipher type for Ascon [found: %d]", cipher);
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+        break;
     case ACVP_ECDSA_KEYGEN_TYPE:
         if (cipher != ACVP_ECDSA_KEYGEN) {
             rv = ACVP_INVALID_ARG;
@@ -1753,6 +1791,11 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
             return ACVP_SUCCESS;
         }
         break;
+    case ACVP_ASCON_AEAD128:
+    case ACVP_ASCON_CXOF128:
+    case ACVP_ASCON_HASH256:
+    case ACVP_ASCON_XOF128:
+        return ACVP_SUCCESS;
     case ACVP_RSA_KEYGEN:
     case ACVP_RSA_SIGGEN:
     case ACVP_RSA_SIGVER:
@@ -5669,7 +5712,6 @@ ACVP_RESULT acvp_cap_eddsa_enable(ACVP_CTX *ctx,
 
     return result;
 }
-
 // The user should call this after invoking acvp_enable_dsa_cap().
 ACVP_RESULT acvp_cap_dsa_set_parm(ACVP_CTX *ctx,
                                   ACVP_CIPHER cipher,
@@ -5726,6 +5768,259 @@ ACVP_RESULT acvp_cap_dsa_set_parm(ACVP_CTX *ctx,
     }
 
     return result;
+}
+
+ACVP_RESULT acvp_cap_ascon_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher,
+                                     ACVP_ASCON_PARM param, int value) {
+    if (cipher != ACVP_ASCON_AEAD128) {
+        return ACVP_INVALID_ARG;
+    }
+
+    // Locate this cipher in the caps array
+    ACVP_CAPS_LIST *cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+    ACVP_ASCON_CAP *ascon_cap = cap_list->cap.ascon_cap;
+    if (ascon_cap->cipher != ACVP_ASCON_AEAD128) {
+        ACVP_LOG_ERR("Only Ascon AEAD128 mode can have values set (expected: "
+                     "%d, found: %d)",
+                     ACVP_ASCON_AEAD128, ascon_cap->cipher);
+        return ACVP_INVALID_ARG;
+    }
+    ACVP_ASCON_DIRECTION dir = 0;
+
+    switch (param) {
+    case ACVP_ASCON_PARM_NONCEMASK:
+        ascon_cap->nonce_masking = (bool)value;
+        break;
+    case ACVP_ASCON_PARM_DIR:
+        dir = (ACVP_ASCON_DIRECTION)value;
+
+        if (dir != ACVP_ASCON_DIR_ENCRYPT && dir != ACVP_ASCON_DIR_DECRYPT && dir != ACVP_ASCON_DIR_BOTH) {
+            ACVP_LOG_ERR("Bad direction value");
+            return ACVP_INVALID_ARG;
+        }
+
+        ascon_cap->direction = dir;
+
+        break;
+    case ACVP_ASCON_PARM_ADLEN:
+        if (value > 0 && value < ACVP_ASCON_MSG_BYTE_MAX) {
+            return ACVP_INVALID_ARG;
+        }
+
+        if (acvp_append_sl_list(&ascon_cap->ad_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding ASCON associated data length to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_ASCON_PARM_TAGLEN:
+        if (value > 0 && value < ACVP_ASCON_TAG_BYTE_MAX) {
+            return ACVP_INVALID_ARG;
+        }
+        if (acvp_append_sl_list(&ascon_cap->tag_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding ASCON tag length to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_ASCON_PARM_PAYLEN:
+        if (value > 0 && value < ACVP_ASCON_MSG_BYTE_MAX) {
+            return ACVP_INVALID_ARG;
+        }
+
+        if (acvp_append_sl_list(&ascon_cap->payload_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding ASCON payload length to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_ASCON_PARM_MSGLEN:
+        if (value > 0 && value < ACVP_ASCON_MSG_BYTE_MAX) {
+            return ACVP_INVALID_ARG;
+        }
+
+        if (acvp_append_sl_list(&ascon_cap->msg_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding ASCON message length to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_ASCON_PARM_OUTLEN:
+        if (value > 0 && value < ACVP_ASCON_MSG_BYTE_MAX) {
+            return ACVP_INVALID_ARG;
+        }
+
+        if (acvp_append_sl_list(&ascon_cap->out_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding ASCON output length to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_ASCON_PARM_CUSSTRLEN:
+        if (value > 0 && value < ACVP_ASCON_CS_BYTE_MAX) {
+            return ACVP_INVALID_ARG;
+        }
+
+        if (acvp_append_sl_list(&ascon_cap->custom_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding ASCON customization string length to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    default:
+        ACVP_LOG_ERR("Bad parameter name.");
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_cap_ascon_aead128_set_domain(ACVP_ASCON_CAP *cap,
+                                                     ACVP_ASCON_PARM param,
+                                                     int min, int max,
+                                                     int increment) {
+    switch (param) {
+    case ACVP_ASCON_PARM_PAYLEN:
+        if (min > 0 && min < ACVP_ASCON_MSG_BYTE_MAX
+                && max > min && max < ACVP_ASCON_MSG_BYTE_MAX
+                && increment < max - min) {
+            return ACVP_INVALID_ARG;
+        }
+
+        cap->payload_len.min = min;
+        cap->payload_len.max = max;
+        cap->payload_len.increment = increment;
+        break;
+    case ACVP_ASCON_PARM_ADLEN:
+        if (min > 0 && min < ACVP_ASCON_MSG_BYTE_MAX
+                && max > min && max < ACVP_ASCON_MSG_BYTE_MAX
+                && increment < max - min) {
+            return ACVP_INVALID_ARG;
+        }
+
+        cap->ad_len.min = min;
+        cap->ad_len.max = max;
+        cap->ad_len.increment = increment;
+        break;
+    case ACVP_ASCON_PARM_TAGLEN:
+        if (min > 0 && min < ACVP_ASCON_TAG_BYTE_MAX
+                && max > min && max < ACVP_ASCON_TAG_BYTE_MAX
+                && increment < max - min) {
+            return ACVP_INVALID_ARG;
+        }
+
+        cap->tag_len.min = min;
+        cap->tag_len.max = max;
+        cap->tag_len.increment = increment;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT
+acvp_cap_ascon_set_domain(ACVP_CTX *ctx, ACVP_CIPHER cipher,
+                          ACVP_ASCON_PARM param, int min,
+                          int max, int increment) {
+    // Locate this cipher in the caps array
+    ACVP_CAPS_LIST *cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+    ACVP_ASCON_CAP *ascon_cap = cap_list->cap.ascon_cap;
+
+    switch (cipher) {
+    case ACVP_ASCON_AEAD128:
+        return acvp_cap_ascon_aead128_set_domain(ascon_cap, param, min, max,
+                                                 increment);
+    case ACVP_ASCON_CXOF128:
+        switch (param) {
+        case ACVP_ASCON_PARM_CUSSTRLEN:
+            if (min > 0 && min < ACVP_ASCON_CS_BYTE_MAX
+                    && max > min && max < ACVP_ASCON_CS_BYTE_MAX
+                    && increment < max - min) {
+                return ACVP_INVALID_ARG;
+            }
+
+            ascon_cap->custom_len.min = min;
+            ascon_cap->custom_len.max = max;
+            ascon_cap->custom_len.increment = increment;
+            break;
+        case ACVP_ASCON_PARM_OUTLEN:
+            if (min > 0 && min < ACVP_ASCON_MSG_BYTE_MAX
+                    && max > min && max < ACVP_ASCON_MSG_BYTE_MAX
+                    && increment < max - min) {
+                return ACVP_INVALID_ARG;
+            }
+
+            ascon_cap->out_len.min = min;
+            ascon_cap->out_len.max = max;
+            ascon_cap->out_len.increment = increment;
+            break;
+        case ACVP_ASCON_PARM_MSGLEN:
+            if (min > 0 && min < ACVP_ASCON_MSG_BYTE_MAX
+                    && max > min && max < ACVP_ASCON_MSG_BYTE_MAX
+                    && increment < max - min) {
+                return ACVP_INVALID_ARG;
+            }
+
+            ascon_cap->msg_len.min = min;
+            ascon_cap->msg_len.max = max;
+            ascon_cap->msg_len.increment = increment;
+            break;
+        default:
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    case ACVP_ASCON_XOF128:
+        switch (param) {
+        case ACVP_ASCON_PARM_OUTLEN:
+            if (min > 0 && min < ACVP_ASCON_MSG_BYTE_MAX
+                    && max > min && max < ACVP_ASCON_MSG_BYTE_MAX
+                    && increment < max - min) {
+                return ACVP_INVALID_ARG;
+            }
+
+            ascon_cap->out_len.min = min;
+            ascon_cap->out_len.max = max;
+            ascon_cap->out_len.increment = increment;
+            break;
+        case ACVP_ASCON_PARM_MSGLEN:
+            if (min > 0 && min < ACVP_ASCON_MSG_BYTE_MAX
+                    && max > min && max < ACVP_ASCON_MSG_BYTE_MAX
+                    && increment < max - min) {
+                return ACVP_INVALID_ARG;
+            }
+
+            ascon_cap->msg_len.min = min;
+            ascon_cap->msg_len.max = max;
+            ascon_cap->msg_len.increment = increment;
+            break;
+        default:
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    case ACVP_ASCON_HASH256:
+        if (param != ACVP_ASCON_PARM_MSGLEN) {
+            return ACVP_INVALID_ARG;
+        } else {
+            if (min > 0 && min < ACVP_ASCON_MSG_BYTE_MAX
+                    && max > min && max < ACVP_ASCON_MSG_BYTE_MAX
+                    && increment < max - min) {
+                return ACVP_INVALID_ARG;
+            }
+
+            ascon_cap->msg_len.min = min;
+            ascon_cap->msg_len.max = max;
+            ascon_cap->msg_len.increment = increment;
+        }
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
 }
 
 /*
@@ -6503,6 +6798,31 @@ ACVP_RESULT acvp_cap_dsa_enable(ACVP_CTX *ctx,
     }
 
     result = acvp_cap_list_append(ctx, ACVP_DSA_TYPE, cipher, crypto_handler);
+
+    if (result == ACVP_DUP_CIPHER) {
+        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
+    } else if (result == ACVP_MALLOC_FAIL) {
+        ACVP_LOG_ERR("Failed to allocate capability object");
+    }
+
+    return result;
+}
+
+ACVP_RESULT
+acvp_cap_ascon_enable(ACVP_CTX *ctx, ACVP_CIPHER cipher,
+                      int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_RESULT result = ACVP_SUCCESS;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+        return ACVP_INVALID_ARG;
+    }
+
+    result = acvp_cap_list_append(ctx, ACVP_ASCON_TYPE, cipher, crypto_handler);
 
     if (result == ACVP_DUP_CIPHER) {
         ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");

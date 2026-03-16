@@ -164,6 +164,9 @@
 // DSA
 #define ACVP_REV_DSA                 ACVP_REV_STR_1_0
 
+// ASCON
+#define ACVP_REV_ASCON               "SP800-232"
+
 // RSA
 #define ACVP_REV_RSA                 ACVP_REV_STR_FIPS186_5
 #define ACVP_REV_RSA_DECPRIM         ACVP_REV_STR_SP800_56BR2
@@ -306,6 +309,12 @@
 #define ACVP_ALG_KMAC_256            "KMAC-256"
 #define ACVP_ALG_CSHAKE_128          "cSHAKE-128"
 #define ACVP_ALG_CSHAKE_256          "cSHAKE-256"
+
+#define ACVP_ALG_ASCON               "ASCON"
+#define ACVP_ALG_ASCON_AEAD128       "AEAD128"
+#define ACVP_ALG_ASCON_CXOF128       "CXOF128"
+#define ACVP_ALG_ASCON_HASH256       "Hash256"
+#define ACVP_ALG_ASCON_XOF128        "XOF128"
 
 #define ACVP_ALG_DSA                 "DSA"
 #define ACVP_ALG_DSA_PQGGEN          "pqgGen"
@@ -861,6 +870,23 @@
 #define ACVP_DSA_SEED_MAX_BYTES (ACVP_DSA_SEED_MAX / 2)
 #define ACVP_DSA_MAX_STRING     3072     //!< 3072 bytes
 
+#define ACVP_ASCON_MSG_BIT_MAX     65536
+#define ACVP_ASCON_MSG_BYTE_MAX    (ACVP_ASCON_MSG_BIT_MAX >> 3)
+#define ACVP_ASCON_MSG_STRING_MAX  (ACVP_ASCON_MSG_BIT_MAX >> 2)
+#define ACVP_ASCON_TAG_BIT_MAX     128
+#define ACVP_ASCON_TAG_BYTE_MAX    (ACVP_ASCON_TAG_BIT_MAX >> 3)
+#define ACVP_ASCON_TAG_STRING_MAX  (ACVP_ASCON_TAG_BIT_MAX >> 2)
+#define ACVP_ASCON_KEY_BIT_MAX     128
+#define ACVP_ASCON_KEY_BYTE_MAX    (ACVP_ASCON_TAG_BIT_MAX >> 3)
+#define ACVP_ASCON_NONCE_BIT_MAX   128
+#define ACVP_ASCON_NONCE_BYTE_MAX  (ACVP_ASCON_TAG_BIT_MAX >> 3)
+#define ACVP_ASCON_HASH_BIT_MAX    256
+#define ACVP_ASCON_HASH_BYTE_MAX   (ACVP_ASCON_HASH_BIT_MAX >> 3)
+#define ACVP_ASCON_HASH_STRING_MAX (ACVP_ASCON_HASH_BIT_MAX >> 2)
+#define ACVP_ASCON_CS_BIT_MAX      2048
+#define ACVP_ASCON_CS_BYTE_MAX     (ACVP_ASCON_CS_BIT_MAX >> 3)
+#define ACVP_ASCON_CS_STRING_MAX   (ACVP_ASCON_CS_BIT_MAX >> 2)
+
 #define ACVP_ECDSA_EXP_LEN_MAX       512
 #define ACVP_ECDSA_MSGLEN_MAX 8192
 
@@ -1081,6 +1107,7 @@ struct acvp_alg_handler_t {
         ACVP_SUB_ML_DSA   ml_dsa;
         ACVP_SUB_ML_KEM   ml_kem;
         ACVP_SUB_SLH_DSA  slh_dsa;
+        ACVP_SUB_ASCON ascon;
     } alg;
 };
 
@@ -1182,7 +1209,12 @@ typedef enum acvp_capability_type {
     ACVP_ML_KEM_XCAP_TYPE,
     ACVP_SLH_DSA_KEYGEN_TYPE,
     ACVP_SLH_DSA_SIGGEN_TYPE,
-    ACVP_SLH_DSA_SIGVER_TYPE
+    ACVP_SLH_DSA_SIGVER_TYPE,
+    ACVP_ASCON_TYPE,
+    ACVP_ASCON_AEAD128_TYPE,
+    ACVP_ASCON_CXOF128_TYPE,
+    ACVP_ASCON_HASH256_TYPE,
+    ACVP_ASCON_XOF128_TYPE,
 } ACVP_CAP_TYPE;
 
 /*
@@ -1554,6 +1586,19 @@ typedef struct acvp_dsa_capability {
     ACVP_DSA_CAP_MODE *dsa_cap_mode;
 } ACVP_DSA_CAP;
 
+#define ACVP_ASCON_MAX_MODES 4
+typedef struct acvp_ascon_capability {
+    ACVP_CIPHER cipher;
+    ACVP_ASCON_DIRECTION direction;
+    ACVP_JSON_DOMAIN_OBJ payload_len;
+    ACVP_JSON_DOMAIN_OBJ ad_len;
+    ACVP_JSON_DOMAIN_OBJ tag_len;
+    bool nonce_masking;
+    ACVP_JSON_DOMAIN_OBJ msg_len;
+    ACVP_JSON_DOMAIN_OBJ out_len;
+    ACVP_JSON_DOMAIN_OBJ custom_len;
+} ACVP_ASCON_CAP;
+
 typedef struct acvp_kas_ecc_mac {
     int alg;
     int curve;
@@ -1792,6 +1837,7 @@ typedef struct acvp_caps_list_t {
         ACVP_HASH_CAP *hash_cap;
         ACVP_DRBG_CAP *drbg_cap;
         ACVP_DSA_CAP *dsa_cap;
+        ACVP_ASCON_CAP *ascon_cap;
         ACVP_HMAC_CAP *hmac_cap;
         ACVP_CMAC_CAP *cmac_cap;
         ACVP_KMAC_CAP *kmac_cap;
@@ -2154,6 +2200,8 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_ascon_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
