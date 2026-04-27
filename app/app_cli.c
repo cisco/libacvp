@@ -164,7 +164,7 @@ static void print_usage(int code) {
     printf("      -s <file>\n");
     printf("\n");
     printf("To request disabling FIPS for this run (may not apply to all supported modules):\n");
-    printf("      -disable_fips\n");
+    printf("      --disable_fips\n");
     printf("\n");
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
