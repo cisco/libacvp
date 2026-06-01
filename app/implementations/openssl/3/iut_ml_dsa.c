@@ -172,6 +172,11 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             msg_ptr = tc->mu;
             msg_len = (size_t)tc->mu_len;
             OSSL_PARAM_BLD_push_int(pbld, OSSL_SIGNATURE_PARAM_MU, 1);
+        } else if (tc->sig_interface == ACVP_SIG_INTERFACE_INTERNAL) {
+            // M' is passed as-is; disable pure encoding so OpenSSL computes mu = SHAKE-256(tr || M', 64)
+            msg_ptr = tc->msg;
+            msg_len = (size_t)tc->msg_len;
+            OSSL_PARAM_BLD_push_int(pbld, OSSL_SIGNATURE_PARAM_MESSAGE_ENCODING, 0);
         } else {
             msg_ptr = tc->msg;
             msg_len = (size_t)tc->msg_len;
@@ -257,6 +262,11 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             msg_ptr = tc->mu;
             msg_len = (size_t)tc->mu_len;
             OSSL_PARAM_BLD_push_int(pbld, OSSL_SIGNATURE_PARAM_MU, 1);
+        } else if (tc->sig_interface == ACVP_SIG_INTERFACE_INTERNAL) {
+            // M' is passed as-is; disable pure encoding so OpenSSL computes mu = SHAKE-256(tr || M', 64)
+            msg_ptr = tc->msg;
+            msg_len = (size_t)tc->msg_len;
+            OSSL_PARAM_BLD_push_int(pbld, OSSL_SIGNATURE_PARAM_MESSAGE_ENCODING, 0);
         } else {
             msg_ptr = tc->msg;
             msg_len = (size_t)tc->msg_len;
