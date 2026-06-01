@@ -2467,7 +2467,7 @@ static int enable_ml_dsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_PREHASH, ACVP_SIG_PREHASH_NO);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_MU, ACVP_ML_DSA_MU_EXTERNAL);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_MU, ACVP_ML_DSA_MU_BOTH);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_44);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2486,7 +2486,7 @@ static int enable_ml_dsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_PREHASH, ACVP_SIG_PREHASH_NO);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_MU, ACVP_ML_DSA_MU_EXTERNAL);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_MU, ACVP_ML_DSA_MU_BOTH);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_44);
     CHECK_ENABLE_CAP_RV(rv);
