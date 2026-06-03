@@ -557,7 +557,9 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                if (!is_deterministic) {
+            if (is_deterministic) {
+                    rnd_str = NULL;
+            } else {
                     rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "rnd", &rnd_str);
                     if (rv != ACVP_SUCCESS) {
                         goto err;
