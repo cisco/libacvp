@@ -26,6 +26,7 @@ tmp_sources += implementations/openssl/3/iut.c \
                implementations/openssl/3/iut_dsa.c \
                implementations/openssl/3/iut_ecdsa.c \
                implementations/openssl/3/iut_eddsa.c \
+               implementations/openssl/3/iut_xecdh.c \
                implementations/openssl/3/iut_hmac.c \
                implementations/openssl/3/iut_kas.c \
                implementations/openssl/3/iut_kdf.c \

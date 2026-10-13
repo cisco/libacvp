@@ -42,6 +42,7 @@ static int enable_kas_ifc(ACVP_CTX *ctx);
 static int enable_kda(ACVP_CTX *ctx);
 static int enable_kts_ifc(ACVP_CTX *ctx);
 static int enable_kdf(ACVP_CTX *ctx);
+static int enable_xecdh(ACVP_CTX *ctx);
 
 ACVP_RESULT register_capabilities_non_fips(ACVP_CTX *ctx, APP_CONFIG *cfg) {
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -63,6 +64,7 @@ ACVP_RESULT register_capabilities_non_fips(ACVP_CTX *ctx, APP_CONFIG *cfg) {
     if (cfg->dsa || cfg->testall) { if ((rv = enable_dsa(ctx))) goto end; }
     if (cfg->kas_ffc || cfg->testall) { if ((rv = enable_kas_ffc(ctx))) goto end; }
     if (cfg->safe_primes || cfg->testall) { if ((rv = enable_safe_primes(ctx))) goto end; }
+    if (cfg->xecdh || cfg->testall) { if ((rv = enable_xecdh(ctx))) goto end; }
 
 end:
     return rv;
@@ -2167,3 +2169,36 @@ end:
     return rv;
 }
 #endif
+
+static int enable_xecdh(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    rv = acvp_cap_xecdh_enable(ctx, ACVP_XECDH_KEYGEN, &app_xecdh_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_XECDH_KEYGEN, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_xecdh_set_parm(ctx, ACVP_XECDH_KEYGEN, ACVP_XECDH_CURVE, ACVP_X_CURVE_25519);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_xecdh_set_parm(ctx, ACVP_XECDH_KEYGEN, ACVP_XECDH_CURVE, ACVP_X_CURVE_448);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_xecdh_enable(ctx, ACVP_XECDH_KEYVER, &app_xecdh_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_XECDH_KEYVER, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_xecdh_set_parm(ctx, ACVP_XECDH_KEYVER, ACVP_XECDH_CURVE, ACVP_X_CURVE_25519);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_xecdh_set_parm(ctx, ACVP_XECDH_KEYVER, ACVP_XECDH_CURVE, ACVP_X_CURVE_448);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_xecdh_enable(ctx, ACVP_XECDH_SSC, &app_xecdh_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_XECDH_SSC, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_xecdh_set_parm(ctx, ACVP_XECDH_SSC, ACVP_XECDH_CURVE, ACVP_X_CURVE_25519);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_xecdh_set_parm(ctx, ACVP_XECDH_SSC, ACVP_XECDH_CURVE, ACVP_X_CURVE_448);
+    CHECK_ENABLE_CAP_RV(rv);
+end:
+    return rv;
+}
