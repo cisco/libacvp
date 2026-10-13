@@ -740,6 +740,40 @@ ACVP_ED_CURVE acvp_lookup_ed_curve(const char *name) {
     return 0;
 }
 
+#define X_CURVE_NAME_MAX 10
+static struct acvp_enum_string_pair x_curve_tbl[] = {
+    { ACVP_X_CURVE_25519, "Curve25519" },
+    { ACVP_X_CURVE_448, "Curve448" }
+};
+static int x_curve_tbl_length =
+    sizeof(x_curve_tbl) / sizeof(struct acvp_enum_string_pair);
+
+const char *acvp_lookup_x_curve_name(ACVP_X_CURVE id) {
+    int i = 0;
+
+    for (i = 0; i < x_curve_tbl_length; i++) {
+        if (id == x_curve_tbl[i].enum_value) {
+            return x_curve_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
+ACVP_X_CURVE acvp_lookup_x_curve(const char *name) {
+    int i = 0;
+
+    for (i = 0; i < x_curve_tbl_length; i++) {
+        int diff = 0;
+
+        strcmp_s(x_curve_tbl[i].string, X_CURVE_NAME_MAX, name, &diff);
+
+        if (!diff) {
+            return x_curve_tbl[i].enum_value;
+        }
+    }
+    return 0;
+}
+
 static struct acvp_function_info acvp_aux_function_tbl[] = {
     { ACVP_HASH_SHA1, ACVP_ALG_SHA1 },
     { ACVP_HASH_SHA224, ACVP_ALG_SHA224 },

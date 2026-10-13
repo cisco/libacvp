@@ -80,6 +80,7 @@
 #define ACVP_REV_STR_FIPS203 "FIPS203"
 #define ACVP_REV_STR_FIPS204 "FIPS204"
 #define ACVP_REV_STR_FIPS205 "FIPS205"
+#define ACVP_REV_STR_RFC7748 "RFC7748"
 
 // AES
 #define ACVP_REV_AES_ECB             ACVP_REV_STR_1_0
@@ -220,6 +221,9 @@
 
 // SLH-DSA
 #define ACVP_REV_SLH_DSA             ACVP_REV_STR_FIPS205
+
+// XECDH
+#define ACVP_REV_XECDH               ACVP_REV_STR_RFC7748
 
 /********************************************************
  * ******************************************************
@@ -374,6 +378,11 @@
 #define ACVP_ALG_SLH_DSA_KEYGEN "keyGen"
 #define ACVP_ALG_SLH_DSA_SIGGEN "sigGen"
 #define ACVP_ALG_SLH_DSA_SIGVER "sigVer"
+
+#define ACVP_ALG_XECDH "XECDH"
+#define ACVP_ALG_XECDH_KEYGEN "keyGen"
+#define ACVP_ALG_XECDH_KEYVER "keyVer"
+#define ACVP_ALG_XECDH_SSC "SSC"
 
 #define ACVP_ECDSA_EXTRA_BITS_STR "extra bits"
 #define ACVP_ECDSA_EXTRA_BITS_STR_LEN 10
@@ -868,6 +877,9 @@
 #define ACVP_EDDSA_POINT_LEN_MAX 8192 // arbitrary
 #define ACVP_EDDSA_CONTEXT_LEN_MAX 255
 
+#define ACVP_XECDH_KEY_BYTE_MAX 128 // arbitrary
+#define ACVP_XECDH_KEY_STR_MAX (ACVP_XECDH_KEY_BYTE_MAX * 2)
+
 #define ACVP_KAS_IFC_BIT_MAX 4096*4
 #define ACVP_KAS_IFC_BYTE_MAX (ACVP_KAS_IFC_BIT_MAX >> 3)
 #define ACVP_KAS_IFC_STR_MAX (ACVP_KAS_IFC_BIT_MAX >> 2)
@@ -1081,6 +1093,7 @@ struct acvp_alg_handler_t {
         ACVP_SUB_ML_DSA   ml_dsa;
         ACVP_SUB_ML_KEM   ml_kem;
         ACVP_SUB_SLH_DSA  slh_dsa;
+        ACVP_SUB_XECDH    xecdh;
     } alg;
 };
 
@@ -1182,7 +1195,10 @@ typedef enum acvp_capability_type {
     ACVP_ML_KEM_XCAP_TYPE,
     ACVP_SLH_DSA_KEYGEN_TYPE,
     ACVP_SLH_DSA_SIGGEN_TYPE,
-    ACVP_SLH_DSA_SIGVER_TYPE
+    ACVP_SLH_DSA_SIGVER_TYPE,
+    ACVP_XECDH_KEYGEN_TYPE,
+    ACVP_XECDH_KEYVER_TYPE,
+    ACVP_XECDH_SSC_TYPE
 } ACVP_CAP_TYPE;
 
 /*
@@ -1532,6 +1548,10 @@ typedef struct acvp_eddsa_capability_t {
     ACVP_JSON_DOMAIN_OBJ context_len;
 } ACVP_EDDSA_CAP;
 
+typedef struct acvp_xecdh_capability_t {
+    ACVP_PARAM_LIST *curves;
+} ACVP_XECDH_CAP;
+
 typedef struct acvp_dsa_attrs {
     unsigned int modulo;
     int sha;
@@ -1840,6 +1860,9 @@ typedef struct acvp_caps_list_t {
         ACVP_SLH_DSA_CAP *slh_dsa_keygen_cap;
         ACVP_SLH_DSA_CAP *slh_dsa_siggen_cap;
         ACVP_SLH_DSA_CAP *slh_dsa_sigver_cap;
+        ACVP_XECDH_CAP *xecdh_keygen_cap;
+        ACVP_XECDH_CAP *xecdh_keyver_cap;
+        ACVP_XECDH_CAP *xecdh_ssc_cap;
     } cap;
 
     int (*crypto_handler)(ACVP_TEST_CASE *test_case);
@@ -2183,6 +2206,12 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_slh_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_xecdh_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_xecdh_keyver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_xecdh_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
 // ACVP build registration functions used internally
 ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg);
 
@@ -2261,6 +2290,8 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name);
 const char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id);
 const char *acvp_lookup_ed_curve_name(ACVP_ED_CURVE id);
 ACVP_ED_CURVE acvp_lookup_ed_curve(const char *name);
+const char *acvp_lookup_x_curve_name(ACVP_X_CURVE id);
+ACVP_X_CURVE acvp_lookup_x_curve(const char *name);
 
 ACVP_RESULT acvp_refresh(ACVP_CTX *ctx);
 
