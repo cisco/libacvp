@@ -752,6 +752,8 @@ TEST(EnableCapHMAC, invalid_args) {
     TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 32, 513, 8);
     TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 160, 160, 0);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 }
 
 TEST(EnableCapRSAkeyGen, proper_params) {

@@ -225,9 +225,23 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
+        if (key_data_length < ACVP_KDF135_X963_KEYDATA_MIN_BITS ||
+            key_data_length > ACVP_KDF135_X963_KEYDATA_MAX_BITS ||
+            key_data_length % 8 != 0) {
+            ACVP_LOG_ERR("Server JSON invalid 'keyDataLength'");
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
 
         rv = acvp_tc_json_get_int(ctx, alg_id, groupobj, "sharedInfoLength", &shared_info_len);
         if (rv != ACVP_SUCCESS) {
+            goto err;
+        }
+        if (shared_info_len < ACVP_KDF135_X963_SHARED_INFO_LEN_MIN ||
+            shared_info_len > ACVP_KDF135_X963_SHARED_INFO_LEN_MAX ||
+            shared_info_len % 8 != 0) {
+            ACVP_LOG_ERR("Invalid X9.63 shared info length value");
+            rv = ACVP_TC_INVALID_DATA;
             goto err;
         }
 
@@ -279,6 +293,14 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "sharedInfo", &shared_info);
             if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            if (strnlen_s(shared_info, ACVP_KDF135_X963_INPUT_MAX * 2 + 1) !=
+                (size_t)shared_info_len / 4) {
+                ACVP_LOG_ERR("sharedInfoLength(%d) or sharedInfo length(%zu) incorrect",
+                             shared_info_len,
+                             strnlen_s(shared_info, ACVP_KDF135_X963_INPUT_MAX * 2 + 1) * 4);
+                rv = ACVP_INVALID_ARG;
                 goto err;
             }
 

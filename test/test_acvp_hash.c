@@ -285,6 +285,34 @@ TEST(HASH_HANDLER, missing_lasttcId) {
     val = NULL;
 }
 
+TEST(HASH_HANDLER, ldt_missing_fullLength) {
+    val = json_parse_file("json/hash/hash_9.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_hash_kat_handler(ctx, obj);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
+    json_value_free(val);
+    val = NULL;
+}
+
+TEST(HASH_HANDLER, ldt_empty_content) {
+    val = json_parse_file("json/hash/hash_10.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_hash_kat_handler(ctx, obj);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    json_value_free(val);
+    val = NULL;
+}
+
 /*
  * This is a good JSON with failing crypto handler.
  * Will fail as defined by the counter values.

@@ -22,7 +22,7 @@
 #include "safe_str_lib.h"
 
 static ACVP_RESULT validate_domain_range(int min, int max, int inc) {
-    if (min > max || min < 0 || max < 0 || inc < 0 || (max - min) % inc != 0) {
+    if (min > max || min < 0 || max < 0 || inc <= 0 || (max - min) % inc != 0) {
         return ACVP_INVALID_ARG;
     }
     return ACVP_SUCCESS;
@@ -3286,8 +3286,8 @@ static ACVP_RESULT acvp_validate_cmac_parm_value(ACVP_CMAC_PARM parm, int value)
         }
         break;
     case ACVP_CMAC_MSGLEN:
-        if (value >= ACVP_CMAC_MSGLEN_MIN &&
-            value <= ACVP_CMAC_MSGLEN_MAX &&
+        if (value >= ACVP_CMAC_MSG_BIT_MIN &&
+            value <= ACVP_CMAC_MSG_BIT_MAX &&
             value % 8 == 0) {
             retval = ACVP_SUCCESS;
         }
@@ -3372,8 +3372,8 @@ ACVP_RESULT acvp_cap_cmac_set_domain(ACVP_CTX *ctx,
 
     switch (parm) {
     case ACVP_CMAC_MSGLEN:
-        if (min < ACVP_CMAC_MSGLEN_MIN ||
-            max > ACVP_CMAC_MSGLEN_MAX) {
+        if (min < ACVP_CMAC_MSG_BIT_MIN ||
+            max > ACVP_CMAC_MSG_BIT_MAX) {
             ACVP_LOG_ERR("min or max outside of acceptable range");
             return ACVP_INVALID_ARG;
         }

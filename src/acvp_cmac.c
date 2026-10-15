@@ -53,7 +53,7 @@ static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
     memzero_s(stc, sizeof(ACVP_CMAC_TC));
 
     stc->test_type = testtype;
-    stc->msg = calloc(ACVP_CMAC_MSGLEN_MAX_STR, sizeof(unsigned char));
+    stc->msg = calloc(ACVP_CMAC_MSG_BYTE_MAX, sizeof(unsigned char));
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
 
     stc->mac = calloc(ACVP_CMAC_MACLEN_MAX, sizeof(unsigned char));
@@ -75,7 +75,7 @@ static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
     stc->key3 = calloc(1, ACVP_CMAC_KEY_MAX);
     if (!stc->key3) { return ACVP_MALLOC_FAIL; }
 
-    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_CMAC_MSGLEN_MAX_STR, NULL);
+    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_CMAC_MSG_BYTE_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (msg)");
         return rv;
@@ -321,6 +321,11 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
+        if (msglen > ACVP_CMAC_MSG_BIT_MAX || msglen % 8 != 0) {
+            ACVP_LOG_ERR("Invalid CMAC message length value");
+            rv = ACVP_TC_INVALID_DATA;
+            goto err;
+        }
         msglen = msglen / 8;
 
         rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "macLen", &maclen);
@@ -358,26 +363,19 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            // msg can be null if msglen is 0
-            if (json_object_has_value_of_type(testobj, "message", JSONString)) {
-                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "message", &msg);
-                if (rv != ACVP_SUCCESS) {
-                    goto err;
-                }
-                json_msglen = strnlen_s(msg, ACVP_CMAC_MSGLEN_MAX_STR + 1);
-                if (json_msglen > ACVP_CMAC_MSGLEN_MAX_STR) {
-                    ACVP_LOG_ERR("'msg' too long");
-                    rv = ACVP_INVALID_ARG;
-                    goto err;
-                }
-                if (!msglen && json_msglen > 0) {
-                    ACVP_LOG_ERR("Server JSON missing 'msgLen'");
-                    rv = ACVP_MISSING_ARG;
-                    goto err;
-                }
-            } else if (msglen) {
-                ACVP_LOG_ERR("msglen is nonzero, expected 'msg' in json");
-                rv = ACVP_MISSING_ARG;
+            rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "message", &msg);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            json_msglen = strnlen_s(msg, ACVP_CMAC_MSG_STR_MAX + 1);
+            if (json_msglen > ACVP_CMAC_MSG_STR_MAX) {
+                ACVP_LOG_ERR("'msg' too long");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
+            if ((unsigned int)json_msglen != msglen * 2) {
+                ACVP_LOG_ERR("msgLen(%u) or message length(%d) incorrect", msglen, json_msglen / 2);
+                rv = ACVP_INVALID_ARG;
                 goto err;
             }
 
