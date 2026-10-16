@@ -47,9 +47,9 @@ int initialize_cmac_tc(ACVP_CMAC_TC *cmac_tc,
     }
     
     if (msg) {
-        cmac_tc->msg = calloc(1, ACVP_CMAC_MSGLEN_MAX_STR);
+        cmac_tc->msg = calloc(1, ACVP_CMAC_MSG_BYTE_MAX);
         if (!cmac_tc->msg) { return -1; }
-        rv = acvp_hexstr_to_bin(msg, cmac_tc->msg, ACVP_CMAC_MSGLEN_MAX_STR, NULL);
+        rv = acvp_hexstr_to_bin(msg, cmac_tc->msg, ACVP_CMAC_MSG_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             printf("Hex converstion failure (msg)\n");
             return -1;

@@ -576,6 +576,8 @@ TEST_GROUP_RUNNER(HASH_HANDLER) {
     RUN_TEST_CASE(HASH_HANDLER, missing_tgId);
     RUN_TEST_CASE(HASH_HANDLER, missing_lasttgId);
     RUN_TEST_CASE(HASH_HANDLER, missing_lasttcId);
+    RUN_TEST_CASE(HASH_HANDLER, ldt_missing_fullLength);
+    RUN_TEST_CASE(HASH_HANDLER, ldt_empty_content);
     RUN_TEST_CASE(HASH_HANDLER, cryptoFail1);
     RUN_TEST_CASE(HASH_HANDLER, cryptoFail2);
     RUN_TEST_CASE(HASH_HANDLER, cryptoFail3);
@@ -1180,6 +1182,9 @@ TEST_GROUP_RUNNER(Kdf135x963Fail) {
     RUN_TEST_CASE(Kdf135x963Fail, cryptoFail2);
     RUN_TEST_CASE(Kdf135x963Fail, tgFail);
     RUN_TEST_CASE(Kdf135x963Fail, tcFail);
+    RUN_TEST_CASE(Kdf135x963Fail, oversized_key_data_length);
+    RUN_TEST_CASE(Kdf135x963Fail, oversized_shared_info_length);
+    RUN_TEST_CASE(Kdf135x963Fail, mismatched_shared_info_length);
 }
 
 TEST_GROUP_RUNNER(Kdf135x963Func) {
