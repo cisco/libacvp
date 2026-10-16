@@ -273,6 +273,9 @@ typedef enum acvp_cipher {
     ACVP_SLH_DSA_KEYGEN,
     ACVP_SLH_DSA_SIGGEN,
     ACVP_SLH_DSA_SIGVER,
+    ACVP_XECDH_KEYGEN,    // 120
+    ACVP_XECDH_KEYVER,
+    ACVP_XECDH_SSC,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -479,6 +482,13 @@ typedef enum acvp_alg_type_slh_dsa {
     ACVP_SUB_SLH_DSA_SIGGEN,
     ACVP_SUB_SLH_DSA_SIGVER
 } ACVP_SUB_SLH_DSA;
+
+/** @enum ACVP_SUB_XECDH */
+typedef enum acvp_alg_type_xecdh {
+    ACVP_SUB_XECDH_KEYGEN = ACVP_XECDH_KEYGEN,
+    ACVP_SUB_XECDH_KEYVER,
+    ACVP_SUB_XECDH_SSC
+} ACVP_SUB_XECDH;
 
 #define CIPHER_TO_ALG(alg2) (alg_tbl[cipher].alg.alg2)
 
@@ -837,6 +847,14 @@ typedef enum acvp_ed_curve {
     ACVP_ED_CURVE_END
 } ACVP_ED_CURVE;
 
+/** @enum ACVP_X_CURVE */
+typedef enum acvp_x_curve {
+    ACVP_X_CURVE_START = 0,
+    ACVP_X_CURVE_25519,
+    ACVP_X_CURVE_448,
+    ACVP_X_CURVE_END
+} ACVP_X_CURVE;
+
 /** @enum ACVP_ECDSA_COMPONENT_MODE */
 typedef enum acvp_ecdsa_component_mode {
     ACVP_ECDSA_COMPONENT_MODE_NO,
@@ -851,6 +869,11 @@ typedef enum acvp_eddsa_param {
     ACVP_EDDSA_SUPPORTS_PREHASH,
     ACVP_EDDSA_CONTEXT_LEN
 } ACVP_EDDSA_PARM;
+
+/** @enum ACVP_XECDH_PARM */
+typedef enum acvp_xecdh_param {
+    ACVP_XECDH_CURVE
+} ACVP_XECDH_PARM;
 
 /** @enum ACVP_KDF135_IKEV2_PARM */
 typedef enum acvp_kdf135_ikev2_param {
@@ -1173,6 +1196,12 @@ typedef enum acvp_eddsa_testtype {
     ACVP_EDDSA_TEST_TYPE_AFT,
     ACVP_EDDSA_TEST_TYPE_BFT
 } ACVP_EDDSA_TESTTYPE;
+
+/** @enum ACVP_XECDH_TESTTYPE */
+typedef enum acvp_xecdh_testtype {
+    ACVP_XECDH_TEST_TYPE_NONE = 0,
+    ACVP_XECDH_TEST_TYPE_AFT
+} ACVP_XECDH_TESTTYPE;
 
 /** @enum ACVP_HMAC_PARM */
 typedef enum acvp_hmac_parameter {
@@ -1865,6 +1894,34 @@ typedef struct acvp_eddsa_tc_t {
     ACVP_TEST_DISPOSITION ver_disposition; //!< Indicates pass/fail output for verification
 
 } ACVP_EDDSA_TC;
+
+/**
+ * @struct ACVP_XECDH_TC
+ * @brief This struct holds data that represents a single test case for XECDH testing. This data is
+ *        passed between libacvp and the crypto module. Keys and the shared secret are little-endian,
+ *        as RFC 7748 encodes them.
+ */
+typedef struct acvp_xecdh_tc_t {
+    unsigned int tc_id;    //!< Test case id
+    int tg_id;
+    ACVP_CIPHER cipher;
+    ACVP_X_CURVE curve;
+    ACVP_XECDH_TESTTYPE test_type;
+
+    unsigned char *private_key; //!< Output for KeyGen
+    unsigned char *public_key; //!< Output for KeyGen, input for KeyVer
+    unsigned char *public_server; //!< Input for SSC
+    unsigned char *public_iut; //!< Output for SSC
+    unsigned char *z; //!< Output for SSC
+
+    int private_key_len;
+    int public_key_len;
+    int public_server_len;
+    int public_iut_len;
+    int z_len;
+
+    ACVP_TEST_DISPOSITION ver_disposition; //!< Indicates pass/fail output for KeyVer
+} ACVP_XECDH_TC;
 
 /**
  * @struct ACVP_RSA_SIG_TC
@@ -2979,6 +3036,7 @@ typedef struct acvp_test_case_t {
         ACVP_RSA_PRIM_TC *rsa_prim;
         ACVP_ECDSA_TC *ecdsa;
         ACVP_EDDSA_TC *eddsa;
+        ACVP_XECDH_TC *xecdh;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
         ACVP_KDF135_SSH_TC *kdf135_ssh;
         ACVP_KDF135_SRTP_TC *kdf135_srtp;
@@ -3838,6 +3896,10 @@ ACVP_RESULT acvp_cap_eddsa_enable(ACVP_CTX *ctx,
                                   ACVP_CIPHER cipher,
                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_cap_xecdh_enable(ACVP_CTX *ctx,
+                                  ACVP_CIPHER cipher,
+                                  int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
 /**
  * @brief acvp_cap_rsa_*_set_parm() allows an application to specify operational parameters to
  *        be used for a given RSA alg during a test session with the ACVP server. This function
@@ -3924,6 +3986,11 @@ ACVP_RESULT acvp_cap_eddsa_set_domain(ACVP_CTX *ctx,
                                       int min,
                                       int max,
                                       int increment);
+
+ACVP_RESULT acvp_cap_xecdh_set_parm(ACVP_CTX *ctx,
+                                    ACVP_CIPHER cipher,
+                                    ACVP_XECDH_PARM param,
+                                    int value);
 
 /**
  * @brief acvp_enable_rsa_bignum_parm() allows an application to specify BIGNUM operational
@@ -5438,6 +5505,7 @@ ACVP_SUB_LMS acvp_get_lms_alg(ACVP_CIPHER cipher);
 ACVP_SUB_ML_DSA acvp_get_ml_dsa_alg(ACVP_CIPHER cipher);
 ACVP_SUB_ML_KEM acvp_get_ml_kem_alg(ACVP_CIPHER cipher);
 ACVP_SUB_SLH_DSA acvp_get_slh_dsa_alg(ACVP_CIPHER cipher);
+ACVP_SUB_XECDH acvp_get_xecdh_alg(ACVP_CIPHER cipher);
 
 /**
  * @brief acvp_sleep() waits a given number of seconds before continuing processing. This function performs identically across platforms.

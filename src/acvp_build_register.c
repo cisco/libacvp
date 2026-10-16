@@ -1955,6 +1955,69 @@ static ACVP_RESULT acvp_build_eddsa_register_cap(ACVP_CTX *ctx,JSON_Object *cap_
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_xecdh_register_cap(ACVP_CTX *ctx, JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *curves_arr = NULL;
+    ACVP_PARAM_LIST *current_curve = NULL;
+    const char *revision = NULL, *tmp = NULL;
+    ACVP_SUB_XECDH alg;
+    ACVP_XECDH_CAP *xecdh_cap = NULL;
+    ACVP_RESULT result;
+
+    alg = acvp_get_xecdh_alg(cap_entry->cipher);
+    if (alg == 0) {
+        ACVP_LOG_ERR("Invalid cipher value");
+        return ACVP_INVALID_ARG;
+    }
+
+    json_object_set_string(cap_obj, "algorithm", ACVP_ALG_XECDH);
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "revision", revision);
+
+    switch (alg) {
+    case ACVP_SUB_XECDH_KEYGEN:
+        json_object_set_string(cap_obj, "mode", ACVP_ALG_XECDH_KEYGEN);
+        xecdh_cap = cap_entry->cap.xecdh_keygen_cap;
+        break;
+    case ACVP_SUB_XECDH_KEYVER:
+        json_object_set_string(cap_obj, "mode", ACVP_ALG_XECDH_KEYVER);
+        xecdh_cap = cap_entry->cap.xecdh_keyver_cap;
+        break;
+    case ACVP_SUB_XECDH_SSC:
+        json_object_set_string(cap_obj, "mode", ACVP_ALG_XECDH_SSC);
+        xecdh_cap = cap_entry->cap.xecdh_ssc_cap;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+    if (!xecdh_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+
+    current_curve = xecdh_cap->curves;
+    if (!current_curve) {
+        ACVP_LOG_ERR("XECDH capability registered without a curve");
+        return ACVP_MISSING_ARG;
+    }
+
+    json_object_set_value(cap_obj, "curve", json_value_init_array());
+    curves_arr = json_object_get_array(cap_obj, "curve");
+    while (current_curve) {
+        tmp = acvp_lookup_x_curve_name(current_curve->param);
+        if (!tmp) {
+            return ACVP_MISSING_ARG;
+        }
+        json_array_append_string(curves_arr, tmp);
+        current_curve = current_curve->next;
+    }
+
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT acvp_build_kdf135_snmp_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result = ACVP_INTERNAL_ERR;
     JSON_Array *temp_arr = NULL;
@@ -6287,6 +6350,11 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_SLH_DSA_SIGGEN:
             case ACVP_SLH_DSA_SIGVER:
                 rv = acvp_build_slh_dsa_register_cap(ctx, cap_obj, cap_entry);
+                break;
+            case ACVP_XECDH_KEYGEN:
+            case ACVP_XECDH_KEYVER:
+            case ACVP_XECDH_SSC:
+                rv = acvp_build_xecdh_register_cap(ctx, cap_obj, cap_entry);
                 break;
             case ACVP_CIPHER_START:
             case ACVP_CIPHER_END:

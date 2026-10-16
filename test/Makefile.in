@@ -180,6 +180,7 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_rsa.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_ecdsa.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_eddsa.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_xecdh.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_drbg.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_kda.o \
 @APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_kmac.o \
