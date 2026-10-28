@@ -272,6 +272,13 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+            if (keyLen != ACVP_CMAC_KEYLEN_128 &&
+                keyLen != ACVP_CMAC_KEYLEN_192 &&
+                keyLen != ACVP_CMAC_KEYLEN_256) {
+                ACVP_LOG_ERR("Server JSON invalid 'keyLen', (%u)", keyLen);
+                rv = ACVP_TC_INVALID_DATA;
+                goto err;
+            }
         } else if (alg_id == ACVP_CMAC_TDES) {
             rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "keyingOption", &keyingOption);
             if (rv != ACVP_SUCCESS) {
@@ -388,6 +395,12 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 key1_len = strnlen_s(key1, ACVP_CMAC_KEY_MAX + 1);
                 if (key1_len > ACVP_CMAC_KEY_MAX) {
                     ACVP_LOG_ERR("Invalid length for 'key' attribute in CMAC-AES test");
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+                if ((unsigned int)key1_len != keyLen / 4) {
+                    ACVP_LOG_ERR("keyLen(%u) or key length(%d) incorrect",
+                                 keyLen, key1_len * 4);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }

@@ -61,7 +61,8 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
             alg_name = "aes-256-cbc";
             break;
         default:
-            break;
+            printf("Unsupported AES-CMAC key length\n");
+            return rv;
         }
         key_len = (tc->key_len);
         for (i = 0; i < key_len; i++) {

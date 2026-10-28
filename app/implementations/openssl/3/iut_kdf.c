@@ -25,6 +25,7 @@
 #define TLS_KEY_EXPAND_CONST_SIZE        13
 
 #define TLS12_BUF_MAX 4096 // match library
+#define TLS12_RANDOM_BYTE_LEN 32
 #define TLS12_SEED_BUF_MAX (TLS12_BUF_MAX + TLS_EXT_MASTER_SECRET_CONST_SIZE)
 
 /* these values are fixed as per srtp spec */
@@ -639,6 +640,13 @@ int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
 
     if (!tc->msecret || !tc->kblock) {
         printf("Missing output buffers in TLS1.2 KDF test case\n");
+        return -1;
+    }
+
+    if (tc->session_hash_len < 0 || tc->session_hash_len > TLS12_BUF_MAX ||
+        tc->s_rnd_len != TLS12_RANDOM_BYTE_LEN ||
+        tc->c_rnd_len != TLS12_RANDOM_BYTE_LEN) {
+        printf("Invalid input length in TLS1.2 KDF test case\n");
         return -1;
     }
 

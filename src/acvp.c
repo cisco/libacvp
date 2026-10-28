@@ -3356,7 +3356,8 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 const char *vsurl = json_object_get_string(current, "vectorSetUrl");
                 if (!vsurl) {
                     ACVP_LOG_ERR("No vector set URL when generating failed algorithm list");
-                    break;
+                    rv = ACVP_JSON_ERR;
+                    goto end;
                 }
                 if (!acvp_lookup_str_list(&failedVsList, vsurl)) {
                     // append the vs url to the list so we dont download/check same one twice
@@ -3387,21 +3388,24 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                     obj2 = acvp_get_obj_from_rsp(ctx, val2);
                     if (!obj2) {
                         json_value_free(val2);
+                        val2 = NULL;
                         ACVP_LOG_ERR("JSON parse error while reporting failed algorithms, skipping...");
                         continue;
                     }
                     alg = json_object_get_string(obj2, "algorithm");
                     if (!alg) {
+                        json_value_free(val2);
+                        val2 = NULL;
                         ACVP_LOG_ERR("JSON parse error while reporting failed algorithms, skipping...");
                         continue;
                     }
                     // Some algorithms have the same names, but different modes. Need to differentiate.
-                    if (json_object_get_string(obj2, "mode")) {
-                        mode = json_object_get_string(obj2, "mode");
-                    }
+                    mode = json_object_get_string(obj2, "mode");
                     if (!acvp_lookup_str_list(&failedAlgList, alg) || !acvp_lookup_str_list(&failedModeList, mode)) {
                         rv = acvp_append_str_list(&failedAlgList, alg);
                         if (rv != ACVP_SUCCESS) {
+                            json_value_free(val2);
+                            val2 = NULL;
                             ACVP_LOG_ERR("Error appending failed algorithm name to list, skipping...");
                             continue;
                         }
@@ -3412,15 +3416,12 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                             rv = acvp_append_str_list(&failedModeList, "");
                         }
                         if (rv != ACVP_SUCCESS) {
-                            ACVP_LOG_ERR("Error appending failed mode name to list, skipping...");
-                            continue;
+                            ACVP_LOG_ERR("Error appending failed mode name to list");
+                            goto end;
                         }
-                        if (val2) json_value_free(val2);
-                        val2 = NULL;
-                    } else {
-                        if (val2) json_value_free(val2);
-                        val2 = NULL;
                     }
+                    json_value_free(val2);
+                    val2 = NULL;
                 }
             }
             testsCompleted++;
@@ -3482,6 +3483,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
 
 end:
     if (val) json_value_free(val);
+    if (val2) json_value_free(val2);
     if (failedAlgList) {
         acvp_free_str_list(&failedAlgList);
     }
