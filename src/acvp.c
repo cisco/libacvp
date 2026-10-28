@@ -181,7 +181,10 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_ML_KEM_XCAP,       &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_XCAP, ACVP_REV_ML_KEM, {.ml_kem = ACVP_SUB_ML_KEM_XCAP}},
     { ACVP_SLH_DSA_KEYGEN,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_KEYGEN, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_KEYGEN}},
     { ACVP_SLH_DSA_SIGGEN,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_SIGGEN, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_SIGGEN}},
-    { ACVP_SLH_DSA_SIGVER,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_SIGVER, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_SIGVER}}
+    { ACVP_SLH_DSA_SIGVER,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_SIGVER, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_SIGVER}},
+    { ACVP_XECDH_KEYGEN,      &acvp_xecdh_keygen_kat_handler,     ACVP_ALG_XECDH,             ACVP_ALG_XECDH_KEYGEN, ACVP_REV_XECDH, {.xecdh = ACVP_SUB_XECDH_KEYGEN}},
+    { ACVP_XECDH_KEYVER,      &acvp_xecdh_keyver_kat_handler,     ACVP_ALG_XECDH,             ACVP_ALG_XECDH_KEYVER, ACVP_REV_XECDH, {.xecdh = ACVP_SUB_XECDH_KEYVER}},
+    { ACVP_XECDH_SSC,         &acvp_xecdh_ssc_kat_handler,        ACVP_ALG_XECDH,             ACVP_ALG_XECDH_SSC, ACVP_REV_XECDH, {.xecdh = ACVP_SUB_XECDH_SSC}}
 };
 
 /*
@@ -958,6 +961,18 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 break;
             case ACVP_SLH_DSA_SIGVER_TYPE:
                 acvp_cap_free_slh_dsa(cap_entry->cap.slh_dsa_sigver_cap);
+                break;
+            case ACVP_XECDH_KEYGEN_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.xecdh_keygen_cap->curves);
+                free(cap_entry->cap.xecdh_keygen_cap);
+                break;
+            case ACVP_XECDH_KEYVER_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.xecdh_keyver_cap->curves);
+                free(cap_entry->cap.xecdh_keyver_cap);
+                break;
+            case ACVP_XECDH_SSC_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.xecdh_ssc_cap->curves);
+                free(cap_entry->cap.xecdh_ssc_cap);
                 break;
             case ACVP_KDF135_TPM_TYPE:
             default:
@@ -4201,4 +4216,12 @@ ACVP_SUB_SLH_DSA acvp_get_slh_dsa_alg(ACVP_CIPHER cipher)
         return 0;
     }
     return (alg_tbl[cipher-1].alg.slh_dsa);
+}
+
+ACVP_SUB_XECDH acvp_get_xecdh_alg(ACVP_CIPHER cipher)
+{
+    if ((cipher == ACVP_CIPHER_START) || (cipher >= ACVP_CIPHER_END)) {
+        return 0;
+    }
+    return (alg_tbl[cipher-1].alg.xecdh);
 }

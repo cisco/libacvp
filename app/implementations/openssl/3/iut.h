@@ -77,6 +77,7 @@ int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case);
 int app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 int app_eddsa_handler(ACVP_TEST_CASE *test_case);
+int app_xecdh_handler(ACVP_TEST_CASE *test_case);
 int app_drbg_handler(ACVP_TEST_CASE *test_case);
 int app_safe_primes_handler(ACVP_TEST_CASE *test_case);
 int app_aes_handler_gmac(ACVP_TEST_CASE *test_case);
