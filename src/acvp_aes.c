@@ -1503,7 +1503,8 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
     stc->pt = calloc( ACVP_SYM_PT_BYTE_MAX, 1);
     if (!stc->pt) { return ACVP_MALLOC_FAIL; }
-    stc->ct = calloc(ACVP_SYM_CT_BYTE_MAX, 1);
+    // Extra space accommodates AES-CCM tags and AES-KW/KWP wrapping overhead.
+    stc->ct = calloc(ACVP_SYM_CT_BYTE_MAX + ACVP_SYM_TAG_BYTE_MAX, 1);
     if (!stc->ct) { return ACVP_MALLOC_FAIL; }
     stc->tag = calloc(ACVP_SYM_TAG_BYTE_MAX, 1);
     if (!stc->tag) { return ACVP_MALLOC_FAIL; }
