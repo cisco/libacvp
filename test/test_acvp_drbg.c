@@ -500,7 +500,7 @@ TEST(DRBG_HANDLER, small_entropyInputLen) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -515,7 +515,7 @@ TEST(DRBG_HANDLER, big_entropyInputLen) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -545,7 +545,7 @@ TEST(DRBG_HANDLER, small_nonceLen) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -560,7 +560,7 @@ TEST(DRBG_HANDLER, big_nonceLen) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

@@ -1066,6 +1066,11 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+                if (test_type == ACVP_SYM_TEST_TYPE_MCT && datalen != 1) {
+                    ACVP_LOG_ERR("AES-CFB1 MCT 'payloadLen' must be 1");
+                    rv = ACVP_TC_INVALID_DATA;
+                    goto err;
+                }
                 if (datalen > ACVP_SYM_PT_BIT_MAX) {
                     ACVP_LOG_ERR("'dataLen' too large (%u), max allowed=(%d)",
                                  datalen, ACVP_SYM_PT_BIT_MAX);
@@ -1108,6 +1113,17 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                         rv = ACVP_TC_INVALID_DATA;
                         goto err;
                     }
+                    if (test_type == ACVP_SYM_TEST_TYPE_MCT) {
+                        unsigned int expected_len = ACVP_BLOCK_LEN_AES128 * 2;
+                        if (alg_id == ACVP_AES_CFB1 || alg_id == ACVP_AES_CFB8) {
+                            expected_len = 2;
+                        }
+                        if (tmp_pt_len != expected_len) {
+                            ACVP_LOG_ERR("Invalid AES MCT 'pt' length (%u)", tmp_pt_len);
+                            rv = ACVP_TC_INVALID_DATA;
+                            goto err;
+                        }
+                    }
                 }
             } else {
                 unsigned int tmp_ct_len = 0;
@@ -1130,6 +1146,17 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                     ACVP_SYM_CT_MAX);
                         rv = ACVP_TC_INVALID_DATA;
                         goto err;
+                    }
+                    if (test_type == ACVP_SYM_TEST_TYPE_MCT) {
+                        unsigned int expected_len = ACVP_BLOCK_LEN_AES128 * 2;
+                        if (alg_id == ACVP_AES_CFB1 || alg_id == ACVP_AES_CFB8) {
+                            expected_len = 2;
+                        }
+                        if (tmp_ct_len != expected_len) {
+                            ACVP_LOG_ERR("Invalid AES MCT 'ct' length (%u)", tmp_ct_len);
+                            rv = ACVP_TC_INVALID_DATA;
+                            goto err;
+                        }
                     }
                 }
 
