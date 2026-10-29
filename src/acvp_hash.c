@@ -812,7 +812,7 @@ static ACVP_RESULT acvp_hash_output_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Ob
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
-    if (stc->test_type == ACVP_HASH_TEST_TYPE_VOT) {
+    if (stc->cipher == ACVP_HASH_SHAKE_128 || stc->cipher == ACVP_HASH_SHAKE_256) {
         tmp = calloc(ACVP_HASH_XOF_MD_STR_MAX + 1, sizeof(char));
     } else {
         tmp = calloc(ACVP_HASH_MD_STR_MAX + 1, sizeof(char));
@@ -822,7 +822,7 @@ static ACVP_RESULT acvp_hash_output_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Ob
         return ACVP_MALLOC_FAIL;
     }
 
-    if (stc->test_type == ACVP_HASH_TEST_TYPE_VOT) {
+    if (stc->cipher == ACVP_HASH_SHAKE_128 || stc->cipher == ACVP_HASH_SHAKE_256) {
         rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp, ACVP_HASH_XOF_MD_STR_MAX);
     } else {
         rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp, ACVP_HASH_MD_STR_MAX);
@@ -872,7 +872,11 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
     if (test_type == ACVP_HASH_TEST_TYPE_AFT ||
         test_type == ACVP_HASH_TEST_TYPE_LDT) {
         // AFT
-        stc->md = calloc(1, ACVP_HASH_MD_BYTE_MAX);
+        if (alg_id == ACVP_HASH_SHAKE_128 || alg_id == ACVP_HASH_SHAKE_256) {
+            stc->md = calloc(1, ACVP_HASH_XOF_MD_BYTE_MAX);
+        } else {
+            stc->md = calloc(1, ACVP_HASH_MD_BYTE_MAX);
+        }
         if (!stc->md) { return ACVP_MALLOC_FAIL; }
     } else if (test_type == ACVP_HASH_TEST_TYPE_VOT) {
         // VOT
