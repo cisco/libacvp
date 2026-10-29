@@ -557,6 +557,12 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
+                if (min_xof_len > max_xof_len) {
+                    ACVP_LOG_ERR("Server JSON 'minOutLen' (%u) exceeds 'maxOutLen' (%u)",
+                                 min_xof_len, max_xof_len);
+                    rv = ACVP_TC_INVALID_DATA;
+                    goto err;
+                }
             } else { // All hash algs apart from SHAKE
                 rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, ACVP_STR_HASH_MCT, &mct_version_str);
                 if (rv != ACVP_SUCCESS) {

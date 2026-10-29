@@ -189,7 +189,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             entropy_len > ACVP_DRBG_ENTPY_IN_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid 'entropyInputLen'(%u)",
                          entropy_len);
-            rv = ACVP_INVALID_ARG;
+            rv = ACVP_TC_INVALID_DATA;
             goto err;
         }
 
@@ -197,15 +197,14 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
-        if (!(alg_id == ACVP_CTRDRBG && !der_func_enabled)) {
-            // Allowed to be 0 when counter mode and not using derivation func
-            if (nonce_len < ACVP_DRBG_NONCE_BIT_MIN ||
-                nonce_len > ACVP_DRBG_NONCE_BIT_MAX) {
-                ACVP_LOG_ERR("Server JSON invalid 'nonceLen'(%u)",
-                             nonce_len);
-                rv = ACVP_INVALID_ARG;
-                goto err;
-            }
+        // Allowed to be 0 when counter mode and not using derivation func
+        if (nonce_len > ACVP_DRBG_NONCE_BIT_MAX ||
+            (!(alg_id == ACVP_CTRDRBG && !der_func_enabled) &&
+             nonce_len < ACVP_DRBG_NONCE_BIT_MIN)) {
+            ACVP_LOG_ERR("Server JSON invalid 'nonceLen'(%u)",
+                         nonce_len);
+            rv = ACVP_TC_INVALID_DATA;
+            goto err;
         }
 
         rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "persoStringLen", &perso_string_len);
