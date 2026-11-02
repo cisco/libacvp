@@ -199,7 +199,7 @@ TEST(APP_AES_AEAD_HANDLER, missing_dir) {
     free(test_case);
 }
 
-// Bad tagLen for decrypt AEAD
+// Reject an incorrect GCM tag, then check recovery with an empty payload.
  TEST(APP_AES_AEAD_HANDLER, bad_taglen) {
     char *payload = "4ECCBC36";
     char *key = "2A7725F66621F77B92CE2D10DFC94093";
@@ -219,35 +219,43 @@ TEST(APP_AES_AEAD_HANDLER, missing_dir) {
     rv = app_aes_handler_aead(test_case);
     TEST_ASSERT_NOT_EQUAL(0, rv);
     
+    aes_tc->direction = ACVP_SYM_CIPH_DIR_ENCRYPT;
+    aes_tc->pt_len = 0;
+    TEST_ASSERT_EQUAL(0, app_aes_handler_aead(test_case));
+    TEST_ASSERT_EQUAL(0, aes_tc->ct_len);
+
     free_aes_tc(aes_tc);
     free(test_case);
 }
 
-// Bad aadLen for encrypt AEAD
- TEST(APP_AES_AEAD_HANDLER, bad_aadlen) {
+/* Replaces bad_aadlen: its seven-bit AAD was truncated to zero by the initializer. */
+TEST(APP_AES_AEAD_HANDLER, ccm_sanity) {
     char *payload = "7E0BDE80";
     char *key = "B5BF1BD15DA1DE75B37BEAE1B7ABBC90";
     char *aad = "5BA9";
-    char *tag = "687B62AF98D02B6F";
     aes_tc = calloc(1, sizeof(ACVP_SYM_CIPHER_TC));
-    
-    if (!initialize_aes_tc(aes_tc, ACVP_AES_CCM, payload, 32, NULL, 0,
-        key, 128, aad, 7, tag, 64, ACVP_SYM_CIPH_IVGEN_SRC_INT, 
-        ACVP_SYM_CIPH_IVGEN_MODE_821, NULL, 96, ACVP_SYM_CIPH_DIR_ENCRYPT,
-        ACVP_SYM_TEST_TYPE_AFT)) {
-        TEST_FAIL_MESSAGE("aes init tc failure");
-    }
+    TEST_ASSERT_NOT_NULL(aes_tc);
+    TEST_ASSERT_EQUAL(1, initialize_aes_tc(aes_tc, ACVP_AES_CCM, payload, 32, NULL, 0,
+        key, 128, aad, 8, NULL, 64,
+        ACVP_SYM_CIPH_IVGEN_SRC_EXT, ACVP_SYM_CIPH_IVGEN_MODE_NA, NULL, 96,
+        ACVP_SYM_CIPH_DIR_ENCRYPT, ACVP_SYM_TEST_TYPE_AFT));
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
+    TEST_ASSERT_NOT_NULL(test_case);
     test_case->tc.symmetric = aes_tc;
-    
-    rv = app_aes_handler_aead(test_case);
-    TEST_ASSERT_EQUAL(0, rv);
-    
+
+    TEST_ASSERT_EQUAL(0, app_aes_handler_aead(test_case));
+    TEST_ASSERT_EQUAL(12, aes_tc->ct_len);
+
+    aes_tc->pt_len = 0;
+    aes_tc->aad_len = 0;
+    TEST_ASSERT_EQUAL(0, app_aes_handler_aead(test_case));
+    TEST_ASSERT_EQUAL(8, aes_tc->ct_len);
+
     free_aes_tc(aes_tc);
     free(test_case);
 }
 
-// GMAC case that has plain or cipher text, make sure it fails
+// Reject GMAC payloads, then check recovery without a payload.
  TEST(APP_AES_AEAD_HANDLER, bad_gmac) {
     char *payload = "6DDB7E03";
     char *key = "360B5EE0C3DA2D2F1DF50B65C4378D0A5E3A701263EEAECCB541DA3165E5558D";
@@ -256,7 +264,7 @@ TEST(APP_AES_AEAD_HANDLER, missing_dir) {
     aes_tc = calloc(1, sizeof(ACVP_SYM_CIPHER_TC));
     
     if (!initialize_aes_tc(aes_tc, ACVP_AES_GMAC, payload, 32, NULL, 0,
-        key, 256, aad, 0, tag, 128, ACVP_SYM_CIPH_IVGEN_SRC_INT, 
+        key, 256, aad, 0, tag, 128, ACVP_SYM_CIPH_IVGEN_SRC_INT,
         ACVP_SYM_CIPH_IVGEN_MODE_821, NULL, 96, ACVP_SYM_CIPH_DIR_ENCRYPT,
         ACVP_SYM_TEST_TYPE_AFT)) {
         TEST_FAIL_MESSAGE("aes init tc failure");
@@ -266,6 +274,10 @@ TEST(APP_AES_AEAD_HANDLER, missing_dir) {
     
     rv = app_aes_handler_aead(test_case);
     TEST_ASSERT_NOT_EQUAL(0, rv);
+    TEST_ASSERT_NOT_EQUAL(0, app_aes_handler_gmac(test_case));
+
+    aes_tc->pt_len = 0;
+    TEST_ASSERT_EQUAL(0, app_aes_handler_gmac(test_case));
     
     free_aes_tc(aes_tc);
     free(test_case);
@@ -359,7 +371,7 @@ TEST(APP_AES_HANDLER, missing_dir) {
     free(test_case);
 }
 
-// monte carlo bad payload length - undefined behavior (?) ensure that it causes no issues with app
+// Reject incomplete MCT blocks and check context cleanup and recovery.
  TEST(APP_AES_HANDLER, bad_mct_payloadLen) {
     char *payload = "3ACA556E";
     char *key = "E0CD57A31C3206089EF0C07152B03249";
@@ -375,11 +387,21 @@ TEST(APP_AES_HANDLER, missing_dir) {
     test_case->tc.symmetric = aes_tc;
     
     rv = app_aes_handler(test_case);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
+    aes_tc->mct_index = 999;
+    rv = app_aes_handler(test_case);
+    TEST_ASSERT_NOT_EQUAL(0, rv);
+
+    aes_tc->mct_index = 0;
+    aes_tc->ct_len = 16;
+    rv = app_aes_handler(test_case);
     TEST_ASSERT_EQUAL(0, rv);
-    //skip to last iteration to ensure end works normally as well
+    TEST_ASSERT_EQUAL(16, aes_tc->pt_len);
     aes_tc->mct_index = 999;
     rv = app_aes_handler(test_case);
     TEST_ASSERT_EQUAL(0, rv);
+    TEST_ASSERT_EQUAL(16, aes_tc->pt_len);
+    TEST_ASSERT_NOT_EQUAL(0, app_aes_handler(test_case));
     
     free_aes_tc(aes_tc);
     free(test_case);
@@ -472,6 +494,7 @@ TEST(APP_AES_HANDLER, missing_dir) {
     
     rv = app_aes_keywrap_handler(test_case);
     TEST_ASSERT_NOT_EQUAL(0, rv);
+    TEST_ASSERT_EQUAL(0, aes_tc->pt_len);
     
     free_aes_tc(aes_tc);
     free(test_case);
