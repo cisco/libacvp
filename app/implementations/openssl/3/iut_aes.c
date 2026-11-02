@@ -91,7 +91,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
 
     alg = acvp_get_aes_alg(tc->cipher);
     if (alg == 0) {
-        printf("Invalid cipher value");
+        printf("Invalid cipher value\n");
         goto err;
     }
 
@@ -314,8 +314,10 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         printf("Error processing AES payload\n");
         goto err;
     }
-    /* With padding disabled, these modes produce all output in Update. */
-    /* Finalize normally for non-MCT tests, or only on the last MCT inner iteration. */
+    /*
+     * Finalize for non-MCT tests, or only on the last MCT inner iteration. With
+     * padding disabled, these modes produce all output in Update.
+     */
     if (finish) {
         if (EVP_CipherFinal_ex(cipher_ctx, out, &final_len) != 1) {
             printf("Error finalizing AES cipher\n");
@@ -396,7 +398,7 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
 
     alg = acvp_get_aes_alg(tc->cipher);
     if (alg == 0) {
-        printf("Invalid cipher value");
+        printf("Invalid cipher value\n");
         goto err;
     }
 
@@ -722,13 +724,11 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     rv = 0;
 err:
     if (rv != 0) {
-        if (!direction) {
-            tc->pt_len = 0;
-        } else {
+        if (direction) {
             tc->ct_len = 0;
-        }
-        if (tc->direction != ACVP_SYM_CIPH_DIR_DECRYPT) {
             ERR_print_errors_fp(stderr);
+        } else {
+            tc->pt_len = 0;
         }
     }
     // Cleanup
