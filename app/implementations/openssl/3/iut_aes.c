@@ -634,7 +634,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     params[1] = OSSL_PARAM_construct_end();
     params[2] = OSSL_PARAM_construct_end();
     if (alg == ACVP_SUB_AES_CCM) {
-        /* ACVP stores CCM's tag after the payload, not in tc->tag. */
+        /* CCM ciphertext is the payload followed by the tag; there's no separate tag field. */
         if (!direction) {
             tag = tc->ct + in_len;
         }
@@ -804,7 +804,6 @@ int app_aes_handler_gmac(ACVP_TEST_CASE *test_case) {
         goto err;
     }
     if (direction && tc->ivgen_source == ACVP_SYM_CIPH_IVGEN_SRC_INT) {
-        /* SP 800-38D 8.2.1: the provider manages the invocation field. */
         params[0] = OSSL_PARAM_construct_octet_string(OSSL_CIPHER_PARAM_AEAD_TLS1_IV_FIXED,
                                                     iv_fixed, sizeof(iv_fixed));
         if (EVP_CIPHER_CTX_set_params(cipher_ctx, params) != 1) {

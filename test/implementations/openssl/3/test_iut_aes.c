@@ -228,7 +228,7 @@ TEST(APP_AES_AEAD_HANDLER, missing_dir) {
     free(test_case);
 }
 
-/* Replaces bad_aadlen: its seven-bit AAD was truncated to zero by the initializer. */
+// Basic CCM encrypt, with and without payload/AAD.
 TEST(APP_AES_AEAD_HANDLER, ccm_sanity) {
     char *payload = "7E0BDE80";
     char *key = "B5BF1BD15DA1DE75B37BEAE1B7ABBC90";
