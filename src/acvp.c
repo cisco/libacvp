@@ -1120,10 +1120,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
         strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
     } else {
-        ACVP_LOG_WARN("Missing session URL, results will not be POSTed to server");
-#ifndef ACVP_OFFLINE
-        goto end;
-#endif
+        ACVP_LOG_WARN("Missing session URL; response file will lack session information needed for server submission");
     }
 
     jwt = json_object_get_string(obj, "jwt");
@@ -1131,10 +1128,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         ctx->jwt_token = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
         strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
     } else {
-        ACVP_LOG_WARN("Missing JWT, results will not be POSTed to server");
-#ifndef ACVP_OFFLINE
-        goto end;
-#endif
+        ACVP_LOG_WARN("Missing JWT; response file will lack authentication information needed for server submission");
     }
 
     isSample = json_object_get_boolean(obj, "isSample");

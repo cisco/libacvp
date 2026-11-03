@@ -40,6 +40,14 @@ const char *get_ed_curve_string(ACVP_ED_CURVE curve);
 const char *get_provider_version(const char *provider_name);
 int provider_ver_str_to_int(const char *str);
 
+typedef struct app_mct_ctx APP_MCT_CTX;
+
+void *app_mct_context_find(APP_MCT_CTX *list, const void *tc);
+int app_mct_context_add(APP_MCT_CTX **list, const void *tc, void *context,
+                        void (*free_context)(void *));
+void app_mct_context_remove(APP_MCT_CTX **list, const void *tc);
+void app_mct_context_cleanup(APP_MCT_CTX **list);
+
 int get_nid_for_curve(ACVP_EC_CURVE curve);
 const EVP_MD *get_md_for_hash_alg(ACVP_HASH_ALG alg);
 const char *get_md_string_for_hash_alg(ACVP_HASH_ALG alg, int *md_size);
