@@ -252,7 +252,10 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         hash_alg = acvp_lookup_hash_alg(hash_alg_str);
         if (hash_alg != ACVP_SHA224 && hash_alg != ACVP_SHA256 &&
-            hash_alg != ACVP_SHA384 && hash_alg != ACVP_SHA512) {
+            hash_alg != ACVP_SHA384 && hash_alg != ACVP_SHA512 &&
+            hash_alg != ACVP_SHA512_224 && hash_alg != ACVP_SHA512_256 &&
+            hash_alg != ACVP_SHA3_224 && hash_alg != ACVP_SHA3_256 &&
+            hash_alg != ACVP_SHA3_384 && hash_alg != ACVP_SHA3_512) {
             ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
             rv = ACVP_INVALID_ARG;
             goto err;

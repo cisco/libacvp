@@ -21,6 +21,7 @@
 //TEST_GROUP(BUILD_MODULES);
 //TEST_GROUP(BUILD_OES);
 TEST_GROUP(BUILD_TEST_SESSION);
+TEST_GROUP(RSA_X931_REGISTRATION);
 
 static ACVP_CTX *ctx = NULL;
 static ACVP_RESULT rv = 0;
@@ -1309,6 +1310,12 @@ TEST_TEAR_DOWN(BUILD_TEST_SESSION) {
     build_vendors_tear_down_helper();
 }
 
+TEST_SETUP(RSA_X931_REGISTRATION) {}
+
+TEST_TEAR_DOWN(RSA_X931_REGISTRATION) {
+    build_vendors_tear_down_helper();
+}
+
 TEST_SETUP(BUILD_OES) {}
 TEST_TEAR_DOWN(BUILD_OES) {
     build_vendors_tear_down_helper();
@@ -2102,6 +2109,91 @@ TEST(BUILD_TEST_SESSION, rsa_keygen_186_4_no_mgf1) {
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 
     free(expo_str);
+}
+
+TEST(RSA_X931_REGISTRATION, all_nist_capabilities_legacy_only) {
+    const int moduli[] = { 1024, 2048, 3072, 4096 };
+    const ACVP_HASH_ALG hashes[] = { ACVP_SHA1, ACVP_SHA256, ACVP_SHA384, ACVP_SHA512 };
+    size_t i, j;
+
+    setup_empty_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_SHA, cvalue));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_DRBG, cvalue));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE,
+                                                             ACVP_RSA_PUB_EXP_MODE_RANDOM));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_X931));
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931,
+                                                                         moduli[i], hashes[j], 0));
+        }
+    }
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_build_registration_json(ctx, &generated_value));
+}
+
+TEST(RSA_X931_REGISTRATION, mixed_x931_last) {
+    setup_empty_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_SHA, cvalue));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_DRBG, cvalue));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE,
+                                                             ACVP_RSA_PUB_EXP_MODE_RANDOM));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA256, 0));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA384, 48));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_mod_mask(ctx, 3072, ACVP_RSA_MASK_FUNCTION_MGF1));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_X931));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 1024, ACVP_SHA1, 0));
+
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_build_registration_json(ctx, &generated_value));
+}
+
+TEST(RSA_X931_REGISTRATION, pkcs1_sha1_not_implicitly_legacy) {
+    setup_empty_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_SHA, cvalue));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_DRBG, cvalue));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE,
+                                                             ACVP_RSA_PUB_EXP_MODE_RANDOM));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_X931));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 1024, ACVP_SHA1, 0));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA1, 0));
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, acvp_build_registration_json(ctx, &generated_value));
+}
+
+TEST(RSA_X931_REGISTRATION, pss_1024_not_implicitly_legacy) {
+    setup_empty_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_SHA, cvalue));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_DRBG, cvalue));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE,
+                                                             ACVP_RSA_PUB_EXP_MODE_RANDOM));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_X931));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 1024, ACVP_SHA1, 0));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 1024, ACVP_SHA256, 0));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_mod_mask(ctx, 1024, ACVP_RSA_MASK_FUNCTION_MGF1));
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, acvp_build_registration_json(ctx, &generated_value));
+}
+
+TEST(RSA_X931_REGISTRATION, siggen_x931_still_rejected_by_default) {
+    setup_empty_ctx(&ctx);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_SHA, cvalue));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_DRBG, cvalue));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE,
+                                                             ACVP_RSA_PUB_EXP_MODE_RANDOM));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_X931));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 1024, ACVP_SHA1, 0));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success));
+    TEST_ASSERT_EQUAL(ACVP_UNSUPPORTED_OP, acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_X931));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15,
+                                                                 2048, ACVP_SHA256, 0));
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, acvp_build_registration_json(ctx, &generated_value));
 }
 
 // Test ECDSA SigGen with ACVP_REVISION_186_BOTH (should succeed)

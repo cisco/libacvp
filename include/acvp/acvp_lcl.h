@@ -1382,6 +1382,7 @@ typedef struct acvp_pbkdf_capability {
 
 typedef struct acvp_kdf_tls12_capability {
     ACVP_NAME_LIST *hash_algs;
+    ACVP_JSON_DOMAIN_OBJ key_block_len;
 } ACVP_KDF_TLS12_CAP;
 
 typedef struct acvp_kdf_tls13_capability {

@@ -45,12 +45,13 @@ static unsigned char *fixed_info_gen_concat(ACVP_KDA_PATTERN_CANDIDATE *fixedInf
 
     // calculate the size of the buffer we need for fixed info, +4 incase L is included
     totalLen = literalLen + uPartyIdLen + uEphemeralLen + vPartyIdLen
-                    + vEphemeralLen + algIdLen + labelLen + contextLen + tLen;
+                    + vEphemeralLen + algIdLen + labelLen + contextLen;
     // add 4 bytes for the int of lengths is used
     for (i = 0; i < ACVP_KDA_PATTERN_MAX; i++) {
         if (fixedInfoPattern[i] == ACVP_KDA_PATTERN_L) {
             totalLen += 4;
-            break;
+        } else if (fixedInfoPattern[i] == ACVP_KDA_PATTERN_T) {
+            totalLen += tLen;
         }
     }
 
@@ -157,6 +158,9 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDA_HKDF_TC *stc = NULL;
     int rv = 1, fixedInfoLen = 0;
     unsigned char *fixedInfo = NULL;
+    unsigned char *hybridSecret = NULL;
+    const unsigned char *key = NULL;
+    size_t keyLen = 0;
     OSSL_PARAM_BLD *pbld = NULL;
     OSSL_PARAM *params = NULL;
     EVP_KDF *kdf = NULL;
@@ -175,6 +179,30 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
     if (stc->encoding != ACVP_KDA_ENCODING_CONCAT) {
         printf("Unsupported encoding provided for KDA HKDF\n");
         goto end;
+    }
+    if (!stc->z || stc->zLen <= 0) {
+        printf("Invalid shared secret in KDA HKDF\n");
+        goto end;
+    }
+    key = stc->z;
+    keyLen = (size_t)stc->zLen;
+    if (stc->uses_hybrid_secret) {
+        if (!stc->t || stc->tLen <= 0) {
+            printf("Invalid auxiliary shared secret in KDA HKDF\n");
+            goto end;
+        }
+        keyLen += (size_t)stc->tLen;
+        hybridSecret = OPENSSL_malloc(keyLen);
+        if (!hybridSecret) {
+            printf("Error allocating hybrid shared secret in KDA HKDF\n");
+            goto end;
+        }
+        if (memcpy_s(hybridSecret, keyLen, stc->z, stc->zLen) ||
+            memcpy_s(hybridSecret + stc->zLen, keyLen - stc->zLen, stc->t, stc->tLen)) {
+            printf("Error constructing hybrid shared secret in KDA HKDF\n");
+            goto end;
+        }
+        key = hybridSecret;
     }
 
     fixedInfo = fixed_info_gen_concat(stc->fixedInfoPattern, stc->literalCandidate, stc->uPartyId,
@@ -204,10 +232,13 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
         printf("Error creating param_bld in HKDF\n");
         goto end;
     }
-    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, md, 0);
-    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_KEY, stc->z, (size_t)stc->zLen);
-    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_INFO, fixedInfo, (size_t)fixedInfoLen);
-    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SALT, stc->salt, (size_t)stc->saltLen);
+    if (!OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, md, 0) ||
+        !OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_KEY, key, keyLen) ||
+        !OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_INFO, fixedInfo, (size_t)fixedInfoLen) ||
+        !OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SALT, stc->salt, (size_t)stc->saltLen)) {
+        printf("Error building params in HKDF\n");
+        goto end;
+    }
     params = OSSL_PARAM_BLD_to_param(pbld);
     if (!params) {
         printf("Error generating params in HKDF\n");
@@ -223,6 +254,7 @@ end:
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (fixedInfo) free(fixedInfo);
+    if (hybridSecret) OPENSSL_clear_free(hybridSecret, keyLen);
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
     return rv;

@@ -4277,13 +4277,6 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_type(ACVP_CTX *ctx,
 
     sigver_cap = cap_list->cap.rsa_sigver_cap;
 
-    if (sigver_cap->revision != ACVP_REVISION_FIPS186_4 &&
-        sigver_cap->revision != ACVP_REVISION_186_BOTH &&
-        value == ACVP_RSA_SIG_TYPE_X931) {
-        ACVP_LOG_ERR("ANS X9.31 signatures only allowed for FIPS 186-4");
-        return ACVP_UNSUPPORTED_OP;
-    }
-
     while (sigver_cap) {
         if (!sigver_cap->sig_type) {
             break;
@@ -4333,7 +4326,9 @@ ACVP_RESULT acvp_cap_rsa_siggen_set_type(ACVP_CTX *ctx,
     if (siggen_cap->revision != ACVP_REVISION_FIPS186_4 &&
         siggen_cap->revision != ACVP_REVISION_186_BOTH &&
         value == ACVP_RSA_SIG_TYPE_X931) {
-        ACVP_LOG_ERR("ANS X9.31 signatures only allowed for FIPS 186-4");
+        ACVP_LOG_ERR("ANS X9.31 signature generation requires an explicit "
+                     "ACVP_REVISION_FIPS186_4 or ACVP_REVISION_186_BOTH selection; "
+                     "X9.31 is registered only under FIPS 186-4.");
         return ACVP_UNSUPPORTED_OP;
     }
 
@@ -6817,6 +6812,24 @@ ACVP_RESULT acvp_cap_kdf135_x963_set_parm(ACVP_CTX *ctx,
         case ACVP_SHA512:
             result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_512);
             break;
+        case ACVP_SHA512_224:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_512_224);
+            break;
+        case ACVP_SHA512_256:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_512_256);
+            break;
+        case ACVP_SHA3_224:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA3_224);
+            break;
+        case ACVP_SHA3_256:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA3_256);
+            break;
+        case ACVP_SHA3_384:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA3_384);
+            break;
+        case ACVP_SHA3_512:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA3_512);
+            break;
         default:
             ACVP_LOG_ERR("Invalid hash alg");
             return ACVP_INVALID_ARG;
@@ -7144,6 +7157,7 @@ ACVP_RESULT acvp_cap_kdf_tls12_set_parm(ACVP_CTX *ctx,
             result = acvp_append_name_list(&cap->hash_algs, alg_str);
         }
         break;
+    case ACVP_KDF_TLS12_KEY_BLOCK_LEN:
     case ACVP_KDF_TLS12_PARAM_MIN:
     default:
         return ACVP_INVALID_ARG;
@@ -7152,6 +7166,40 @@ ACVP_RESULT acvp_cap_kdf_tls12_set_parm(ACVP_CTX *ctx,
     return result;
 }
 
+
+ACVP_RESULT acvp_cap_kdf_tls12_set_domain(ACVP_CTX *ctx,
+                                          ACVP_KDF_TLS12_PARM param,
+                                          int min, int max, int increment) {
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_JSON_DOMAIN_OBJ *domain;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF_TLS12);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found. You must enable algorithm before setting parameters.");
+        return ACVP_NO_CAP;
+    }
+
+    if (param != ACVP_KDF_TLS12_KEY_BLOCK_LEN) {
+        ACVP_LOG_ERR("Invalid domain parameter for TLS 1.2 KDF.");
+        return ACVP_INVALID_ARG;
+    }
+    if (min < 512 || max > 1024 || max < min ||
+        increment < 8 || min % 8 || max % 8 || increment % 8) {
+        ACVP_LOG_ERR("Invalid TLS 1.2 KDF key block length domain; lengths must be 512..1024 bits in byte increments.");
+        return ACVP_INVALID_ARG;
+    }
+
+    domain = &cap_list->cap.kdf_tls12_cap->key_block_len;
+    domain->min = min;
+    domain->max = max;
+    domain->increment = increment;
+
+    return ACVP_SUCCESS;
+}
 
 
 ACVP_RESULT acvp_cap_kdf_tls13_enable(ACVP_CTX *ctx,
