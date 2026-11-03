@@ -1255,7 +1255,7 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap(ACVP_CTX *ctx, JSON_Object
  * Validate RSA signature capabilities for FIPS 186 mode compatibility
  * Performs multiple checks:
  * 1. For Mode BOTH: Validates mask functions (MGF1 required for PSS)
- * 2. For Mode 5: Errors if 186-4-only parameters present (X9.31, SHA1, 1024-bit)
+ * 2. For Mode 5: Routes X9.31 sigVer to 186-4; rejects other 186-4-only parameters
  * 3. For Mode BOTH: Logs INFO if 186-4-only parameters present (will be auto-excluded)
  */
 static ACVP_RESULT acvp_validate_rsa_sig_caps(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap_entry) {
@@ -1292,6 +1292,11 @@ static ACVP_RESULT acvp_validate_rsa_sig_caps(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap
     while (current_cap) {
         // Check for X9.31 signature type (not supported in 186-5)
         if (current_cap->sig_type == ACVP_RSA_SIG_TYPE_X931) {
+            if (is_sigver && revision == ACVP_REVISION_DEFAULT) {
+                ACVP_LOG_INFO("Registering ANS X9.31 signature verification separately under FIPS 186-4.");
+                current_cap = current_cap->next;
+                continue;
+            }
             if (revision == ACVP_REVISION_186_BOTH) {
                 ACVP_LOG_INFO("ANS X9.31 signatures are not supported in FIPS 186-5. "
                               "Excluding X9.31 from 186-5 registration.");
@@ -1407,7 +1412,8 @@ static ACVP_RESULT acvp_validate_ecdsa_sig_caps(ACVP_CTX *ctx, ACVP_ECDSA_CAP *e
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry,
+                                                   int x931_only) {
     ACVP_RESULT result = ACVP_SUCCESS;
     ACVP_PARAM_LIST *plist = NULL;
     ACVP_RSA_SIG_CAP *rsa_cap_mode = NULL;
@@ -1460,8 +1466,9 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
     alg_specs_array = json_object_get_array(cap_obj, "capabilities");
 
     while (rsa_cap_mode) {
-        // For FIPS 186-5, skip X9.31 signature type (not supported)
-        if (rev != ACVP_REVISION_FIPS186_4 && rsa_cap_mode->sig_type == ACVP_RSA_SIG_TYPE_X931) {
+        // Keep the implicit legacy SigVer registration separate from current signature types.
+        if ((x931_only && rsa_cap_mode->sig_type != ACVP_RSA_SIG_TYPE_X931) ||
+            (rev != ACVP_REVISION_FIPS186_4 && rsa_cap_mode->sig_type == ACVP_RSA_SIG_TYPE_X931)) {
             rsa_cap_mode = rsa_cap_mode->next;
             continue;
         }
@@ -2734,6 +2741,9 @@ static ACVP_RESULT acvp_build_pbkdf_register_cap(JSON_Object *cap_obj, ACVP_CAPS
 
 static ACVP_RESULT acvp_build_kdf_tls12_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
+    JSON_Value *domain_val = NULL;
+    JSON_Object *domain_obj = NULL;
+    ACVP_JSON_DOMAIN_OBJ *domain = &cap_entry->cap.kdf_tls12_cap->key_block_len;
     ACVP_RESULT result;
     const char *revision = NULL, *mode = NULL;
     ACVP_NAME_LIST *hash_alg_list = NULL;
@@ -2755,6 +2765,17 @@ static ACVP_RESULT acvp_build_kdf_tls12_register_cap(JSON_Object *cap_obj, ACVP_
     while (hash_alg_list) {
         json_array_append_string(temp_arr, hash_alg_list->name);
         hash_alg_list = hash_alg_list->next;
+    }
+
+    if (domain->increment) {
+        json_object_set_value(cap_obj, "keyBlockLength", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "keyBlockLength");
+        domain_val = json_value_init_object();
+        domain_obj = json_value_get_object(domain_val);
+        json_object_set_number(domain_obj, "min", domain->min);
+        json_object_set_number(domain_obj, "max", domain->max);
+        json_object_set_number(domain_obj, "increment", domain->increment);
+        json_array_append_value(temp_arr, domain_val);
     }
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
@@ -5905,17 +5926,31 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 }
                 break;
             case ACVP_RSA_SIGGEN:
-            case ACVP_RSA_SIGVER:
+            case ACVP_RSA_SIGVER: {
+                ACVP_RSA_SIG_CAP *sig_type = NULL;
+                int has_x931 = 0, has_current = 0;
+
                 rv = acvp_validate_rsa_sig_caps(ctx, cap_entry);
                 if (rv != ACVP_SUCCESS) {
                     break;
+                }
+
+                if (cap_entry->cipher == ACVP_RSA_SIGVER &&
+                    cap_entry->cap.rsa_sigver_cap->revision == ACVP_REVISION_DEFAULT) {
+                    for (sig_type = cap_entry->cap.rsa_sigver_cap; sig_type; sig_type = sig_type->next) {
+                        if (sig_type->sig_type == ACVP_RSA_SIG_TYPE_X931) {
+                            has_x931 = 1;
+                        } else {
+                            has_current = 1;
+                        }
+                    }
                 }
 
                 // If revision = BOTH, we need two registrations (FIPS 186-4 and FIPS 186-5)
                 if (cap_entry->cipher == ACVP_RSA_SIGGEN &&
                     cap_entry->cap.rsa_siggen_cap->revision == ACVP_REVISION_186_BOTH) {
                     cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_FIPS186_4;
-                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry, 0);
                     if (rv != ACVP_SUCCESS) {
                         cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
                         break;
@@ -5924,26 +5959,30 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                     cap_val = json_value_init_object();
                     cap_obj = json_value_get_object(cap_val);
                     cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
-                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry, 0);
                     cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
                 } else if (cap_entry->cipher == ACVP_RSA_SIGVER &&
-                           cap_entry->cap.rsa_sigver_cap->revision == ACVP_REVISION_186_BOTH) {
+                           (cap_entry->cap.rsa_sigver_cap->revision == ACVP_REVISION_186_BOTH || has_x931)) {
+                    ACVP_REVISION saved_revision = cap_entry->cap.rsa_sigver_cap->revision;
                     cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_FIPS186_4;
-                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry, has_x931);
+                    cap_entry->cap.rsa_sigver_cap->revision = saved_revision;
                     if (rv != ACVP_SUCCESS) {
-                        cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_186_BOTH;
                         break;
                     }
-                    json_array_append_value(caps_arr, cap_val);
-                    cap_val = json_value_init_object();
-                    cap_obj = json_value_get_object(cap_val);
-                    cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
-                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
-                    cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_186_BOTH;
+                    if (saved_revision == ACVP_REVISION_186_BOTH || has_current) {
+                        json_array_append_value(caps_arr, cap_val);
+                        cap_val = json_value_init_object();
+                        cap_obj = json_value_get_object(cap_val);
+                        cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
+                        rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry, 0);
+                        cap_entry->cap.rsa_sigver_cap->revision = saved_revision;
+                    }
                 } else {
-                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry, 0);
                 }
                 break;
+            }
             case ACVP_RSA_SIGPRIM:
             case ACVP_RSA_DECPRIM:
                 rv = acvp_build_rsa_prim_register_cap(cap_obj, cap_entry);
@@ -6520,4 +6559,3 @@ ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx,
 
     return ACVP_SUCCESS;
 }
-

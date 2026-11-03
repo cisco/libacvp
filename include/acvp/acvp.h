@@ -936,7 +936,8 @@ typedef enum acvp_pbkdf_param {
 /** @enum ACVP_KDF_TLS12_PARM */
 typedef enum acvp_kdf_tls12_param {
     ACVP_KDF_TLS12_PARAM_MIN,
-    ACVP_KDF_TLS12_HASH_ALG //!< HMAC algorithms supported by TLS 1.2 implementation
+    ACVP_KDF_TLS12_HASH_ALG, //!< HMAC algorithms supported by TLS 1.2 implementation
+    ACVP_KDF_TLS12_KEY_BLOCK_LEN //!< Key block length in bits
 } ACVP_KDF_TLS12_PARM;
 
 /** @enum ACVP_KDF_TLS13_RUN_MODE */
@@ -3860,6 +3861,11 @@ ACVP_RESULT acvp_cap_rsa_siggen_set_parm(ACVP_CTX *ctx,
                                              ACVP_RSA_PARM param,
                                              int value);
 
+/**
+ * @brief Set RSA signature verification parameters. With the default revision,
+ *        X9.31 is automatically registered separately under FIPS186-4, while
+ *        the remaining signature types use FIPS186-5.
+ */
 ACVP_RESULT acvp_cap_rsa_sigver_set_parm(ACVP_CTX *ctx,
                                          ACVP_RSA_PARM param,
                                          int value);
@@ -4469,8 +4475,9 @@ ACVP_RESULT acvp_cap_kdf135_x942_set_domain(ACVP_CTX *ctx,
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param param ACVP_KDF135_X963_PARM enum value specifying parameter
- * @param value integer value for parameter. The acceptable hash algs are defined in an enum
- *        ACVP_KDF135_X963_HASH_VALS in the library
+ * @param value integer value for parameter. For ACVP_KDF_X963_HASH_ALG, accepts
+ *        ACVP_SHA224, ACVP_SHA256, ACVP_SHA384, ACVP_SHA512, ACVP_SHA512_224,
+ *        ACVP_SHA512_256, ACVP_SHA3_224, ACVP_SHA3_256, ACVP_SHA3_384, ACVP_SHA3_512.
  *
  * @return ACVP_RESULT
  */
@@ -4686,6 +4693,22 @@ ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_kdf_tls12_set_parm(ACVP_CTX *ctx,
                                         ACVP_KDF_TLS12_PARM param,
                                         int value);
+
+/**
+ * @brief Sets the optional TLS 1.2 KDF key block length domain. If not set,
+ *        the server default of 1024 bits is used.
+ *
+ * @param ctx Context created by acvp_create_test_session, with TLS 1.2 KDF enabled.
+ * @param param ACVP_KDF_TLS12_KEY_BLOCK_LEN.
+ * @param min Minimum length in bits, from 512 to 1024 and divisible by 8.
+ * @param max Maximum length in bits, from min to 1024 and divisible by 8.
+ * @param increment Positive increment in bits, divisible by 8.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kdf_tls12_set_domain(ACVP_CTX *ctx,
+                                          ACVP_KDF_TLS12_PARM param,
+                                          int min, int max, int increment);
 
 /**
  * @brief acvp_cap_kdf_tls13_set_parm() allows an application to specify operational parameters to

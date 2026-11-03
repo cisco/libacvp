@@ -36,6 +36,18 @@ For example:
 ./test/runtest -g AES -v
 ```
 
+The `RSA_X931_REGISTRATION` group provides five sanity checks for the OpenSSL
+3.5 registration pattern: all 16 X9.31 modulus/hash combinations, mixed SigVer
+registrations, representative invalid modern capabilities, and unchanged
+SigGen restrictions. Each test keeps its setup inline and checks API and
+registration-build return values rather than inspecting the serialized JSON.
+
+Run from the test directory so JSON fixtures used by other groups resolve:
+```
+cd test
+./runtest -g RSA_X931_REGISTRATION -v
+```
+
 ## Contributing
 
 Before opening a pull request that modifies unit tests or adds new test coverage,

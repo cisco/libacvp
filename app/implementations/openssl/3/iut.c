@@ -122,7 +122,7 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
         printf("Registering capabilities for FP 3.4.0 (not certified)...\n");
         return register_capabilities_fp_340(ctx, cfg);
     } else if (fips_ver < OPENSSL_FIPS_360) { // for any versions of 3.5.0
-        printf("Registering capabilities for FP 3.5.0...\n");
+        printf("Registering capabilities for FP 3.5.X...\n");
         return register_capabilities_fp_350(ctx, cfg);
     } else {
         printf("Registering capabilities for FP 4.X (unverified)...\n");
