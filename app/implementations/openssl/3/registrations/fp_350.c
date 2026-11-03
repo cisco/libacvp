@@ -23,6 +23,7 @@ static int enable_dsa(ACVP_CTX *ctx);
 static int enable_kas_ffc(ACVP_CTX *ctx);
 static int enable_safe_primes(ACVP_CTX *ctx);
 static int enable_aes(ACVP_CTX *ctx);
+static int enable_tdes(ACVP_CTX *ctx);
 static int enable_hash(ACVP_CTX *ctx);
 static int enable_cmac(ACVP_CTX *ctx);
 static int enable_hmac(ACVP_CTX *ctx);
@@ -44,6 +45,7 @@ ACVP_RESULT register_capabilities_fp_350(ACVP_CTX *ctx, APP_CONFIG *cfg) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (cfg->aes || cfg->testall) { if ((rv = enable_aes(ctx))) goto end; }
+    if (cfg->tdes || cfg->testall) { if ((rv = enable_tdes(ctx))) goto end; }
     if (cfg->hash || cfg->testall) { if ((rv = enable_hash(ctx))) goto end; }
     if (cfg->cmac || cfg->testall) { if ((rv = enable_cmac(ctx))) goto end; }
     if (cfg->hmac || cfg->testall) { if ((rv = enable_hmac(ctx))) goto end; }
@@ -420,6 +422,27 @@ static int enable_aes(ACVP_CTX *ctx) {
 
 end:
 
+    return rv;
+}
+
+static int enable_tdes(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_ECB, &app_des_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_DECRYPT);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &app_des_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_DECRYPT);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
+    CHECK_ENABLE_CAP_RV(rv);
+
+end:
     return rv;
 }
 
