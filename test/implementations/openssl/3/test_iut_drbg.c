@@ -178,6 +178,9 @@ int initialize_drbg_tc(ACVP_DRBG_TC *drbg_tc, int alg_id, int mode_id,
 
     drbg_tc->mode = mode_id;
     drbg_tc->cipher = alg_id;
+    if (alg_id == ACVP_CTRDRBG) {
+        drbg_tc->counter_field_len = mode_id == ACVP_DRBG_TDES ? 64 : 128;
+    }
 
     return 1;
 err:

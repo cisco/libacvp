@@ -1,0 +1,25 @@
+[
+  {
+    "acvVersion": "0.4"
+  },
+  {
+    "vsId": 10231,
+    "algorithm": "ctrDRBG",
+    "testGroups": [
+      {
+        "nonceLen": 64,
+        "predResistance": true,
+        "persoStringLen": 0,
+        "tgId": 999,
+        "derFunc": true,
+        "tests": [],
+        "additionalInputLen": 0,
+        "mode": "AES-128",
+        "returnedBitsLen": 256,
+        "testType": "AFT",
+        "reSeed": false,
+        "entropyInputLen": 128
+      }
+    ]
+  }
+]
