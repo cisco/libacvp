@@ -70,6 +70,7 @@ static void print_usage(int code) {
     printf("      --rsa\n");
     printf("      --ecdsa\n");
     printf("      --eddsa\n");
+    printf("      --xecdh\n");
     printf("      --drbg\n");
     printf("      --kas_ecc\n");
     printf("      --kas_ifc\n");
@@ -224,6 +225,7 @@ static ko_longopt_t longopts[] = {
     { "ml_kem", ko_no_argument, 330 },
     { "slh_dsa", ko_no_argument, 331 },
     { "cshake", ko_no_argument, 332 },
+    { "xecdh", ko_no_argument, 333 },
     { "all_algs", ko_no_argument, 350 },
     { "manual_registration", ko_required_argument, 400 },
     { "fips_validation", ko_required_argument, 402 },
@@ -426,6 +428,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             break;
         case 332:
             cfg->cshake = 1;
+            cfg->empty_alg = 0;
+            break;
+        case 333:
+            cfg->xecdh = 1;
             cfg->empty_alg = 0;
             break;
         case 'a':

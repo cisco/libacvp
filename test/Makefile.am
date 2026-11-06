@@ -113,6 +113,7 @@ APP_LINK += ../app/implementations/openssl/3/acvp_app-iut.o \
             ../app/implementations/openssl/3/acvp_app-iut_rsa.o \
             ../app/implementations/openssl/3/acvp_app-iut_ecdsa.o \
             ../app/implementations/openssl/3/acvp_app-iut_eddsa.o \
+            ../app/implementations/openssl/3/acvp_app-iut_xecdh.o \
             ../app/implementations/openssl/3/acvp_app-iut_drbg.o \
             ../app/implementations/openssl/3/acvp_app-iut_kda.o \
             ../app/implementations/openssl/3/acvp_app-iut_kmac.o \

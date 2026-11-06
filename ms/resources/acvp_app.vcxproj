@@ -69,6 +69,7 @@
     <ClCompile Include="..\..\app\implementations\openssl\3\iut_dsa.c" Condition=" '$(Configuration)' == 'openssl3' " />
     <ClCompile Include="..\..\app\implementations\openssl\3\iut_ecdsa.c" Condition=" '$(Configuration)' == 'openssl3' " />
     <ClCompile Include="..\..\app\implementations\openssl\3\iut_eddsa.c" Condition=" '$(Configuration)' == 'openssl3' " />
+    <ClCompile Include="..\..\app\implementations\openssl\3\iut_xecdh.c" Condition=" '$(Configuration)' == 'openssl3' " />
     <ClCompile Include="..\..\app\implementations\openssl\3\iut_hmac.c" Condition=" '$(Configuration)' == 'openssl3' " />
     <ClCompile Include="..\..\app\implementations\openssl\3\iut_kas.c" Condition=" '$(Configuration)' == 'openssl3' " />
     <ClCompile Include="..\..\app\implementations\openssl\3\iut_kdf.c" Condition=" '$(Configuration)' == 'openssl3' " />

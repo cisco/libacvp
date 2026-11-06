@@ -44,6 +44,7 @@ libacvp_la_SOURCES =  acvp.c \
                     acvp_safe_primes.c \
                     acvp_ecdsa.c \
                     acvp_eddsa.c \
+                    acvp_xecdh.c \
                     acvp_lms.c \
                     acvp_ml_dsa.c \
                     acvp_ml_kem.c \
