@@ -181,8 +181,11 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_ML_KEM_XCAP,       &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_XCAP, ACVP_REV_ML_KEM, {.ml_kem = ACVP_SUB_ML_KEM_XCAP}},
     { ACVP_SLH_DSA_KEYGEN,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_KEYGEN, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_KEYGEN}},
     { ACVP_SLH_DSA_SIGGEN,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_SIGGEN, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_SIGGEN}},
-    { ACVP_SLH_DSA_SIGVER,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_SIGVER, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_SIGVER}}
-};
+    { ACVP_SLH_DSA_SIGVER,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_SIGVER, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_SIGVER}},
+    { ACVP_ASCON_AEAD128,     &acvp_ascon_kat_handler,            ACVP_ALG_ASCON,             ACVP_ALG_ASCON_AEAD128, ACVP_REV_ASCON, {.ascon = ACVP_SUB_ASCON_AEAD128}},
+    { ACVP_ASCON_CXOF128,     &acvp_ascon_kat_handler,            ACVP_ALG_ASCON,             ACVP_ALG_ASCON_CXOF128, ACVP_REV_ASCON, {.ascon = ACVP_SUB_ASCON_CXOF128}},
+    { ACVP_ASCON_HASH256,     &acvp_ascon_kat_handler,            ACVP_ALG_ASCON,             ACVP_ALG_ASCON_HASH256, ACVP_REV_ASCON, {.ascon = ACVP_SUB_ASCON_HASH256}},
+    { ACVP_ASCON_XOF128,      &acvp_ascon_kat_handler,            ACVP_ALG_ASCON,             ACVP_ALG_ASCON_XOF128,  ACVP_REV_ASCON, {.ascon = ACVP_SUB_ASCON_XOF128}}};
 
 /*
  * This is the first function the user should invoke to allocate
@@ -735,6 +738,15 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             case ACVP_DSA_TYPE:
                 acvp_cap_free_dsa_attrs(cap_entry);
                 free(cap_entry->cap.dsa_cap);
+                break;
+            case ACVP_ASCON_TYPE:
+                acvp_cap_free_domain(&cap_entry->cap.ascon_cap->payload_len);
+                acvp_cap_free_domain(&cap_entry->cap.ascon_cap->ad_len);
+                acvp_cap_free_domain(&cap_entry->cap.ascon_cap->tag_len);
+                acvp_cap_free_domain(&cap_entry->cap.ascon_cap->msg_len);
+                acvp_cap_free_domain(&cap_entry->cap.ascon_cap->out_len);
+                acvp_cap_free_domain(&cap_entry->cap.ascon_cap->custom_len);
+                free(cap_entry->cap.ascon_cap);
                 break;
             case ACVP_KAS_ECC_CDH_TYPE:
             case ACVP_KAS_ECC_COMP_TYPE:
