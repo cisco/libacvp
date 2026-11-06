@@ -271,6 +271,8 @@ TEST_GROUP_RUNNER(DRBG_HANDLER) {
     RUN_TEST_CASE(DRBG_HANDLER, big_persoStringLen);
     RUN_TEST_CASE(DRBG_HANDLER, missing_returnedBitsLen);
     RUN_TEST_CASE(DRBG_HANDLER, big_returnedBitsLen);
+    RUN_TEST_CASE(DRBG_HANDLER, missing_counterFieldLen);
+    RUN_TEST_CASE(DRBG_HANDLER, big_counterFieldLen);
     RUN_TEST_CASE(DRBG_HANDLER, big_additionalInputLen);
     RUN_TEST_CASE(DRBG_HANDLER, missing_persoString);
     RUN_TEST_CASE(DRBG_HANDLER, long_persoString);

@@ -80,6 +80,7 @@
 #define ACVP_REV_STR_FIPS203 "FIPS203"
 #define ACVP_REV_STR_FIPS204 "FIPS204"
 #define ACVP_REV_STR_FIPS205 "FIPS205"
+#define ACVP_REV_STR_SP800_90AR1 "SP800-90Ar1"
 
 // AES
 #define ACVP_REV_AES_ECB             ACVP_REV_STR_1_0
@@ -134,9 +135,9 @@
 #define ACVP_REV_HASH_SHAKE_256      ACVP_REV_STR_1_0
 
 // DRBG
-#define ACVP_REV_HASHDRBG            ACVP_REV_STR_1_0
-#define ACVP_REV_HMACDRBG            ACVP_REV_STR_1_0
-#define ACVP_REV_CTRDRBG             ACVP_REV_STR_1_0
+#define ACVP_REV_HASHDRBG            ACVP_REV_STR_SP800_90AR1
+#define ACVP_REV_HMACDRBG            ACVP_REV_STR_SP800_90AR1
+#define ACVP_REV_CTRDRBG             ACVP_REV_STR_SP800_90AR1
 
 /* HMAC */
 #define ACVP_REV_HMAC_SHA1           ACVP_REV_STR_2_0
@@ -553,6 +554,9 @@
 #define ACVP_DRB_BIT_MAX 4096
 #define ACVP_DRB_BYTE_MAX (ACVP_DRB_BIT_MAX >> 3)
 #define ACVP_DRB_STR_MAX (ACVP_DRB_BIT_MAX >> 2)
+#define ACVP_DRBG_AES_COUNTER_FIELD_BIT_MIN 4
+#define ACVP_DRBG_AES_COUNTER_FIELD_BIT_MAX 128
+#define ACVP_DRBG_TDES_COUNTER_FIELD_BIT_LEN 64
 
 #define ACVP_DRBG_ENTPY_IN_BIT_MIN 80
 #define ACVP_DRBG_ENTPY_IN_BIT_MAX 1048576 //!< 2^20 library limit. Spec allows 2^35
@@ -1438,7 +1442,8 @@ typedef struct acvp_drbg_cap_mode {
     int additional_in_len_max;
     int additional_in_len_min;
     int additional_in_len_step;
-    int returned_bits_len;      //":"256"
+    ACVP_JSON_DOMAIN_OBJ returned_bits_len;
+    int counter_field_len;
 } ACVP_DRBG_CAP_GROUP;
 
 typedef struct acvp_drbg_group_list_t {

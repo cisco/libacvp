@@ -3783,6 +3783,11 @@ static ACVP_RESULT acvp_add_drbg_length_range(ACVP_DRBG_CAP_GROUP *cap_group,
         cap_group->additional_in_len_max = max;
         break;
     case ACVP_DRBG_RET_BITS_LEN:
+        cap_group->returned_bits_len.min = min;
+        cap_group->returned_bits_len.increment = step;
+        cap_group->returned_bits_len.max = max;
+        break;
+    case ACVP_DRBG_COUNTER_FIELD_LEN:
     case ACVP_DRBG_PRE_REQ_VALS:
     case ACVP_DRBG_DER_FUNC_ENABLED:
     case ACVP_DRBG_PRED_RESIST_ENABLED:
@@ -3873,10 +3878,18 @@ ACVP_RESULT acvp_cap_drbg_set_length(ACVP_CTX *ctx,
                          max, ACVP_DRBG_ADDI_IN_BIT_MAX);
             return ACVP_INVALID_ARG;
         }
+        break;
+    case ACVP_DRBG_RET_BITS_LEN:
+        if (min < 1 ||
+            max > ACVP_DRB_BIT_MAX || min > max || step <= 0) {
+            ACVP_LOG_ERR("Invalid returnedBitsLen domain");
+            return ACVP_INVALID_ARG;
+        }
+        break;
     case ACVP_DRBG_DER_FUNC_ENABLED:
     case ACVP_DRBG_PRED_RESIST_ENABLED:
     case ACVP_DRBG_RESEED_ENABLED:
-    case ACVP_DRBG_RET_BITS_LEN:
+    case ACVP_DRBG_COUNTER_FIELD_LEN:
     case ACVP_DRBG_PRE_REQ_VALS:
     default:
         break;
@@ -3886,7 +3899,10 @@ ACVP_RESULT acvp_cap_drbg_set_length(ACVP_CTX *ctx,
     return acvp_add_drbg_length_range(grp, param, min, step, max);
 }
 
-static ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value) {
+static ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_CIPHER cipher,
+                                                 ACVP_DRBG_MODE mode,
+                                                 ACVP_DRBG_PARM parm,
+                                                 int value) {
     ACVP_RESULT retval = ACVP_INVALID_ARG;
 
     switch (parm) {
@@ -3922,7 +3938,20 @@ static ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value)
         }
         break;
     case ACVP_DRBG_RET_BITS_LEN:
-        if (value <= ACVP_DRB_BIT_MAX) {
+        if (value >= 1 &&
+            value <= ACVP_DRB_BIT_MAX) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_DRBG_COUNTER_FIELD_LEN:
+        if (cipher == ACVP_CTRDRBG &&
+            ((mode == ACVP_DRBG_TDES &&
+              value == ACVP_DRBG_TDES_COUNTER_FIELD_BIT_LEN) ||
+             ((mode == ACVP_DRBG_AES_128 ||
+               mode == ACVP_DRBG_AES_192 ||
+               mode == ACVP_DRBG_AES_256) &&
+              value >= ACVP_DRBG_AES_COUNTER_FIELD_BIT_MIN &&
+              value <= ACVP_DRBG_AES_COUNTER_FIELD_BIT_MAX))) {
             retval = ACVP_SUCCESS;
         }
         break;
@@ -3996,7 +4025,7 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    if (acvp_validate_drbg_parm_value(param, value) != ACVP_SUCCESS) {
+    if (acvp_validate_drbg_parm_value(cipher, mode, param, value) != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Error validating DRBG paramater value (param = %d, value = %d", param, value);
         return ACVP_INVALID_ARG;
     }
@@ -4024,7 +4053,12 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
         grp->additional_input_len = value;
         break;
     case ACVP_DRBG_RET_BITS_LEN:
-        grp->returned_bits_len = value;
+        if (acvp_append_sl_list(&grp->returned_bits_len.values, value) != ACVP_SUCCESS) {
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_DRBG_COUNTER_FIELD_LEN:
+        grp->counter_field_len = value;
         break;
     case ACVP_DRBG_PRE_REQ_VALS:
     default:

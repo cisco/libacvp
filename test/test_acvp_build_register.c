@@ -416,8 +416,8 @@ static void add_drbg_details_good(void) {
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
                                    ACVP_DRBG_RESEED_ENABLED, 1);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
-                                   ACVP_DRBG_RET_BITS_LEN, 224);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
+                                  ACVP_DRBG_RET_BITS_LEN, 224, 224, 448);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     //Add length range
     rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
