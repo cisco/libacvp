@@ -42,6 +42,7 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
                                      unsigned int entropy_len,
                                      unsigned int nonce_len,
                                      unsigned int drb_len,
+                                     unsigned int counter_field_len,
                                      ACVP_DRBG_MODE mode_id,
                                      ACVP_CIPHER alg_id);
 
@@ -132,7 +133,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         const char *mode_str = NULL;
         int der_func_enabled = 0, pred_resist_enabled = 0, reseed = 0;
         unsigned int perso_string_len = 0, entropy_len = 0, nonce_len = 0,
-                     drb_len = 0, additional_input_len = 0;
+                     drb_len = 0, additional_input_len = 0, counter_field_len = 0;
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
@@ -177,6 +178,47 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         if (alg_id == ACVP_CTRDRBG) {
             rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "derFunc", &der_func_enabled);
             if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            rv = acvp_tc_json_get_uint(ctx, alg_id, groupobj, "counterFieldLen",
+                                      &counter_field_len);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            switch (mode_id) {
+            case ACVP_DRBG_TDES:
+                if (counter_field_len != ACVP_DRBG_TDES_COUNTER_FIELD_BIT_LEN) {
+                    ACVP_LOG_ERR("Server JSON invalid 'counterFieldLen'(%u)",
+                                 counter_field_len);
+                    rv = ACVP_TC_INVALID_DATA;
+                    goto err;
+                }
+                break;
+            case ACVP_DRBG_AES_128:
+            case ACVP_DRBG_AES_192:
+            case ACVP_DRBG_AES_256:
+                if (counter_field_len < ACVP_DRBG_AES_COUNTER_FIELD_BIT_MIN ||
+                    counter_field_len > ACVP_DRBG_AES_COUNTER_FIELD_BIT_MAX) {
+                    ACVP_LOG_ERR("Server JSON invalid 'counterFieldLen'(%u)",
+                                 counter_field_len);
+                    rv = ACVP_TC_INVALID_DATA;
+                    goto err;
+                }
+                break;
+            case ACVP_DRBG_SHA_1:
+            case ACVP_DRBG_SHA_224:
+            case ACVP_DRBG_SHA_256:
+            case ACVP_DRBG_SHA_384:
+            case ACVP_DRBG_SHA_512:
+            case ACVP_DRBG_SHA_512_224:
+            case ACVP_DRBG_SHA_512_256:
+            case ACVP_DRBG_SHA3_224:
+            case ACVP_DRBG_SHA3_256:
+            case ACVP_DRBG_SHA3_384:
+            case ACVP_DRBG_SHA3_512:
+            default:
+                ACVP_LOG_ERR("Server JSON invalid ctrDRBG mode '%s'", mode_str);
+                rv = ACVP_UNSUPPORTED_OP;
                 goto err;
             }
         }
@@ -250,6 +292,9 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("    persoStringLen: %d", perso_string_len);
         ACVP_LOG_VERBOSE("    nonceLen: %d", nonce_len);
         ACVP_LOG_VERBOSE("    returnedBitsLen: %d", drb_len);
+        if (alg_id == ACVP_CTRDRBG) {
+            ACVP_LOG_VERBOSE("    counterFieldLen: %d", counter_field_len);
+        }
 
         // Handle test array
         rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
@@ -517,7 +562,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                    der_func_enabled, pred_resist_enabled,
                                    additional_input_len, perso_string_len,
                                    entropy_len, nonce_len,
-                                   drb_len, mode_id, alg_id);
+                                   drb_len, counter_field_len, mode_id, alg_id);
 
             if (rv != ACVP_SUCCESS) {
                 acvp_drbg_release_tc(&stc);
@@ -616,6 +661,7 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
                                      unsigned int entropy_len,
                                      unsigned int nonce_len,
                                      unsigned int drb_len,
+                                     unsigned int counter_field_len,
                                      ACVP_DRBG_MODE mode_id,
                                      ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
@@ -734,6 +780,7 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
     stc->entropy_len = ACVP_BIT2BYTE(entropy_len);
     stc->nonce_len = ACVP_BIT2BYTE(nonce_len);
     stc->drb_len = ACVP_BIT2BYTE(drb_len);
+    stc->counter_field_len = counter_field_len;
 
     stc->tc_id = tc_id;
     stc->mode = mode_id;

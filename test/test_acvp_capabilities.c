@@ -1762,6 +1762,12 @@ TEST(EnableCapDRBG, good_ctr) {
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
                                    ACVP_DRBG_RET_BITS_LEN, 256);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
+                                ACVP_DRBG_COUNTER_FIELD_LEN, 100);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
+                                ACVP_DRBG_COUNTER_FIELD_LEN, 129);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 }
 
 // enable drbg with null ctx

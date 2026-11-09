@@ -488,6 +488,7 @@ static void acvp_free_drbg_struct(ACVP_CAPS_LIST *cap_list) {
             while (group_list) {
                 next_group_list = group_list->next;
                 if (group_list->group) {
+                    acvp_cap_free_domain(&group_list->group->returned_bits_len);
                     free(group_list->group);
                 }
                 free(group_list);

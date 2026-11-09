@@ -941,10 +941,13 @@ static const char *acvp_lookup_drbg_mode_string(ACVP_DRBG_MODE_LIST *drbg_cap_mo
     return mode_str;
 }
 
-static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_drbg_register_cap(ACVP_CTX *ctx,
+                                                JSON_Object *cap_obj,
+                                                ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     ACVP_DRBG_CAP *cap = NULL;
     ACVP_DRBG_CAP_GROUP *cap_group = NULL;
+    ACVP_SL_LIST *lengths = NULL;
     JSON_Object *len_obj = NULL;
     JSON_Value *len_val = NULL;
     JSON_Array *array = NULL;
@@ -1094,8 +1097,38 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
                 json_array_append_value(array, len_val);
             }
 
-            // Set DRBG Length
-            json_object_set_number(capabilities_obj, "returnedBitsLen", cap_group->returned_bits_len);
+            json_object_set_value(capabilities_obj, "returnedBitsLen", json_value_init_array());
+            array = json_object_get_array(capabilities_obj, "returnedBitsLen");
+            if (cap_group->returned_bits_len.increment) {
+                len_val = json_value_init_object();
+                len_obj = json_value_get_object(len_val);
+                json_object_set_number(len_obj, "max", cap_group->returned_bits_len.max);
+                json_object_set_number(len_obj, "min", cap_group->returned_bits_len.min);
+                json_object_set_number(len_obj, "increment", cap_group->returned_bits_len.increment);
+                json_array_append_value(array, len_val);
+            }
+            lengths = cap_group->returned_bits_len.values;
+            while (lengths) {
+                json_array_append_number(array, lengths->length);
+                lengths = lengths->next;
+            }
+            if (!json_array_get_count(array)) {
+                json_value_free(val);
+                return ACVP_MISSING_ARG;
+            }
+
+            if (cap_entry->cipher == ACVP_CTRDRBG) {
+                int counter_field_len = cap_group->counter_field_len;
+
+                if (!counter_field_len) {
+                    counter_field_len = cap_mode_list->mode == ACVP_DRBG_TDES ?
+                                        ACVP_DRBG_TDES_COUNTER_FIELD_BIT_LEN :
+                                        ACVP_DRBG_AES_COUNTER_FIELD_BIT_MAX;
+                    ACVP_LOG_WARN("counterFieldLen not set for %s; using revision 1.0 behavior (%d bits)",
+                                  mode_str, counter_field_len);
+                }
+                json_object_set_number(capabilities_obj, "counterFieldLen", counter_field_len);
+            }
             json_array_append_value(capabilities_array, val);
             cap_group_list = cap_group_list->next;
         }
@@ -5857,7 +5890,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_HASHDRBG:
             case ACVP_HMACDRBG:
             case ACVP_CTRDRBG:
-                rv = acvp_build_drbg_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_drbg_register_cap(ctx, cap_obj, cap_entry);
                 break;
             case ACVP_HMAC_SHA1:
             case ACVP_HMAC_SHA2_224:

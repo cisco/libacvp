@@ -770,7 +770,8 @@ typedef enum acvp_drbg_param {
     ACVP_DRBG_PERSO_LEN,
     ACVP_DRBG_ADD_IN_LEN,
     ACVP_DRBG_RET_BITS_LEN,
-    ACVP_DRBG_PRE_REQ_VALS
+    ACVP_DRBG_PRE_REQ_VALS,
+    ACVP_DRBG_COUNTER_FIELD_LEN
 } ACVP_DRBG_PARM;
 
 /** @enum ACVP_RSA_PARM */
@@ -2606,6 +2607,7 @@ typedef struct acvp_drbg_tc_t {
     unsigned int entropy_len;          //!< Entropy length (in bytes)
     unsigned int nonce_len;            //!< Nonce length (in bytes)
     unsigned int drb_len;              //!< Expected drb length (in bytes)
+    unsigned int counter_field_len;    //!< ctrDRBG counter field length (in bits)
 } ACVP_DRBG_TC;
 
 /** @enum ACVP_LMS_PARAM */
