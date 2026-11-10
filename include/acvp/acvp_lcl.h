@@ -79,6 +79,7 @@
 #define ACVP_REV_STR_RFC7627 "RFC7627"
 #define ACVP_REV_STR_FIPS203 "FIPS203"
 #define ACVP_REV_STR_FIPS204 "FIPS204"
+#define ACVP_REV_STR_FIPS204_TR1 "FIPS204-tr1"
 #define ACVP_REV_STR_FIPS205 "FIPS205"
 
 // AES
@@ -1757,10 +1758,12 @@ typedef struct acvp_ml_dsa_cap_group_t {
 
 typedef struct acvp_ml_dsa_capability_t {
     ACVP_CIPHER cipher;
+    ACVP_REVISION revision;
     ACVP_DETERMINISTIC_MODE deterministic;   //!< For siggen only
     ACVP_ML_DSA_MU mu;                       //!< SigGen/SigVer mu mode
     ACVP_SIG_INTERFACE sig_interface;        //!< SigGen/SigVer interface
     ACVP_SIG_PREHASH prehash;                //!< SigGen/SigVer prehash support
+    ACVP_ML_DSA_KEY_FORMAT key_format;       //!< ML-DSA private key format
     ACVP_ML_DSA_CAP_GROUP *cap_group;        //!< Pointer to the first group of capabilities
 } ACVP_ML_DSA_CAP;
 
