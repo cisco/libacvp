@@ -28,6 +28,7 @@ TEST_GROUP(EnableCapKDFSRTP);
 TEST_GROUP(EnableCapKDFSSH);
 TEST_GROUP(EnableCapKDFTLS13);
 TEST_GROUP(EnableCapKDFx963);
+TEST_GROUP(EnableCapLMS);
 TEST_GROUP(EnableCapRSAkeyGen);
 TEST_GROUP(EnableCapTDES);
 
@@ -66,6 +67,11 @@ TEST_TEAR_DOWN(EnableCapHMAC) {
 
 TEST_SETUP(EnableCapHash) {}
 TEST_TEAR_DOWN(EnableCapHash) {
+    enable_cap_hash_tear_down_helper();
+}
+
+TEST_SETUP(EnableCapLMS) {}
+TEST_TEAR_DOWN(EnableCapLMS) {
     enable_cap_hash_tear_down_helper();
 }
 
@@ -2089,5 +2095,52 @@ TEST(EnableCapKDFTLS13, invalid_params) {
     rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_RUNNING_MODE, 0);
     TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     rv = acvp_cap_kdf_tls13_set_parm(ctx, 0, ACVP_SHA256);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+}
+
+TEST(EnableCapLMS, valid_params) {
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_lms_enable(ctx, ACVP_LMS_SIGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN,
+                               ACVP_LMS_PARAM_LMS_MODE,
+                               ACVP_LMS_MODE_SHA256_M24_H5);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN,
+                               ACVP_LMS_PARAM_LMOTS_MODE,
+                               ACVP_LMOTS_MODE_SHA256_N24_W4);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN,
+                               ACVP_LMS_PARAM_MSG_LEN, 9);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_lms_set_domain(ctx, ACVP_LMS_SIGGEN,
+                                 ACVP_LMS_PARAM_MSG_LEN, 8, 65536, 1);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+}
+
+TEST(EnableCapLMS, invalid_message_lengths) {
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_lms_enable(ctx, ACVP_LMS_KEYGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN,
+                               ACVP_LMS_PARAM_MSG_LEN, 1024);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    rv = acvp_cap_lms_set_domain(ctx, ACVP_LMS_KEYGEN,
+                                 ACVP_LMS_PARAM_MSG_LEN, 8, 1024, 8);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+
+    rv = acvp_cap_lms_enable(ctx, ACVP_LMS_SIGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN,
+                               ACVP_LMS_PARAM_MSG_LEN, 7);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    rv = acvp_cap_lms_set_domain(ctx, ACVP_LMS_SIGGEN,
+                                 ACVP_LMS_PARAM_MSG_LEN, 7, 65536, 1);
     TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 }
