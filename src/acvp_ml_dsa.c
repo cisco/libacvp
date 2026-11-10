@@ -427,6 +427,9 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
+			/* Reset prehash and externalmu values */
+    	    is_prehash = -1;
+    	    is_mu_external = -1;
             if (sig_interface == ACVP_SIG_INTERFACE_EXTERNAL) {
                 rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "preHash", &prehash_str);
                 if (rv != ACVP_SUCCESS) {
