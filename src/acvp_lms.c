@@ -419,16 +419,17 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             rv = acvp_lms_init_tc(ctx, &stc, alg_id, tc_id, tg_id, type, lms_mode, lmots_mode, pub_str,
                                   i_str, seed_str, msg_str, msg_bit_len, sig_str);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Failed to initialize LMS test case");
-                json_value_free(r_tval);
-                goto err;
-            }
 
             // Process the current test vector...
-            if ((cap->crypto_handler)(&tc)) {
-                ACVP_LOG_ERR("Crypto module failed the operation");
-                rv = ACVP_CRYPTO_MODULE_FAIL;
+            if (rv == ACVP_SUCCESS) {
+                if ((cap->crypto_handler)(&tc)) {
+                    ACVP_LOG_ERR("Crypto module failed the operation");
+                    rv = ACVP_CRYPTO_MODULE_FAIL;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+            } else {
+                ACVP_LOG_ERR("Failed to initialize LMS test case");
                 json_value_free(r_tval);
                 goto err;
             }
