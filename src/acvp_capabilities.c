@@ -2862,9 +2862,15 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
 
     switch (param) {
     case ACVP_HASH_IN_BIT:
+        if (alg == ACVP_SUB_HASH_SHAKE_128 || alg == ACVP_SUB_HASH_SHAKE_256) {
+            ACVP_LOG_WARN("ACVP_HASH_IN_BIT is no longer used for SHAKE revision FIPS202; ignoring");
+        }
         hash_cap->in_bit = value;
         break;
     case ACVP_HASH_IN_EMPTY:
+        if (alg == ACVP_SUB_HASH_SHAKE_128 || alg == ACVP_SUB_HASH_SHAKE_256) {
+            ACVP_LOG_WARN("ACVP_HASH_IN_EMPTY is no longer used for SHAKE revision FIPS202; ignoring");
+        }
         hash_cap->in_empty = value;
         break;
     case ACVP_HASH_OUT_BIT:
@@ -2888,6 +2894,7 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
 
+        ACVP_LOG_WARN("ACVP_HASH_OUT_BIT is no longer used for SHAKE revision FIPS202; ignoring");
         hash_cap->out_bit = value;
         break;
     case ACVP_HASH_LARGE_DATA:
@@ -2960,12 +2967,13 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
 
     switch (parm) {
     case ACVP_HASH_MESSAGE_LEN:
-        if (cipher == ACVP_HASH_SHAKE_128 || cipher == ACVP_HASH_SHAKE_256) {
-            ACVP_LOG_ERR("ACVP_HASH_MSG_LEN cannot be set for SHAKE ciphers");
-            return ACVP_INVALID_ARG;
-        }
         if (min < ACVP_HASH_MSG_BIT_MIN ||  max > ACVP_HASH_MSG_BIT_MAX) {
             ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        if ((cipher == ACVP_HASH_SHAKE_128 || cipher == ACVP_HASH_SHAKE_256) &&
+            increment != 8) {
+            ACVP_LOG_ERR("'ACVP_HASH_MESSAGE_LEN' increment must be 8 for SHAKE");
             return ACVP_INVALID_ARG;
         }
         domain = &hash_cap->msg_length;

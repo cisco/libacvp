@@ -121,7 +121,9 @@ static ACVP_RESULT acvp_append_true_false_array(JSON_Object *parent, const char 
     }
 }
 
-static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_hash_register_cap(ACVP_CTX *ctx,
+                                                JSON_Object *cap_obj,
+                                                ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *msg_array = NULL;
     JSON_Array *temp_arr = NULL;
     ACVP_SL_LIST *sl_list = NULL;
@@ -129,10 +131,18 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     JSON_Object *msg_obj = NULL;
     ACVP_HASH_CAP *hash_cap = cap_entry->cap.hash_cap;
     const char *revision = NULL;
+    int msg_len_min = 0, msg_len_max = 0, msg_len_increment = 0;
+    int is_shake = 0;
 
     if (!hash_cap) {
         return ACVP_MISSING_ARG;
     }
+
+    is_shake = cap_entry->cipher == ACVP_HASH_SHAKE_128 ||
+               cap_entry->cipher == ACVP_HASH_SHAKE_256;
+    msg_len_min = hash_cap->msg_length.min;
+    msg_len_max = hash_cap->msg_length.max;
+    msg_len_increment = hash_cap->msg_length.increment;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
@@ -143,21 +153,16 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     if (cap_entry->cipher == ACVP_HASH_SHA3_224 ||
             cap_entry->cipher == ACVP_HASH_SHA3_256 ||
             cap_entry->cipher == ACVP_HASH_SHA3_384 ||
-            cap_entry->cipher == ACVP_HASH_SHA3_512 ||
-            cap_entry->cipher == ACVP_HASH_SHAKE_128 ||
-            cap_entry->cipher == ACVP_HASH_SHAKE_256) {
+            cap_entry->cipher == ACVP_HASH_SHA3_512) {
         json_object_set_boolean(cap_obj, "inBit", cap_entry->cap.hash_cap->in_bit);
         json_object_set_boolean(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty);
     }
 
-    if (cap_entry->cipher == ACVP_HASH_SHAKE_128 ||
-        cap_entry->cipher == ACVP_HASH_SHAKE_256) {
+    if (is_shake) {
         // SHAKE specific capabilities
         JSON_Array *tmp_arr = NULL;
         JSON_Value *tmp_val = NULL;
         JSON_Object *tmp_obj = NULL;
-
-        json_object_set_boolean(cap_obj, "outBit", cap_entry->cap.hash_cap->out_bit);
 
         json_object_set_value(cap_obj, "outputLen", json_value_init_array());
         tmp_arr = json_object_get_array(cap_obj, "outputLen");
@@ -169,27 +174,34 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         json_object_set_number(tmp_obj, "increment", cap_entry->cap.hash_cap->out_len.increment);
 
         json_array_append_value(tmp_arr, tmp_val);
-    } else {
-        json_object_set_value(cap_obj, "messageLength", json_value_init_array());
-        msg_array = json_object_get_array(cap_obj, "messageLength");
+        if (!msg_len_increment) {
+            msg_len_min = ACVP_HASH_MSG_BIT_MIN;
+            msg_len_max = ACVP_HASH_MSG_BIT_MAX;
+            msg_len_increment = 8;
+            ACVP_LOG_WARN("messageLength not set for %s; using byte-aligned default",
+                          acvp_lookup_cipher_name(cap_entry->cipher));
+        }
+    }
 
-        msg_val = json_value_init_object();
-        msg_obj = json_value_get_object(msg_val);
+    json_object_set_value(cap_obj, "messageLength", json_value_init_array());
+    msg_array = json_object_get_array(cap_obj, "messageLength");
 
-        json_object_set_number(msg_obj, "min", hash_cap->msg_length.min);
-        json_object_set_number(msg_obj, "max", hash_cap->msg_length.max);
-        json_object_set_number(msg_obj, "increment", hash_cap->msg_length.increment);
-        json_array_append_value(msg_array, msg_val);
+    msg_val = json_value_init_object();
+    msg_obj = json_value_get_object(msg_val);
 
-        // Set the supported large data lengths
-        if (cap_entry->cap.hash_cap->large_lens) {
-            json_object_set_value(cap_obj, "performLargeDataTest", json_value_init_array());
-            temp_arr = json_object_get_array(cap_obj, "performLargeDataTest");
-            sl_list = cap_entry->cap.hash_cap->large_lens;
-            while (sl_list) {
-                json_array_append_number(temp_arr, sl_list->length);
-                sl_list = sl_list->next;
-            }
+    json_object_set_number(msg_obj, "min", msg_len_min);
+    json_object_set_number(msg_obj, "max", msg_len_max);
+    json_object_set_number(msg_obj, "increment", msg_len_increment);
+    json_array_append_value(msg_array, msg_val);
+
+    // Set the supported large data lengths
+    if (!is_shake && cap_entry->cap.hash_cap->large_lens) {
+        json_object_set_value(cap_obj, "performLargeDataTest", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "performLargeDataTest");
+        sl_list = cap_entry->cap.hash_cap->large_lens;
+        while (sl_list) {
+            json_array_append_number(temp_arr, sl_list->length);
+            sl_list = sl_list->next;
         }
     }
 
@@ -5885,7 +5897,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_HASH_SHA3_512:
             case ACVP_HASH_SHAKE_128:
             case ACVP_HASH_SHAKE_256:
-                rv = acvp_build_hash_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_hash_register_cap(ctx, cap_obj, cap_entry);
                 break;
             case ACVP_HASHDRBG:
             case ACVP_HMACDRBG:

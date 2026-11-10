@@ -444,6 +444,7 @@ TEST_GROUP_RUNNER(EnableCapHMAC) {
 
 TEST_GROUP_RUNNER(EnableCapHash) {
     RUN_TEST_CASE(EnableCapHash, properly);
+    RUN_TEST_CASE(EnableCapHash, shake_fips202_domains);
     RUN_TEST_CASE(EnableCapHash, param_alg_mismatch);
     RUN_TEST_CASE(EnableCapHash, null_handler);
     RUN_TEST_CASE(EnableCapHash, invalid_args);
