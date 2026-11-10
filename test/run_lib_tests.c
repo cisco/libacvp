@@ -522,6 +522,11 @@ TEST_GROUP_RUNNER(EnableCapKDFx963) {
     RUN_TEST_CASE(EnableCapKDFx963, invalid_params);
 }
 
+TEST_GROUP_RUNNER(EnableCapLMS) {
+    RUN_TEST_CASE(EnableCapLMS, valid_params);
+    RUN_TEST_CASE(EnableCapLMS, invalid_message_lengths);
+}
+
 TEST_GROUP_RUNNER(EnableCapRSAkeyGen) {
     RUN_TEST_CASE(EnableCapRSAkeyGen, proper_params);
     RUN_TEST_CASE(EnableCapRSAkeyGen, proper_modes);
@@ -1689,6 +1694,7 @@ void run_lib_tests(void) {
     RUN_TEST_GROUP(EnableCapKDFSSH);
     RUN_TEST_GROUP(EnableCapKDFTLS13);
     RUN_TEST_GROUP(EnableCapKDFx963);
+    RUN_TEST_GROUP(EnableCapLMS);
     RUN_TEST_GROUP(EnableCapRSAkeyGen);
     RUN_TEST_GROUP(EnableCapTDES);
     RUN_TEST_GROUP(FIPS_VALIDATION_METADATA);

@@ -208,7 +208,9 @@ static ACVP_RESULT acvp_build_hash_register_cap(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_hmac_register_cap(ACVP_CTX *ctx,
+                                                JSON_Object *cap_obj,
+                                                ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
     JSON_Value *tmp_val = NULL;
     JSON_Object *tmp_obj = NULL;
@@ -288,6 +290,16 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         while (list) {
             json_array_append_number(temp_arr, list->length);
             list = list->next;
+        }
+        if (!json_array_get_count(temp_arr)) {
+            ACVP_LOG_WARN("msgLen not set for %s; using full revision 2.0 range",
+                          acvp_lookup_cipher_name(cap_entry->cipher));
+            tmp_val = json_value_init_object();
+            tmp_obj = json_value_get_object(tmp_val);
+            json_object_set_number(tmp_obj, "min", 0);
+            json_object_set_number(tmp_obj, "max", ACVP_HMAC_MSG_BIT_MAX);
+            json_object_set_number(tmp_obj, "increment", 8);
+            json_array_append_value(temp_arr, tmp_val);
         }
     }
 
@@ -5149,6 +5161,7 @@ static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
     ACVP_SUB_LMS alg = 0;
     ACVP_PARAM_LIST *list = NULL;
     ACVP_LMS_SPECIFIC_LIST *spec_list = NULL;
+    ACVP_SL_LIST *lengths = NULL;
     if (!cap_entry) {
         goto err;
     }
@@ -5180,7 +5193,7 @@ static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
         lms_cap = cap_entry->cap.lms_siggen_cap;
         break;
     case ACVP_SUB_LMS_SIGVER:
-        lms_cap = cap_entry->cap.lms_siggen_cap;
+        lms_cap = cap_entry->cap.lms_sigver_cap;
         break;
     default:
         goto err;
@@ -5235,6 +5248,36 @@ static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
             json_object_set_string(temp_obj, "lmsMode", lms_str);
             json_object_set_string(temp_obj, "lmotsMode", lmots_str);
             spec_list = spec_list->next;
+        }
+    }
+
+    if (alg == ACVP_SUB_LMS_SIGGEN || alg == ACVP_SUB_LMS_SIGVER) {
+        json_object_set_value(cap_obj, "messageLength", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "messageLength");
+        if (lms_cap->msg_len.min || lms_cap->msg_len.max ||
+            lms_cap->msg_len.increment) {
+            temp_val = json_value_init_object();
+            temp_obj = json_value_get_object(temp_val);
+            json_object_set_number(temp_obj, "min", lms_cap->msg_len.min);
+            json_object_set_number(temp_obj, "max", lms_cap->msg_len.max);
+            json_object_set_number(temp_obj, "increment",
+                                   lms_cap->msg_len.increment);
+            json_array_append_value(temp_arr, temp_val);
+        }
+        lengths = lms_cap->msg_len.values;
+        while (lengths) {
+            json_array_append_number(temp_arr, lengths->length);
+            lengths = lengths->next;
+        }
+        if (!json_array_get_count(temp_arr)) {
+            ACVP_LOG_WARN("messageLength not set for LMS %s; using full server range",
+                          mode);
+            temp_val = json_value_init_object();
+            temp_obj = json_value_get_object(temp_val);
+            json_object_set_number(temp_obj, "min", 8);
+            json_object_set_number(temp_obj, "max", ACVP_LMS_MSG_BIT_MAX);
+            json_object_set_number(temp_obj, "increment", 1);
+            json_array_append_value(temp_arr, temp_val);
         }
     }
 
@@ -5915,7 +5958,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_HMAC_SHA3_256:
             case ACVP_HMAC_SHA3_384:
             case ACVP_HMAC_SHA3_512:
-                rv = acvp_build_hmac_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_hmac_register_cap(ctx, cap_obj, cap_entry);
                 break;
             case ACVP_CMAC_AES:
             case ACVP_CMAC_TDES:

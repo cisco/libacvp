@@ -81,6 +81,7 @@
 #define ACVP_REV_STR_FIPS203 "FIPS203"
 #define ACVP_REV_STR_FIPS204 "FIPS204"
 #define ACVP_REV_STR_FIPS205 "FIPS205"
+#define ACVP_REV_STR_SP800_208 "SP800-208"
 #define ACVP_REV_STR_SP800_90AR1 "SP800-90Ar1"
 
 // AES
@@ -212,7 +213,9 @@
 #define ACVP_REV_KDF_TLS13           ACVP_REV_STR_RFC8446
 
 // LMS
-#define ACVP_REV_LMS                 ACVP_REV_STR_1_0
+#define ACVP_REV_LMS_KEYGEN          ACVP_REV_STR_1_0
+#define ACVP_REV_LMS_SIGGEN          ACVP_REV_STR_SP800_208
+#define ACVP_REV_LMS_SIGVER          ACVP_REV_STR_SP800_208
 
 // ML-DSA
 #define ACVP_REV_ML_DSA              ACVP_REV_STR_FIPS204
@@ -964,6 +967,7 @@
 #define ACVP_KDA_Z_BYTE_MAX (ACVP_KDA_Z_BIT_MAX >> 3)
 
 #define ACVP_LMS_TMP_MAX 65536 //arbitrary
+#define ACVP_LMS_MSG_BIT_MAX 65536
 
 #define ACVP_ML_DSA_MSG_BIT_MAX 65536
 #define ACVP_ML_DSA_MSG_STR_MAX (ACVP_ML_DSA_MSG_BIT_MAX >> 2)
@@ -1745,6 +1749,7 @@ typedef struct acvp_lms_capability_t {
     ACVP_PARAM_LIST *lms_modes;
     ACVP_PARAM_LIST *lmots_modes;
     ACVP_LMS_SPECIFIC_LIST *specific_list;
+    ACVP_JSON_DOMAIN_OBJ msg_len;
 } ACVP_LMS_CAP;
 
 typedef struct acvp_ml_dsa_cap_group_t {

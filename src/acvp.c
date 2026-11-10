@@ -171,9 +171,9 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KTS_IFC,           &acvp_kts_ifc_kat_handler,          ACVP_ALG_KTS_IFC,           ACVP_ALG_KTS_IFC_COMP, ACVP_REV_KTS_IFC, {.kas = ACVP_SUB_KTS_IFC}},
     { ACVP_SAFE_PRIMES_KEYGEN, &acvp_safe_primes_kat_handler,     ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYGEN, ACVP_REV_SAFE_PRIMES, {.kas = ACVP_SUB_SAFE_PRIMES_KEYGEN}},
     { ACVP_SAFE_PRIMES_KEYVER, &acvp_safe_primes_kat_handler,     ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYVER, ACVP_REV_SAFE_PRIMES, {.kas = ACVP_SUB_SAFE_PRIMES_KEYVER}},
-    { ACVP_LMS_KEYGEN,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_KEYGEN, ACVP_REV_LMS, {.lms = ACVP_SUB_LMS_KEYGEN}},
-    { ACVP_LMS_SIGGEN,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGGEN, ACVP_REV_LMS, {.lms = ACVP_SUB_LMS_SIGGEN}},
-    { ACVP_LMS_SIGVER,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGVER, ACVP_REV_LMS, {.lms = ACVP_SUB_LMS_SIGVER}},
+    { ACVP_LMS_KEYGEN,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_KEYGEN, ACVP_REV_LMS_KEYGEN, {.lms = ACVP_SUB_LMS_KEYGEN}},
+    { ACVP_LMS_SIGGEN,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGGEN, ACVP_REV_LMS_SIGGEN, {.lms = ACVP_SUB_LMS_SIGGEN}},
+    { ACVP_LMS_SIGVER,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGVER, ACVP_REV_LMS_SIGVER, {.lms = ACVP_SUB_LMS_SIGVER}},
     { ACVP_ML_DSA_KEYGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_KEYGEN, ACVP_REV_ML_DSA, {.ml_dsa = ACVP_SUB_ML_DSA_KEYGEN}},
     { ACVP_ML_DSA_SIGGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGGEN, ACVP_REV_ML_DSA, {.ml_dsa = ACVP_SUB_ML_DSA_SIGGEN}},
     { ACVP_ML_DSA_SIGVER,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGVER, ACVP_REV_ML_DSA, {.ml_dsa = ACVP_SUB_ML_DSA_SIGVER}},
@@ -586,6 +586,7 @@ static void acvp_cap_free_lms(ACVP_LMS_CAP *cap) {
 
     acvp_cap_free_pl(cap->lms_modes);
     acvp_cap_free_pl(cap->lmots_modes);
+    acvp_cap_free_domain(&cap->msg_len);
     while (curr) {
         prev = curr;
         curr = curr->next;
