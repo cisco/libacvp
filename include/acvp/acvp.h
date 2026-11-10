@@ -2613,7 +2613,8 @@ typedef struct acvp_drbg_tc_t {
 /** @enum ACVP_LMS_PARAM */
 typedef enum acvp_lms_param {
     ACVP_LMS_PARAM_LMS_MODE = 1,
-    ACVP_LMS_PARAM_LMOTS_MODE
+    ACVP_LMS_PARAM_LMOTS_MODE,
+    ACVP_LMS_PARAM_MSG_LEN
 } ACVP_LMS_PARAM;
 
 /** @enum ACVP_LMS_MODE */
@@ -2697,9 +2698,10 @@ typedef struct acvp_lms_tc_t {
     // Signature values
     unsigned char *msg;
     unsigned char *sig;
-    int msg_len;
+    int msg_len;      //!< Message length in bytes for byte-aligned input; retained for compatibility
     int sig_len;
     ACVP_TEST_DISPOSITION ver_disposition;
+    int msg_bit_len;  //!< Exact message length in bits; use for non-byte-aligned input
 
 } ACVP_LMS_TC;
 
@@ -4790,14 +4792,34 @@ ACVP_RESULT acvp_cap_lms_enable(ACVP_CTX *ctx,
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param param ACVP_LMS_PARAM enum value identifying the algorithm parameter that is being
  *        specified.
- * @param value the value corresponding to the parameter being set, at present only generation mode
- *        is supported.
+ * @param value the value corresponding to the parameter being set.
  *
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_cap_lms_set_parm(ACVP_CTX *ctx,
                                   ACVP_CIPHER cipher,
                                   ACVP_LMS_PARAM param, int value);
+
+/**
+ * @brief acvp_cap_lms_set_domain() sets a range of supported LMS message lengths.
+ *
+ * Message lengths are in bits.
+ *
+ * @param ctx Pointer to an initialized ACVP_CTX.
+ * @param cipher ACVP_LMS_SIGGEN or ACVP_LMS_SIGVER.
+ * @param param ACVP_LMS_PARAM_MSG_LEN.
+ * @param min Minimum supported message length in bits.
+ * @param max Maximum supported message length in bits.
+ * @param increment Increment between supported lengths in bits.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_lms_set_domain(ACVP_CTX *ctx,
+                                    ACVP_CIPHER cipher,
+                                    ACVP_LMS_PARAM param,
+                                    int min,
+                                    int max,
+                                    int increment);
 
 /**
  * @brief acvp_cap_lms_set_mode_compatability pair allows an application to specify specific compatible pairs

@@ -9509,18 +9509,68 @@ ACVP_RESULT acvp_cap_lms_set_parm(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
         return acvp_append_param_list(&lms_cap->lms_modes, value);
-        break;
     case ACVP_LMS_PARAM_LMOTS_MODE:
         if (value <= ACVP_LMOTS_MODE_NONE || value >= ACVP_LMOTS_MODE_MAX) {
             ACVP_LOG_ERR("Invalid LMOTS mode provided");
             return ACVP_INVALID_ARG;
         }
         return acvp_append_param_list(&lms_cap->lmots_modes, value);
-        break;
+    case ACVP_LMS_PARAM_MSG_LEN:
+        if (alg == ACVP_SUB_LMS_KEYGEN || value < 8 ||
+            value > ACVP_LMS_MSG_BIT_MAX) {
+            ACVP_LOG_ERR("Invalid LMS message length");
+            return ACVP_INVALID_ARG;
+        }
+        return acvp_append_sl_list(&lms_cap->msg_len.values, value);
     default:
-        break;
+        ACVP_LOG_ERR("Invalid LMS parameter");
+        return ACVP_INVALID_ARG;
+    }
+}
+
+ACVP_RESULT acvp_cap_lms_set_domain(ACVP_CTX *ctx,
+                                    ACVP_CIPHER cipher,
+                                    ACVP_LMS_PARAM param,
+                                    int min,
+                                    int max,
+                                    int increment) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_LMS_CAP *lms_cap;
+    ACVP_SUB_LMS alg;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
     }
 
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    alg = acvp_get_lms_alg(cipher);
+    switch (alg) {
+    case ACVP_SUB_LMS_SIGGEN:
+        lms_cap = cap->cap.lms_siggen_cap;
+        break;
+    case ACVP_SUB_LMS_SIGVER:
+        lms_cap = cap->cap.lms_sigver_cap;
+        break;
+    case ACVP_SUB_LMS_KEYGEN:
+    default:
+        ACVP_LOG_ERR("LMS message length domains only apply to sigGen and sigVer");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (param != ACVP_LMS_PARAM_MSG_LEN ||
+        validate_domain_range(min, max, increment) != ACVP_SUCCESS ||
+        min < 8 || max > ACVP_LMS_MSG_BIT_MAX) {
+        ACVP_LOG_ERR("Invalid LMS message length domain");
+        return ACVP_INVALID_ARG;
+    }
+
+    lms_cap->msg_len.min = min;
+    lms_cap->msg_len.max = max;
+    lms_cap->msg_len.increment = increment;
     return ACVP_SUCCESS;
 }
 

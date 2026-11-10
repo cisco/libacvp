@@ -96,6 +96,7 @@ static ACVP_RESULT acvp_lms_init_tc(ACVP_CTX *ctx,
                                     const char *i,
                                     const char *seed,
                                     const char *msg,
+                                    int msg_bit_len,
                                     const char *sig) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
@@ -107,6 +108,7 @@ static ACVP_RESULT acvp_lms_init_tc(ACVP_CTX *ctx,
     stc->type = type;
     stc->lms_mode = lms_mode;
     stc->lmots_mode = lmots_mode;
+    stc->msg_bit_len = msg_bit_len;
 
     if (i) {
         stc->i = calloc(ACVP_LMS_TMP_MAX, sizeof(unsigned char));
@@ -200,6 +202,7 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     int i, g_cnt;
     int j, t_cnt;
+    int msg_bit_len = 0;
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
@@ -379,6 +382,23 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
+
+                rv = acvp_tc_json_get_int(ctx, alg_id, testobj,
+                                          "messageLength", &msg_bit_len);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+                if (msg_bit_len < 8 || msg_bit_len > ACVP_LMS_MSG_BIT_MAX) {
+                    ACVP_LOG_ERR("Server JSON invalid 'messageLength'");
+                    rv = ACVP_TC_INVALID_DATA;
+                    goto err;
+                }
+                if (strnlen_s(msg_str, ACVP_LMS_TMP_MAX) !=
+                    (size_t)((msg_bit_len + 7) / 8) * 2) {
+                    ACVP_LOG_ERR("Message length does not match 'messageLength'");
+                    rv = ACVP_TC_INVALID_DATA;
+                    goto err;
+                }
             }
 
             if (alg_id == ACVP_LMS_SIGVER) {
@@ -398,18 +418,17 @@ ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             json_object_set_number(r_tobj, "tcId", tc_id);
 
             rv = acvp_lms_init_tc(ctx, &stc, alg_id, tc_id, tg_id, type, lms_mode, lmots_mode, pub_str,
-                                  i_str, seed_str, msg_str, sig_str);
+                                  i_str, seed_str, msg_str, msg_bit_len, sig_str);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Failed to initialize LMS test case");
+                json_value_free(r_tval);
+                goto err;
+            }
 
             // Process the current test vector...
-            if (rv == ACVP_SUCCESS) {
-                if ((cap->crypto_handler)(&tc)) {
-                    ACVP_LOG_ERR("Crypto module failed the operation");
-                    rv = ACVP_CRYPTO_MODULE_FAIL;
-                    json_value_free(r_tval);
-                    goto err;
-                }
-            } else {
-                ACVP_LOG_ERR("Failed to initialize LMS test case");
+            if ((cap->crypto_handler)(&tc)) {
+                ACVP_LOG_ERR("Crypto module failed the operation");
+                rv = ACVP_CRYPTO_MODULE_FAIL;
                 json_value_free(r_tval);
                 goto err;
             }
