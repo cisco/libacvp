@@ -1343,10 +1343,10 @@ typedef struct acvp_hash_tc_t {
                                \ref ACVP_HASH_TC.m2 , \ref ACVP_HASH_TC.m3 */
     unsigned int xof_len; /**< XOF (extendable output format) length
                                The expected length (in bytes) of \ref ACVP_HASH_TC.md
-                               Only provided when \ref ACVP_HASH_TC.test_type is VOT */
+                               Provided for SHAKE AFT and VOT tests */
     unsigned int xof_bit_len; /**< XOF (extendable output format) length
                                    The expected length (in bits) of \ref ACVP_HASH_TC.md
-                                   Only provided when \ref ACVP_HASH_TC.test_type is VOT */
+                                   Provided for SHAKE AFT and VOT tests */
     unsigned long long int exp_len; /**< The final length (in bytes) of the expanded content
                                          Only provided when \ref ACVP_HASH_TC.test_type is LDT */
     unsigned char *md; /**< The resulting digest calculated for the test case.

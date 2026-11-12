@@ -77,6 +77,7 @@
 #define ACVP_REV_STR_SP800_108R1 "Sp800-108r1"
 #define ACVP_REV_STR_RFC8446 "RFC8446"
 #define ACVP_REV_STR_RFC7627 "RFC7627"
+#define ACVP_REV_STR_FIPS202 "FIPS202"
 #define ACVP_REV_STR_FIPS203 "FIPS203"
 #define ACVP_REV_STR_FIPS204 "FIPS204"
 #define ACVP_REV_STR_FIPS205 "FIPS205"
@@ -132,8 +133,8 @@
 #define ACVP_REV_HASH_SHA3_256       ACVP_REV_STR_2_0
 #define ACVP_REV_HASH_SHA3_384       ACVP_REV_STR_2_0
 #define ACVP_REV_HASH_SHA3_512       ACVP_REV_STR_2_0
-#define ACVP_REV_HASH_SHAKE_128      ACVP_REV_STR_1_0
-#define ACVP_REV_HASH_SHAKE_256      ACVP_REV_STR_1_0
+#define ACVP_REV_HASH_SHAKE_128      ACVP_REV_STR_FIPS202
+#define ACVP_REV_HASH_SHAKE_256      ACVP_REV_STR_FIPS202
 
 // DRBG
 #define ACVP_REV_HASHDRBG            ACVP_REV_STR_SP800_90AR1
@@ -589,11 +590,6 @@
 #define ACVP_HASH_MD_BIT_MAX 512                            //!< 512 bits
 #define ACVP_HASH_MD_STR_MAX (ACVP_HASH_MD_BIT_MAX >> 2)    //!< 128 characters
 #define ACVP_HASH_MD_BYTE_MAX (ACVP_HASH_MD_BIT_MAX >> 3)   //!< 64 bytes
-
-//SHAKE does not define a maximum message length, but we want it to be sane still
-#define ACVP_SHAKE_MSG_BIT_MAX 131072                         //!< 131072 bits
-#define ACVP_SHAKE_MSG_STR_MAX (ACVP_SHAKE_MSG_BIT_MAX >> 2)  //!< 32768 characters
-#define ACVP_SHAKE_MSG_BYTE_MAX (ACVP_SHAKE_MSG_BIT_MAX >> 3) //!< 16384 bytes
 
 #define ACVP_HASH_XOF_MD_BIT_MIN 16 //!< XOF (extendable output format) outLength minimum (in bits)
 #define ACVP_HASH_XOF_MD_BIT_MAX 65536 //!< XOF (extendable output format) outLength maximum (in bits)

@@ -171,6 +171,27 @@ TEST(EnableCapHash, properly) {
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 }
 
+TEST(EnableCapHash, shake_fips202_domains) {
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHAKE_128, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHAKE_128,
+                                  ACVP_HASH_MESSAGE_LEN, 0, 65536, 8);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHAKE_128,
+                                  ACVP_HASH_OUT_LENGTH, 16, 65536, 8);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHAKE_128,
+                                  ACVP_HASH_MESSAGE_LEN, 0, 65536, 1);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+}
+
 /*
  * This test should return ACVP_NO_CAP because we are trying
  * to register a parameter for an alg that we haven't added
