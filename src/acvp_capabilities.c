@@ -9710,6 +9710,8 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
             case ACVP_ML_DSA_PARAM_MU:
             case ACVP_ML_DSA_PARAM_HASH_ALG:
             case ACVP_ML_DSA_PARAM_CONTEXT_LEN:
+            case ACVP_ML_DSA_PARAM_REVISION: 
+		    case ACVP_ML_DSA_PARAM_KEY_FORMAT:
                 ACVP_LOG_ERR("Tried setting non-applicable parameter for ML-DSA KeyGen");
                 return ACVP_INVALID_ARG;
             case ACVP_ML_DSA_PARAM_PARAMETER_SET:
@@ -9847,6 +9849,33 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
         }
         acvp_append_sl_list(&group_obj->context_len.values, value);
         break;
+    case ACVP_ML_DSA_PARAM_REVISION:
+        if (value == ACVP_REVISION_DEFAULT || value == ACVP_REVISION_FIPS204_TR1) {
+            ml_dsa_cap->revision = value;
+        }
+        else {
+            ACVP_LOG_ERR("Invalid revision provided for MLDSA");
+            return ACVP_INVALID_ARG;
+        }
+        break; 
+    case ACVP_ML_DSA_PARAM_KEY_FORMAT:
+        if (group != 0) {
+            ACVP_LOG_WARN("Group number supplied for ML-DSA key format but does not apply, ignoring");
+        }
+
+        if (ml_dsa_cap->revision != ACVP_REVISION_FIPS204_TR1) {
+            ACVP_LOG_ERR("ML-DSA key format only supported for FIPS204_TR1");
+            return ACVP_INVALID_ARG;
+        }
+
+        if (value <= ACVP_ML_DSA_KEY_FORMAT_NOT_SET ||
+            value > ACVP_ML_DSA_KEY_FORMAT_BOTH) {
+            ACVP_LOG_ERR("Invalid value provided for ML-DSA key format");
+            return ACVP_INVALID_ARG;
+        }
+
+        ml_dsa_cap->key_format = value;
+        break;
     default:
         ACVP_LOG_ERR("Invalid parameter provided for ML-DSA");
         return ACVP_INVALID_ARG;
@@ -9951,6 +9980,7 @@ ACVP_RESULT acvp_cap_ml_dsa_set_domain(ACVP_CTX *ctx,
     case ACVP_ML_DSA_PARAM_PREHASH:
     case ACVP_ML_DSA_PARAM_MU:
     case ACVP_ML_DSA_PARAM_HASH_ALG:
+    case ACVP_ML_DSA_PARAM_KEY_FORMAT: 
     default:
         ACVP_LOG_ERR("Invalid parameter provided for ML-DSA domain");
         return ACVP_INVALID_ARG;

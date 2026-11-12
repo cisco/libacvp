@@ -185,7 +185,9 @@ static struct acvp_alt_revision_info alt_revision_tbl[] = {
     { ACVP_REVISION_SP800_56CR1, ACVP_REV_STR_SP800_56CR1 },
     { ACVP_REVISION_FIPS186_4, ACVP_REV_STR_FIPS186_4 },
     { ACVP_REVISION_1_0, ACVP_REV_STR_1_0 },
-    { ACVP_REVISION_2_0, ACVP_REV_STR_2_0 }
+    { ACVP_REVISION_2_0, ACVP_REV_STR_2_0 },
+    { ACVP_REVISION_FIPS204_TR1, ACVP_REV_STR_FIPS204_TR1}
+    
 };
 static int alt_revision_tbl_length =
     sizeof(alt_revision_tbl) / sizeof(struct acvp_alt_revision_info);

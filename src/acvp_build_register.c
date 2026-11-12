@@ -5302,10 +5302,6 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
     }
     json_object_set_string(cap_obj, "mode", mode);
 
-    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
-    if (revision == NULL) { return ACVP_INVALID_ARG; }
-    json_object_set_string(cap_obj, "revision", revision);
-
     if (cap_entry->prereq_vals) {
         result = acvp_lookup_prereqVals(cap_obj, cap_entry);
         if (result != ACVP_SUCCESS) { return result; }
@@ -5330,6 +5326,15 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
     if (!ml_dsa_cap) {
         return ACVP_NO_CAP;
     }
+    
+     if (ml_dsa_cap->revision) {
+     	revision = acvp_lookup_alt_revision_string(ml_dsa_cap->revision);
+ 	} else {
+     	revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+ 	}
+ 	if (revision == NULL) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "revision", revision);
+
     group_obj = ml_dsa_cap->cap_group;
     if (!group_obj) {
         ACVP_LOG_ERR("Missing required parameters for ML-DSA registration");
@@ -5358,6 +5363,33 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
     case ACVP_SUB_ML_DSA_SIGGEN:
     case ACVP_SUB_ML_DSA_SIGVER:
         if (alg == ACVP_SUB_ML_DSA_SIGGEN) {
+            if (ml_dsa_cap->revision == ACVP_REVISION_FIPS204_TR1) 
+            {
+                if (ml_dsa_cap->key_format != ACVP_ML_DSA_KEY_FORMAT_NOT_SET)
+                {
+                    json_object_set_value(cap_obj, "keyFormats", json_value_init_array());
+                    temp_arr = json_object_get_array(cap_obj, "keyFormats");
+
+                    switch (ml_dsa_cap->key_format) {
+                    case ACVP_ML_DSA_KEY_FORMAT_EXPANDED:
+                        json_array_append_string(temp_arr, "expanded");
+                         break;
+
+                    case ACVP_ML_DSA_KEY_FORMAT_SEED:
+                        json_array_append_string(temp_arr, "seed");
+                        break;
+
+                    case ACVP_ML_DSA_KEY_FORMAT_BOTH:
+                        json_array_append_string(temp_arr, "expanded");
+                        json_array_append_string(temp_arr, "seed");
+                        break;
+
+                    default:
+                        ACVP_LOG_ERR("Invalid ML-DSA key format");
+                        goto err;
+                    }
+                }
+            }
             tf_val = ml_dsa_cap->deterministic; // Must change if ACVP_DETERMINISTIC_MODE changes
             if (acvp_append_true_false_array(cap_obj, "deterministic", tf_val) != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Error appending deterministic to ML-DSA JSON");

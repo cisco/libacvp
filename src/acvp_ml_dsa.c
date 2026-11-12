@@ -119,7 +119,8 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
                                     const char *msg,
                                     const char *sig,
                                     const char *context,
-                                    const char *mu) {
+                                    const char *mu,
+                                    ACVP_ML_DSA_KEY_FORMAT key_format) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     memzero_s(stc, sizeof(ACVP_ML_DSA_TC));
@@ -135,6 +136,7 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
     stc->is_prehash = is_prehash;
     stc->is_mu_external = is_mu_external;
     stc->hash_alg = hash_alg;
+    stc->key_format = key_format;
 
     // buffers needed for both keys and sigs
     stc->pub_key = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
@@ -284,6 +286,19 @@ static ACVP_SIG_PREHASH read_prehash(const char *str) {
     return ACVP_SIG_PREHASH_NOT_SET;
 }
 
+static ACVP_ML_DSA_KEY_FORMAT read_key_format(const char* str)
+{
+    int diff = 0;
+
+    strcmp_s("seed", 4, str, &diff);
+    if (!diff) return ACVP_ML_DSA_KEY_FORMAT_SEED;
+
+    strcmp_s("expanded", 8, str, &diff);
+    if (!diff) return ACVP_ML_DSA_KEY_FORMAT_EXPANDED;
+
+    return ACVP_ML_DSA_KEY_FORMAT_NOT_SET;
+}
+
 ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id = 0, tg_id = 0;
     JSON_Value *groupval;
@@ -316,9 +331,10 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_ML_DSA_TESTTYPE type = 0;
     ACVP_ML_DSA_PARAM_SET param_set = 0;
     ACVP_SIG_INTERFACE sig_interface = 0;
+    ACVP_ML_DSA_KEY_FORMAT key_format = 0;
     const char *alg_str = NULL, *mode_str = NULL, *type_str = NULL, *param_set_str = NULL,  *pub_str = NULL;
     const char *seed_str = NULL, *msg_str = NULL, *sig_str = NULL, *secret_str = NULL, *rnd_str = NULL;
-    const char *prehash_str = NULL, *sig_interface_str = NULL, *context_str = NULL, *mu_str = NULL, *hash_alg_str = NULL;
+    const char *prehash_str = NULL, *sig_interface_str = NULL, *context_str = NULL, *mu_str = NULL, *hash_alg_str = NULL, *key_format_str = NULL;
     int is_deterministic = -1, is_mu_external = -1, is_prehash = -1;
     ACVP_HASH_ALG hash_alg = ACVP_NO_SHA;
 
@@ -456,6 +472,17 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         if (alg_id == ACVP_ML_DSA_SIGGEN) {
+           rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "keyFormat", &key_format_str);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+
+            key_format = read_key_format(key_format_str);
+            if (key_format == ACVP_ML_DSA_KEY_FORMAT_NOT_SET) {
+                ACVP_LOG_ERR("Server JSON invalid 'keyFormat'");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
             rv = acvp_tc_json_get_boolean(ctx, alg_id, groupobj, "deterministic", &is_deterministic);
             if (rv != ACVP_SUCCESS) {
                 goto err;
@@ -552,14 +579,23 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id== ACVP_ML_DSA_SIGGEN) {
-                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "sk", &secret_str);
-                if (rv != ACVP_SUCCESS) {
-                    goto err;
+                if (key_format == ACVP_ML_DSA_KEY_FORMAT_SEED)
+                {
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "seed", &secret_str);
+                    if (rv != ACVP_SUCCESS) {
+                        goto err;
+                    }
                 }
-
-            if (is_deterministic) {
+                else 
+                { 
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "sk", &secret_str);
+                    if (rv != ACVP_SUCCESS) {
+                        goto err;
+                    }
+                }
+				if (is_deterministic) {
                     rnd_str = NULL;
-            } else {
+                } else {
                     rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "rnd", &rnd_str);
                     if (rv != ACVP_SUCCESS) {
                         goto err;
@@ -579,7 +615,14 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_VERBOSE("        signature: %s", sig_str);
             }
             if (secret_str) {
-                ACVP_LOG_VERBOSE("               sk: %s", secret_str);
+ 				if (key_format == ACVP_ML_DSA_KEY_FORMAT_SEED)
+                { 
+                    ACVP_LOG_VERBOSE("               seed: %s", secret_str);
+                }
+                else 
+                {
+                    ACVP_LOG_VERBOSE("               sk: %s", secret_str);
+                }
             }
             if (pub_str) {
                 ACVP_LOG_VERBOSE("               pk: %s", pub_str);
@@ -602,7 +645,7 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             rv = acvp_ml_dsa_init_tc(ctx, &stc, alg_id, tc_id, tg_id, type, param_set, is_deterministic,
                                      sig_interface, is_prehash, is_mu_external, hash_alg,
-                                     pub_str, secret_str, seed_str, rnd_str, msg_str, sig_str, context_str, mu_str);
+                                     pub_str, secret_str, seed_str, rnd_str, msg_str, sig_str, context_str, mu_str, key_format);
 
             // Process the current test vector...
             if (rv == ACVP_SUCCESS) {

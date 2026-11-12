@@ -532,6 +532,7 @@ typedef enum acvp_revision_t {
     ACVP_REVISION_SP800_56AR3,
     ACVP_REVISION_FIPS186_4,
     ACVP_REVISION_186_BOTH,  /* Special value to indicate both 186-4 and 186-5 should be registered */
+    ACVP_REVISION_FIPS204_TR1,
     ACVP_REVISION_MAX
 } ACVP_REVISION;
 
@@ -2714,7 +2715,9 @@ typedef enum acvp_ml_dsa_param {
     ACVP_ML_DSA_PARAM_PREHASH,
     ACVP_ML_DSA_PARAM_MU,
     ACVP_ML_DSA_PARAM_HASH_ALG,
-    ACVP_ML_DSA_PARAM_CONTEXT_LEN
+    ACVP_ML_DSA_PARAM_CONTEXT_LEN,
+	ACVP_ML_DSA_PARAM_REVISION,
+    ACVP_ML_DSA_PARAM_KEY_FORMAT
 } ACVP_ML_DSA_PARAM;
 
 /**
@@ -2753,6 +2756,14 @@ typedef enum acvp_ml_dsa_mu {
     ACVP_ML_DSA_MU_EXTERNAL,         //!< External mu value
     ACVP_ML_DSA_MU_BOTH              //!< Supports both internal and external mu values
 } ACVP_ML_DSA_MU;
+
+/** @enum ACVP_ML_DSA_KEY_FORMAT */
+typedef enum acvp_ml_dsa_key_format {
+    ACVP_ML_DSA_KEY_FORMAT_NOT_SET = 0,  //!< Not set
+    ACVP_ML_DSA_KEY_FORMAT_EXPANDED,     //!< Expanded private key format
+    ACVP_ML_DSA_KEY_FORMAT_SEED,         //!< Seed private key format
+    ACVP_ML_DSA_KEY_FORMAT_BOTH          //!< Supports both expanded and seed formats
+} ACVP_ML_DSA_KEY_FORMAT;
 
 /** @enum ACVP_DETERMINISTIC_MODE */
 typedef enum acvp_deterministic_mode {
@@ -2797,6 +2808,8 @@ typedef struct acvp_ml_dsa_tc_t {
     ACVP_SIG_INTERFACE sig_interface;
     int is_prehash;
     int is_mu_external;
+
+    ACVP_ML_DSA_KEY_FORMAT key_format;
 
     unsigned char *rnd;
     unsigned char *msg;
