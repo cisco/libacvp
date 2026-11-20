@@ -16,6 +16,7 @@ TEST_GROUP(EnableCapDRBG);
 TEST_GROUP(EnableCapECDSA);
 TEST_GROUP(EnableCapHMAC);
 TEST_GROUP(EnableCapHash);
+TEST_GROUP(EnableCapMLKEM);
 TEST_GROUP(EnableCapKASECC);
 TEST_GROUP(EnableCapKASFFC);
 TEST_GROUP(EnableCapKASHKDF);
@@ -52,6 +53,11 @@ TEST_TEAR_DOWN(EnableCapCMAC) {
 
 TEST_SETUP(EnableCapDRBG) {}
 TEST_TEAR_DOWN(EnableCapDRBG) {
+    enable_cap_hash_tear_down_helper();
+}
+
+TEST_SETUP(EnableCapMLKEM) {}
+TEST_TEAR_DOWN(EnableCapMLKEM) {
     enable_cap_hash_tear_down_helper();
 }
 
@@ -1801,6 +1807,32 @@ TEST(EnableCapDRBG, good_ctr) {
 TEST(EnableCapDRBG, null_ctx) {
     rv = acvp_cap_drbg_enable(NULL, ACVP_HASHDRBG, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
+}
+
+TEST(EnableCapMLKEM, key_formats) {
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_ml_kem_enable(ctx, ACVP_ML_KEM_XCAP, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP,
+                                  ACVP_ML_KEM_PARAM_KEY_FORMAT,
+                                  ACVP_ML_KEM_KEY_FORMAT_EXPANDED);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP,
+                                  ACVP_ML_KEM_PARAM_KEY_FORMAT,
+                                  ACVP_ML_KEM_KEY_FORMAT_SEED);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP,
+                                  ACVP_ML_KEM_PARAM_KEY_FORMAT,
+                                  ACVP_ML_KEM_KEY_FORMAT_MAX);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+
+    rv = acvp_cap_ml_kem_enable(ctx, ACVP_ML_KEM_KEYGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_KEYGEN,
+                                  ACVP_ML_KEM_PARAM_KEY_FORMAT,
+                                  ACVP_ML_KEM_KEY_FORMAT_EXPANDED);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 }
 
 // enable kas ecc with valid params

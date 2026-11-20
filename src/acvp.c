@@ -177,8 +177,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_ML_DSA_KEYGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_KEYGEN, ACVP_REV_ML_DSA, {.ml_dsa = ACVP_SUB_ML_DSA_KEYGEN}},
     { ACVP_ML_DSA_SIGGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGGEN, ACVP_REV_ML_DSA, {.ml_dsa = ACVP_SUB_ML_DSA_SIGGEN}},
     { ACVP_ML_DSA_SIGVER,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGVER, ACVP_REV_ML_DSA, {.ml_dsa = ACVP_SUB_ML_DSA_SIGVER}},
-    { ACVP_ML_KEM_KEYGEN,     &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_KEYGEN, ACVP_REV_ML_KEM, {.ml_kem = ACVP_SUB_ML_KEM_KEYGEN}},
-    { ACVP_ML_KEM_XCAP,       &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_XCAP, ACVP_REV_ML_KEM, {.ml_kem = ACVP_SUB_ML_KEM_XCAP}},
+    { ACVP_ML_KEM_KEYGEN,     &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_KEYGEN, ACVP_REV_ML_KEM_KEYGEN, {.ml_kem = ACVP_SUB_ML_KEM_KEYGEN}},
+    { ACVP_ML_KEM_XCAP,       &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_XCAP, ACVP_REV_ML_KEM_XCAP, {.ml_kem = ACVP_SUB_ML_KEM_XCAP}},
     { ACVP_SLH_DSA_KEYGEN,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_KEYGEN, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_KEYGEN}},
     { ACVP_SLH_DSA_SIGGEN,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_SIGGEN, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_SIGGEN}},
     { ACVP_SLH_DSA_SIGVER,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_SIGVER, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_SIGVER}}
@@ -945,11 +945,13 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             case ACVP_ML_KEM_KEYGEN_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.ml_kem_keygen_cap->param_sets);
                 acvp_cap_free_pl(cap_entry->cap.ml_kem_keygen_cap->functions);
+                acvp_cap_free_pl(cap_entry->cap.ml_kem_keygen_cap->key_formats);
                 free(cap_entry->cap.ml_kem_keygen_cap);
                 break;
             case ACVP_ML_KEM_XCAP_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.ml_kem_xcap_cap->param_sets);
                 acvp_cap_free_pl(cap_entry->cap.ml_kem_xcap_cap->functions);
+                acvp_cap_free_pl(cap_entry->cap.ml_kem_xcap_cap->key_formats);
                 free(cap_entry->cap.ml_kem_xcap_cap);
                 break;
             case ACVP_SLH_DSA_KEYGEN_TYPE:

@@ -5597,6 +5597,30 @@ static ACVP_RESULT acvp_build_ml_kem_register_cap(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Missing required functions for ML-KEM registration");
             goto err;
         }
+
+        json_object_set_value(cap_obj, "keyFormats", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "keyFormats");
+        if (!ml_kem_cap->key_formats) {
+            ACVP_LOG_WARN("keyFormats not set for ML-KEM encapDecap; using FIPS203 behavior (expanded)");
+            json_array_append_string(temp_arr, "expanded");
+        } else {
+            pl = ml_kem_cap->key_formats;
+            while (pl) {
+                switch (pl->param) {
+                case ACVP_ML_KEM_KEY_FORMAT_EXPANDED:
+                    json_array_append_string(temp_arr, "expanded");
+                    break;
+                case ACVP_ML_KEM_KEY_FORMAT_SEED:
+                    json_array_append_string(temp_arr, "seed");
+                    break;
+                case ACVP_ML_KEM_KEY_FORMAT_NONE:
+                case ACVP_ML_KEM_KEY_FORMAT_MAX:
+                default:
+                    goto err;
+                }
+                pl = pl->next;
+            }
+        }
     }
 
     return ACVP_SUCCESS;

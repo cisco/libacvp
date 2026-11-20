@@ -10049,6 +10049,17 @@ ACVP_RESULT acvp_cap_ml_kem_set_parm(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
         return acvp_append_param_list(&ml_kem_cap->functions, value);
+    case ACVP_ML_KEM_PARAM_KEY_FORMAT:
+        if (alg != ACVP_SUB_ML_KEM_XCAP) {
+            ACVP_LOG_ERR("Key format selection for ML-KEM is only for encap/decap");
+            return ACVP_INVALID_ARG;
+        }
+        if (value <= ACVP_ML_KEM_KEY_FORMAT_NONE ||
+            value >= ACVP_ML_KEM_KEY_FORMAT_MAX) {
+            ACVP_LOG_ERR("Invalid key format provided for ML-KEM encap/decap");
+            return ACVP_INVALID_ARG;
+        }
+        return acvp_append_param_list(&ml_kem_cap->key_formats, value);
     default:
         ACVP_LOG_ERR("Invalid parameter provided for ML-KEM");
         return ACVP_INVALID_ARG;

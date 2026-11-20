@@ -442,8 +442,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             unsigned int xof_len = 0;
             unsigned int max_len = 0;
             int content_len = 0;
-            double fullLength_val = 0;
-            double exp_len_val = 0;
+            unsigned long long int full_length = 0;
 
             ACVP_LOG_VERBOSE("Found new hash test vector...");
             testval = json_array_get_value(tests, j);
@@ -497,28 +496,23 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                // fullLength can be very large (no defined max), so use json_object_get_number directly
-                if (!json_object_has_value(ldtobj, "fullLength")) {
-                    ACVP_LOG_ERR("Server JSON is missing 'fullLength' data");
-                    rv = ACVP_TC_MISSING_DATA;
+                rv = acvp_tc_json_get_ull(ctx, alg_id, ldtobj, "fullLength",
+                                          &full_length);
+                if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
-                if (!json_object_has_value_of_type(ldtobj, "fullLength", JSONNumber)) {
-                    ACVP_LOG_ERR("Server JSON field 'fullLength' has wrong type (expected number)");
-                    rv = ACVP_TC_INVALID_DATA;
-                    goto err;
-                }
-                fullLength_val = json_object_get_number(ldtobj, "fullLength");
-                exp_len_val = fullLength_val / 8.0;  // In bits; store as bytes
-                if (fullLength_val <= 0 || fullLength_val != fullLength_val ||
-                    exp_len_val >= (double)((size_t)-1) ||
-                    exp_len_val != (double)(unsigned long long int)exp_len_val ||
-                    exp_len_val < (double)msglen) {
+                /*
+                 * Convert the bit length to bytes only after confirming it is
+                 * positive, byte-aligned, usable as a size, and covers the content.
+                 */
+                if (!full_length || full_length % 8 ||
+                    full_length / 8 >= (size_t)-1 ||
+                    full_length / 8 < msglen) {
                     ACVP_LOG_ERR("Server JSON invalid 'fullLength' (must be a positive, byte-aligned length that fits in memory and is at least contentLength)");
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-                exp_len = (unsigned long long int)exp_len_val;
+                exp_len = full_length / 8;
 
                 rv = acvp_tc_json_get_string(ctx, alg_id, ldtobj, "expansionTechnique", &exp_method_str);
                 if (rv != ACVP_SUCCESS) {

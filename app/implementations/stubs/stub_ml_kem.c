@@ -23,9 +23,10 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
      * For encapsulating, take tc->ek and tc->m (m being a given random value) and use them to
      * generate a shared secret (tc->k) and ciphertext (tc->c).
      *
-     * For decapsulating, take tc->dk and tc->c and attempt to generate tc->k. Note that in the
-     * case of invalid ciphertext being provided, the IuT is expected to still provide a k value
-     * that aligns with the "implicit rejection" function described in FIPS203.
+     * For decapsulating, expanded key format provides tc->dk while seed key format provides tc->d
+     * and tc->z. Use the provided key material with tc->c to generate tc->k. In the case of invalid
+     * ciphertext, the IUT is still expected to provide the k value produced by the implicit
+     * rejection function described in FIPS203.
      */
 
 
