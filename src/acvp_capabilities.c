@@ -2869,7 +2869,8 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
         break;
     case ACVP_HASH_IN_EMPTY:
         if (alg == ACVP_SUB_HASH_SHAKE_128 || alg == ACVP_SUB_HASH_SHAKE_256) {
-            ACVP_LOG_WARN("ACVP_HASH_IN_EMPTY is no longer used for SHAKE revision FIPS202; ignoring");
+            ACVP_LOG_WARN("ACVP_HASH_IN_EMPTY is no longer registered for SHAKE revision FIPS202; "
+                          "using it only for the default messageLength when none is set");
         }
         hash_cap->in_empty = value;
         break;

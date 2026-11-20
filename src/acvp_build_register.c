@@ -175,7 +175,11 @@ static ACVP_RESULT acvp_build_hash_register_cap(ACVP_CTX *ctx,
 
         json_array_append_value(tmp_arr, tmp_val);
         if (!msg_len_increment) {
-            msg_len_min = ACVP_HASH_MSG_BIT_MIN;
+            /*
+             * Preserve revision 1.0 inEmpty behavior when an existing
+             * registration does not set the FIPS202 messageLength domain.
+             */
+            msg_len_min = hash_cap->in_empty ? ACVP_HASH_MSG_BIT_MIN : 8;
             msg_len_max = ACVP_HASH_MSG_BIT_MAX;
             msg_len_increment = 8;
             ACVP_LOG_WARN("messageLength not set for %s; using byte-aligned default",
@@ -5270,13 +5274,13 @@ static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
             lengths = lengths->next;
         }
         if (!json_array_get_count(temp_arr)) {
-            ACVP_LOG_WARN("messageLength not set for LMS %s; using full server range",
+            ACVP_LOG_WARN("messageLength not set for LMS %s; using byte-aligned default",
                           mode);
             temp_val = json_value_init_object();
             temp_obj = json_value_get_object(temp_val);
             json_object_set_number(temp_obj, "min", 8);
             json_object_set_number(temp_obj, "max", ACVP_LMS_MSG_BIT_MAX);
-            json_object_set_number(temp_obj, "increment", 1);
+            json_object_set_number(temp_obj, "increment", 8);
             json_array_append_value(temp_arr, temp_val);
         }
     }
