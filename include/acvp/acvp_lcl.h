@@ -81,6 +81,7 @@
 #define ACVP_REV_STR_FIPS203 "FIPS203"
 #define ACVP_REV_STR_FIPS203_TR1 "FIPS203-tr1"
 #define ACVP_REV_STR_FIPS204 "FIPS204"
+#define ACVP_REV_STR_FIPS204_TR1 "FIPS204-tr1"
 #define ACVP_REV_STR_FIPS205 "FIPS205"
 #define ACVP_REV_STR_SP800_208 "SP800-208"
 #define ACVP_REV_STR_SP800_90AR1 "SP800-90Ar1"
@@ -219,7 +220,9 @@
 #define ACVP_REV_LMS_SIGVER          ACVP_REV_STR_SP800_208
 
 // ML-DSA
-#define ACVP_REV_ML_DSA              ACVP_REV_STR_FIPS204
+#define ACVP_REV_ML_DSA_KEYGEN       ACVP_REV_STR_FIPS204
+#define ACVP_REV_ML_DSA_SIGGEN       ACVP_REV_STR_FIPS204_TR1
+#define ACVP_REV_ML_DSA_SIGVER       ACVP_REV_STR_FIPS204
 
 // ML-KEM
 #define ACVP_REV_ML_KEM_KEYGEN       ACVP_REV_STR_FIPS203
@@ -1769,6 +1772,7 @@ typedef struct acvp_ml_dsa_capability_t {
     ACVP_ML_DSA_MU mu;                       //!< SigGen/SigVer mu mode
     ACVP_SIG_INTERFACE sig_interface;        //!< SigGen/SigVer interface
     ACVP_SIG_PREHASH prehash;                //!< SigGen/SigVer prehash support
+    ACVP_PARAM_LIST *key_formats;             //!< SigGen private key formats
     ACVP_ML_DSA_CAP_GROUP *cap_group;        //!< Pointer to the first group of capabilities
 } ACVP_ML_DSA_CAP;
 

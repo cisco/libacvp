@@ -90,6 +90,8 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_MU, ACVP_ML_DSA_MU_INTERNAL);
         CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_KEY_FORMAT, ACVP_ML_DSA_KEY_FORMAT_EXPANDED);
+        CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_44);
         CHECK_ENABLE_CAP_RV(rv);
         rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_65);

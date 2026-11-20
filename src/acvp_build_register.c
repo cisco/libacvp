@@ -175,7 +175,11 @@ static ACVP_RESULT acvp_build_hash_register_cap(ACVP_CTX *ctx,
 
         json_array_append_value(tmp_arr, tmp_val);
         if (!msg_len_increment) {
-            msg_len_min = ACVP_HASH_MSG_BIT_MIN;
+            /*
+             * Preserve revision 1.0 inEmpty behavior when an existing
+             * registration does not set the FIPS202 messageLength domain.
+             */
+            msg_len_min = hash_cap->in_empty ? ACVP_HASH_MSG_BIT_MIN : 8;
             msg_len_max = ACVP_HASH_MSG_BIT_MAX;
             msg_len_increment = 8;
             ACVP_LOG_WARN("messageLength not set for %s; using byte-aligned default",
@@ -5270,13 +5274,13 @@ static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
             lengths = lengths->next;
         }
         if (!json_array_get_count(temp_arr)) {
-            ACVP_LOG_WARN("messageLength not set for LMS %s; using full server range",
+            ACVP_LOG_WARN("messageLength not set for LMS %s; using byte-aligned default",
                           mode);
             temp_val = json_value_init_object();
             temp_obj = json_value_get_object(temp_val);
             json_object_set_number(temp_obj, "min", 8);
             json_object_set_number(temp_obj, "max", ACVP_LMS_MSG_BIT_MAX);
-            json_object_set_number(temp_obj, "increment", 1);
+            json_object_set_number(temp_obj, "increment", 8);
             json_array_append_value(temp_arr, temp_val);
         }
     }
@@ -5374,6 +5378,30 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
             if (acvp_append_true_false_array(cap_obj, "deterministic", tf_val) != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Error appending deterministic to ML-DSA JSON");
                 goto err;
+            }
+
+            json_object_set_value(cap_obj, "keyFormats", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "keyFormats");
+            if (!ml_dsa_cap->key_formats) {
+                ACVP_LOG_WARN("keyFormats not set for ML-DSA sigGen; using FIPS204 behavior (expanded)");
+                json_array_append_string(temp_arr, "expanded");
+            } else {
+                sets = ml_dsa_cap->key_formats;
+                while (sets) {
+                    switch (sets->param) {
+                    case ACVP_ML_DSA_KEY_FORMAT_EXPANDED:
+                        json_array_append_string(temp_arr, "expanded");
+                        break;
+                    case ACVP_ML_DSA_KEY_FORMAT_SEED:
+                        json_array_append_string(temp_arr, "seed");
+                        break;
+                    case ACVP_ML_DSA_KEY_FORMAT_NONE:
+                    case ACVP_ML_DSA_KEY_FORMAT_MAX:
+                    default:
+                        goto err;
+                    }
+                    sets = sets->next;
+                }
             }
         }
 

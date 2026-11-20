@@ -2714,7 +2714,8 @@ typedef enum acvp_ml_dsa_param {
     ACVP_ML_DSA_PARAM_PREHASH,
     ACVP_ML_DSA_PARAM_MU,
     ACVP_ML_DSA_PARAM_HASH_ALG,
-    ACVP_ML_DSA_PARAM_CONTEXT_LEN
+    ACVP_ML_DSA_PARAM_CONTEXT_LEN,
+    ACVP_ML_DSA_PARAM_KEY_FORMAT
 } ACVP_ML_DSA_PARAM;
 
 /**
@@ -2767,6 +2768,14 @@ typedef enum acvp_ml_dsa_testtype {
     ACVP_ML_DSA_TESTTYPE_AFT
 } ACVP_ML_DSA_TESTTYPE;
 
+/** @enum ACVP_ML_DSA_KEY_FORMAT */
+typedef enum acvp_ml_dsa_key_format {
+    ACVP_ML_DSA_KEY_FORMAT_NONE = 0,
+    ACVP_ML_DSA_KEY_FORMAT_EXPANDED,
+    ACVP_ML_DSA_KEY_FORMAT_SEED,
+    ACVP_ML_DSA_KEY_FORMAT_MAX
+} ACVP_ML_DSA_KEY_FORMAT;
+
 
 /**
  * @struct ACVP_ML_DSA_TC
@@ -2788,7 +2797,7 @@ typedef struct acvp_ml_dsa_tc_t {
     int pub_key_len;
     int secret_key_len;
 
-    // Keygen
+    // Keygen and seed-format siggen
     unsigned char *seed;
     int seed_len;
 
@@ -2809,6 +2818,7 @@ typedef struct acvp_ml_dsa_tc_t {
     int context_len;
     int mu_len;
     ACVP_TEST_DISPOSITION ver_disposition;
+    ACVP_ML_DSA_KEY_FORMAT key_format;
 
 } ACVP_ML_DSA_TC;
 
@@ -4883,8 +4893,7 @@ ACVP_RESULT acvp_cap_ml_dsa_enable(ACVP_CTX *ctx,
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param param ACVP_ML_DSA_PARAM enum value identifying the algorithm parameter that is being
  *        specified.
- * @param value the value corresponding to the parameter being set, at present only generation mode
- *        is supported.
+ * @param value the value corresponding to the parameter being set.
  *
  * @return ACVP_RESULT
  */
