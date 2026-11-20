@@ -442,6 +442,10 @@ TEST_GROUP_RUNNER(EnableCapHMAC) {
     RUN_TEST_CASE(EnableCapHMAC, invalid_args);
 }
 
+TEST_GROUP_RUNNER(EnableCapMLKEM) {
+    RUN_TEST_CASE(EnableCapMLKEM, key_formats);
+}
+
 TEST_GROUP_RUNNER(EnableCapHash) {
     RUN_TEST_CASE(EnableCapHash, properly);
     RUN_TEST_CASE(EnableCapHash, shake_fips202_domains);
@@ -1682,6 +1686,7 @@ void run_lib_tests(void) {
     RUN_TEST_GROUP(EnableCapECDSA);
     RUN_TEST_GROUP(EnableCapHMAC);
     RUN_TEST_GROUP(EnableCapHash);
+    RUN_TEST_GROUP(EnableCapMLKEM);
     RUN_TEST_GROUP(EnableCapKASECC);
     RUN_TEST_GROUP(EnableCapKASFFC);
     RUN_TEST_GROUP(EnableCapKASHKDF);

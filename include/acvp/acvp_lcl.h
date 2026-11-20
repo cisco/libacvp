@@ -79,6 +79,7 @@
 #define ACVP_REV_STR_RFC7627 "RFC7627"
 #define ACVP_REV_STR_FIPS202 "FIPS202"
 #define ACVP_REV_STR_FIPS203 "FIPS203"
+#define ACVP_REV_STR_FIPS203_TR1 "FIPS203-tr1"
 #define ACVP_REV_STR_FIPS204 "FIPS204"
 #define ACVP_REV_STR_FIPS205 "FIPS205"
 #define ACVP_REV_STR_SP800_208 "SP800-208"
@@ -221,7 +222,8 @@
 #define ACVP_REV_ML_DSA              ACVP_REV_STR_FIPS204
 
 // ML-KEM
-#define ACVP_REV_ML_KEM              ACVP_REV_STR_FIPS203
+#define ACVP_REV_ML_KEM_KEYGEN       ACVP_REV_STR_FIPS203
+#define ACVP_REV_ML_KEM_XCAP         ACVP_REV_STR_FIPS203_TR1
 
 // SLH-DSA
 #define ACVP_REV_SLH_DSA             ACVP_REV_STR_FIPS205
@@ -1774,6 +1776,7 @@ typedef struct acvp_ml_kem_capability_t {
     ACVP_CIPHER cipher;
     ACVP_PARAM_LIST *param_sets;
     ACVP_PARAM_LIST *functions;
+    ACVP_PARAM_LIST *key_formats;
 } ACVP_ML_KEM_CAP;
 
 typedef struct acvp_slh_dsa_cap_group_t {
@@ -2254,6 +2257,7 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
 ACVP_RESULT acvp_tc_json_get_string(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, const char **out);
 ACVP_RESULT acvp_tc_json_get_int(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, int *out);
 ACVP_RESULT acvp_tc_json_get_uint(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, unsigned int *out);
+ACVP_RESULT acvp_tc_json_get_ull(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, unsigned long long int *out);
 ACVP_RESULT acvp_tc_json_get_boolean(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, int *out);
 ACVP_RESULT acvp_tc_json_get_object(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, JSON_Object **out);
 ACVP_RESULT acvp_tc_json_get_array(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, JSON_Array **out);

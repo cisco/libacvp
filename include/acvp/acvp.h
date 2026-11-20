@@ -2815,7 +2815,8 @@ typedef struct acvp_ml_dsa_tc_t {
 /** @enum ACVP_ML_KEM_PARAM */
 typedef enum acvp_ml_kem_param {
     ACVP_ML_KEM_PARAM_PARAMETER_SET = 1,
-    ACVP_ML_KEM_PARAM_FUNCTION
+    ACVP_ML_KEM_PARAM_FUNCTION,
+    ACVP_ML_KEM_PARAM_KEY_FORMAT
 } ACVP_ML_KEM_PARAM;
 
 /**
@@ -2840,6 +2841,14 @@ typedef enum acvp_ml_kem_fuction {
     ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK,
     ACVP_ML_KEM_FUNCTION_MAX
 } ACVP_ML_KEM_FUNCTION;
+
+/** @enum ACVP_ML_KEM_KEY_FORMAT */
+typedef enum acvp_ml_kem_key_format {
+    ACVP_ML_KEM_KEY_FORMAT_NONE = 0,
+    ACVP_ML_KEM_KEY_FORMAT_EXPANDED,
+    ACVP_ML_KEM_KEY_FORMAT_SEED,
+    ACVP_ML_KEM_KEY_FORMAT_MAX
+} ACVP_ML_KEM_KEY_FORMAT;
 
 /** @enum ACVP_ML_KEM_TESTTYPE */
 typedef enum acvp_ml_kem_testtype {
@@ -2869,9 +2878,9 @@ typedef struct acvp_ml_kem_tc_t {
     int dk_len;
     int ek_len;
 
-    // Keygen
-    unsigned char *d; // Seed
-    unsigned char *z; // Seed
+    // Keygen and seed-format decapsulation
+    unsigned char *d; // Seed value d
+    unsigned char *z; // Seed value z
     int d_len;
     int z_len;
 
@@ -2884,6 +2893,9 @@ typedef struct acvp_ml_kem_tc_t {
     int k_len;
 
     ACVP_TEST_DISPOSITION keycheck_disposition;
+
+    // FIPS203-tr1 decapsulation key format
+    ACVP_ML_KEM_KEY_FORMAT key_format;
 } ACVP_ML_KEM_TC;
 
 /** @enum ACVP_SLH_DSA_PARAM */
@@ -4945,8 +4957,7 @@ ACVP_RESULT acvp_cap_ml_kem_enable(ACVP_CTX *ctx,
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param param ACVP_ML_KEM_PARAM enum value identifying the algorithm parameter that is being
  *        specified.
- * @param value the value corresponding to the parameter being set, at present only generation mode
- *        is supported.
+ * @param value the value corresponding to the parameter being set.
  *
  * @return ACVP_RESULT
  */

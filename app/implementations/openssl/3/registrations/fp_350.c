@@ -2560,6 +2560,10 @@ static int enable_ml_kem(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP, ACVP_ML_KEM_PARAM_FUNCTION, ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK);
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP, ACVP_ML_KEM_PARAM_KEY_FORMAT, ACVP_ML_KEM_KEY_FORMAT_EXPANDED);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP, ACVP_ML_KEM_PARAM_KEY_FORMAT, ACVP_ML_KEM_KEY_FORMAT_SEED);
+    CHECK_ENABLE_CAP_RV(rv);
 
 end:
     return rv;
