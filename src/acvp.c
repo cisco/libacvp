@@ -174,9 +174,9 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_LMS_KEYGEN,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_KEYGEN, ACVP_REV_LMS_KEYGEN, {.lms = ACVP_SUB_LMS_KEYGEN}},
     { ACVP_LMS_SIGGEN,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGGEN, ACVP_REV_LMS_SIGGEN, {.lms = ACVP_SUB_LMS_SIGGEN}},
     { ACVP_LMS_SIGVER,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGVER, ACVP_REV_LMS_SIGVER, {.lms = ACVP_SUB_LMS_SIGVER}},
-    { ACVP_ML_DSA_KEYGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_KEYGEN, ACVP_REV_ML_DSA, {.ml_dsa = ACVP_SUB_ML_DSA_KEYGEN}},
-    { ACVP_ML_DSA_SIGGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGGEN, ACVP_REV_ML_DSA, {.ml_dsa = ACVP_SUB_ML_DSA_SIGGEN}},
-    { ACVP_ML_DSA_SIGVER,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGVER, ACVP_REV_ML_DSA, {.ml_dsa = ACVP_SUB_ML_DSA_SIGVER}},
+    { ACVP_ML_DSA_KEYGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_KEYGEN, ACVP_REV_ML_DSA_KEYGEN, {.ml_dsa = ACVP_SUB_ML_DSA_KEYGEN}},
+    { ACVP_ML_DSA_SIGGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGGEN, ACVP_REV_ML_DSA_SIGGEN, {.ml_dsa = ACVP_SUB_ML_DSA_SIGGEN}},
+    { ACVP_ML_DSA_SIGVER,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGVER, ACVP_REV_ML_DSA_SIGVER, {.ml_dsa = ACVP_SUB_ML_DSA_SIGVER}},
     { ACVP_ML_KEM_KEYGEN,     &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_KEYGEN, ACVP_REV_ML_KEM_KEYGEN, {.ml_kem = ACVP_SUB_ML_KEM_KEYGEN}},
     { ACVP_ML_KEM_XCAP,       &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_XCAP, ACVP_REV_ML_KEM_XCAP, {.ml_kem = ACVP_SUB_ML_KEM_XCAP}},
     { ACVP_SLH_DSA_KEYGEN,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_KEYGEN, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_KEYGEN}},
@@ -599,10 +599,6 @@ static void acvp_cap_free_lms(ACVP_LMS_CAP *cap) {
 static void acvp_cap_free_ml_dsa(ACVP_ML_DSA_CAP *cap) {
     ACVP_ML_DSA_CAP_GROUP *group = cap->cap_group, *iter = NULL;
 
-    if (!group) {
-        return;
-    }
-
     while (group) {
         acvp_cap_free_pl(group->param_sets);
         acvp_cap_free_pl(group->hash_algs);
@@ -613,6 +609,7 @@ static void acvp_cap_free_ml_dsa(ACVP_ML_DSA_CAP *cap) {
         group = iter;
     }
 
+    acvp_cap_free_pl(cap->key_formats);
     free(cap);
     return;
 }

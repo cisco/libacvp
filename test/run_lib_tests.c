@@ -437,6 +437,7 @@ TEST_GROUP_RUNNER(EnableCapECDSA) {
 
 TEST_GROUP_RUNNER(EnableCapHMAC) {
     RUN_TEST_CASE(EnableCapHMAC, properly);
+    RUN_TEST_CASE(EnableCapHMAC, revision_1_0_ignored);
     RUN_TEST_CASE(EnableCapHMAC, param_alg_mismatch);
     RUN_TEST_CASE(EnableCapHMAC, null_handler);
     RUN_TEST_CASE(EnableCapHMAC, invalid_args);
@@ -444,6 +445,10 @@ TEST_GROUP_RUNNER(EnableCapHMAC) {
 
 TEST_GROUP_RUNNER(EnableCapMLKEM) {
     RUN_TEST_CASE(EnableCapMLKEM, key_formats);
+}
+
+TEST_GROUP_RUNNER(EnableCapMLDSA) {
+    RUN_TEST_CASE(EnableCapMLDSA, key_formats);
 }
 
 TEST_GROUP_RUNNER(EnableCapHash) {
@@ -1686,6 +1691,7 @@ void run_lib_tests(void) {
     RUN_TEST_GROUP(EnableCapECDSA);
     RUN_TEST_GROUP(EnableCapHMAC);
     RUN_TEST_GROUP(EnableCapHash);
+    RUN_TEST_GROUP(EnableCapMLDSA);
     RUN_TEST_GROUP(EnableCapMLKEM);
     RUN_TEST_GROUP(EnableCapKASECC);
     RUN_TEST_GROUP(EnableCapKASFFC);

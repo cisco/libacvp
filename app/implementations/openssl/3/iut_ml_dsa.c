@@ -132,7 +132,13 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
             printf("Error creating param_bld in ML-DSA siggen\n");
             goto end;
         }
-        OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_PKEY_PARAM_PRIV_KEY, tc->secret_key, tc->secret_key_len);
+        if (tc->key_format == ACVP_ML_DSA_KEY_FORMAT_SEED) {
+            OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_PKEY_PARAM_ML_DSA_SEED,
+                                             tc->seed, tc->seed_len);
+        } else {
+            OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_PKEY_PARAM_PRIV_KEY,
+                                             tc->secret_key, tc->secret_key_len);
+        }
         params = OSSL_PARAM_BLD_to_param(pbld);
         if (!params) {
             printf("Error generating params in ML-DSA siggen\n");

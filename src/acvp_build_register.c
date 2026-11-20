@@ -5375,6 +5375,30 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Error appending deterministic to ML-DSA JSON");
                 goto err;
             }
+
+            json_object_set_value(cap_obj, "keyFormats", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "keyFormats");
+            if (!ml_dsa_cap->key_formats) {
+                ACVP_LOG_WARN("keyFormats not set for ML-DSA sigGen; using FIPS204 behavior (expanded)");
+                json_array_append_string(temp_arr, "expanded");
+            } else {
+                sets = ml_dsa_cap->key_formats;
+                while (sets) {
+                    switch (sets->param) {
+                    case ACVP_ML_DSA_KEY_FORMAT_EXPANDED:
+                        json_array_append_string(temp_arr, "expanded");
+                        break;
+                    case ACVP_ML_DSA_KEY_FORMAT_SEED:
+                        json_array_append_string(temp_arr, "seed");
+                        break;
+                    case ACVP_ML_DSA_KEY_FORMAT_NONE:
+                    case ACVP_ML_DSA_KEY_FORMAT_MAX:
+                    default:
+                        goto err;
+                    }
+                    sets = sets->next;
+                }
+            }
         }
 
         json_object_set_value(cap_obj, "signatureInterfaces", json_value_init_array());

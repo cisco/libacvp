@@ -16,6 +16,7 @@ TEST_GROUP(EnableCapDRBG);
 TEST_GROUP(EnableCapECDSA);
 TEST_GROUP(EnableCapHMAC);
 TEST_GROUP(EnableCapHash);
+TEST_GROUP(EnableCapMLDSA);
 TEST_GROUP(EnableCapMLKEM);
 TEST_GROUP(EnableCapKASECC);
 TEST_GROUP(EnableCapKASFFC);
@@ -58,6 +59,11 @@ TEST_TEAR_DOWN(EnableCapDRBG) {
 
 TEST_SETUP(EnableCapMLKEM) {}
 TEST_TEAR_DOWN(EnableCapMLKEM) {
+    enable_cap_hash_tear_down_helper();
+}
+
+TEST_SETUP(EnableCapMLDSA) {}
+TEST_TEAR_DOWN(EnableCapMLDSA) {
     enable_cap_hash_tear_down_helper();
 }
 
@@ -721,6 +727,20 @@ TEST(EnableCapHMAC, properly) {
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYLEN, 256, 448, 8);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_MACLEN, 32, 224, 8);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+}
+
+TEST(EnableCapHMAC, revision_1_0_ignored) {
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_256,
+                              &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_256,
+                                ACVP_HMAC_REVISION, ACVP_REVISION_1_0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_256,
+                                ACVP_HMAC_MSGLEN, 8);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 }
 
@@ -1832,6 +1852,42 @@ TEST(EnableCapMLKEM, key_formats) {
     rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_KEYGEN,
                                   ACVP_ML_KEM_PARAM_KEY_FORMAT,
                                   ACVP_ML_KEM_KEY_FORMAT_EXPANDED);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+}
+
+TEST(EnableCapMLDSA, key_formats) {
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_SIGGEN,
+                                &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0,
+                                  ACVP_ML_DSA_PARAM_KEY_FORMAT,
+                                  ACVP_ML_DSA_KEY_FORMAT_EXPANDED);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0,
+                                  ACVP_ML_DSA_PARAM_KEY_FORMAT,
+                                  ACVP_ML_DSA_KEY_FORMAT_SEED);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0,
+                                  ACVP_ML_DSA_PARAM_KEY_FORMAT,
+                                  ACVP_ML_DSA_KEY_FORMAT_MAX);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+
+    rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_KEYGEN,
+                                &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_KEYGEN, 0,
+                                  ACVP_ML_DSA_PARAM_KEY_FORMAT,
+                                  ACVP_ML_DSA_KEY_FORMAT_EXPANDED);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+
+    rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_SIGVER,
+                                &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0,
+                                  ACVP_ML_DSA_PARAM_KEY_FORMAT,
+                                  ACVP_ML_DSA_KEY_FORMAT_EXPANDED);
     TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 }
 

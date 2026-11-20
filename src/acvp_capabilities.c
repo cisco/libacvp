@@ -2331,7 +2331,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN can only be set for AES-XTS");
             return ACVP_INVALID_ARG;
         }
-        if ((cap->cap.sym_cap->du_len.max != 0 || cap->cap.sym_cap->du_len.increment != 0)) {
+        if (domain_has_set_values(&cap->cap.sym_cap->du_len)) {
             ACVP_LOG_ERR("ACVP_SYM_CIPH_DULEN_MATCHES_PAYLOADLEN cannot be changed after setting "
                          "ACVP_SYM_CIPH_DOMAIN_DULEN");
             return ACVP_INVALID_ARG;
@@ -3250,16 +3250,8 @@ ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
         }
         break;
     case ACVP_HMAC_REVISION:
-        if (domain_has_set_values(&hcap->msg_len)) {
-            ACVP_LOG_ERR("Cannot set revision for HMAC after setting msg_len values (msg only supports default revision)");
-            return ACVP_INVALID_ARG;
-        }
-        if (value != ACVP_REVISION_1_0) {
-            ACVP_LOG_ERR("Only revision 1.0 supported for HMAC");
-            return ACVP_INVALID_ARG;
-        }
-        hcap->revision = value;
-        break;
+        ACVP_LOG_WARN("HMAC revision 1.0 is no longer used; ignoring and using revision 2.0");
+        return ACVP_SUCCESS;
     case ACVP_HMAC_MSGLEN:
         if (cap->cap.hmac_cap->revision != ACVP_REVISION_DEFAULT) {
             ACVP_LOG_ERR("ACVP_HMAC_MSGLEN not supported for alternate revisions");
@@ -9718,6 +9710,7 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
             case ACVP_ML_DSA_PARAM_MU:
             case ACVP_ML_DSA_PARAM_HASH_ALG:
             case ACVP_ML_DSA_PARAM_CONTEXT_LEN:
+            case ACVP_ML_DSA_PARAM_KEY_FORMAT:
                 ACVP_LOG_ERR("Tried setting non-applicable parameter for ML-DSA KeyGen");
                 return ACVP_INVALID_ARG;
             case ACVP_ML_DSA_PARAM_PARAMETER_SET:
@@ -9730,6 +9723,10 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
         break;
     case ACVP_SUB_ML_DSA_SIGVER:
         ml_dsa_cap = cap->cap.ml_dsa_sigver_cap;
+        if (param == ACVP_ML_DSA_PARAM_KEY_FORMAT) {
+            ACVP_LOG_ERR("Key format selection for ML-DSA is only for siggen");
+            return ACVP_INVALID_ARG;
+        }
         break;
     default:
         ACVP_LOG_ERR("Invalid cipher provided for setting ML-DSA paramater");
@@ -9855,6 +9852,13 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
         }
         acvp_append_sl_list(&group_obj->context_len.values, value);
         break;
+    case ACVP_ML_DSA_PARAM_KEY_FORMAT:
+        if (value <= ACVP_ML_DSA_KEY_FORMAT_NONE ||
+            value >= ACVP_ML_DSA_KEY_FORMAT_MAX) {
+            ACVP_LOG_ERR("Invalid key format provided for ML-DSA siggen");
+            return ACVP_INVALID_ARG;
+        }
+        return acvp_append_param_list(&ml_dsa_cap->key_formats, value);
     default:
         ACVP_LOG_ERR("Invalid parameter provided for ML-DSA");
         return ACVP_INVALID_ARG;
@@ -9959,6 +9963,7 @@ ACVP_RESULT acvp_cap_ml_dsa_set_domain(ACVP_CTX *ctx,
     case ACVP_ML_DSA_PARAM_PREHASH:
     case ACVP_ML_DSA_PARAM_MU:
     case ACVP_ML_DSA_PARAM_HASH_ALG:
+    case ACVP_ML_DSA_PARAM_KEY_FORMAT:
     default:
         ACVP_LOG_ERR("Invalid parameter provided for ML-DSA domain");
         return ACVP_INVALID_ARG;
