@@ -549,7 +549,14 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-                if (alg_id != ACVP_HASH_SHAKE_128 && alg_id != ACVP_HASH_SHAKE_256) {
+                if (alg_id == ACVP_HASH_SHAKE_128 || alg_id == ACVP_HASH_SHAKE_256) {
+                    if (msglen != tmp_msg_len * 4) {
+                        ACVP_LOG_ERR("Server JSON 'len'(%u) does not match 'msg' length(%zu)",
+                                     msglen, tmp_msg_len * 4);
+                        rv = ACVP_TC_INVALID_DATA;
+                        goto err;
+                    }
+                } else {
                     // Convert to bits
                     msglen = tmp_msg_len * 4;
                 }
