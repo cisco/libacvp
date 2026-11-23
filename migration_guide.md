@@ -1,5 +1,127 @@
 # Libacvp 2.0 Migration Guide
 
+## New in 2.3.2
+
+### ACVP Testing Revision Updates
+
+Libacvp now registers the current ACVP testing revisions for DRBG, LMS signatures, SHAKE,
+ML-KEM encapsulation/decapsulation, ML-DSA signature generation, and HMAC. Existing applications
+will typically continue to test the same capabilities without source changes. When a new revision
+requires an explicit capability that was implicit in the previous revision, libacvp selects a
+backwards-compatible default and logs a warning. Applications can use the APIs below to advertise
+their capabilities explicitly and remove those warnings.
+
+All lengths in these examples are in bits. Applications should adjust the example domains and
+values to match the capabilities of their IUT.
+
+#### DRBG SP800-90Ar1
+
+ctrDRBG, hashDRBG, and hmacDRBG now register revision `SP800-90Ar1`. Existing
+`ACVP_DRBG_RET_BITS_LEN` calls continue to register the same single supported length. The new
+revision also permits a returned-bits domain through `acvp_cap_drbg_set_length()`.
+
+ctrDRBG additionally requires `counterFieldLen`. If it is not set, libacvp preserves revision 1.0
+behavior by using the full block length and logs a warning. Set it explicitly with:
+
+```c
+rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
+                            ACVP_DRBG_COUNTER_FIELD_LEN, 128);
+```
+
+The selected value is provided to the crypto callback in
+`ACVP_DRBG_TC.counter_field_len`.
+
+#### LMS SP800-208
+
+LMS sigGen and sigVer now register revision `SP800-208`; LMS keyGen remains revision `1.0`.
+The new signature revision requires a supported message-length domain. If it is not set, libacvp
+uses the byte-aligned range supported by the previous revision and logs a warning.
+
+Set the domain explicitly for each enabled signature mode:
+
+```c
+rv = acvp_cap_lms_set_domain(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_MSG_LEN,
+                             8, 65536, 8);
+rv = acvp_cap_lms_set_domain(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_MSG_LEN,
+                             8, 65536, 8);
+```
+
+An increment of `1` may be used by implementations that support non-byte-aligned messages.
+`ACVP_LMS_TC.msg_len` remains the message buffer length in bytes for backwards compatibility;
+`ACVP_LMS_TC.msg_bit_len` contains the exact message length in bits.
+
+The SP800-208 sigGen testing also checks that a one-time signature key is not reused.
+
+#### SHAKE FIPS202
+
+SHAKE-128 and SHAKE-256 now register revision `FIPS202`. The `inBit`, `inEmpty`, and `outBit`
+registration properties are no longer used by this revision. SHAKE message lengths are
+byte-aligned, and MCT testing is no longer performed.
+
+Use `ACVP_HASH_MESSAGE_LEN` to replace the old input flags:
+
+```c
+/* Supports empty messages. */
+rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHAKE_128,
+                              ACVP_HASH_MESSAGE_LEN, 0, 65536, 8);
+
+/* Does not support empty messages. */
+rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHAKE_256,
+                              ACVP_HASH_MESSAGE_LEN, 8, 65536, 8);
+```
+
+If no message-length domain is set, libacvp uses a byte-aligned default and preserves the old
+`ACVP_HASH_IN_EMPTY` setting. Remove obsolete `ACVP_HASH_IN_BIT`, `ACVP_HASH_IN_EMPTY`, and
+`ACVP_HASH_OUT_BIT` calls after adding the explicit domain to eliminate their warnings.
+
+#### ML-KEM FIPS203-tr1
+
+ML-KEM encapDecap now registers revision `FIPS203-tr1`; ML-KEM keyGen remains revision
+`FIPS203`. The new revision adds private-key format registration. If no format is set, libacvp
+uses the expanded format from the previous revision and logs a warning.
+
+Register the supported format explicitly with:
+
+```c
+rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP,
+                              ACVP_ML_KEM_PARAM_KEY_FORMAT,
+                              ACVP_ML_KEM_KEY_FORMAT_EXPANDED);
+```
+
+Call the API again with `ACVP_ML_KEM_KEY_FORMAT_SEED` if seed-format decapsulation is also
+supported. Seed-format test cases provide `d` and `z` separately in `ACVP_ML_KEM_TC`.
+
+#### ML-DSA FIPS204-tr1
+
+ML-DSA sigGen now registers revision `FIPS204-tr1`; ML-DSA keyGen and sigVer remain revision
+`FIPS204`. The new sigGen revision adds private-key format registration. If no format is set,
+libacvp uses the expanded format from the previous revision and logs a warning.
+
+Register the supported format explicitly with:
+
+```c
+rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0,
+                              ACVP_ML_DSA_PARAM_KEY_FORMAT,
+                              ACVP_ML_DSA_KEY_FORMAT_EXPANDED);
+```
+
+Call the API again with `ACVP_ML_DSA_KEY_FORMAT_SEED` if seed-format signature generation is
+also supported.
+
+#### HMAC 2.0
+
+HMAC registers revision `2.0`. Calls that request revision `1.0` are ignored with a warning so
+existing applications continue using the supported revision. Remove the obsolete
+`ACVP_HMAC_REVISION` call to eliminate that warning.
+
+Revision 2.0 requires a message-length domain. If it is not set, libacvp uses the full
+byte-aligned revision 2.0 range and logs a warning. Set it explicitly with:
+
+```c
+rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_MSGLEN,
+                              0, 4096, 8);
+```
+
 ## New in 2.2.0
 
 The included acvp_app application has had a restructure. For details on how to integrate a harness
