@@ -122,6 +122,14 @@ TEST_GROUP_RUNNER(BUILD_VENDORS) {
     // RUN_TEST_CASE(BUILD_VENDORS, good_vendors_output);  // Disabled (in #if 0)
 }
 
+TEST_GROUP_RUNNER(RSA_X931_REGISTRATION) {
+    RUN_TEST_CASE(RSA_X931_REGISTRATION, all_nist_capabilities_legacy_only);
+    RUN_TEST_CASE(RSA_X931_REGISTRATION, mixed_x931_last);
+    RUN_TEST_CASE(RSA_X931_REGISTRATION, pkcs1_sha1_not_implicitly_legacy);
+    RUN_TEST_CASE(RSA_X931_REGISTRATION, pss_1024_not_implicitly_legacy);
+    RUN_TEST_CASE(RSA_X931_REGISTRATION, siggen_x931_still_rejected_by_default);
+}
+
 TEST_GROUP_RUNNER(CHECK_RESULTS) {
     RUN_TEST_CASE(CHECK_RESULTS, no_vs_list);
 }
@@ -263,6 +271,8 @@ TEST_GROUP_RUNNER(DRBG_HANDLER) {
     RUN_TEST_CASE(DRBG_HANDLER, big_persoStringLen);
     RUN_TEST_CASE(DRBG_HANDLER, missing_returnedBitsLen);
     RUN_TEST_CASE(DRBG_HANDLER, big_returnedBitsLen);
+    RUN_TEST_CASE(DRBG_HANDLER, missing_counterFieldLen);
+    RUN_TEST_CASE(DRBG_HANDLER, big_counterFieldLen);
     RUN_TEST_CASE(DRBG_HANDLER, big_additionalInputLen);
     RUN_TEST_CASE(DRBG_HANDLER, missing_persoString);
     RUN_TEST_CASE(DRBG_HANDLER, long_persoString);
@@ -427,13 +437,23 @@ TEST_GROUP_RUNNER(EnableCapECDSA) {
 
 TEST_GROUP_RUNNER(EnableCapHMAC) {
     RUN_TEST_CASE(EnableCapHMAC, properly);
+    RUN_TEST_CASE(EnableCapHMAC, revision_1_0_ignored);
     RUN_TEST_CASE(EnableCapHMAC, param_alg_mismatch);
     RUN_TEST_CASE(EnableCapHMAC, null_handler);
     RUN_TEST_CASE(EnableCapHMAC, invalid_args);
 }
 
+TEST_GROUP_RUNNER(EnableCapMLKEM) {
+    RUN_TEST_CASE(EnableCapMLKEM, key_formats);
+}
+
+TEST_GROUP_RUNNER(EnableCapMLDSA) {
+    RUN_TEST_CASE(EnableCapMLDSA, key_formats);
+}
+
 TEST_GROUP_RUNNER(EnableCapHash) {
     RUN_TEST_CASE(EnableCapHash, properly);
+    RUN_TEST_CASE(EnableCapHash, shake_fips202_domains);
     RUN_TEST_CASE(EnableCapHash, param_alg_mismatch);
     RUN_TEST_CASE(EnableCapHash, null_handler);
     RUN_TEST_CASE(EnableCapHash, invalid_args);
@@ -511,6 +531,11 @@ TEST_GROUP_RUNNER(EnableCapKDFx963) {
     RUN_TEST_CASE(EnableCapKDFx963, invalid_params);
 }
 
+TEST_GROUP_RUNNER(EnableCapLMS) {
+    RUN_TEST_CASE(EnableCapLMS, valid_params);
+    RUN_TEST_CASE(EnableCapLMS, invalid_message_lengths);
+}
+
 TEST_GROUP_RUNNER(EnableCapRSAkeyGen) {
     RUN_TEST_CASE(EnableCapRSAkeyGen, proper_params);
     RUN_TEST_CASE(EnableCapRSAkeyGen, proper_modes);
@@ -576,6 +601,8 @@ TEST_GROUP_RUNNER(HASH_HANDLER) {
     RUN_TEST_CASE(HASH_HANDLER, missing_tgId);
     RUN_TEST_CASE(HASH_HANDLER, missing_lasttgId);
     RUN_TEST_CASE(HASH_HANDLER, missing_lasttcId);
+    RUN_TEST_CASE(HASH_HANDLER, ldt_missing_fullLength);
+    RUN_TEST_CASE(HASH_HANDLER, ldt_empty_content);
     RUN_TEST_CASE(HASH_HANDLER, cryptoFail1);
     RUN_TEST_CASE(HASH_HANDLER, cryptoFail2);
     RUN_TEST_CASE(HASH_HANDLER, cryptoFail3);
@@ -997,6 +1024,8 @@ TEST_GROUP_RUNNER(KDF135_SRTP_HANDLER) {
 }
 
 TEST_GROUP_RUNNER(KDF_TLS12_API) {
+    RUN_TEST_CASE(KDF_TLS12_API, key_block_length_domain);
+    RUN_TEST_CASE(KDF_TLS12_API, invalid_key_block_length_domain);
     RUN_TEST_CASE(KDF_TLS12_API, empty_ctx);
     RUN_TEST_CASE(KDF_TLS12_API, null_ctx);
     RUN_TEST_CASE(KDF_TLS12_API, null_json_obj);
@@ -1180,6 +1209,9 @@ TEST_GROUP_RUNNER(Kdf135x963Fail) {
     RUN_TEST_CASE(Kdf135x963Fail, cryptoFail2);
     RUN_TEST_CASE(Kdf135x963Fail, tgFail);
     RUN_TEST_CASE(Kdf135x963Fail, tcFail);
+    RUN_TEST_CASE(Kdf135x963Fail, oversized_key_data_length);
+    RUN_TEST_CASE(Kdf135x963Fail, oversized_shared_info_length);
+    RUN_TEST_CASE(Kdf135x963Fail, mismatched_shared_info_length);
 }
 
 TEST_GROUP_RUNNER(Kdf135x963Func) {
@@ -1621,6 +1653,7 @@ void run_lib_tests(void) {
     RUN_TEST_GROUP(BUILD_MODULES);
     RUN_TEST_GROUP(BUILD_OES);
     RUN_TEST_GROUP(BUILD_TEST_SESSION);
+    RUN_TEST_GROUP(RSA_X931_REGISTRATION);
     RUN_TEST_GROUP(BUILD_VENDORS);
     RUN_TEST_GROUP(CHECK_RESULTS);
     RUN_TEST_GROUP(CMAC_AES_CAPABILITY);
@@ -1658,6 +1691,8 @@ void run_lib_tests(void) {
     RUN_TEST_GROUP(EnableCapECDSA);
     RUN_TEST_GROUP(EnableCapHMAC);
     RUN_TEST_GROUP(EnableCapHash);
+    RUN_TEST_GROUP(EnableCapMLDSA);
+    RUN_TEST_GROUP(EnableCapMLKEM);
     RUN_TEST_GROUP(EnableCapKASECC);
     RUN_TEST_GROUP(EnableCapKASFFC);
     RUN_TEST_GROUP(EnableCapKASHKDF);
@@ -1670,6 +1705,7 @@ void run_lib_tests(void) {
     RUN_TEST_GROUP(EnableCapKDFSSH);
     RUN_TEST_GROUP(EnableCapKDFTLS13);
     RUN_TEST_GROUP(EnableCapKDFx963);
+    RUN_TEST_GROUP(EnableCapLMS);
     RUN_TEST_GROUP(EnableCapRSAkeyGen);
     RUN_TEST_GROUP(EnableCapTDES);
     RUN_TEST_GROUP(FIPS_VALIDATION_METADATA);

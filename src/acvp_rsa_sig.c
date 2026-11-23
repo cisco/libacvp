@@ -453,6 +453,12 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
                     json_value_free(r_tval);
                     goto err;
                 }
+                if (json_siglen > mod / 4) {
+                    ACVP_LOG_ERR("'signature' longer than modulo in server json");
+                    rv = ACVP_INVALID_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
 
                 signature = calloc(mod/4 +1, sizeof(char));
                 if (!signature) {

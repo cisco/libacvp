@@ -585,3 +585,48 @@ TEST(Kdf135x963Fail, tcFail) {
     rv  = acvp_kdf135_x963_kat_handler(ctx, obj);
     TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
 }
+
+TEST(Kdf135x963Fail, oversized_key_data_length) {
+    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    val = json_parse_file("json/kdf135_x963/kdf135_x963_13.json");
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+
+    rv = acvp_kdf135_x963_kat_handler(ctx, obj);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+}
+
+TEST(Kdf135x963Fail, oversized_shared_info_length) {
+    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    val = json_parse_file("json/kdf135_x963/kdf135_x963_14.json");
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+
+    rv = acvp_kdf135_x963_kat_handler(ctx, obj);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
+}
+
+TEST(Kdf135x963Fail, mismatched_shared_info_length) {
+    rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    val = json_parse_file("json/kdf135_x963/kdf135_x963_15.json");
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+
+    rv = acvp_kdf135_x963_kat_handler(ctx, obj);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+}

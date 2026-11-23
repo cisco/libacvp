@@ -643,4 +643,3 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
     return 0;
 }
-

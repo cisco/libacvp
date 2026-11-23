@@ -239,7 +239,20 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error creating param_bld in ML-KEM decap\n");
                 goto end;
             }
-            OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_PKEY_PARAM_PRIV_KEY, tc->dk, tc->dk_len);
+            if (tc->function == ACVP_ML_KEM_FUNCTION_DECAPSULATE &&
+                tc->key_format == ACVP_ML_KEM_KEY_FORMAT_SEED) {
+                seed = seed_concatenation(tc->d, tc->d_len, tc->z, tc->z_len,
+                                          &seed_len);
+                if (!seed) {
+                    printf("Error building seed variable in ML-KEM decap\n");
+                    goto end;
+                }
+                OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_PKEY_PARAM_ML_KEM_SEED,
+                                                 seed, seed_len);
+            } else {
+                OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_PKEY_PARAM_PRIV_KEY,
+                                                 tc->dk, tc->dk_len);
+            }
             params = OSSL_PARAM_BLD_to_param(pbld);
             if (!params) {
                 printf("Error generating params in ML-KEM decap\n");
@@ -274,7 +287,7 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error initializing decapsulate in ML-KEM decap\n");
                 goto end;
             }
-            if (EVP_PKEY_decapsulate(pkey_ctx, NULL, &out_len, tc->dk, tc->dk_len) != 1) {
+            if (EVP_PKEY_decapsulate(pkey_ctx, NULL, &out_len, tc->c, tc->c_len) != 1) {
                 printf("Error determining buffer size in ML-KEM decap\n");
                 goto end;
             }

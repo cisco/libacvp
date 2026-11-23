@@ -49,6 +49,24 @@ TEST_TEAR_DOWN(KDF_TLS12_API) {
     kdf_tls12_api_tear_down_helper();
 }
 
+TEST(KDF_TLS12_API, key_block_length_domain) {
+    rv = acvp_cap_kdf_tls12_set_domain(ctx, ACVP_KDF_TLS12_KEY_BLOCK_LEN, 512, 1024, 8);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_build_registration_json(ctx, &val);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+}
+
+TEST(KDF_TLS12_API, invalid_key_block_length_domain) {
+    rv = acvp_cap_kdf_tls12_set_domain(ctx, ACVP_KDF_TLS12_KEY_BLOCK_LEN, 504, 1024, 8);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    rv = acvp_cap_kdf_tls12_set_domain(ctx, ACVP_KDF_TLS12_KEY_BLOCK_LEN, 512, 1032, 8);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    rv = acvp_cap_kdf_tls12_set_domain(ctx, ACVP_KDF_TLS12_KEY_BLOCK_LEN, 1024, 512, 8);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    rv = acvp_cap_kdf_tls12_set_domain(ctx, ACVP_KDF_TLS12_KEY_BLOCK_LEN, 512, 1024, 1);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+}
+
 TEST_SETUP(KDF_TLS12_CAPABILITY) {}
 TEST_TEAR_DOWN(KDF_TLS12_CAPABILITY) {}
 

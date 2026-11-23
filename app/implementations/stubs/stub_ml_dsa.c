@@ -20,9 +20,10 @@ int app_ml_dsa_handler(ACVP_TEST_CASE *test_case) {
      * tc->msg, and expects a pub key and a signature, tc->sig, value in response. the pk value is
      * generated once PER GROUP. The library will take the pk value from the first test case in the
      * test group.
-     * Siggen AFT provides a message and a secret key value, and expects a signature in
-     * response. if you are not testing deterministically (tc->deterministic flag), then a random
-     * value (tc->rnd) is also provided to incorporate.
+     * Siggen AFT provides a message and either an expanded key in tc->secret_key or a seed in
+     * tc->seed, as indicated by tc->key_format, and expects a signature in response. if you are not
+     * testing deterministically (tc->deterministic flag), then a random value (tc->rnd) is also
+     * provided to incorporate.
      *
      * For sigver, a pub key value is provided (it is constant for each test case in a test group
      * and varies between groups), as well as a message and a signature. IuTs are expected to

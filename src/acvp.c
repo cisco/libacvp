@@ -171,14 +171,14 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KTS_IFC,           &acvp_kts_ifc_kat_handler,          ACVP_ALG_KTS_IFC,           ACVP_ALG_KTS_IFC_COMP, ACVP_REV_KTS_IFC, {.kas = ACVP_SUB_KTS_IFC}},
     { ACVP_SAFE_PRIMES_KEYGEN, &acvp_safe_primes_kat_handler,     ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYGEN, ACVP_REV_SAFE_PRIMES, {.kas = ACVP_SUB_SAFE_PRIMES_KEYGEN}},
     { ACVP_SAFE_PRIMES_KEYVER, &acvp_safe_primes_kat_handler,     ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYVER, ACVP_REV_SAFE_PRIMES, {.kas = ACVP_SUB_SAFE_PRIMES_KEYVER}},
-    { ACVP_LMS_KEYGEN,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_KEYGEN, ACVP_REV_LMS, {.lms = ACVP_SUB_LMS_KEYGEN}},
-    { ACVP_LMS_SIGGEN,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGGEN, ACVP_REV_LMS, {.lms = ACVP_SUB_LMS_SIGGEN}},
-    { ACVP_LMS_SIGVER,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGVER, ACVP_REV_LMS, {.lms = ACVP_SUB_LMS_SIGVER}},
-    { ACVP_ML_DSA_KEYGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_KEYGEN, ACVP_REV_ML_DSA, {.ml_dsa = ACVP_SUB_ML_DSA_KEYGEN}},
-    { ACVP_ML_DSA_SIGGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGGEN, ACVP_REV_ML_DSA, {.ml_dsa = ACVP_SUB_ML_DSA_SIGGEN}},
-    { ACVP_ML_DSA_SIGVER,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGVER, ACVP_REV_ML_DSA, {.ml_dsa = ACVP_SUB_ML_DSA_SIGVER}},
-    { ACVP_ML_KEM_KEYGEN,     &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_KEYGEN, ACVP_REV_ML_KEM, {.ml_kem = ACVP_SUB_ML_KEM_KEYGEN}},
-    { ACVP_ML_KEM_XCAP,       &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_XCAP, ACVP_REV_ML_KEM, {.ml_kem = ACVP_SUB_ML_KEM_XCAP}},
+    { ACVP_LMS_KEYGEN,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_KEYGEN, ACVP_REV_LMS_KEYGEN, {.lms = ACVP_SUB_LMS_KEYGEN}},
+    { ACVP_LMS_SIGGEN,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGGEN, ACVP_REV_LMS_SIGGEN, {.lms = ACVP_SUB_LMS_SIGGEN}},
+    { ACVP_LMS_SIGVER,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGVER, ACVP_REV_LMS_SIGVER, {.lms = ACVP_SUB_LMS_SIGVER}},
+    { ACVP_ML_DSA_KEYGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_KEYGEN, ACVP_REV_ML_DSA_KEYGEN, {.ml_dsa = ACVP_SUB_ML_DSA_KEYGEN}},
+    { ACVP_ML_DSA_SIGGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGGEN, ACVP_REV_ML_DSA_SIGGEN, {.ml_dsa = ACVP_SUB_ML_DSA_SIGGEN}},
+    { ACVP_ML_DSA_SIGVER,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGVER, ACVP_REV_ML_DSA_SIGVER, {.ml_dsa = ACVP_SUB_ML_DSA_SIGVER}},
+    { ACVP_ML_KEM_KEYGEN,     &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_KEYGEN, ACVP_REV_ML_KEM_KEYGEN, {.ml_kem = ACVP_SUB_ML_KEM_KEYGEN}},
+    { ACVP_ML_KEM_XCAP,       &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_XCAP, ACVP_REV_ML_KEM_XCAP, {.ml_kem = ACVP_SUB_ML_KEM_XCAP}},
     { ACVP_SLH_DSA_KEYGEN,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_KEYGEN, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_KEYGEN}},
     { ACVP_SLH_DSA_SIGGEN,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_SIGGEN, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_SIGGEN}},
     { ACVP_SLH_DSA_SIGVER,    &acvp_slh_dsa_kat_handler,          ACVP_ALG_SLH_DSA,           ACVP_ALG_SLH_DSA_SIGVER, ACVP_REV_SLH_DSA, {.slh_dsa = ACVP_SUB_SLH_DSA_SIGVER}}
@@ -488,6 +488,7 @@ static void acvp_free_drbg_struct(ACVP_CAPS_LIST *cap_list) {
             while (group_list) {
                 next_group_list = group_list->next;
                 if (group_list->group) {
+                    acvp_cap_free_domain(&group_list->group->returned_bits_len);
                     free(group_list->group);
                 }
                 free(group_list);
@@ -585,6 +586,7 @@ static void acvp_cap_free_lms(ACVP_LMS_CAP *cap) {
 
     acvp_cap_free_pl(cap->lms_modes);
     acvp_cap_free_pl(cap->lmots_modes);
+    acvp_cap_free_domain(&cap->msg_len);
     while (curr) {
         prev = curr;
         curr = curr->next;
@@ -597,10 +599,6 @@ static void acvp_cap_free_lms(ACVP_LMS_CAP *cap) {
 static void acvp_cap_free_ml_dsa(ACVP_ML_DSA_CAP *cap) {
     ACVP_ML_DSA_CAP_GROUP *group = cap->cap_group, *iter = NULL;
 
-    if (!group) {
-        return;
-    }
-
     while (group) {
         acvp_cap_free_pl(group->param_sets);
         acvp_cap_free_pl(group->hash_algs);
@@ -611,6 +609,7 @@ static void acvp_cap_free_ml_dsa(ACVP_ML_DSA_CAP *cap) {
         group = iter;
     }
 
+    acvp_cap_free_pl(cap->key_formats);
     free(cap);
     return;
 }
@@ -943,11 +942,13 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             case ACVP_ML_KEM_KEYGEN_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.ml_kem_keygen_cap->param_sets);
                 acvp_cap_free_pl(cap_entry->cap.ml_kem_keygen_cap->functions);
+                acvp_cap_free_pl(cap_entry->cap.ml_kem_keygen_cap->key_formats);
                 free(cap_entry->cap.ml_kem_keygen_cap);
                 break;
             case ACVP_ML_KEM_XCAP_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.ml_kem_xcap_cap->param_sets);
                 acvp_cap_free_pl(cap_entry->cap.ml_kem_xcap_cap->functions);
+                acvp_cap_free_pl(cap_entry->cap.ml_kem_xcap_cap->key_formats);
                 free(cap_entry->cap.ml_kem_xcap_cap);
                 break;
             case ACVP_SLH_DSA_KEYGEN_TYPE:
@@ -1120,10 +1121,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
         strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
     } else {
-        ACVP_LOG_WARN("Missing session URL, results will not be POSTed to server");
-#ifndef ACVP_OFFLINE
-        goto end;
-#endif
+        ACVP_LOG_WARN("Missing session URL; response file will lack session information needed for server submission");
     }
 
     jwt = json_object_get_string(obj, "jwt");
@@ -1131,10 +1129,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         ctx->jwt_token = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
         strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
     } else {
-        ACVP_LOG_WARN("Missing JWT, results will not be POSTed to server");
-#ifndef ACVP_OFFLINE
-        goto end;
-#endif
+        ACVP_LOG_WARN("Missing JWT; response file will lack authentication information needed for server submission");
     }
 
     isSample = json_object_get_boolean(obj, "isSample");
@@ -3356,7 +3351,8 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 const char *vsurl = json_object_get_string(current, "vectorSetUrl");
                 if (!vsurl) {
                     ACVP_LOG_ERR("No vector set URL when generating failed algorithm list");
-                    break;
+                    rv = ACVP_JSON_ERR;
+                    goto end;
                 }
                 if (!acvp_lookup_str_list(&failedVsList, vsurl)) {
                     // append the vs url to the list so we dont download/check same one twice
@@ -3387,21 +3383,24 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                     obj2 = acvp_get_obj_from_rsp(ctx, val2);
                     if (!obj2) {
                         json_value_free(val2);
+                        val2 = NULL;
                         ACVP_LOG_ERR("JSON parse error while reporting failed algorithms, skipping...");
                         continue;
                     }
                     alg = json_object_get_string(obj2, "algorithm");
                     if (!alg) {
+                        json_value_free(val2);
+                        val2 = NULL;
                         ACVP_LOG_ERR("JSON parse error while reporting failed algorithms, skipping...");
                         continue;
                     }
                     // Some algorithms have the same names, but different modes. Need to differentiate.
-                    if (json_object_get_string(obj2, "mode")) {
-                        mode = json_object_get_string(obj2, "mode");
-                    }
+                    mode = json_object_get_string(obj2, "mode");
                     if (!acvp_lookup_str_list(&failedAlgList, alg) || !acvp_lookup_str_list(&failedModeList, mode)) {
                         rv = acvp_append_str_list(&failedAlgList, alg);
                         if (rv != ACVP_SUCCESS) {
+                            json_value_free(val2);
+                            val2 = NULL;
                             ACVP_LOG_ERR("Error appending failed algorithm name to list, skipping...");
                             continue;
                         }
@@ -3412,15 +3411,12 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                             rv = acvp_append_str_list(&failedModeList, "");
                         }
                         if (rv != ACVP_SUCCESS) {
-                            ACVP_LOG_ERR("Error appending failed mode name to list, skipping...");
-                            continue;
+                            ACVP_LOG_ERR("Error appending failed mode name to list");
+                            goto end;
                         }
-                        if (val2) json_value_free(val2);
-                        val2 = NULL;
-                    } else {
-                        if (val2) json_value_free(val2);
-                        val2 = NULL;
                     }
+                    json_value_free(val2);
+                    val2 = NULL;
                 }
             }
             testsCompleted++;
@@ -3482,6 +3478,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
 
 end:
     if (val) json_value_free(val);
+    if (val2) json_value_free(val2);
     if (failedAlgList) {
         acvp_free_str_list(&failedAlgList);
     }

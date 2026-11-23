@@ -104,3 +104,9 @@ The key:"mode" is missing in last tg
 
 #### drbg\_34.json
 The key:"nonce" is missing in last tc
+
+#### drbg\_35.json
+The key:"counterFieldLen" is missing.
+
+#### drbg\_36.json
+The value for key:"counterFieldLen" is too big.

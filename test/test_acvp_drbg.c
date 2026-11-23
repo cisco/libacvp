@@ -500,7 +500,7 @@ TEST(DRBG_HANDLER, small_entropyInputLen) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -515,7 +515,7 @@ TEST(DRBG_HANDLER, big_entropyInputLen) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -545,7 +545,7 @@ TEST(DRBG_HANDLER, small_nonceLen) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -560,7 +560,7 @@ TEST(DRBG_HANDLER, big_nonceLen) {
         return;
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }
@@ -606,6 +606,36 @@ TEST(DRBG_HANDLER, big_returnedBitsLen) {
     }
     rv = acvp_drbg_kat_handler(ctx, obj);
     TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    json_value_free(val);
+    val = NULL;
+}
+
+// The key:"counterFieldLen" is missing for ctrDRBG.
+TEST(DRBG_HANDLER, missing_counterFieldLen) {
+    val = json_parse_file("json/drbg/drbg_35.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_drbg_kat_handler(ctx, obj);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
+    json_value_free(val);
+    val = NULL;
+}
+
+// The value for key:"counterFieldLen" is too big for AES ctrDRBG.
+TEST(DRBG_HANDLER, big_counterFieldLen) {
+    val = json_parse_file("json/drbg/drbg_36.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_drbg_kat_handler(ctx, obj);
+    TEST_ASSERT_EQUAL(ACVP_TC_INVALID_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

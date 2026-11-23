@@ -204,9 +204,21 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+            if (strnlen_s(s_rnd, ACVP_KDF_TLS12_RANDOM_STR_LEN + 1) !=
+                ACVP_KDF_TLS12_RANDOM_STR_LEN) {
+                ACVP_LOG_ERR("Server JSON invalid 'serverRandom' length");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
 
             rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "clientRandom", &c_rnd);
             if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            if (strnlen_s(c_rnd, ACVP_KDF_TLS12_RANDOM_STR_LEN + 1) !=
+                ACVP_KDF_TLS12_RANDOM_STR_LEN) {
+                ACVP_LOG_ERR("Server JSON invalid 'clientRandom' length");
+                rv = ACVP_INVALID_ARG;
                 goto err;
             }
 

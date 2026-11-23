@@ -22,7 +22,7 @@
 #include "safe_str_lib.h"
 
 static ACVP_RESULT validate_domain_range(int min, int max, int inc) {
-    if (min > max || min < 0 || max < 0 || inc < 0 || (max - min) % inc != 0) {
+    if (min > max || min < 0 || max < 0 || inc <= 0 || (max - min) % inc != 0) {
         return ACVP_INVALID_ARG;
     }
     return ACVP_SUCCESS;
@@ -2331,7 +2331,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN can only be set for AES-XTS");
             return ACVP_INVALID_ARG;
         }
-        if ((cap->cap.sym_cap->du_len.max != 0 || cap->cap.sym_cap->du_len.increment != 0)) {
+        if (domain_has_set_values(&cap->cap.sym_cap->du_len)) {
             ACVP_LOG_ERR("ACVP_SYM_CIPH_DULEN_MATCHES_PAYLOADLEN cannot be changed after setting "
                          "ACVP_SYM_CIPH_DOMAIN_DULEN");
             return ACVP_INVALID_ARG;
@@ -2862,9 +2862,16 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
 
     switch (param) {
     case ACVP_HASH_IN_BIT:
+        if (alg == ACVP_SUB_HASH_SHAKE_128 || alg == ACVP_SUB_HASH_SHAKE_256) {
+            ACVP_LOG_WARN("ACVP_HASH_IN_BIT is no longer used for SHAKE revision FIPS202; ignoring");
+        }
         hash_cap->in_bit = value;
         break;
     case ACVP_HASH_IN_EMPTY:
+        if (alg == ACVP_SUB_HASH_SHAKE_128 || alg == ACVP_SUB_HASH_SHAKE_256) {
+            ACVP_LOG_WARN("ACVP_HASH_IN_EMPTY is no longer registered for SHAKE revision FIPS202; "
+                          "using it only for the default messageLength when none is set");
+        }
         hash_cap->in_empty = value;
         break;
     case ACVP_HASH_OUT_BIT:
@@ -2888,6 +2895,7 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
 
+        ACVP_LOG_WARN("ACVP_HASH_OUT_BIT is no longer used for SHAKE revision FIPS202; ignoring");
         hash_cap->out_bit = value;
         break;
     case ACVP_HASH_LARGE_DATA:
@@ -2960,12 +2968,13 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
 
     switch (parm) {
     case ACVP_HASH_MESSAGE_LEN:
-        if (cipher == ACVP_HASH_SHAKE_128 || cipher == ACVP_HASH_SHAKE_256) {
-            ACVP_LOG_ERR("ACVP_HASH_MSG_LEN cannot be set for SHAKE ciphers");
-            return ACVP_INVALID_ARG;
-        }
         if (min < ACVP_HASH_MSG_BIT_MIN ||  max > ACVP_HASH_MSG_BIT_MAX) {
             ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        if ((cipher == ACVP_HASH_SHAKE_128 || cipher == ACVP_HASH_SHAKE_256) &&
+            increment != 8) {
+            ACVP_LOG_ERR("'ACVP_HASH_MESSAGE_LEN' increment must be 8 for SHAKE");
             return ACVP_INVALID_ARG;
         }
         domain = &hash_cap->msg_length;
@@ -3242,16 +3251,8 @@ ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
         }
         break;
     case ACVP_HMAC_REVISION:
-        if (domain_has_set_values(&hcap->msg_len)) {
-            ACVP_LOG_ERR("Cannot set revision for HMAC after setting msg_len values (msg only supports default revision)");
-            return ACVP_INVALID_ARG;
-        }
-        if (value != ACVP_REVISION_1_0) {
-            ACVP_LOG_ERR("Only revision 1.0 supported for HMAC");
-            return ACVP_INVALID_ARG;
-        }
-        hcap->revision = value;
-        break;
+        ACVP_LOG_WARN("HMAC revision 1.0 is no longer used; ignoring and using revision 2.0");
+        return ACVP_SUCCESS;
     case ACVP_HMAC_MSGLEN:
         if (cap->cap.hmac_cap->revision != ACVP_REVISION_DEFAULT) {
             ACVP_LOG_ERR("ACVP_HMAC_MSGLEN not supported for alternate revisions");
@@ -3286,8 +3287,8 @@ static ACVP_RESULT acvp_validate_cmac_parm_value(ACVP_CMAC_PARM parm, int value)
         }
         break;
     case ACVP_CMAC_MSGLEN:
-        if (value >= ACVP_CMAC_MSGLEN_MIN &&
-            value <= ACVP_CMAC_MSGLEN_MAX &&
+        if (value >= ACVP_CMAC_MSG_BIT_MIN &&
+            value <= ACVP_CMAC_MSG_BIT_MAX &&
             value % 8 == 0) {
             retval = ACVP_SUCCESS;
         }
@@ -3372,8 +3373,8 @@ ACVP_RESULT acvp_cap_cmac_set_domain(ACVP_CTX *ctx,
 
     switch (parm) {
     case ACVP_CMAC_MSGLEN:
-        if (min < ACVP_CMAC_MSGLEN_MIN ||
-            max > ACVP_CMAC_MSGLEN_MAX) {
+        if (min < ACVP_CMAC_MSG_BIT_MIN ||
+            max > ACVP_CMAC_MSG_BIT_MAX) {
             ACVP_LOG_ERR("min or max outside of acceptable range");
             return ACVP_INVALID_ARG;
         }
@@ -3783,6 +3784,11 @@ static ACVP_RESULT acvp_add_drbg_length_range(ACVP_DRBG_CAP_GROUP *cap_group,
         cap_group->additional_in_len_max = max;
         break;
     case ACVP_DRBG_RET_BITS_LEN:
+        cap_group->returned_bits_len.min = min;
+        cap_group->returned_bits_len.increment = step;
+        cap_group->returned_bits_len.max = max;
+        break;
+    case ACVP_DRBG_COUNTER_FIELD_LEN:
     case ACVP_DRBG_PRE_REQ_VALS:
     case ACVP_DRBG_DER_FUNC_ENABLED:
     case ACVP_DRBG_PRED_RESIST_ENABLED:
@@ -3873,10 +3879,18 @@ ACVP_RESULT acvp_cap_drbg_set_length(ACVP_CTX *ctx,
                          max, ACVP_DRBG_ADDI_IN_BIT_MAX);
             return ACVP_INVALID_ARG;
         }
+        break;
+    case ACVP_DRBG_RET_BITS_LEN:
+        if (min < 1 ||
+            max > ACVP_DRB_BIT_MAX || min > max || step <= 0) {
+            ACVP_LOG_ERR("Invalid returnedBitsLen domain");
+            return ACVP_INVALID_ARG;
+        }
+        break;
     case ACVP_DRBG_DER_FUNC_ENABLED:
     case ACVP_DRBG_PRED_RESIST_ENABLED:
     case ACVP_DRBG_RESEED_ENABLED:
-    case ACVP_DRBG_RET_BITS_LEN:
+    case ACVP_DRBG_COUNTER_FIELD_LEN:
     case ACVP_DRBG_PRE_REQ_VALS:
     default:
         break;
@@ -3886,7 +3900,10 @@ ACVP_RESULT acvp_cap_drbg_set_length(ACVP_CTX *ctx,
     return acvp_add_drbg_length_range(grp, param, min, step, max);
 }
 
-static ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value) {
+static ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_CIPHER cipher,
+                                                 ACVP_DRBG_MODE mode,
+                                                 ACVP_DRBG_PARM parm,
+                                                 int value) {
     ACVP_RESULT retval = ACVP_INVALID_ARG;
 
     switch (parm) {
@@ -3922,7 +3939,20 @@ static ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value)
         }
         break;
     case ACVP_DRBG_RET_BITS_LEN:
-        if (value <= ACVP_DRB_BIT_MAX) {
+        if (value >= 1 &&
+            value <= ACVP_DRB_BIT_MAX) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_DRBG_COUNTER_FIELD_LEN:
+        if (cipher == ACVP_CTRDRBG &&
+            ((mode == ACVP_DRBG_TDES &&
+              value == ACVP_DRBG_TDES_COUNTER_FIELD_BIT_LEN) ||
+             ((mode == ACVP_DRBG_AES_128 ||
+               mode == ACVP_DRBG_AES_192 ||
+               mode == ACVP_DRBG_AES_256) &&
+              value >= ACVP_DRBG_AES_COUNTER_FIELD_BIT_MIN &&
+              value <= ACVP_DRBG_AES_COUNTER_FIELD_BIT_MAX))) {
             retval = ACVP_SUCCESS;
         }
         break;
@@ -3996,7 +4026,7 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    if (acvp_validate_drbg_parm_value(param, value) != ACVP_SUCCESS) {
+    if (acvp_validate_drbg_parm_value(cipher, mode, param, value) != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Error validating DRBG paramater value (param = %d, value = %d", param, value);
         return ACVP_INVALID_ARG;
     }
@@ -4024,7 +4054,12 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
         grp->additional_input_len = value;
         break;
     case ACVP_DRBG_RET_BITS_LEN:
-        grp->returned_bits_len = value;
+        if (acvp_append_sl_list(&grp->returned_bits_len.values, value) != ACVP_SUCCESS) {
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_DRBG_COUNTER_FIELD_LEN:
+        grp->counter_field_len = value;
         break;
     case ACVP_DRBG_PRE_REQ_VALS:
     default:
@@ -4277,13 +4312,6 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_type(ACVP_CTX *ctx,
 
     sigver_cap = cap_list->cap.rsa_sigver_cap;
 
-    if (sigver_cap->revision != ACVP_REVISION_FIPS186_4 &&
-        sigver_cap->revision != ACVP_REVISION_186_BOTH &&
-        value == ACVP_RSA_SIG_TYPE_X931) {
-        ACVP_LOG_ERR("ANS X9.31 signatures only allowed for FIPS 186-4");
-        return ACVP_UNSUPPORTED_OP;
-    }
-
     while (sigver_cap) {
         if (!sigver_cap->sig_type) {
             break;
@@ -4333,7 +4361,9 @@ ACVP_RESULT acvp_cap_rsa_siggen_set_type(ACVP_CTX *ctx,
     if (siggen_cap->revision != ACVP_REVISION_FIPS186_4 &&
         siggen_cap->revision != ACVP_REVISION_186_BOTH &&
         value == ACVP_RSA_SIG_TYPE_X931) {
-        ACVP_LOG_ERR("ANS X9.31 signatures only allowed for FIPS 186-4");
+        ACVP_LOG_ERR("ANS X9.31 signature generation requires an explicit "
+                     "ACVP_REVISION_FIPS186_4 or ACVP_REVISION_186_BOTH selection; "
+                     "X9.31 is registered only under FIPS 186-4.");
         return ACVP_UNSUPPORTED_OP;
     }
 
@@ -6817,6 +6847,24 @@ ACVP_RESULT acvp_cap_kdf135_x963_set_parm(ACVP_CTX *ctx,
         case ACVP_SHA512:
             result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_512);
             break;
+        case ACVP_SHA512_224:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_512_224);
+            break;
+        case ACVP_SHA512_256:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_512_256);
+            break;
+        case ACVP_SHA3_224:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA3_224);
+            break;
+        case ACVP_SHA3_256:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA3_256);
+            break;
+        case ACVP_SHA3_384:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA3_384);
+            break;
+        case ACVP_SHA3_512:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA3_512);
+            break;
         default:
             ACVP_LOG_ERR("Invalid hash alg");
             return ACVP_INVALID_ARG;
@@ -7144,6 +7192,7 @@ ACVP_RESULT acvp_cap_kdf_tls12_set_parm(ACVP_CTX *ctx,
             result = acvp_append_name_list(&cap->hash_algs, alg_str);
         }
         break;
+    case ACVP_KDF_TLS12_KEY_BLOCK_LEN:
     case ACVP_KDF_TLS12_PARAM_MIN:
     default:
         return ACVP_INVALID_ARG;
@@ -7152,6 +7201,40 @@ ACVP_RESULT acvp_cap_kdf_tls12_set_parm(ACVP_CTX *ctx,
     return result;
 }
 
+
+ACVP_RESULT acvp_cap_kdf_tls12_set_domain(ACVP_CTX *ctx,
+                                          ACVP_KDF_TLS12_PARM param,
+                                          int min, int max, int increment) {
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_JSON_DOMAIN_OBJ *domain;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF_TLS12);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found. You must enable algorithm before setting parameters.");
+        return ACVP_NO_CAP;
+    }
+
+    if (param != ACVP_KDF_TLS12_KEY_BLOCK_LEN) {
+        ACVP_LOG_ERR("Invalid domain parameter for TLS 1.2 KDF.");
+        return ACVP_INVALID_ARG;
+    }
+    if (min < 512 || max > 1024 || max < min ||
+        increment < 8 || min % 8 || max % 8 || increment % 8) {
+        ACVP_LOG_ERR("Invalid TLS 1.2 KDF key block length domain; lengths must be 512..1024 bits in byte increments.");
+        return ACVP_INVALID_ARG;
+    }
+
+    domain = &cap_list->cap.kdf_tls12_cap->key_block_len;
+    domain->min = min;
+    domain->max = max;
+    domain->increment = increment;
+
+    return ACVP_SUCCESS;
+}
 
 
 ACVP_RESULT acvp_cap_kdf_tls13_enable(ACVP_CTX *ctx,
@@ -9427,18 +9510,68 @@ ACVP_RESULT acvp_cap_lms_set_parm(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
         return acvp_append_param_list(&lms_cap->lms_modes, value);
-        break;
     case ACVP_LMS_PARAM_LMOTS_MODE:
         if (value <= ACVP_LMOTS_MODE_NONE || value >= ACVP_LMOTS_MODE_MAX) {
             ACVP_LOG_ERR("Invalid LMOTS mode provided");
             return ACVP_INVALID_ARG;
         }
         return acvp_append_param_list(&lms_cap->lmots_modes, value);
-        break;
+    case ACVP_LMS_PARAM_MSG_LEN:
+        if (alg == ACVP_SUB_LMS_KEYGEN || value < 8 ||
+            value > ACVP_LMS_MSG_BIT_MAX) {
+            ACVP_LOG_ERR("Invalid LMS message length");
+            return ACVP_INVALID_ARG;
+        }
+        return acvp_append_sl_list(&lms_cap->msg_len.values, value);
     default:
-        break;
+        ACVP_LOG_ERR("Invalid LMS parameter");
+        return ACVP_INVALID_ARG;
+    }
+}
+
+ACVP_RESULT acvp_cap_lms_set_domain(ACVP_CTX *ctx,
+                                    ACVP_CIPHER cipher,
+                                    ACVP_LMS_PARAM param,
+                                    int min,
+                                    int max,
+                                    int increment) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_LMS_CAP *lms_cap;
+    ACVP_SUB_LMS alg;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
     }
 
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    alg = acvp_get_lms_alg(cipher);
+    switch (alg) {
+    case ACVP_SUB_LMS_SIGGEN:
+        lms_cap = cap->cap.lms_siggen_cap;
+        break;
+    case ACVP_SUB_LMS_SIGVER:
+        lms_cap = cap->cap.lms_sigver_cap;
+        break;
+    case ACVP_SUB_LMS_KEYGEN:
+    default:
+        ACVP_LOG_ERR("LMS message length domains only apply to sigGen and sigVer");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (param != ACVP_LMS_PARAM_MSG_LEN ||
+        validate_domain_range(min, max, increment) != ACVP_SUCCESS ||
+        min < 8 || max > ACVP_LMS_MSG_BIT_MAX) {
+        ACVP_LOG_ERR("Invalid LMS message length domain");
+        return ACVP_INVALID_ARG;
+    }
+
+    lms_cap->msg_len.min = min;
+    lms_cap->msg_len.max = max;
+    lms_cap->msg_len.increment = increment;
     return ACVP_SUCCESS;
 }
 
@@ -9578,6 +9711,7 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
             case ACVP_ML_DSA_PARAM_MU:
             case ACVP_ML_DSA_PARAM_HASH_ALG:
             case ACVP_ML_DSA_PARAM_CONTEXT_LEN:
+            case ACVP_ML_DSA_PARAM_KEY_FORMAT:
                 ACVP_LOG_ERR("Tried setting non-applicable parameter for ML-DSA KeyGen");
                 return ACVP_INVALID_ARG;
             case ACVP_ML_DSA_PARAM_PARAMETER_SET:
@@ -9590,6 +9724,10 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
         break;
     case ACVP_SUB_ML_DSA_SIGVER:
         ml_dsa_cap = cap->cap.ml_dsa_sigver_cap;
+        if (param == ACVP_ML_DSA_PARAM_KEY_FORMAT) {
+            ACVP_LOG_ERR("Key format selection for ML-DSA is only for siggen");
+            return ACVP_INVALID_ARG;
+        }
         break;
     default:
         ACVP_LOG_ERR("Invalid cipher provided for setting ML-DSA paramater");
@@ -9715,6 +9853,13 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
         }
         acvp_append_sl_list(&group_obj->context_len.values, value);
         break;
+    case ACVP_ML_DSA_PARAM_KEY_FORMAT:
+        if (value <= ACVP_ML_DSA_KEY_FORMAT_NONE ||
+            value >= ACVP_ML_DSA_KEY_FORMAT_MAX) {
+            ACVP_LOG_ERR("Invalid key format provided for ML-DSA siggen");
+            return ACVP_INVALID_ARG;
+        }
+        return acvp_append_param_list(&ml_dsa_cap->key_formats, value);
     default:
         ACVP_LOG_ERR("Invalid parameter provided for ML-DSA");
         return ACVP_INVALID_ARG;
@@ -9819,6 +9964,7 @@ ACVP_RESULT acvp_cap_ml_dsa_set_domain(ACVP_CTX *ctx,
     case ACVP_ML_DSA_PARAM_PREHASH:
     case ACVP_ML_DSA_PARAM_MU:
     case ACVP_ML_DSA_PARAM_HASH_ALG:
+    case ACVP_ML_DSA_PARAM_KEY_FORMAT:
     default:
         ACVP_LOG_ERR("Invalid parameter provided for ML-DSA domain");
         return ACVP_INVALID_ARG;
@@ -9909,6 +10055,17 @@ ACVP_RESULT acvp_cap_ml_kem_set_parm(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
         return acvp_append_param_list(&ml_kem_cap->functions, value);
+    case ACVP_ML_KEM_PARAM_KEY_FORMAT:
+        if (alg != ACVP_SUB_ML_KEM_XCAP) {
+            ACVP_LOG_ERR("Key format selection for ML-KEM is only for encap/decap");
+            return ACVP_INVALID_ARG;
+        }
+        if (value <= ACVP_ML_KEM_KEY_FORMAT_NONE ||
+            value >= ACVP_ML_KEM_KEY_FORMAT_MAX) {
+            ACVP_LOG_ERR("Invalid key format provided for ML-KEM encap/decap");
+            return ACVP_INVALID_ARG;
+        }
+        return acvp_append_param_list(&ml_kem_cap->key_formats, value);
     default:
         ACVP_LOG_ERR("Invalid parameter provided for ML-KEM");
         return ACVP_INVALID_ARG;

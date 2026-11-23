@@ -17,6 +17,15 @@ If the project is configured with --disable-app or --disable-lib, only the relev
 
 ## Running Tests
 
+Tests locate their JSON data by looking for `json/aes/aes.json` in, in order:
+the directory named by the `ACVP_TEST_DATA_DIR` environment variable, the
+current directory, the directory of the executable as given in `argv[0]`, and
+the parent of that directory (where libtool builds place the real binary in
+`test/.libs/`). The executable directory is only found when `argv[0]`
+contains a `/`, so launching by name through `PATH` (or with only `\` separators
+on Windows) does not search beside the executable. For out-of-tree builds, set
+`ACVP_TEST_DATA_DIR` to the source `test` directory.
+
 ```
 ./test/runtest
 ```
@@ -34,6 +43,17 @@ The runtest executable can be made to run only certain TEST_GROUPS using the -g 
 For example:
 ```
 ./test/runtest -g AES -v
+```
+
+The `RSA_X931_REGISTRATION` group provides five sanity checks for the OpenSSL
+3.5 registration pattern: all 16 X9.31 modulus/hash combinations, mixed SigVer
+registrations, representative invalid modern capabilities, and unchanged
+SigGen restrictions. Each test keeps its setup inline and checks API and
+registration-build return values rather than inspecting the serialized JSON.
+
+Run the RSA registration sanity checks:
+```
+./test/runtest -g RSA_X931_REGISTRATION -v
 ```
 
 ## Contributing

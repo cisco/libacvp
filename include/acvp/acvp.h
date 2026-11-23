@@ -28,7 +28,7 @@ extern "C"
 
 #define ACVP_LIBRARY_VERSION_MAJOR 2
 #define ACVP_LIBRARY_VERSION_MINOR 3
-#define ACVP_LIBRARY_VERSION_PATCH 1
+#define ACVP_LIBRARY_VERSION_PATCH 2
 
 #define xstr_2(x) #x
 #define xstr(x) xstr_2(x)
@@ -770,7 +770,8 @@ typedef enum acvp_drbg_param {
     ACVP_DRBG_PERSO_LEN,
     ACVP_DRBG_ADD_IN_LEN,
     ACVP_DRBG_RET_BITS_LEN,
-    ACVP_DRBG_PRE_REQ_VALS
+    ACVP_DRBG_PRE_REQ_VALS,
+    ACVP_DRBG_COUNTER_FIELD_LEN
 } ACVP_DRBG_PARM;
 
 /** @enum ACVP_RSA_PARM */
@@ -936,7 +937,8 @@ typedef enum acvp_pbkdf_param {
 /** @enum ACVP_KDF_TLS12_PARM */
 typedef enum acvp_kdf_tls12_param {
     ACVP_KDF_TLS12_PARAM_MIN,
-    ACVP_KDF_TLS12_HASH_ALG //!< HMAC algorithms supported by TLS 1.2 implementation
+    ACVP_KDF_TLS12_HASH_ALG, //!< HMAC algorithms supported by TLS 1.2 implementation
+    ACVP_KDF_TLS12_KEY_BLOCK_LEN //!< Key block length in bits
 } ACVP_KDF_TLS12_PARM;
 
 /** @enum ACVP_KDF_TLS13_RUN_MODE */
@@ -1341,10 +1343,10 @@ typedef struct acvp_hash_tc_t {
                                \ref ACVP_HASH_TC.m2 , \ref ACVP_HASH_TC.m3 */
     unsigned int xof_len; /**< XOF (extendable output format) length
                                The expected length (in bytes) of \ref ACVP_HASH_TC.md
-                               Only provided when \ref ACVP_HASH_TC.test_type is VOT */
+                               Provided for SHAKE AFT and VOT tests */
     unsigned int xof_bit_len; /**< XOF (extendable output format) length
                                    The expected length (in bits) of \ref ACVP_HASH_TC.md
-                                   Only provided when \ref ACVP_HASH_TC.test_type is VOT */
+                                   Provided for SHAKE AFT and VOT tests */
     unsigned long long int exp_len; /**< The final length (in bytes) of the expanded content
                                          Only provided when \ref ACVP_HASH_TC.test_type is LDT */
     unsigned char *md; /**< The resulting digest calculated for the test case.
@@ -2605,12 +2607,14 @@ typedef struct acvp_drbg_tc_t {
     unsigned int entropy_len;          //!< Entropy length (in bytes)
     unsigned int nonce_len;            //!< Nonce length (in bytes)
     unsigned int drb_len;              //!< Expected drb length (in bytes)
+    unsigned int counter_field_len;    //!< ctrDRBG counter field length (in bits)
 } ACVP_DRBG_TC;
 
 /** @enum ACVP_LMS_PARAM */
 typedef enum acvp_lms_param {
     ACVP_LMS_PARAM_LMS_MODE = 1,
-    ACVP_LMS_PARAM_LMOTS_MODE
+    ACVP_LMS_PARAM_LMOTS_MODE,
+    ACVP_LMS_PARAM_MSG_LEN
 } ACVP_LMS_PARAM;
 
 /** @enum ACVP_LMS_MODE */
@@ -2694,9 +2698,10 @@ typedef struct acvp_lms_tc_t {
     // Signature values
     unsigned char *msg;
     unsigned char *sig;
-    int msg_len;
+    int msg_len;      //!< Message length in bytes for byte-aligned input; retained for compatibility
     int sig_len;
     ACVP_TEST_DISPOSITION ver_disposition;
+    int msg_bit_len;  //!< Exact message length in bits; use for non-byte-aligned input
 
 } ACVP_LMS_TC;
 
@@ -2709,7 +2714,8 @@ typedef enum acvp_ml_dsa_param {
     ACVP_ML_DSA_PARAM_PREHASH,
     ACVP_ML_DSA_PARAM_MU,
     ACVP_ML_DSA_PARAM_HASH_ALG,
-    ACVP_ML_DSA_PARAM_CONTEXT_LEN
+    ACVP_ML_DSA_PARAM_CONTEXT_LEN,
+    ACVP_ML_DSA_PARAM_KEY_FORMAT
 } ACVP_ML_DSA_PARAM;
 
 /**
@@ -2762,6 +2768,14 @@ typedef enum acvp_ml_dsa_testtype {
     ACVP_ML_DSA_TESTTYPE_AFT
 } ACVP_ML_DSA_TESTTYPE;
 
+/** @enum ACVP_ML_DSA_KEY_FORMAT */
+typedef enum acvp_ml_dsa_key_format {
+    ACVP_ML_DSA_KEY_FORMAT_NONE = 0,
+    ACVP_ML_DSA_KEY_FORMAT_EXPANDED,
+    ACVP_ML_DSA_KEY_FORMAT_SEED,
+    ACVP_ML_DSA_KEY_FORMAT_MAX
+} ACVP_ML_DSA_KEY_FORMAT;
+
 
 /**
  * @struct ACVP_ML_DSA_TC
@@ -2783,7 +2797,7 @@ typedef struct acvp_ml_dsa_tc_t {
     int pub_key_len;
     int secret_key_len;
 
-    // Keygen
+    // Keygen and seed-format siggen
     unsigned char *seed;
     int seed_len;
 
@@ -2804,13 +2818,15 @@ typedef struct acvp_ml_dsa_tc_t {
     int context_len;
     int mu_len;
     ACVP_TEST_DISPOSITION ver_disposition;
+    ACVP_ML_DSA_KEY_FORMAT key_format;
 
 } ACVP_ML_DSA_TC;
 
 /** @enum ACVP_ML_KEM_PARAM */
 typedef enum acvp_ml_kem_param {
     ACVP_ML_KEM_PARAM_PARAMETER_SET = 1,
-    ACVP_ML_KEM_PARAM_FUNCTION
+    ACVP_ML_KEM_PARAM_FUNCTION,
+    ACVP_ML_KEM_PARAM_KEY_FORMAT
 } ACVP_ML_KEM_PARAM;
 
 /**
@@ -2835,6 +2851,14 @@ typedef enum acvp_ml_kem_fuction {
     ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK,
     ACVP_ML_KEM_FUNCTION_MAX
 } ACVP_ML_KEM_FUNCTION;
+
+/** @enum ACVP_ML_KEM_KEY_FORMAT */
+typedef enum acvp_ml_kem_key_format {
+    ACVP_ML_KEM_KEY_FORMAT_NONE = 0,
+    ACVP_ML_KEM_KEY_FORMAT_EXPANDED,
+    ACVP_ML_KEM_KEY_FORMAT_SEED,
+    ACVP_ML_KEM_KEY_FORMAT_MAX
+} ACVP_ML_KEM_KEY_FORMAT;
 
 /** @enum ACVP_ML_KEM_TESTTYPE */
 typedef enum acvp_ml_kem_testtype {
@@ -2864,9 +2888,9 @@ typedef struct acvp_ml_kem_tc_t {
     int dk_len;
     int ek_len;
 
-    // Keygen
-    unsigned char *d; // Seed
-    unsigned char *z; // Seed
+    // Keygen and seed-format decapsulation
+    unsigned char *d; // Seed value d
+    unsigned char *z; // Seed value z
     int d_len;
     int z_len;
 
@@ -2879,6 +2903,9 @@ typedef struct acvp_ml_kem_tc_t {
     int k_len;
 
     ACVP_TEST_DISPOSITION keycheck_disposition;
+
+    // FIPS203-tr1 decapsulation key format
+    ACVP_ML_KEM_KEY_FORMAT key_format;
 } ACVP_ML_KEM_TC;
 
 /** @enum ACVP_SLH_DSA_PARAM */
@@ -3860,6 +3887,11 @@ ACVP_RESULT acvp_cap_rsa_siggen_set_parm(ACVP_CTX *ctx,
                                              ACVP_RSA_PARM param,
                                              int value);
 
+/**
+ * @brief Set RSA signature verification parameters. With the default revision,
+ *        X9.31 is automatically registered separately under FIPS186-4, while
+ *        the remaining signature types use FIPS186-5.
+ */
 ACVP_RESULT acvp_cap_rsa_sigver_set_parm(ACVP_CTX *ctx,
                                          ACVP_RSA_PARM param,
                                          int value);
@@ -4469,8 +4501,9 @@ ACVP_RESULT acvp_cap_kdf135_x942_set_domain(ACVP_CTX *ctx,
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param param ACVP_KDF135_X963_PARM enum value specifying parameter
- * @param value integer value for parameter. The acceptable hash algs are defined in an enum
- *        ACVP_KDF135_X963_HASH_VALS in the library
+ * @param value integer value for parameter. For ACVP_KDF_X963_HASH_ALG, accepts
+ *        ACVP_SHA224, ACVP_SHA256, ACVP_SHA384, ACVP_SHA512, ACVP_SHA512_224,
+ *        ACVP_SHA512_256, ACVP_SHA3_224, ACVP_SHA3_256, ACVP_SHA3_384, ACVP_SHA3_512.
  *
  * @return ACVP_RESULT
  */
@@ -4688,6 +4721,22 @@ ACVP_RESULT acvp_cap_kdf_tls12_set_parm(ACVP_CTX *ctx,
                                         int value);
 
 /**
+ * @brief Sets the optional TLS 1.2 KDF key block length domain. If not set,
+ *        the server default of 1024 bits is used.
+ *
+ * @param ctx Context created by acvp_create_test_session, with TLS 1.2 KDF enabled.
+ * @param param ACVP_KDF_TLS12_KEY_BLOCK_LEN.
+ * @param min Minimum length in bits, from 512 to 1024 and divisible by 8.
+ * @param max Maximum length in bits, from min to 1024 and divisible by 8.
+ * @param increment Positive increment in bits, divisible by 8.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kdf_tls12_set_domain(ACVP_CTX *ctx,
+                                          ACVP_KDF_TLS12_PARM param,
+                                          int min, int max, int increment);
+
+/**
  * @brief acvp_cap_kdf_tls13_set_parm() allows an application to specify operational parameters to
  *        be used during a test session with the ACVP server. This function should be called after
  *        acvp_cap_kdf_tls13_enable() to specify the parameters for the corresponding KDF.
@@ -4765,14 +4814,34 @@ ACVP_RESULT acvp_cap_lms_enable(ACVP_CTX *ctx,
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param param ACVP_LMS_PARAM enum value identifying the algorithm parameter that is being
  *        specified.
- * @param value the value corresponding to the parameter being set, at present only generation mode
- *        is supported.
+ * @param value the value corresponding to the parameter being set.
  *
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_cap_lms_set_parm(ACVP_CTX *ctx,
                                   ACVP_CIPHER cipher,
                                   ACVP_LMS_PARAM param, int value);
+
+/**
+ * @brief acvp_cap_lms_set_domain() sets a range of supported LMS message lengths.
+ *
+ * Message lengths are in bits.
+ *
+ * @param ctx Pointer to an initialized ACVP_CTX.
+ * @param cipher ACVP_LMS_SIGGEN or ACVP_LMS_SIGVER.
+ * @param param ACVP_LMS_PARAM_MSG_LEN.
+ * @param min Minimum supported message length in bits.
+ * @param max Maximum supported message length in bits.
+ * @param increment Increment between supported lengths in bits.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_lms_set_domain(ACVP_CTX *ctx,
+                                    ACVP_CIPHER cipher,
+                                    ACVP_LMS_PARAM param,
+                                    int min,
+                                    int max,
+                                    int increment);
 
 /**
  * @brief acvp_cap_lms_set_mode_compatability pair allows an application to specify specific compatible pairs
@@ -4824,8 +4893,7 @@ ACVP_RESULT acvp_cap_ml_dsa_enable(ACVP_CTX *ctx,
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param param ACVP_ML_DSA_PARAM enum value identifying the algorithm parameter that is being
  *        specified.
- * @param value the value corresponding to the parameter being set, at present only generation mode
- *        is supported.
+ * @param value the value corresponding to the parameter being set.
  *
  * @return ACVP_RESULT
  */
@@ -4898,8 +4966,7 @@ ACVP_RESULT acvp_cap_ml_kem_enable(ACVP_CTX *ctx,
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param param ACVP_ML_KEM_PARAM enum value identifying the algorithm parameter that is being
  *        specified.
- * @param value the value corresponding to the parameter being set, at present only generation mode
- *        is supported.
+ * @param value the value corresponding to the parameter being set.
  *
  * @return ACVP_RESULT
  */

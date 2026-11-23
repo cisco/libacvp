@@ -315,7 +315,7 @@ TEST(CMAC_API, missing_msg) {
         return;
     }
     rv = acvp_cmac_kat_handler(ctx, obj);
-    TEST_ASSERT_EQUAL(ACVP_MISSING_ARG, rv);
+    TEST_ASSERT_EQUAL(ACVP_TC_MISSING_DATA, rv);
     json_value_free(val);
     val = NULL;
 }

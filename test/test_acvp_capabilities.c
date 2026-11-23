@@ -16,6 +16,8 @@ TEST_GROUP(EnableCapDRBG);
 TEST_GROUP(EnableCapECDSA);
 TEST_GROUP(EnableCapHMAC);
 TEST_GROUP(EnableCapHash);
+TEST_GROUP(EnableCapMLDSA);
+TEST_GROUP(EnableCapMLKEM);
 TEST_GROUP(EnableCapKASECC);
 TEST_GROUP(EnableCapKASFFC);
 TEST_GROUP(EnableCapKASHKDF);
@@ -28,6 +30,7 @@ TEST_GROUP(EnableCapKDFSRTP);
 TEST_GROUP(EnableCapKDFSSH);
 TEST_GROUP(EnableCapKDFTLS13);
 TEST_GROUP(EnableCapKDFx963);
+TEST_GROUP(EnableCapLMS);
 TEST_GROUP(EnableCapRSAkeyGen);
 TEST_GROUP(EnableCapTDES);
 
@@ -54,6 +57,16 @@ TEST_TEAR_DOWN(EnableCapDRBG) {
     enable_cap_hash_tear_down_helper();
 }
 
+TEST_SETUP(EnableCapMLKEM) {}
+TEST_TEAR_DOWN(EnableCapMLKEM) {
+    enable_cap_hash_tear_down_helper();
+}
+
+TEST_SETUP(EnableCapMLDSA) {}
+TEST_TEAR_DOWN(EnableCapMLDSA) {
+    enable_cap_hash_tear_down_helper();
+}
+
 TEST_SETUP(EnableCapECDSA) {}
 TEST_TEAR_DOWN(EnableCapECDSA) {
     enable_cap_hash_tear_down_helper();
@@ -66,6 +79,11 @@ TEST_TEAR_DOWN(EnableCapHMAC) {
 
 TEST_SETUP(EnableCapHash) {}
 TEST_TEAR_DOWN(EnableCapHash) {
+    enable_cap_hash_tear_down_helper();
+}
+
+TEST_SETUP(EnableCapLMS) {}
+TEST_TEAR_DOWN(EnableCapLMS) {
     enable_cap_hash_tear_down_helper();
 }
 
@@ -163,6 +181,27 @@ TEST(EnableCapHash, properly) {
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN,
                                   0, 65535, 1);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+}
+
+TEST(EnableCapHash, shake_fips202_domains) {
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHAKE_128, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHAKE_128,
+                                  ACVP_HASH_MESSAGE_LEN, 0, 65536, 8);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHAKE_128,
+                                  ACVP_HASH_OUT_LENGTH, 16, 65536, 8);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHAKE_128,
+                                  ACVP_HASH_MESSAGE_LEN, 0, 65536, 1);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 }
 
 /*
@@ -691,6 +730,20 @@ TEST(EnableCapHMAC, properly) {
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
 }
 
+TEST(EnableCapHMAC, revision_1_0_ignored) {
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_256,
+                              &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_256,
+                                ACVP_HMAC_REVISION, ACVP_REVISION_1_0);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_256,
+                                ACVP_HMAC_MSGLEN, 8);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+}
+
 TEST(EnableCapHMAC, param_alg_mismatch) {
     // TODO: Move setup_empty_ctx to TEST_SETUP and remove teardown_ctx from test
     if (ctx) teardown_ctx(&ctx);
@@ -751,6 +804,8 @@ TEST(EnableCapHMAC, invalid_args) {
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 31, 512, 8);
     TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 32, 513, 8);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 160, 160, 0);
     TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 }
 
@@ -1760,12 +1815,80 @@ TEST(EnableCapDRBG, good_ctr) {
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
                                    ACVP_DRBG_RET_BITS_LEN, 256);
     TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
+                                ACVP_DRBG_COUNTER_FIELD_LEN, 100);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
+                                ACVP_DRBG_COUNTER_FIELD_LEN, 129);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 }
 
 // enable drbg with null ctx
 TEST(EnableCapDRBG, null_ctx) {
     rv = acvp_cap_drbg_enable(NULL, ACVP_HASHDRBG, &dummy_handler_success);
     TEST_ASSERT_EQUAL(ACVP_NO_CTX, rv);
+}
+
+TEST(EnableCapMLKEM, key_formats) {
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_ml_kem_enable(ctx, ACVP_ML_KEM_XCAP, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP,
+                                  ACVP_ML_KEM_PARAM_KEY_FORMAT,
+                                  ACVP_ML_KEM_KEY_FORMAT_EXPANDED);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP,
+                                  ACVP_ML_KEM_PARAM_KEY_FORMAT,
+                                  ACVP_ML_KEM_KEY_FORMAT_SEED);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_XCAP,
+                                  ACVP_ML_KEM_PARAM_KEY_FORMAT,
+                                  ACVP_ML_KEM_KEY_FORMAT_MAX);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+
+    rv = acvp_cap_ml_kem_enable(ctx, ACVP_ML_KEM_KEYGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_kem_set_parm(ctx, ACVP_ML_KEM_KEYGEN,
+                                  ACVP_ML_KEM_PARAM_KEY_FORMAT,
+                                  ACVP_ML_KEM_KEY_FORMAT_EXPANDED);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+}
+
+TEST(EnableCapMLDSA, key_formats) {
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_SIGGEN,
+                                &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0,
+                                  ACVP_ML_DSA_PARAM_KEY_FORMAT,
+                                  ACVP_ML_DSA_KEY_FORMAT_EXPANDED);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0,
+                                  ACVP_ML_DSA_PARAM_KEY_FORMAT,
+                                  ACVP_ML_DSA_KEY_FORMAT_SEED);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, 0,
+                                  ACVP_ML_DSA_PARAM_KEY_FORMAT,
+                                  ACVP_ML_DSA_KEY_FORMAT_MAX);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+
+    rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_KEYGEN,
+                                &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_KEYGEN, 0,
+                                  ACVP_ML_DSA_PARAM_KEY_FORMAT,
+                                  ACVP_ML_DSA_KEY_FORMAT_EXPANDED);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+
+    rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_SIGVER,
+                                &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, 0,
+                                  ACVP_ML_DSA_PARAM_KEY_FORMAT,
+                                  ACVP_ML_DSA_KEY_FORMAT_EXPANDED);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 }
 
 // enable kas ecc with valid params
@@ -2081,5 +2204,52 @@ TEST(EnableCapKDFTLS13, invalid_params) {
     rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_RUNNING_MODE, 0);
     TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
     rv = acvp_cap_kdf_tls13_set_parm(ctx, 0, ACVP_SHA256);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+}
+
+TEST(EnableCapLMS, valid_params) {
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_lms_enable(ctx, ACVP_LMS_SIGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN,
+                               ACVP_LMS_PARAM_LMS_MODE,
+                               ACVP_LMS_MODE_SHA256_M24_H5);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN,
+                               ACVP_LMS_PARAM_LMOTS_MODE,
+                               ACVP_LMOTS_MODE_SHA256_N24_W4);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN,
+                               ACVP_LMS_PARAM_MSG_LEN, 9);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_lms_set_domain(ctx, ACVP_LMS_SIGGEN,
+                                 ACVP_LMS_PARAM_MSG_LEN, 8, 65536, 1);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+}
+
+TEST(EnableCapLMS, invalid_message_lengths) {
+    if (ctx) teardown_ctx(&ctx);
+    ctx = NULL;
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_lms_enable(ctx, ACVP_LMS_KEYGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN,
+                               ACVP_LMS_PARAM_MSG_LEN, 1024);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    rv = acvp_cap_lms_set_domain(ctx, ACVP_LMS_KEYGEN,
+                                 ACVP_LMS_PARAM_MSG_LEN, 8, 1024, 8);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+
+    rv = acvp_cap_lms_enable(ctx, ACVP_LMS_SIGGEN, &dummy_handler_success);
+    TEST_ASSERT_EQUAL(ACVP_SUCCESS, rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN,
+                               ACVP_LMS_PARAM_MSG_LEN, 7);
+    TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
+    rv = acvp_cap_lms_set_domain(ctx, ACVP_LMS_SIGGEN,
+                                 ACVP_LMS_PARAM_MSG_LEN, 7, 65536, 1);
     TEST_ASSERT_EQUAL(ACVP_INVALID_ARG, rv);
 }

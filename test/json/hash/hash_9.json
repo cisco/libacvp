@@ -1,0 +1,25 @@
+[
+  {
+    "acvVersion": "1.0"
+  },
+  {
+    "vsId": 1,
+    "algorithm": "SHA2-256",
+    "testGroups": [
+      {
+        "tgId": 1,
+        "testType": "LDT",
+        "tests": [
+          {
+            "tcId": 1,
+            "largeMsg": {
+              "content": "00",
+              "contentLength": 8,
+              "expansionTechnique": "repeating"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "vsId": 1277,
+    "algorithm": "kdf-components",
+    "mode": "ansix9.63",
+    "testGroups": [
+      {
+        "tgId": 999,
+        "hashAlg": "SHA2-224",
+        "fieldSize": 224,
+        "keyDataLength": 4104,
+        "sharedInfoLength": 0,
+        "tests": [
+          {
+            "tcId": 1,
+            "z": "F22D259B7D764A2003B054FF67901838CB8BA76228F31B8AF10F4E32",
+            "sharedInfo": ""
+          }
+        ]
+      }
+    ]
+  }
+]

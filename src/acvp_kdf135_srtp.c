@@ -124,9 +124,9 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc(ACVP_CTX *ctx,
     stc->tc_id = tc_id;
     stc->aes_keylen = aes_keylen;
 
-    stc->kdr = calloc(ACVP_KDF135_SRTP_KDR_STR_MAX, sizeof(char));
+    stc->kdr = calloc(ACVP_KDF135_SRTP_KDR_BYTE_MAX, sizeof(char));
     if (!stc->kdr) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(kdr, stc->kdr, ACVP_KDF135_SRTP_KDR_STR_MAX, &(stc->kdr_len));
+    rv = acvp_hexstr_to_bin(kdr, stc->kdr, ACVP_KDF135_SRTP_KDR_BYTE_MAX, &(stc->kdr_len));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (kdr)");
         return rv;

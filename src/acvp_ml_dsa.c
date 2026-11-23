@@ -112,6 +112,7 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
                                     int is_prehash,
                                     int is_mu_external,
                                     ACVP_HASH_ALG hash_alg,
+                                    ACVP_ML_DSA_KEY_FORMAT key_format,
                                     const char *pub_key,
                                     const char *secret_key,
                                     const char *seed,
@@ -135,6 +136,7 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
     stc->is_prehash = is_prehash;
     stc->is_mu_external = is_mu_external;
     stc->hash_alg = hash_alg;
+    stc->key_format = key_format;
 
     // buffers needed for both keys and sigs
     stc->pub_key = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
@@ -155,8 +157,10 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
         }
     }
 
-    // Seed for keyGen only
-    if (cipher == ACVP_ML_DSA_KEYGEN) {
+    // Seed for keyGen or seed-format sigGen
+    if (cipher == ACVP_ML_DSA_KEYGEN ||
+        (cipher == ACVP_ML_DSA_SIGGEN &&
+         key_format == ACVP_ML_DSA_KEY_FORMAT_SEED)) {
         stc->seed = calloc(ACVP_ML_DSA_MSG_BYTE_MAX, sizeof(unsigned char));
         if (!stc->seed) {
             goto err;
@@ -284,6 +288,19 @@ static ACVP_SIG_PREHASH read_prehash(const char *str) {
     return ACVP_SIG_PREHASH_NOT_SET;
 }
 
+static ACVP_ML_DSA_KEY_FORMAT read_key_format(const char *str) {
+    int diff = 1;
+
+    strcmp_s("expanded", 8, str, &diff);
+    if (!diff) return ACVP_ML_DSA_KEY_FORMAT_EXPANDED;
+
+    diff = 1;
+    strcmp_s("seed", 4, str, &diff);
+    if (!diff) return ACVP_ML_DSA_KEY_FORMAT_SEED;
+
+    return ACVP_ML_DSA_KEY_FORMAT_NONE;
+}
+
 ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id = 0, tg_id = 0;
     JSON_Value *groupval;
@@ -316,9 +333,11 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_ML_DSA_TESTTYPE type = 0;
     ACVP_ML_DSA_PARAM_SET param_set = 0;
     ACVP_SIG_INTERFACE sig_interface = 0;
+    ACVP_ML_DSA_KEY_FORMAT key_format = ACVP_ML_DSA_KEY_FORMAT_NONE;
     const char *alg_str = NULL, *mode_str = NULL, *type_str = NULL, *param_set_str = NULL,  *pub_str = NULL;
     const char *seed_str = NULL, *msg_str = NULL, *sig_str = NULL, *secret_str = NULL, *rnd_str = NULL;
-    const char *prehash_str = NULL, *sig_interface_str = NULL, *context_str = NULL, *mu_str = NULL, *hash_alg_str = NULL;
+    const char *prehash_str = NULL, *sig_interface_str = NULL, *context_str = NULL, *mu_str = NULL,
+               *hash_alg_str = NULL, *key_format_str = NULL;
     int is_deterministic = -1, is_mu_external = -1, is_prehash = -1;
     ACVP_HASH_ALG hash_alg = ACVP_NO_SHA;
 
@@ -378,6 +397,11 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
+        key_format = ACVP_ML_DSA_KEY_FORMAT_NONE;
+        key_format_str = NULL;
+        is_prehash = -1;
+        is_mu_external = -1;
+        hash_alg = ACVP_NO_SHA;
 
         /*
          * Create a new group in the response with the tgid
@@ -460,6 +484,18 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 goto err;
             }
+
+            rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "keyFormat",
+                                         &key_format_str);
+            if (rv != ACVP_SUCCESS) {
+                goto err;
+            }
+            key_format = read_key_format(key_format_str);
+            if (key_format == ACVP_ML_DSA_KEY_FORMAT_NONE) {
+                ACVP_LOG_ERR("Server JSON invalid 'keyFormat'");
+                rv = ACVP_TC_INVALID_DATA;
+                goto err;
+            }
         }
 
         ACVP_LOG_VERBOSE("           Test group: %d", i + 1);
@@ -479,6 +515,9 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_VERBOSE("           externalMu: %s", is_mu_external ? "true" : "false");
             }
         }
+        if (key_format_str) {
+            ACVP_LOG_VERBOSE("            key format: %s", key_format_str);
+        }
         rv = acvp_tc_json_get_array(ctx, alg_id, groupobj, "tests", &tests);
         if (rv != ACVP_SUCCESS) {
             goto err;
@@ -491,6 +530,8 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         for (j = 0; j < t_cnt; j++) {
+            seed_str = NULL;
+            secret_str = NULL;
             ACVP_LOG_VERBOSE("Found new ML-DSA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
@@ -552,12 +593,20 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id== ACVP_ML_DSA_SIGGEN) {
-                rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "sk", &secret_str);
+                if (key_format == ACVP_ML_DSA_KEY_FORMAT_SEED) {
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "seed",
+                                                 &seed_str);
+                } else {
+                    rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "sk",
+                                                 &secret_str);
+                }
                 if (rv != ACVP_SUCCESS) {
                     goto err;
                 }
 
-                if (!is_deterministic) {
+            if (is_deterministic) {
+                    rnd_str = NULL;
+            } else {
                     rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "rnd", &rnd_str);
                     if (rv != ACVP_SUCCESS) {
                         goto err;
@@ -599,7 +648,7 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             json_object_set_number(r_tobj, "tcId", tc_id);
 
             rv = acvp_ml_dsa_init_tc(ctx, &stc, alg_id, tc_id, tg_id, type, param_set, is_deterministic,
-                                     sig_interface, is_prehash, is_mu_external, hash_alg,
+                                     sig_interface, is_prehash, is_mu_external, hash_alg, key_format,
                                      pub_str, secret_str, seed_str, rnd_str, msg_str, sig_str, context_str, mu_str);
 
             // Process the current test vector...

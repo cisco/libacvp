@@ -77,9 +77,14 @@
 #define ACVP_REV_STR_SP800_108R1 "Sp800-108r1"
 #define ACVP_REV_STR_RFC8446 "RFC8446"
 #define ACVP_REV_STR_RFC7627 "RFC7627"
+#define ACVP_REV_STR_FIPS202 "FIPS202"
 #define ACVP_REV_STR_FIPS203 "FIPS203"
+#define ACVP_REV_STR_FIPS203_TR1 "FIPS203-tr1"
 #define ACVP_REV_STR_FIPS204 "FIPS204"
+#define ACVP_REV_STR_FIPS204_TR1 "FIPS204-tr1"
 #define ACVP_REV_STR_FIPS205 "FIPS205"
+#define ACVP_REV_STR_SP800_208 "SP800-208"
+#define ACVP_REV_STR_SP800_90AR1 "SP800-90Ar1"
 
 // AES
 #define ACVP_REV_AES_ECB             ACVP_REV_STR_1_0
@@ -130,13 +135,13 @@
 #define ACVP_REV_HASH_SHA3_256       ACVP_REV_STR_2_0
 #define ACVP_REV_HASH_SHA3_384       ACVP_REV_STR_2_0
 #define ACVP_REV_HASH_SHA3_512       ACVP_REV_STR_2_0
-#define ACVP_REV_HASH_SHAKE_128      ACVP_REV_STR_1_0
-#define ACVP_REV_HASH_SHAKE_256      ACVP_REV_STR_1_0
+#define ACVP_REV_HASH_SHAKE_128      ACVP_REV_STR_FIPS202
+#define ACVP_REV_HASH_SHAKE_256      ACVP_REV_STR_FIPS202
 
 // DRBG
-#define ACVP_REV_HASHDRBG            ACVP_REV_STR_1_0
-#define ACVP_REV_HMACDRBG            ACVP_REV_STR_1_0
-#define ACVP_REV_CTRDRBG             ACVP_REV_STR_1_0
+#define ACVP_REV_HASHDRBG            ACVP_REV_STR_SP800_90AR1
+#define ACVP_REV_HMACDRBG            ACVP_REV_STR_SP800_90AR1
+#define ACVP_REV_CTRDRBG             ACVP_REV_STR_SP800_90AR1
 
 /* HMAC */
 #define ACVP_REV_HMAC_SHA1           ACVP_REV_STR_2_0
@@ -210,13 +215,18 @@
 #define ACVP_REV_KDF_TLS13           ACVP_REV_STR_RFC8446
 
 // LMS
-#define ACVP_REV_LMS                 ACVP_REV_STR_1_0
+#define ACVP_REV_LMS_KEYGEN          ACVP_REV_STR_1_0
+#define ACVP_REV_LMS_SIGGEN          ACVP_REV_STR_SP800_208
+#define ACVP_REV_LMS_SIGVER          ACVP_REV_STR_SP800_208
 
 // ML-DSA
-#define ACVP_REV_ML_DSA              ACVP_REV_STR_FIPS204
+#define ACVP_REV_ML_DSA_KEYGEN       ACVP_REV_STR_FIPS204
+#define ACVP_REV_ML_DSA_SIGGEN       ACVP_REV_STR_FIPS204_TR1
+#define ACVP_REV_ML_DSA_SIGVER       ACVP_REV_STR_FIPS204
 
 // ML-KEM
-#define ACVP_REV_ML_KEM              ACVP_REV_STR_FIPS203
+#define ACVP_REV_ML_KEM_KEYGEN       ACVP_REV_STR_FIPS203
+#define ACVP_REV_ML_KEM_XCAP         ACVP_REV_STR_FIPS203_TR1
 
 // SLH-DSA
 #define ACVP_REV_SLH_DSA             ACVP_REV_STR_FIPS205
@@ -553,6 +563,9 @@
 #define ACVP_DRB_BIT_MAX 4096
 #define ACVP_DRB_BYTE_MAX (ACVP_DRB_BIT_MAX >> 3)
 #define ACVP_DRB_STR_MAX (ACVP_DRB_BIT_MAX >> 2)
+#define ACVP_DRBG_AES_COUNTER_FIELD_BIT_MIN 4
+#define ACVP_DRBG_AES_COUNTER_FIELD_BIT_MAX 128
+#define ACVP_DRBG_TDES_COUNTER_FIELD_BIT_LEN 64
 
 #define ACVP_DRBG_ENTPY_IN_BIT_MIN 80
 #define ACVP_DRBG_ENTPY_IN_BIT_MAX 1048576 //!< 2^20 library limit. Spec allows 2^35
@@ -583,11 +596,6 @@
 #define ACVP_HASH_MD_STR_MAX (ACVP_HASH_MD_BIT_MAX >> 2)    //!< 128 characters
 #define ACVP_HASH_MD_BYTE_MAX (ACVP_HASH_MD_BIT_MAX >> 3)   //!< 64 bytes
 
-//SHAKE does not define a maximum message length, but we want it to be sane still
-#define ACVP_SHAKE_MSG_BIT_MAX 131072                         //!< 131072 bits
-#define ACVP_SHAKE_MSG_STR_MAX (ACVP_SHAKE_MSG_BIT_MAX >> 2)  //!< 32768 characters
-#define ACVP_SHAKE_MSG_BYTE_MAX (ACVP_SHAKE_MSG_BIT_MAX >> 3) //!< 16384 bytes
-
 #define ACVP_HASH_XOF_MD_BIT_MIN 16 //!< XOF (extendable output format) outLength minimum (in bits)
 #define ACVP_HASH_XOF_MD_BIT_MAX 65536 //!< XOF (extendable output format) outLength maximum (in bits)
 #define ACVP_HASH_XOF_MD_STR_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 2) //!< 16,384 characters
@@ -616,6 +624,7 @@
  */
 #define ACVP_KDF135_SRTP_KDR_MAX 24
 #define ACVP_KDF135_SRTP_KDR_STR_MAX 13
+#define ACVP_KDF135_SRTP_KDR_BYTE_MAX 6
 #define ACVP_KDF135_SRTP_MASTER_MAX 65
 #define ACVP_KDF135_SRTP_INDEX_MAX 32
 #define ACVP_KDF135_SRTP_OUTPUT_MAX 64
@@ -791,6 +800,9 @@
 #define ACVP_KDF_TLS12_PMSECRET_BYTE_MAX (ACVP_KDF_TLS12_PMSECRET_BIT_MAX >> 3)
 #define ACVP_KDF_TLS12_PMSECRET_STR_MAX (ACVP_KDF_TLS12_PMSECRET_BIT_MAX >> 2)
 
+#define ACVP_KDF_TLS12_RANDOM_BYTE_LEN 32
+#define ACVP_KDF_TLS12_RANDOM_STR_LEN 64
+
 /**
  * Accepted length ranges for TLS 1.3 KDF
  */
@@ -816,9 +828,10 @@
 #define ACVP_HMAC_MSG_BYTE_MAX (ACVP_HMAC_MSG_BIT_MAX >> 3)
 #define ACVP_HMAC_MSG_STR_MAX (ACVP_HMAC_MSG_BIT_MAX >> 2)
 
-#define ACVP_CMAC_MSGLEN_MAX_STR       131072    //!< 524288 bits, 131072 characters
-#define ACVP_CMAC_MSGLEN_MAX       524288
-#define ACVP_CMAC_MSGLEN_MIN       0
+#define ACVP_CMAC_MSG_BIT_MIN 0
+#define ACVP_CMAC_MSG_BIT_MAX 524288
+#define ACVP_CMAC_MSG_BYTE_MAX (ACVP_CMAC_MSG_BIT_MAX >> 3)
+#define ACVP_CMAC_MSG_STR_MAX (ACVP_CMAC_MSG_BIT_MAX >> 2)
 #define ACVP_CMAC_MACLEN_MAX       128       //!< 512 bits, 128 characters
 #define ACVP_CMAC_MACLEN_MIN       1		//!< >= 1 byte, per ACVP spec
 #define ACVP_CMAC_KEY_MAX       64        //!< 256 bits, 64 characters
@@ -959,6 +972,7 @@
 #define ACVP_KDA_Z_BYTE_MAX (ACVP_KDA_Z_BIT_MAX >> 3)
 
 #define ACVP_LMS_TMP_MAX 65536 //arbitrary
+#define ACVP_LMS_MSG_BIT_MAX 65536
 
 #define ACVP_ML_DSA_MSG_BIT_MAX 65536
 #define ACVP_ML_DSA_MSG_STR_MAX (ACVP_ML_DSA_MSG_BIT_MAX >> 2)
@@ -1377,6 +1391,7 @@ typedef struct acvp_pbkdf_capability {
 
 typedef struct acvp_kdf_tls12_capability {
     ACVP_NAME_LIST *hash_algs;
+    ACVP_JSON_DOMAIN_OBJ key_block_len;
 } ACVP_KDF_TLS12_CAP;
 
 typedef struct acvp_kdf_tls13_capability {
@@ -1432,7 +1447,8 @@ typedef struct acvp_drbg_cap_mode {
     int additional_in_len_max;
     int additional_in_len_min;
     int additional_in_len_step;
-    int returned_bits_len;      //":"256"
+    ACVP_JSON_DOMAIN_OBJ returned_bits_len;
+    int counter_field_len;
 } ACVP_DRBG_CAP_GROUP;
 
 typedef struct acvp_drbg_group_list_t {
@@ -1738,6 +1754,7 @@ typedef struct acvp_lms_capability_t {
     ACVP_PARAM_LIST *lms_modes;
     ACVP_PARAM_LIST *lmots_modes;
     ACVP_LMS_SPECIFIC_LIST *specific_list;
+    ACVP_JSON_DOMAIN_OBJ msg_len;
 } ACVP_LMS_CAP;
 
 typedef struct acvp_ml_dsa_cap_group_t {
@@ -1755,6 +1772,7 @@ typedef struct acvp_ml_dsa_capability_t {
     ACVP_ML_DSA_MU mu;                       //!< SigGen/SigVer mu mode
     ACVP_SIG_INTERFACE sig_interface;        //!< SigGen/SigVer interface
     ACVP_SIG_PREHASH prehash;                //!< SigGen/SigVer prehash support
+    ACVP_PARAM_LIST *key_formats;             //!< SigGen private key formats
     ACVP_ML_DSA_CAP_GROUP *cap_group;        //!< Pointer to the first group of capabilities
 } ACVP_ML_DSA_CAP;
 
@@ -1762,6 +1780,7 @@ typedef struct acvp_ml_kem_capability_t {
     ACVP_CIPHER cipher;
     ACVP_PARAM_LIST *param_sets;
     ACVP_PARAM_LIST *functions;
+    ACVP_PARAM_LIST *key_formats;
 } ACVP_ML_KEM_CAP;
 
 typedef struct acvp_slh_dsa_cap_group_t {
@@ -2242,6 +2261,7 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
 ACVP_RESULT acvp_tc_json_get_string(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, const char **out);
 ACVP_RESULT acvp_tc_json_get_int(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, int *out);
 ACVP_RESULT acvp_tc_json_get_uint(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, unsigned int *out);
+ACVP_RESULT acvp_tc_json_get_ull(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, unsigned long long int *out);
 ACVP_RESULT acvp_tc_json_get_boolean(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, int *out);
 ACVP_RESULT acvp_tc_json_get_object(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, JSON_Object **out);
 ACVP_RESULT acvp_tc_json_get_array(ACVP_CTX *ctx, ACVP_CIPHER alg_id, JSON_Object *obj, const char *key, JSON_Array **out);

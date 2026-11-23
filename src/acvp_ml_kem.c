@@ -126,6 +126,7 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
                                     ACVP_ML_KEM_TESTTYPE type,
                                     ACVP_ML_KEM_PARAM_SET param_set,
                                     ACVP_ML_KEM_FUNCTION function,
+                                    ACVP_ML_KEM_KEY_FORMAT key_format,
                                     const char *d,
                                     const char *z,
                                     const char *dk,
@@ -142,6 +143,7 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
     stc->type = type;
     stc->param_set = param_set;
     stc->function = function;
+    stc->key_format = key_format;
 
     // dk and ek are outputs for keygen, and inputs for encap/decap
     stc->dk = calloc(ACVP_ML_KEM_TMP_BYTE_MAX, sizeof(unsigned char));
@@ -157,7 +159,9 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
     /**
      * Load additional values by operation type
      */
-    if (cipher == ACVP_ML_KEM_KEYGEN) {
+    if (cipher == ACVP_ML_KEM_KEYGEN ||
+        (function == ACVP_ML_KEM_FUNCTION_DECAPSULATE &&
+         key_format == ACVP_ML_KEM_KEY_FORMAT_SEED)) {
         stc->d = calloc(ACVP_ML_KEM_TMP_BYTE_MAX, sizeof(unsigned char));
         if (!stc->d) {
             goto err;
@@ -177,7 +181,9 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Hex conversion failure (z)");
             return rv;
         }
-    } else {
+    }
+
+    if (cipher != ACVP_ML_KEM_KEYGEN) {
         stc->c = calloc(ACVP_ML_KEM_TMP_BYTE_MAX, sizeof(unsigned char));
         if (!stc->c) {
             goto err;
@@ -212,7 +218,15 @@ static ACVP_RESULT acvp_ml_kem_init_tc(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Hex conversion failure (c)");
                 return rv;
             }
-            // fallthru
+            if (key_format == ACVP_ML_KEM_KEY_FORMAT_SEED) {
+                break;
+            }
+            rv = acvp_hexstr_to_bin(dk, stc->dk, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->dk_len));
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex conversion failure (dk)");
+                return rv;
+            }
+            break;
         case ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK:
             rv = acvp_hexstr_to_bin(dk, stc->dk, ACVP_ML_KEM_TMP_BYTE_MAX, &(stc->dk_len));
             if (rv != ACVP_SUCCESS) {
@@ -298,8 +312,11 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_ML_KEM_TESTTYPE type = 0;
     ACVP_ML_KEM_PARAM_SET param_set = 0;
     ACVP_ML_KEM_FUNCTION function = 0;
-    const char *alg_str = NULL, *mode_str = NULL, *type_str = NULL, *param_set_str = NULL,  *func_str = NULL;
-    const char *d_str = NULL, *z_str = NULL, *dk_str = NULL, *ek_str = NULL, *m_str = NULL, *c_str = NULL;
+    ACVP_ML_KEM_KEY_FORMAT key_format = 0;
+    const char *alg_str = NULL, *mode_str = NULL, *type_str = NULL, *param_set_str = NULL,
+               *func_str = NULL, *key_format_str = NULL;
+    const char *d_str = NULL, *z_str = NULL, *dk_str = NULL, *ek_str = NULL,
+               *m_str = NULL, *c_str = NULL;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -355,9 +372,14 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
+        int diff = 1;
 
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
+        function = ACVP_ML_KEM_FUNCTION_NONE;
+        key_format = ACVP_ML_KEM_KEY_FORMAT_NONE;
+        func_str = NULL;
+        key_format_str = NULL;
 
         /*
          * Create a new group in the response with the tgid
@@ -406,6 +428,29 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
+            if (function == ACVP_ML_KEM_FUNCTION_DECAPSULATE) {
+                rv = acvp_tc_json_get_string(ctx, alg_id, groupobj, "keyFormat",
+                                             &key_format_str);
+                if (rv != ACVP_SUCCESS) {
+                    goto err;
+                }
+                strcmp_s("expanded", 8, key_format_str, &diff);
+                if (!diff) {
+                    key_format = ACVP_ML_KEM_KEY_FORMAT_EXPANDED;
+                } else {
+                    diff = 1;
+                    strcmp_s("seed", 4, key_format_str, &diff);
+                    if (!diff) {
+                        key_format = ACVP_ML_KEM_KEY_FORMAT_SEED;
+                    } else {
+                        ACVP_LOG_ERR("invalid keyFormat from server JSON");
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
+                    }
+                }
+            } else if (function == ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK) {
+                key_format = ACVP_ML_KEM_KEY_FORMAT_EXPANDED;
+            }
         }
 
         ACVP_LOG_VERBOSE("           Test group: %d", i);
@@ -416,8 +461,8 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         if (func_str) {
             ACVP_LOG_VERBOSE("             function: %s", func_str);
         }
-        if (dk_str) {
-            ACVP_LOG_VERBOSE("                   dk: %s", dk_str);
+        if (key_format_str) {
+            ACVP_LOG_VERBOSE("            key format: %s", key_format_str);
         }
 
 
@@ -433,6 +478,7 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         for (j = 0; j < t_cnt; j++) {
+            dk_str = NULL;
             ACVP_LOG_VERBOSE("Found new ML-KEM test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
@@ -470,7 +516,20 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     if (rv != ACVP_SUCCESS) {
                         goto err;
                     }
-                    // fallthru
+                    if (key_format == ACVP_ML_KEM_KEY_FORMAT_SEED) {
+                        rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "d", &d_str);
+                        if (rv != ACVP_SUCCESS) {
+                            goto err;
+                        }
+                        rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "z", &z_str);
+                    } else {
+                        rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "dk",
+                                                     &dk_str);
+                    }
+                    if (rv != ACVP_SUCCESS) {
+                        goto err;
+                    }
+                    break;
                 case ACVP_ML_KEM_FUNCTION_DEC_KEYCHECK:
                     rv = acvp_tc_json_get_string(ctx, alg_id, testobj, "dk", &dk_str);
                     if (rv != ACVP_SUCCESS) {
@@ -488,10 +547,9 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
-            if (d_str) {
+            if (alg_id == ACVP_ML_KEM_KEYGEN ||
+                key_format == ACVP_ML_KEM_KEY_FORMAT_SEED) {
                 ACVP_LOG_VERBOSE("                d: %s", d_str);
-            }
-            if (d_str) {
                 ACVP_LOG_VERBOSE("                z: %s", z_str);
             }
             if (ek_str) {
@@ -513,8 +571,9 @@ ACVP_RESULT acvp_ml_kem_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            rv = acvp_ml_kem_init_tc(ctx, &stc, alg_id, tc_id, tg_id, type, param_set, function,
-                                  d_str, z_str, dk_str, ek_str, m_str, c_str);
+            rv = acvp_ml_kem_init_tc(ctx, &stc, alg_id, tc_id, tg_id, type,
+                                     param_set, function, key_format, d_str,
+                                     z_str, dk_str, ek_str, m_str, c_str);
 
             // Process the current test vector...
             if (rv == ACVP_SUCCESS) {

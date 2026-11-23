@@ -15,6 +15,8 @@
 #include "acvp_lcl.h"
 #include "parson.h"
 
+#define ACVP_JSON_SAFE_UINT_UPPER_BOUND 0x1p53 /* 2^53, exclusive */
+
 // Helper function to convert JSON_Value_Type enum to string for error messages
 static const char *acvp_json_get_type_name(JSON_Value_Type type) {
     switch(type) {
@@ -138,6 +140,50 @@ ACVP_RESULT acvp_tc_json_get_uint(ACVP_CTX *ctx, ACVP_CIPHER alg_id,
     }
 
     *out = (unsigned int)tmp_val;
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_tc_json_get_ull(ACVP_CTX *ctx, ACVP_CIPHER alg_id,
+                                 JSON_Object *obj, const char *key,
+                                 unsigned long long int *out) {
+    double num_val = 0;
+    JSON_Value *json_val = NULL;
+
+    if (!json_object_has_value(obj, key)) {
+        ACVP_LOG_ERR("[%s] Server JSON is missing '%s' data",
+                     acvp_lookup_cipher_name(alg_id), key);
+        return ACVP_TC_MISSING_DATA;
+    }
+
+    if (!json_object_has_value_of_type(obj, key, JSONNumber)) {
+        json_val = json_object_get_value(obj, key);
+        ACVP_LOG_ERR("[%s] Server JSON field '%s' has wrong type (expected %s, got %s)",
+                     acvp_lookup_cipher_name(alg_id), key,
+                     acvp_json_get_type_name(JSONNumber),
+                     acvp_json_get_type_name(json_value_get_type(json_val)));
+        return ACVP_TC_INVALID_DATA;
+    }
+
+    num_val = json_object_get_number(obj, key);
+
+    /*
+     * Parson represents JSON numbers as doubles. Restrict the accepted range
+     * to integers whose original value can be represented without ambiguity.
+     */
+    if (!isfinite(num_val) || num_val < 0.0 ||
+        num_val >= ACVP_JSON_SAFE_UINT_UPPER_BOUND) {
+        ACVP_LOG_ERR("[%s] Server JSON field '%s' value out of range",
+                     acvp_lookup_cipher_name(alg_id), key);
+        return ACVP_TC_INVALID_DATA;
+    }
+
+    if (num_val > floor(num_val)) {
+        ACVP_LOG_ERR("[%s] Server JSON field '%s' has decimal (expected integer)",
+                     acvp_lookup_cipher_name(alg_id), key);
+        return ACVP_TC_INVALID_DATA;
+    }
+
+    *out = (unsigned long long int)num_val;
     return ACVP_SUCCESS;
 }
 

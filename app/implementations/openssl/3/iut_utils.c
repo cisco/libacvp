@@ -15,6 +15,66 @@
 #include <openssl/provider.h>
 #include "app_lcl.h"
 #include "safe_lib.h"
+#include "implementations/openssl/3/iut.h"
+
+struct app_mct_ctx {
+    const void *tc;
+    void *context;
+    void (*free_context)(void *);
+    struct app_mct_ctx *next;
+};
+
+void *app_mct_context_find(APP_MCT_CTX *list, const void *tc) {
+    while (list) {
+        if (list->tc == tc) {
+            return list->context;
+        }
+        list = list->next;
+    }
+    return NULL;
+}
+
+int app_mct_context_add(APP_MCT_CTX **list, const void *tc, void *context,
+                        void (*free_context)(void *)) {
+    APP_MCT_CTX *entry = NULL;
+
+    if (app_mct_context_find(*list, tc)) {
+        printf("MCT context already registered for test case\n");
+        return 1;
+    }
+    entry = calloc(1, sizeof(APP_MCT_CTX));
+    if (!entry) {
+        printf("Failed to allocate MCT context entry\n");
+        return 1;
+    }
+    entry->tc = tc;
+    entry->context = context;
+    entry->free_context = free_context;
+    entry->next = *list;
+    *list = entry;
+    return 0;
+}
+
+void app_mct_context_remove(APP_MCT_CTX **list, const void *tc) {
+    APP_MCT_CTX *entry = NULL;
+
+    while (*list) {
+        entry = *list;
+        if (entry->tc == tc) {
+            *list = entry->next;
+            entry->free_context(entry->context);
+            free(entry);
+            return;
+        }
+        list = &entry->next;
+    }
+}
+
+void app_mct_context_cleanup(APP_MCT_CTX **list) {
+    while (*list) {
+        app_mct_context_remove(list, (*list)->tc);
+    }
+}
 
 int get_nid_for_curve(ACVP_EC_CURVE curve) {
     switch (curve) {
@@ -340,4 +400,3 @@ int provider_ver_str_to_int(const char *str) {
     return (major * 1000000) + (minor * 10000) + patch;
 
 }
-

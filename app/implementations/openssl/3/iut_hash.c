@@ -185,7 +185,7 @@ int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md) {
     memcpy_s(large_data, tc->exp_len, tc->msg, tc->msg_len);
     filled = tc->msg_len;
     iter = large_data + tc->msg_len;
-    while (filled * 2 <= tc->exp_len) {
+    while (filled <= tc->exp_len / 2) {
         memcpy_s(iter, tc->exp_len - (iter - large_data), large_data, filled);
         iter += filled;
         filled *= 2;

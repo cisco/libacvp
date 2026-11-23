@@ -121,7 +121,9 @@ static ACVP_RESULT acvp_append_true_false_array(JSON_Object *parent, const char 
     }
 }
 
-static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_hash_register_cap(ACVP_CTX *ctx,
+                                                JSON_Object *cap_obj,
+                                                ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *msg_array = NULL;
     JSON_Array *temp_arr = NULL;
     ACVP_SL_LIST *sl_list = NULL;
@@ -129,10 +131,18 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     JSON_Object *msg_obj = NULL;
     ACVP_HASH_CAP *hash_cap = cap_entry->cap.hash_cap;
     const char *revision = NULL;
+    int msg_len_min = 0, msg_len_max = 0, msg_len_increment = 0;
+    int is_shake = 0;
 
     if (!hash_cap) {
         return ACVP_MISSING_ARG;
     }
+
+    is_shake = cap_entry->cipher == ACVP_HASH_SHAKE_128 ||
+               cap_entry->cipher == ACVP_HASH_SHAKE_256;
+    msg_len_min = hash_cap->msg_length.min;
+    msg_len_max = hash_cap->msg_length.max;
+    msg_len_increment = hash_cap->msg_length.increment;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
@@ -143,21 +153,16 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     if (cap_entry->cipher == ACVP_HASH_SHA3_224 ||
             cap_entry->cipher == ACVP_HASH_SHA3_256 ||
             cap_entry->cipher == ACVP_HASH_SHA3_384 ||
-            cap_entry->cipher == ACVP_HASH_SHA3_512 ||
-            cap_entry->cipher == ACVP_HASH_SHAKE_128 ||
-            cap_entry->cipher == ACVP_HASH_SHAKE_256) {
+            cap_entry->cipher == ACVP_HASH_SHA3_512) {
         json_object_set_boolean(cap_obj, "inBit", cap_entry->cap.hash_cap->in_bit);
         json_object_set_boolean(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty);
     }
 
-    if (cap_entry->cipher == ACVP_HASH_SHAKE_128 ||
-        cap_entry->cipher == ACVP_HASH_SHAKE_256) {
+    if (is_shake) {
         // SHAKE specific capabilities
         JSON_Array *tmp_arr = NULL;
         JSON_Value *tmp_val = NULL;
         JSON_Object *tmp_obj = NULL;
-
-        json_object_set_boolean(cap_obj, "outBit", cap_entry->cap.hash_cap->out_bit);
 
         json_object_set_value(cap_obj, "outputLen", json_value_init_array());
         tmp_arr = json_object_get_array(cap_obj, "outputLen");
@@ -169,34 +174,47 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         json_object_set_number(tmp_obj, "increment", cap_entry->cap.hash_cap->out_len.increment);
 
         json_array_append_value(tmp_arr, tmp_val);
-    } else {
-        json_object_set_value(cap_obj, "messageLength", json_value_init_array());
-        msg_array = json_object_get_array(cap_obj, "messageLength");
+        if (!msg_len_increment) {
+            /*
+             * Preserve revision 1.0 inEmpty behavior when an existing
+             * registration does not set the FIPS202 messageLength domain.
+             */
+            msg_len_min = hash_cap->in_empty ? ACVP_HASH_MSG_BIT_MIN : 8;
+            msg_len_max = ACVP_HASH_MSG_BIT_MAX;
+            msg_len_increment = 8;
+            ACVP_LOG_WARN("messageLength not set for %s; using byte-aligned default",
+                          acvp_lookup_cipher_name(cap_entry->cipher));
+        }
+    }
 
-        msg_val = json_value_init_object();
-        msg_obj = json_value_get_object(msg_val);
+    json_object_set_value(cap_obj, "messageLength", json_value_init_array());
+    msg_array = json_object_get_array(cap_obj, "messageLength");
 
-        json_object_set_number(msg_obj, "min", hash_cap->msg_length.min);
-        json_object_set_number(msg_obj, "max", hash_cap->msg_length.max);
-        json_object_set_number(msg_obj, "increment", hash_cap->msg_length.increment);
-        json_array_append_value(msg_array, msg_val);
+    msg_val = json_value_init_object();
+    msg_obj = json_value_get_object(msg_val);
 
-        // Set the supported large data lengths
-        if (cap_entry->cap.hash_cap->large_lens) {
-            json_object_set_value(cap_obj, "performLargeDataTest", json_value_init_array());
-            temp_arr = json_object_get_array(cap_obj, "performLargeDataTest");
-            sl_list = cap_entry->cap.hash_cap->large_lens;
-            while (sl_list) {
-                json_array_append_number(temp_arr, sl_list->length);
-                sl_list = sl_list->next;
-            }
+    json_object_set_number(msg_obj, "min", msg_len_min);
+    json_object_set_number(msg_obj, "max", msg_len_max);
+    json_object_set_number(msg_obj, "increment", msg_len_increment);
+    json_array_append_value(msg_array, msg_val);
+
+    // Set the supported large data lengths
+    if (!is_shake && cap_entry->cap.hash_cap->large_lens) {
+        json_object_set_value(cap_obj, "performLargeDataTest", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "performLargeDataTest");
+        sl_list = cap_entry->cap.hash_cap->large_lens;
+        while (sl_list) {
+            json_array_append_number(temp_arr, sl_list->length);
+            sl_list = sl_list->next;
         }
     }
 
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_hmac_register_cap(ACVP_CTX *ctx,
+                                                JSON_Object *cap_obj,
+                                                ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
     JSON_Value *tmp_val = NULL;
     JSON_Object *tmp_obj = NULL;
@@ -276,6 +294,16 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         while (list) {
             json_array_append_number(temp_arr, list->length);
             list = list->next;
+        }
+        if (!json_array_get_count(temp_arr)) {
+            ACVP_LOG_WARN("msgLen not set for %s; using full revision 2.0 range",
+                          acvp_lookup_cipher_name(cap_entry->cipher));
+            tmp_val = json_value_init_object();
+            tmp_obj = json_value_get_object(tmp_val);
+            json_object_set_number(tmp_obj, "min", 0);
+            json_object_set_number(tmp_obj, "max", ACVP_HMAC_MSG_BIT_MAX);
+            json_object_set_number(tmp_obj, "increment", 8);
+            json_array_append_value(temp_arr, tmp_val);
         }
     }
 
@@ -941,10 +969,13 @@ static const char *acvp_lookup_drbg_mode_string(ACVP_DRBG_MODE_LIST *drbg_cap_mo
     return mode_str;
 }
 
-static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_drbg_register_cap(ACVP_CTX *ctx,
+                                                JSON_Object *cap_obj,
+                                                ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     ACVP_DRBG_CAP *cap = NULL;
     ACVP_DRBG_CAP_GROUP *cap_group = NULL;
+    ACVP_SL_LIST *lengths = NULL;
     JSON_Object *len_obj = NULL;
     JSON_Value *len_val = NULL;
     JSON_Array *array = NULL;
@@ -1094,8 +1125,38 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
                 json_array_append_value(array, len_val);
             }
 
-            // Set DRBG Length
-            json_object_set_number(capabilities_obj, "returnedBitsLen", cap_group->returned_bits_len);
+            json_object_set_value(capabilities_obj, "returnedBitsLen", json_value_init_array());
+            array = json_object_get_array(capabilities_obj, "returnedBitsLen");
+            if (cap_group->returned_bits_len.increment) {
+                len_val = json_value_init_object();
+                len_obj = json_value_get_object(len_val);
+                json_object_set_number(len_obj, "max", cap_group->returned_bits_len.max);
+                json_object_set_number(len_obj, "min", cap_group->returned_bits_len.min);
+                json_object_set_number(len_obj, "increment", cap_group->returned_bits_len.increment);
+                json_array_append_value(array, len_val);
+            }
+            lengths = cap_group->returned_bits_len.values;
+            while (lengths) {
+                json_array_append_number(array, lengths->length);
+                lengths = lengths->next;
+            }
+            if (!json_array_get_count(array)) {
+                json_value_free(val);
+                return ACVP_MISSING_ARG;
+            }
+
+            if (cap_entry->cipher == ACVP_CTRDRBG) {
+                int counter_field_len = cap_group->counter_field_len;
+
+                if (!counter_field_len) {
+                    counter_field_len = cap_mode_list->mode == ACVP_DRBG_TDES ?
+                                        ACVP_DRBG_TDES_COUNTER_FIELD_BIT_LEN :
+                                        ACVP_DRBG_AES_COUNTER_FIELD_BIT_MAX;
+                    ACVP_LOG_WARN("counterFieldLen not set for %s; using revision 1.0 behavior (%d bits)",
+                                  mode_str, counter_field_len);
+                }
+                json_object_set_number(capabilities_obj, "counterFieldLen", counter_field_len);
+            }
             json_array_append_value(capabilities_array, val);
             cap_group_list = cap_group_list->next;
         }
@@ -1255,7 +1316,7 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap(ACVP_CTX *ctx, JSON_Object
  * Validate RSA signature capabilities for FIPS 186 mode compatibility
  * Performs multiple checks:
  * 1. For Mode BOTH: Validates mask functions (MGF1 required for PSS)
- * 2. For Mode 5: Errors if 186-4-only parameters present (X9.31, SHA1, 1024-bit)
+ * 2. For Mode 5: Routes X9.31 sigVer to 186-4; rejects other 186-4-only parameters
  * 3. For Mode BOTH: Logs INFO if 186-4-only parameters present (will be auto-excluded)
  */
 static ACVP_RESULT acvp_validate_rsa_sig_caps(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap_entry) {
@@ -1292,6 +1353,11 @@ static ACVP_RESULT acvp_validate_rsa_sig_caps(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap
     while (current_cap) {
         // Check for X9.31 signature type (not supported in 186-5)
         if (current_cap->sig_type == ACVP_RSA_SIG_TYPE_X931) {
+            if (is_sigver && revision == ACVP_REVISION_DEFAULT) {
+                ACVP_LOG_INFO("Registering ANS X9.31 signature verification separately under FIPS 186-4.");
+                current_cap = current_cap->next;
+                continue;
+            }
             if (revision == ACVP_REVISION_186_BOTH) {
                 ACVP_LOG_INFO("ANS X9.31 signatures are not supported in FIPS 186-5. "
                               "Excluding X9.31 from 186-5 registration.");
@@ -1407,7 +1473,8 @@ static ACVP_RESULT acvp_validate_ecdsa_sig_caps(ACVP_CTX *ctx, ACVP_ECDSA_CAP *e
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry,
+                                                   int x931_only) {
     ACVP_RESULT result = ACVP_SUCCESS;
     ACVP_PARAM_LIST *plist = NULL;
     ACVP_RSA_SIG_CAP *rsa_cap_mode = NULL;
@@ -1460,8 +1527,9 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
     alg_specs_array = json_object_get_array(cap_obj, "capabilities");
 
     while (rsa_cap_mode) {
-        // For FIPS 186-5, skip X9.31 signature type (not supported)
-        if (rev != ACVP_REVISION_FIPS186_4 && rsa_cap_mode->sig_type == ACVP_RSA_SIG_TYPE_X931) {
+        // Keep the implicit legacy SigVer registration separate from current signature types.
+        if ((x931_only && rsa_cap_mode->sig_type != ACVP_RSA_SIG_TYPE_X931) ||
+            (rev != ACVP_REVISION_FIPS186_4 && rsa_cap_mode->sig_type == ACVP_RSA_SIG_TYPE_X931)) {
             rsa_cap_mode = rsa_cap_mode->next;
             continue;
         }
@@ -2734,6 +2802,9 @@ static ACVP_RESULT acvp_build_pbkdf_register_cap(JSON_Object *cap_obj, ACVP_CAPS
 
 static ACVP_RESULT acvp_build_kdf_tls12_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
+    JSON_Value *domain_val = NULL;
+    JSON_Object *domain_obj = NULL;
+    ACVP_JSON_DOMAIN_OBJ *domain = &cap_entry->cap.kdf_tls12_cap->key_block_len;
     ACVP_RESULT result;
     const char *revision = NULL, *mode = NULL;
     ACVP_NAME_LIST *hash_alg_list = NULL;
@@ -2755,6 +2826,17 @@ static ACVP_RESULT acvp_build_kdf_tls12_register_cap(JSON_Object *cap_obj, ACVP_
     while (hash_alg_list) {
         json_array_append_string(temp_arr, hash_alg_list->name);
         hash_alg_list = hash_alg_list->next;
+    }
+
+    if (domain->increment) {
+        json_object_set_value(cap_obj, "keyBlockLength", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "keyBlockLength");
+        domain_val = json_value_init_object();
+        domain_obj = json_value_get_object(domain_val);
+        json_object_set_number(domain_obj, "min", domain->min);
+        json_object_set_number(domain_obj, "max", domain->max);
+        json_object_set_number(domain_obj, "increment", domain->increment);
+        json_array_append_value(temp_arr, domain_val);
     }
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
@@ -5083,6 +5165,7 @@ static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
     ACVP_SUB_LMS alg = 0;
     ACVP_PARAM_LIST *list = NULL;
     ACVP_LMS_SPECIFIC_LIST *spec_list = NULL;
+    ACVP_SL_LIST *lengths = NULL;
     if (!cap_entry) {
         goto err;
     }
@@ -5114,7 +5197,7 @@ static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
         lms_cap = cap_entry->cap.lms_siggen_cap;
         break;
     case ACVP_SUB_LMS_SIGVER:
-        lms_cap = cap_entry->cap.lms_siggen_cap;
+        lms_cap = cap_entry->cap.lms_sigver_cap;
         break;
     default:
         goto err;
@@ -5169,6 +5252,36 @@ static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
             json_object_set_string(temp_obj, "lmsMode", lms_str);
             json_object_set_string(temp_obj, "lmotsMode", lmots_str);
             spec_list = spec_list->next;
+        }
+    }
+
+    if (alg == ACVP_SUB_LMS_SIGGEN || alg == ACVP_SUB_LMS_SIGVER) {
+        json_object_set_value(cap_obj, "messageLength", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "messageLength");
+        if (lms_cap->msg_len.min || lms_cap->msg_len.max ||
+            lms_cap->msg_len.increment) {
+            temp_val = json_value_init_object();
+            temp_obj = json_value_get_object(temp_val);
+            json_object_set_number(temp_obj, "min", lms_cap->msg_len.min);
+            json_object_set_number(temp_obj, "max", lms_cap->msg_len.max);
+            json_object_set_number(temp_obj, "increment",
+                                   lms_cap->msg_len.increment);
+            json_array_append_value(temp_arr, temp_val);
+        }
+        lengths = lms_cap->msg_len.values;
+        while (lengths) {
+            json_array_append_number(temp_arr, lengths->length);
+            lengths = lengths->next;
+        }
+        if (!json_array_get_count(temp_arr)) {
+            ACVP_LOG_WARN("messageLength not set for LMS %s; using byte-aligned default",
+                          mode);
+            temp_val = json_value_init_object();
+            temp_obj = json_value_get_object(temp_val);
+            json_object_set_number(temp_obj, "min", 8);
+            json_object_set_number(temp_obj, "max", ACVP_LMS_MSG_BIT_MAX);
+            json_object_set_number(temp_obj, "increment", 8);
+            json_array_append_value(temp_arr, temp_val);
         }
     }
 
@@ -5265,6 +5378,30 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
             if (acvp_append_true_false_array(cap_obj, "deterministic", tf_val) != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Error appending deterministic to ML-DSA JSON");
                 goto err;
+            }
+
+            json_object_set_value(cap_obj, "keyFormats", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "keyFormats");
+            if (!ml_dsa_cap->key_formats) {
+                ACVP_LOG_WARN("keyFormats not set for ML-DSA sigGen; using FIPS204 behavior (expanded)");
+                json_array_append_string(temp_arr, "expanded");
+            } else {
+                sets = ml_dsa_cap->key_formats;
+                while (sets) {
+                    switch (sets->param) {
+                    case ACVP_ML_DSA_KEY_FORMAT_EXPANDED:
+                        json_array_append_string(temp_arr, "expanded");
+                        break;
+                    case ACVP_ML_DSA_KEY_FORMAT_SEED:
+                        json_array_append_string(temp_arr, "seed");
+                        break;
+                    case ACVP_ML_DSA_KEY_FORMAT_NONE:
+                    case ACVP_ML_DSA_KEY_FORMAT_MAX:
+                    default:
+                        goto err;
+                    }
+                    sets = sets->next;
+                }
             }
         }
 
@@ -5487,6 +5624,30 @@ static ACVP_RESULT acvp_build_ml_kem_register_cap(ACVP_CTX *ctx,
         } else {
             ACVP_LOG_ERR("Missing required functions for ML-KEM registration");
             goto err;
+        }
+
+        json_object_set_value(cap_obj, "keyFormats", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "keyFormats");
+        if (!ml_kem_cap->key_formats) {
+            ACVP_LOG_WARN("keyFormats not set for ML-KEM encapDecap; using FIPS203 behavior (expanded)");
+            json_array_append_string(temp_arr, "expanded");
+        } else {
+            pl = ml_kem_cap->key_formats;
+            while (pl) {
+                switch (pl->param) {
+                case ACVP_ML_KEM_KEY_FORMAT_EXPANDED:
+                    json_array_append_string(temp_arr, "expanded");
+                    break;
+                case ACVP_ML_KEM_KEY_FORMAT_SEED:
+                    json_array_append_string(temp_arr, "seed");
+                    break;
+                case ACVP_ML_KEM_KEY_FORMAT_NONE:
+                case ACVP_ML_KEM_KEY_FORMAT_MAX:
+                default:
+                    goto err;
+                }
+                pl = pl->next;
+            }
         }
     }
 
@@ -5831,12 +5992,12 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_HASH_SHA3_512:
             case ACVP_HASH_SHAKE_128:
             case ACVP_HASH_SHAKE_256:
-                rv = acvp_build_hash_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_hash_register_cap(ctx, cap_obj, cap_entry);
                 break;
             case ACVP_HASHDRBG:
             case ACVP_HMACDRBG:
             case ACVP_CTRDRBG:
-                rv = acvp_build_drbg_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_drbg_register_cap(ctx, cap_obj, cap_entry);
                 break;
             case ACVP_HMAC_SHA1:
             case ACVP_HMAC_SHA2_224:
@@ -5849,7 +6010,7 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_HMAC_SHA3_256:
             case ACVP_HMAC_SHA3_384:
             case ACVP_HMAC_SHA3_512:
-                rv = acvp_build_hmac_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_hmac_register_cap(ctx, cap_obj, cap_entry);
                 break;
             case ACVP_CMAC_AES:
             case ACVP_CMAC_TDES:
@@ -5905,17 +6066,31 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 }
                 break;
             case ACVP_RSA_SIGGEN:
-            case ACVP_RSA_SIGVER:
+            case ACVP_RSA_SIGVER: {
+                ACVP_RSA_SIG_CAP *sig_type = NULL;
+                int has_x931 = 0, has_current = 0;
+
                 rv = acvp_validate_rsa_sig_caps(ctx, cap_entry);
                 if (rv != ACVP_SUCCESS) {
                     break;
+                }
+
+                if (cap_entry->cipher == ACVP_RSA_SIGVER &&
+                    cap_entry->cap.rsa_sigver_cap->revision == ACVP_REVISION_DEFAULT) {
+                    for (sig_type = cap_entry->cap.rsa_sigver_cap; sig_type; sig_type = sig_type->next) {
+                        if (sig_type->sig_type == ACVP_RSA_SIG_TYPE_X931) {
+                            has_x931 = 1;
+                        } else {
+                            has_current = 1;
+                        }
+                    }
                 }
 
                 // If revision = BOTH, we need two registrations (FIPS 186-4 and FIPS 186-5)
                 if (cap_entry->cipher == ACVP_RSA_SIGGEN &&
                     cap_entry->cap.rsa_siggen_cap->revision == ACVP_REVISION_186_BOTH) {
                     cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_FIPS186_4;
-                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry, 0);
                     if (rv != ACVP_SUCCESS) {
                         cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
                         break;
@@ -5924,26 +6099,30 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                     cap_val = json_value_init_object();
                     cap_obj = json_value_get_object(cap_val);
                     cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
-                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry, 0);
                     cap_entry->cap.rsa_siggen_cap->revision = ACVP_REVISION_186_BOTH;
                 } else if (cap_entry->cipher == ACVP_RSA_SIGVER &&
-                           cap_entry->cap.rsa_sigver_cap->revision == ACVP_REVISION_186_BOTH) {
+                           (cap_entry->cap.rsa_sigver_cap->revision == ACVP_REVISION_186_BOTH || has_x931)) {
+                    ACVP_REVISION saved_revision = cap_entry->cap.rsa_sigver_cap->revision;
                     cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_FIPS186_4;
-                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry, has_x931);
+                    cap_entry->cap.rsa_sigver_cap->revision = saved_revision;
                     if (rv != ACVP_SUCCESS) {
-                        cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_186_BOTH;
                         break;
                     }
-                    json_array_append_value(caps_arr, cap_val);
-                    cap_val = json_value_init_object();
-                    cap_obj = json_value_get_object(cap_val);
-                    cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
-                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
-                    cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_186_BOTH;
+                    if (saved_revision == ACVP_REVISION_186_BOTH || has_current) {
+                        json_array_append_value(caps_arr, cap_val);
+                        cap_val = json_value_init_object();
+                        cap_obj = json_value_get_object(cap_val);
+                        cap_entry->cap.rsa_sigver_cap->revision = ACVP_REVISION_DEFAULT;  // 186-5
+                        rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry, 0);
+                        cap_entry->cap.rsa_sigver_cap->revision = saved_revision;
+                    }
                 } else {
-                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
+                    rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry, 0);
                 }
                 break;
+            }
             case ACVP_RSA_SIGPRIM:
             case ACVP_RSA_DECPRIM:
                 rv = acvp_build_rsa_prim_register_cap(cap_obj, cap_entry);
@@ -6520,4 +6699,3 @@ ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx,
 
     return ACVP_SUCCESS;
 }
-

@@ -744,6 +744,10 @@ ACVP_KDA_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, co
                 goto err;
             }
             if (cipher == ACVP_KDA_HKDF) {
+                if (tc->tc.kda_hkdf->literalCandidate) {
+                    ACVP_LOG_ERR("Duplicate literal pattern candidate");
+                    goto err;
+                }
                 tc->tc.kda_hkdf->literalCandidate = calloc(ACVP_KDA_PATTERN_LITERAL_BYTE_MAX, 1);
                 if (!tc->tc.kda_hkdf->literalCandidate) {
                     ACVP_LOG_ERR("Failed to allocate memory when setting literal pattern");
@@ -751,6 +755,10 @@ ACVP_KDA_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, co
                 }
                 rv = acvp_hexstr_to_bin(token, tc->tc.kda_hkdf->literalCandidate, ACVP_KDA_PATTERN_LITERAL_BYTE_MAX, &(tc->tc.kda_hkdf->literalLen));
             } else {
+                if (tc->tc.kda_onestep->literalCandidate) {
+                    ACVP_LOG_ERR("Duplicate literal pattern candidate");
+                    goto err;
+                }
                 tc->tc.kda_onestep->literalCandidate = calloc(ACVP_KDA_PATTERN_LITERAL_BYTE_MAX, 1);
                 if (!tc->tc.kda_onestep->literalCandidate) {
                     ACVP_LOG_ERR("Failed to allocate memory when setting literal pattern");
@@ -775,6 +783,7 @@ err:
 
 static ACVP_KDA_PATTERN_CANDIDATE* read_info_pattern(ACVP_CTX *ctx, ACVP_CIPHER cipher, const char *str, ACVP_TEST_CASE *tc) {
     ACVP_KDA_PATTERN_CANDIDATE currentCand;
+    int seen[ACVP_KDA_PATTERN_MAX] = { 0 };
     char *cpy = NULL;
     ACVP_KDA_PATTERN_CANDIDATE *rv = NULL;
     int hasUParty = 0, hasVParty = 0; // Currently, these are required
@@ -821,7 +830,12 @@ static ACVP_KDA_PATTERN_CANDIDATE* read_info_pattern(ACVP_CTX *ctx, ACVP_CIPHER 
             ACVP_LOG_ERR("Invalid pattern candidate supplied by server JSON");
             free(arr);
             goto err;
+        } else if (seen[currentCand]) {
+            ACVP_LOG_ERR("Duplicate pattern candidate supplied by server JSON");
+            free(arr);
+            goto err;
         } else {
+            seen[currentCand] = 1;
             if (currentCand == ACVP_KDA_PATTERN_UPARTYINFO) {
                 hasUParty = 1;
             }

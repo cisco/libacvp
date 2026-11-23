@@ -34,6 +34,7 @@
         ], 
         "additionalInputLen": 0, 
         "mode": "AES-128", 
+        "counterFieldLen": 128,
         "testType": "AFT", 
         "reSeed": false, 
         "entropyInputLen": 128
