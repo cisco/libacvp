@@ -5436,23 +5436,26 @@ static ACVP_RESULT acvp_build_ml_dsa_register_cap(ACVP_CTX *ctx,
 
         json_object_set_value(cap_obj, "preHash", json_value_init_array());
         temp_arr = json_object_get_array(cap_obj, "preHash");
-        switch (ml_dsa_cap->prehash) {
-        case ACVP_SIG_PREHASH_NO:
-            json_array_append_string(temp_arr, "pure");
-            break;
-        case ACVP_SIG_PREHASH_YES:
-            json_array_append_string(temp_arr, "preHash");
-            break;
-        case ACVP_SIG_PREHASH_BOTH:
-            json_array_append_string(temp_arr, "pure");
-            json_array_append_string(temp_arr, "preHash");
-            break;
-        case ACVP_SIG_PREHASH_NOT_SET:
-        default:
-            ACVP_LOG_ERR("Invalid ML-DSA preHash value");
-            goto err;
+		if (ml_dsa_cap->sig_interface == ACVP_SIG_INTERFACE_EXTERNAL
+            || ml_dsa_cap->sig_interface == ACVP_SIG_INTERFACE_BOTH)
+        {
+			switch (ml_dsa_cap->prehash) {
+			case ACVP_SIG_PREHASH_NO:
+				json_array_append_string(temp_arr, "pure");
+				break;
+			case ACVP_SIG_PREHASH_YES:
+				json_array_append_string(temp_arr, "preHash");
+				break;
+			case ACVP_SIG_PREHASH_BOTH:
+				json_array_append_string(temp_arr, "pure");
+				json_array_append_string(temp_arr, "preHash");
+				break;
+			case ACVP_SIG_PREHASH_NOT_SET:
+			default:
+				ACVP_LOG_ERR("Invalid ML-DSA preHash value");
+				goto err;
+			}
         }
-
         json_object_set_value(cap_obj, "capabilities", json_value_init_array());
         cap_arr = json_object_get_array(cap_obj, "capabilities");
         while (group_obj) {
